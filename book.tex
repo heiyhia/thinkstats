@@ -1,0 +1,368 @@
+% LaTeX source for ``Think Stats:
+% Probability and Statistics for Programmers''
+% Copyright (c)  2010  Allen B. Downey.
+
+% Creative commons BY-SA
+%
+
+%\documentclass[10pt,b5paper]{book}
+\documentclass[10pt]{book}
+\usepackage[width=5.5in,height=8.5in,
+  hmarginratio=3:2,vmarginratio=1:1]{geometry}
+
+% for some of these packages, you might have to install
+% texlive-latex-extra (in Ubuntu)
+
+\usepackage{pslatex}
+\usepackage{url}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{exercise}                        % texlive-latex-extra
+\usepackage{makeidx}
+\usepackage{setspace}
+\usepackage{hevea}                           
+\usepackage{upquote}
+
+\title{Think Stats}
+\newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
+\newcommand{\theversion}{1.0.0}
+
+% these styles get translated in CSS for the HTML version
+\newstyle{a:link}{color:black;}
+\newstyle{p+p}{margin-top:1em;margin-bottom:1em}
+\newstyle{img}{border:0px}
+
+% change the arrows
+\setlinkstext
+  {\imgsrc[ALT="Previous"]{back.png}}
+  {\imgsrc[ALT="Up"]{up.png}}
+  {\imgsrc[ALT="Next"]{next.png}}
+
+\makeindex
+
+\begin{document}
+
+\frontmatter
+
+% LATEXONLY
+
+\input{latexonly}
+
+\newtheorem{ex}{Exercise}[chapter]
+
+\begin{latexonly}
+
+\renewcommand{\blankpage}{\thispagestyle{empty} \quad \newpage}
+
+%\blankpage
+%\blankpage
+
+% TITLE PAGES FOR LATEX VERSION
+
+%-half title--------------------------------------------------
+\thispagestyle{empty}
+
+\begin{flushright}
+\vspace*{2.0in}
+
+\begin{spacing}{3}
+{\huge Think Stats: Probability and Statistics for Programmers}\\
+{\Large }
+\end{spacing}
+
+\vspace{0.25in}
+
+Version \theversion
+
+\vfill
+
+\end{flushright}
+
+%--verso------------------------------------------------------
+
+\blankpage
+\blankpage
+%\clearemptydoublepage
+%\pagebreak
+%\thispagestyle{empty}
+%\vspace*{6in}
+
+%--title page--------------------------------------------------
+\pagebreak
+\thispagestyle{empty}
+
+\begin{flushright}
+\vspace*{2.0in}
+
+\begin{spacing}{3}
+{\huge Think Stats}\\
+{\Large Probability and Statistics for Programmers}
+\end{spacing}
+
+\vspace{0.25in}
+
+Version \theversion
+
+\vspace{1in}
+
+
+{\Large
+Allen Downey\\
+}
+
+
+\vspace{0.5in}
+
+{\Large Green Tea Press}
+
+{\small Needham, Massachusetts}
+
+%\includegraphics[width=1in]{figs/logo1.eps}
+\vfill
+
+\end{flushright}
+
+
+%--copyright--------------------------------------------------
+\pagebreak
+\thispagestyle{empty}
+
+{\small
+Copyright \copyright ~2010 Allen Downey.
+
+
+\vspace{0.2in}
+
+\begin{flushleft}
+Green Tea Press       \\
+9 Washburn Ave \\
+Needham MA 02492
+\end{flushleft}
+
+Replace this.
+
+Permission is granted to copy, distribute, and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and with no Back-Cover Texts.
+
+The GNU Free Documentation License is available from {\tt www.gnu.org}
+or by writing to the Free Software Foundation, Inc., 59 Temple Place,
+Suite 330, Boston, MA 02111-1307, USA.
+
+The original form of this book is \LaTeX\ source code.  Compiling this
+\LaTeX\ source has the effect of generating a device-independent
+representation of a textbook, which can be converted to other formats
+and printed.
+
+The \LaTeX\ source for this book is available from
+\url{http://www.thinkpython.com}
+
+\vspace{0.2in}
+
+} % end small
+
+\end{latexonly}
+
+
+% HTMLONLY
+
+\begin{htmlonly}
+
+% TITLE PAGE FOR HTML VERSION
+
+{\Large \thetitle}
+
+{\large Allen B. Downey}
+
+Version \theversion
+
+\setcounter{chapter}{-1}
+
+\end{htmlonly}
+
+\chapter{Preface}
+
+\section*{}
+
+
+
+Allen B. Downey \\
+Needham MA\\
+
+Allen Downey is an Associate Professor of Computer Science at 
+the Franklin W. Olin College of Engineering.
+
+
+
+
+\section*{Acknowledgements}
+
+
+
+\section*{Contributor List}
+
+\index{contributors}
+
+If you have a suggestion or correction, please send email to 
+{\tt feedback@thinkpython.com}.  If I make a change based on your
+feedback, I will add you to the contributor list
+(unless you ask to be omitted).
+
+If you include at least part of the sentence the
+error appears in, that makes it easy for me to search.  Page and
+section numbers are fine, too, but not quite as easy to work with.
+Thanks!
+
+\small
+
+\begin{itemize}
+
+\item 
+
+% ENDCONTRIB
+
+\end{itemize}
+
+\normalsize
+
+\clearemptydoublepage
+
+% TABLE OF CONTENTS
+\begin{latexonly}
+
+\tableofcontents
+
+\clearemptydoublepage
+
+\end{latexonly}
+
+% START THE BOOK
+\mainmatter
+
+
+\chapter{The programmer's path}
+
+This book is about turning data into knowledge.  Data is cheap (at
+least relatively); knowledge is harder to come by.
+
+I will present three related pieces:
+
+\begin{description}
+
+\item[Probability] is the study of random events.  Most people have an
+  intuitive understanding of degrees of probability, but we will talk
+  about how to make quantitative claims about those degrees.
+
+\item[Statistics] is the discipline of using data samples to support
+  claims about populations.  Most statistical analysis is based on
+  probability, which is why these pieces are usually presented
+  together.
+
+\item[Computation] is a tool that is well-suited to quantitative
+  analysis, and computers are commonly used to process statistics.
+  Also (and more importantly for this book) computational experiments
+  are useful for exploring concepts in probability and statistics.
+
+\end{description}
+
+The thesis of this book is that if you know how to program, you can
+use that skill to help you understand probability and statistics.
+These topics are often presented from a mathematical perspective, and
+that approach works well for some people.  But some important ideas
+in this area are hard to work with mathematically and relatively
+easy to approach computationally.
+
+Both approaches have merits, and the ideal might combine both, but
+the goal of this book is to explore the computational path.
+
+The rest of this chapter presents a case study motivated by a question
+I heard when my wife and I were expecting our first child: do first
+babies tend to arrive late?
+
+\section{Do first babies arrive late?}
+
+If you Google this question, you will find plenty of discussion.
+Some people claim it's true, others say it's a myth, and some people
+say it's the other way around: first babies come early.
+
+In many of these discussions, people provide data to support their
+claims.  I found many examples like these:
+
+\begin{quote}
+
+``My two friends that have given birth recently to their first babies,
+BOTH went almost 2 weeks overdue before going into labour or being
+induced.''
+
+``My first one came 2 weeks late and now I think the second one is
+going to come out two weeks early!!''
+
+``I don't think that can be true because my sister was my mother's
+first and she was early, as with many of my cousins.''
+
+\end{quote}
+
+Reports like these are called {\bf anecdotal evidence} because they
+are based on data that is unpublished and usually personal.  In casual
+conversation, there is nothing wrong with anecdotes, so I don't mean
+to pick on the people I quoted.
+
+But we might want evidence that is more persuasive and
+an answer that is more reliable.  By those standards, anecdotal
+evidence usually fails, because:
+
+\begin{description}
+
+\item[Small number of observations:] If the gestation period for first
+  babies is longer for first babies, the difference is probably small
+  compared to the natural variation.  In that case, we might have to
+  compare a large number of pregnancies to be sure there is really a
+  difference (or not).
+
+\item[Selection bias:] People who join a discussion of this question
+  might be interested because their first babies were late.  In that
+  case the process of selecting data would bias the results.
+
+\item[Confirmation bias:] People who believe the claim might be more
+  likely to contribute examples that confirm it.  People who doubt the
+  claim are more likely to cite counterexamples.
+
+\item[Inaccuracy:] Anecotes are often personal stories that are
+  (deliberately or not) misremembered, misrepresented, repeated
+  inaccurately, etc.
+
+\end{description}
+
+So how can we do better?
+
+\section{A statistical approach}
+
+To address the limitations of anecdotes, we will use the tools
+of statistics, which include:
+
+\begin{description}
+
+\item[Data collection:]
+
+\item[Exploratory data analysis:]
+
+\item[Descriptive statistics:]
+
+\item[Hypothesis testing:]
+
+\item[Estimation:]
+
+\end{description}
+
+
+\printindex
+
+\clearemptydoublepage
+%\blankpage
+%\blankpage
+%\blankpage
+
+
+\end{document}
