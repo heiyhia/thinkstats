@@ -1,14 +1,14 @@
 import unittest
-import birth
+import survey
 
 class Test(unittest.TestCase):
 
     def testRespondents(self):
-        resp = birth.Respondents()
+        resp = survey.Respondents()
         self.assertEquals(len(resp.records), 7643)
 
     def testPregnancies(self):
-        preg = birth.Pregnancies()
+        preg = survey.Pregnancies()
         self.assertEquals(len(preg.records), 13593)
         pass
 

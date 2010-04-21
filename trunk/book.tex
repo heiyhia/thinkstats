@@ -1,8 +1,9 @@
 % LaTeX source for ``Think Stats:
 % Probability and Statistics for Programmers''
-% Copyright (c)  2010  Allen B. Downey.
+% Copyright 2010  Allen B. Downey.
 
-% Creative commons BY-SA
+% License: Creative Commons Attribution-Share Alike 3.0 Unported
+% http://creativecommons.org/licenses/by-sa/3.0/
 %
 
 %\documentclass[10pt,b5paper]{book}
@@ -37,7 +38,7 @@
 \setlinkstext
   {\imgsrc[ALT="Previous"]{back.png}}
   {\imgsrc[ALT="Up"]{up.png}}
-  {\imgsrc[ALT="Next"]{next.png}}
+  {\imgsrc[ALT="Next"]{next.png}} 
 
 \makeindex
 
@@ -140,24 +141,21 @@ Green Tea Press       \\
 Needham MA 02492
 \end{flushleft}
 
-Replace this.
-
 Permission is granted to copy, distribute, and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, no Front-Cover Texts, and with no Back-Cover Texts.
-
-The GNU Free Documentation License is available from {\tt www.gnu.org}
-or by writing to the Free Software Foundation, Inc., 59 Temple Place,
-Suite 330, Boston, MA 02111-1307, USA.
+under the terms of the Creative Commons Attribution-Share Alike 3.0 Unported
+License, which is available at \url{creativecommons.org/licenses/by-sa/3.0/}.
 
 The original form of this book is \LaTeX\ source code.  Compiling this
-\LaTeX\ source has the effect of generating a device-independent
-representation of a textbook, which can be converted to other formats
-and printed.
+code has the effect of generating a device-independent representation
+of a textbook, which can be converted to other formats and printed.
 
 The \LaTeX\ source for this book is available from
-\url{http://www.thinkpython.com}
+\url{www.thinkstats.com}.
+
+The cover for this book is based on a photo by Paul Friel
+(\url{flickr.com/people/frielp/}), who made it available under
+the Creative Commons Attribution license.  The original photo
+is at \url{flickr.com/photos/frielp/11999738/}.
 
 \vspace{0.2in}
 
@@ -182,22 +180,23 @@ Version \theversion
 
 \end{htmlonly}
 
-\chapter{Preface}
 
-\section*{}
+%\chapter{Preface}
 
-
-
-Allen B. Downey \\
-Needham MA\\
-
-Allen Downey is an Associate Professor of Computer Science at 
-the Franklin W. Olin College of Engineering.
+%\section*{}
 
 
 
+%Allen B. Downey \\
+%Needham MA\\
 
-\section*{Acknowledgements}
+%Allen Downey is an Associate Professor of Computer Science at 
+%the Franklin W. Olin College of Engineering.
+
+
+
+
+%\section*{Acknowledgements}
 
 
 
@@ -206,7 +205,7 @@ the Franklin W. Olin College of Engineering.
 \index{contributors}
 
 If you have a suggestion or correction, please send email to 
-{\tt feedback@thinkpython.com}.  If I make a change based on your
+{\tt downey@allendowney.com}.  If I make a change based on your
 feedback, I will add you to the contributor list
 (unless you ask to be omitted).
 
@@ -242,7 +241,7 @@ Thanks!
 \mainmatter
 
 
-\chapter{The programmer's path}
+\chapter{Statistical thinking for programmers}
 
 This book is about turning data into knowledge.  Data is cheap (at
 least relatively); knowledge is harder to come by.
@@ -252,8 +251,10 @@ I will present three related pieces:
 \begin{description}
 
 \item[Probability] is the study of random events.  Most people have an
-  intuitive understanding of degrees of probability, but we will talk
-  about how to make quantitative claims about those degrees.
+  intuitive understanding of degrees of probability, which is why we
+  can use words like ``probably'' and ``unlikely'' without special
+  training, but we will talk about how to make quantitative claims
+  about those degrees.
 
 \item[Statistics] is the discipline of using data samples to support
   claims about populations.  Most statistical analysis is based on
@@ -315,11 +316,11 @@ evidence usually fails, because:
 
 \begin{description}
 
-\item[Small number of observations:] If the gestation period for first
-  babies is longer for first babies, the difference is probably small
-  compared to the natural variation.  In that case, we might have to
-  compare a large number of pregnancies to be sure there is really a
-  difference (or not).
+\item[Small number of observations:] If the gestation period is longer
+  for first babies, the difference is probably small compared to the
+  natural variation.  In that case, we might have to compare a large
+  number of pregnancies to be sure there is really a difference (or
+  not).
 
 \item[Selection bias:] People who join a discussion of this question
   might be interested because their first babies were late.  In that
@@ -344,18 +345,161 @@ of statistics, which include:
 
 \begin{description}
 
-\item[Data collection:]
+\item[Data collection:] We will use data from a large national survey
+that was designed explicitly with the goal of generating statistically
+valid inferences about the U.S. population.
 
-\item[Exploratory data analysis:]
+\item[Exploratory data analysis:] We will start by exploring the dataset
+to get a sense of what questions were asked, what form the answers
+are in, and what limitations we might have to address.
 
-\item[Descriptive statistics:]
+\item[Descriptive statistics:] We will generate statistics that summarize
+large datasets concisely.
 
-\item[Hypothesis testing:]
+\item[Hypothesis testing:] Where we see apparently effects (like a
+difference between two groups), we will evaluate whether the effect
+is likely to be real, or whether it might have happened by chance.
 
-\item[Estimation:]
+\item[Estimation:] We will use measurements in the dataset to estimate
+characteristics of the general population.
 
 \end{description}
 
+By performing these steps with care to avoid common pitfalls, we can
+reach conclusions that are more justifiable and more likely to be
+correct.
+
+
+\section{The National Survey of Family Growth}
+
+Since 1973 the U.S. Centers for Disease Control and Prevention (CDC)
+have conducted the National Survey of Family Growth (NSFG),
+which is intended to gather ``information on family life, marriage and
+divorce, pregnancy, infertility, use of contraception, and men's and
+women's health. The survey results are used ... to plan health services and
+health education programs, and to do statistical studies of families,
+fertility, and health.''\footnote{See
+  \url{cdc.gov/nchs/nsfg.htm}.}
+
+We will use data collected by this survey to investigate whether first
+babies tend to come late, and other questions.  In order to use this
+data effectively, we have to understand the design of the study.
+
+The NSFG is a {\bf cross-sectional} study, which means that it
+captures a snapshot of a group at a point in time.  The most
+common alternative is a {\bf longitudinal} study, which observes a
+group repeatedly over a period of time.
+
+The NSFG has been conducted seven times; each deployment is called
+a {\bf cycle}.  We will be using data from Cycle 6, which was
+conducted from January 2002 to March 2003.
+
+The goal of the survey is to draw conclusions about a
+{\bf population}; the target population of the NSFG is people in
+the United States aged 15-44.
+
+The people who participate in a survey are called {\bf respondents}.
+In general, cross-sectional studies are meant to be {\bf
+  representative}, which means that every member of the target
+population has an equal chance of participating.  Of course that ideal
+is hard to achieve in practice, but people who conduct surveys come as
+close as they can.
+
+The NSFG not representative; instead it is deliberately {\bf
+  oversampled}.  The designers of the study recruited three
+groups---Hispanics, African-Americans and teenagers---at rates higher
+than their representation in the U.S. population.
+The reason for oversampling is to make sure that the number of
+respondents in each of these groups is large enough to draw valid
+statistical inferences.
+
+Of course, the drawback of oversampling is that it is not as easy
+to draw conclusions about the general population based on statistics
+from the survey.  We will come back to this point later.
+
+\begin{ex}
+
+Although the NSFG has been conducted seven times, it is not a
+longitudinal study.  Read the Wikipedia pages
+\url{wikipedia.org/wiki/Cross-sectional_study}
+and
+\url{wikipedia.org/wiki/Longitudinal_study}
+to make sure you understand why not.
+
+\end{ex}
+
+\begin{ex}
+
+In this exercise, you will download data from the NSFG and do some
+exploratory data analysis.
+
+\begin{enumerate}
+
+\item Go to \url{www.cdc.gov/nchs/nsfg/nsfg_cycle6.htm} and find the
+  section heading ``Downloadable Data Files.''  If you click on the
+  file named ``Female Respondent Data File,'' you will be taken to the
+  ``Data User's Agreement.''  Read the terms of this agreement and
+  click ``I accept these terms'' (assuming that you do).
+
+\item Download the files named {\tt 2002FemResp.dat} and {\tt
+  2002FemPreg.dat}.  The first is the respondent file, which contains
+  one record (line of text) for each of the 7,643 female respondents.
+  The second file contains one record for each pregnancy reported by a
+  respondent.
+
+\item Online documentation of the survey is at
+  \url{nsfg.icpsr.umich.edu/cocoon/WebDocs/NSFG/public/index.htm}.
+
+\item The web page for this book provides code to process the data
+  files from the NSFG.  Download \url{} and run it in the same
+  directory you put the data files in.
+
+\item 
+
+\item
+
+\end{enumerate}
+
+\end{ex}
+
+
+\begin{ex}
+
+The best way to learn about statistics is to work on a project you are
+interested in.  Is there a question like, ``Do first babies arrive
+late,'' that you would like to investigate?
+
+Think about questions you find personally interesting, or items of
+conventional wisdom, or controversial topics, or questions that have
+political consequences, and see if you can formulate a question that
+lends itself to statistical inquiry.
+
+Now start looking for datasets to help you address the
+question.  Governments are good sources because data from
+public research is often freely available.
+
+Another way to find data is Wolfram Alpha, which is a curated
+collection of good-quality datasets at \url{wolframalpha.com}.  But
+results generated by Wolfram Alpha are subject to copyright
+restrictions; you might want to check the terms before you commit
+yourself.
+
+Google and other search engines can also help you find data, but it
+can be harder to evaluate the quality of resources on the web.
+
+If it seems like someone has answered your question, you
+should look closely to see whether the answer is justified.  You
+might find flaws in the data or the analysis that make the
+conclusion unreliable.  In that case you might perform a different
+analysis of the same dataset, or look for a better source of data.
+
+If you find a published paper that addresses your question, you
+should be able to get the raw data.  Many authors make their data
+available on the web, but for sensitive data you might have to
+write to the authors, provide information about how you plan to use
+the data, or agree to certain terms of use.  Be persistent!
+
+\end{ex}
 
 \printindex
 
