@@ -1,100 +1,96 @@
 import sys
 import gzip
 
-class Respondent: 
+class Record(object):
+    """Represents a record."""
+
+class Respondent(Record): 
     """Represents a respondent."""
 
-class Pregnancy:
+class Pregnancy(Record):
     """Represents a pregnancy."""
 
-# these are the attributes to extract from the respondents file
-# these are the attributes to extract from the interval file
-intattrs = [
-    ['id', 1, 8],
-    ['pregordr', 9, 10],
-    ['nbrnlv', 14, 14],
-    ['wks_preg', 22, 23],
-    ['kidssex1', 95, 95],
-    ['kidssex2', 151, 151],
-    ['outcome', 291, 291],
-    ['prglngth', 292, 293],
-    ['sex1', 325, 325],
-    ['sex2', 326, 326],
-]
-
-def process_respondent(line):
-# take a line from the respondent file and build a Respondent object
-    res = Respondent()
-    for (attr, start, end) in resattrs:
-        setattr(res, attr, line[start-1:end])
-    return res
-
-def process_interval(line):
-# take a line from the interval file and build an Interval object
-    inter = Interval()
-    for (attr, start, end) in intattrs:
-        setattr(inter, attr, line[start-1:end])
-    return inter
-
-
 class Table(object):
-    """Represents a table."""
+    """Represents a table as a list of objects"""
 
-    def ReadFile(self, filename, attrs, constructor):
+    def ReadFile(self, filename, fields, constructor):
         """Reads a compressed data file builds one object per record.
+
+        Args:
+            filename: string name of the file to read
+
+            fields: sequence of (name, start, end, cast) tuples specifying 
+            the fields to extract
+
+            constructor: what kind of object to create
         """
-        fp = gzip.open(filename)
+        if filename.endswith('gz'):
+            fp = gzip.open(filename)
+        else:
+            fp = open(filename)
+
         for line in fp:
-            record = self.ProcessLine(line, attrs, constructor)
+            record = self.ProcessLine(line, fields, constructor)
             self.AddRecord(record)
         fp.close()
     
-    def ProcessLine(self, line, attrs, constructor):
-        """Reads a line and returns an object with the appropriate attrs.
-
-        Uses GetAttrs to get information about the variables we want
-        to extract from this record.
+    def ProcessLine(self, line, fields, constructor):
+        """Scans a line and returns an object with the appropriate fields.
 
         Args:
             line: string line from a data file
 
+            fields: sequence of (name, start, end, cast) tuples specifying 
+            the fields to extract
+
             constructor: callable that makes an object for the record.
 
         Returns:
-            object with appropriate attrs.
+            Record with appropriate fields.
         """
         obj = constructor()
-        for (attr, start, end, cast) in attrs:
+        for (field, start, end, cast) in fields:
             try:
                 val = cast(line[start-1:end])
             except ValueError:
                 val = 'NA'
-            setattr(obj, attr, val)
+            setattr(obj, field, val)
         return obj
 
     def AddRecord(self, record):
+        """Adds a record to this table.
+
+        Args:
+            record: an object of one of the record types.
+        """
         self.records.append(record)
 
 class Respondents(Table):
+    """Represents the respondent table."""
+
     def __init__(self, filename='2002FemResp.dat.gz'):
         self.records = []
-        self.ReadFile(filename, self.GetAttrs(), Respondent)
+        self.ReadFile(filename, self.GetFields(), Respondent)
 
-    def GetAttrs(self):
+    def GetFields(self):
+        """Returns a tuple specifying the fields to extract.
+
+        The elements of the tuple are field, start, end, case.
+
+                field is the name of the variable
+                start and end are the indices as specified in the NSFG docs
+                cast is a callable that converts the result to int, float, etc.
+        """
         return [
             ('caseid', 1, 12, int),
             ]
 
-    def AddRecord(self, record):
-        self.records.append(record)
-        #print record.caseid
-
 class Pregnancies(Table):
     def __init__(self, filename='2002FemPreg.dat.gz'):
         self.records = []
-        self.ReadFile(filename, self.GetAttrs(), Pregnancy)
+        self.ReadFile(filename, self.GetFields(), Pregnancy)
 
-    def GetAttrs(self):
+    def GetFields(self):
         return [
             ('caseid', 1, 12, int),
             ('prglength', 275, 276, int),
@@ -102,11 +98,6 @@ class Pregnancies(Table):
             ('birthord', 278, 279, int),
             ('finalwgt', 423, 440, float),
             ]
-
-    def AddRecord(self, record):
-        self.records.append(record)
-        #print record.outcome, record.prglength, 
-        #print record.birthord, record.finalwgt
 
 def main(name):
     resp = Respondents()
