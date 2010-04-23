@@ -38,7 +38,7 @@ html:	book.tex header.html footer.html
 	cp up.png next.png back.png html
 	mv index.html book.css book*.html *motif.gif html
 
-DEST = /home/downey/public_html/greent/compprobstat
+DEST = /home/downey/public_html/greent/thinkstats
 
 distrib:
 	ps2pdf $(PDFFLAGS) thinkstats.ps
