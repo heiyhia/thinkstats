@@ -7,9 +7,6 @@
 import bisect
 import math
 
-Log10 = math.log10
-Pow10 = lambda x: math.pow(10.0, x)
-
 class Cdf(object):
     """Represents a cumulative distribution function.
 
@@ -138,55 +135,75 @@ def MakeCdf(items, name=''):
     cdf = Cdf(vs, ps, name)
     return cdf
 
+
 def MakeCdfFromDict(d, name=''):
+    """Makes a CDF from a dictionary that maps values to frequencies.
+
+    Args:
+       d: dictionary that maps values to frequencies.
+
+       name: string name for the data.
+
+    Returns:
+        Cdf object
+    """
     return MakeCdf(d.iteritems(), name)
 
+
 def MakeCdfFromList(seq, name=''):
-  """Creates a CDF from an unsorted sequence.
-  Args:
-    seq: unsorted sequence of sortable values
-    name: string name for the cdf
-  Returns:
-    CDF object
-  """
-  hist = {}
-  for x in seq:
-    hist[x] = hist.get(x, 0) + 1
-  return MakeCdfFromDict(hist, name)
+    """Creates a CDF from an unsorted sequence.
+    Args:
+        seq: unsorted sequence of sortable values
+
+        name: string name for the cdf
+
+    Returns:
+       Cdf object
+    """
+    hist = {}
+    for x in seq:
+        hist[x] = hist.get(x, 0) + 1
+        
+    return MakeCdfFromDict(hist, name)
 
 def ProbLess(cdf1, cdf2):
-  """Probability that a value from cdf1 is less than one from cdf2.
-  For continuous distributions F and G, the chance that a sample
-  from F is less than a sample from G is
-  Integral(x): pdf_F(x) * (1 - cdf_G(x))
-  This function computes an approximation of this Integral using
-  discrete CDFs.
-  Args:
-    cdf1: CDF object
-    cdf2: CDF object
-  Returns:
-    float probability
-  """
-  total = 0.0
-  i = 0
-  j = 0
-  x = float('-Inf')
-  while True:
-    # sweep through cdf1 and compute p, the marginal prob of v2
-    unused_v1, p1 = cdf1.data[i]
-    v2, p2 = cdf1.data[i+1]
-    p = p2 - p1
-    # incr through cdf2 to find Prob{x < v2}
-    while x <= v2:
-      x, y = cdf2.data[j]
-      if j == len(cdf2.data)-1:
-        break
-      else:
-        j += 1
-    # add up the integral
-    total += p * (1 - y)
-    i += 1
-    if i == len(cdf1.data)-1:
-      break
-  return total
+    """Probability that a value from cdf1 is less than one from cdf2.
+    For continuous distributions F and G, the chance that a sample
+    from F is less than a sample from G is
+    Integral(x): pdf_F(x) * (1 - cdf_G(x))
+    This function computes an approximation of this Integral using
+    discrete CDFs.
+
+    Args:
+        cdf1: CDF object
+        cdf2: CDF object
+
+    Returns:
+        float probability
+    """
+    total = 0.0
+    i = 0
+    j = 0
+    x = float('-Inf')
+    while True:
+        # sweep through cdf1 and compute p, the marginal prob of v2
+        unused_v1, p1 = cdf1.data[i]
+        v2, p2 = cdf1.data[i+1]
+        p = p2 - p1
+    
+        # incr through cdf2 to find Prob{x < v2}
+        while x <= v2:
+            x, y = cdf2.data[j]
+            if j == len(cdf2.data)-1:
+                break
+            else:
+                j += 1
+    
+        # add up the integral
+        total += p * (1 - y)
+        i += 1
+        if i == len(cdf1.data)-1:
+            break
+
+    return total
 

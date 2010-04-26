@@ -8,37 +8,52 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import sys
 import survey
 
-def main(name):
-    """Computes summary statistics from survey data."""
-    preg = survey.Pregnancies()
-    print 'Number of pregnancies', len(preg.records)
+class Pregnancies(survey.Pregnancies):
 
-    firsts = []
-    others = []
+    def PartitionRecords(self, constructor):
+        """Divides records into two lists: first babies and others.
 
-    for p in preg.records:
-        if p.outcome != 1:
-            continue
+        Only live births are included
 
-        if p.birthord == 1:
-            firsts.append(p)
-        else:
-            others.append(p)
+        Args:
+            records: sequence of Pregnancy records
 
-    print 'Number of first babies', len(firsts)
-    print 'Number of others', len(others)
+            constructor: init method used to make sub-tables
+        """
+        firsts = constructor()
+        others = constructor()
 
-    first_lens = [p.prglength for p in firsts]
-    other_lens = [p.prglength for p in others]
+        for p in self.records:
+            if p.outcome != 1:
+                continue
 
-    mu1 = Mean(first_lens)
-    mu2 = Mean(other_lens)
+            if p.birthord == 1:
+                firsts.AddRecord(p)
+            else:
+                others.AddRecord(p)
 
-    print 'Mean gestation in weeks:' 
-    print 'First babies', mu1 
-    print 'others', mu2
+        return firsts, others
 
-    print 'Difference in days', (mu1 - mu2) * 7.0
+    def Process(self):
+        self.lengths = [p.prglength for p in self.records]
+        self.mu = Mean(self.lengths)
+
+
+def PoolRecords(constructor, *tables):
+    """Construct a table with records from all tables.
+    
+    Args:
+        constructor: init method used to make the new table
+    
+        tables: any number of tables
+
+    Returns:
+        new table object
+    """
+    pool = constructor()
+    for table in tables:
+        pool.ExtendRecords(table.records)
+    return pool
 
 
 def Mean(t):
@@ -51,6 +66,7 @@ def Mean(t):
         float
     """
     return float(sum(t)) / len(t)
+
 
 if __name__ == '__main__':
     main(*sys.argv)
