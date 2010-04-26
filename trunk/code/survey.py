@@ -20,6 +20,9 @@ class Pregnancy(Record):
 class Table(object):
     """Represents a table as a list of objects"""
 
+    def __init__(self):
+        self.records = []
+
     def ReadFile(self, filename, fields, constructor):
         """Reads a compressed data file builds one object per record.
 
@@ -72,11 +75,19 @@ class Table(object):
         """
         self.records.append(record)
 
+    def ExtendRecords(self, records):
+        """Adds records to this table.
+
+        Args:
+            records: a sequence of record object
+        """
+        self.records.extend(records)
+
+
 class Respondents(Table):
     """Represents the respondent table."""
 
-    def __init__(self, filename='2002FemResp.dat.gz'):
-        self.records = []
+    def ReadRecords(self, filename='2002FemResp.dat.gz'):
         self.ReadFile(filename, self.GetFields(), Respondent)
 
     def GetFields(self):
@@ -93,8 +104,9 @@ class Respondents(Table):
             ]
 
 class Pregnancies(Table):
-    def __init__(self, filename='2002FemPreg.dat.gz'):
-        self.records = []
+    """Contains survey data about a Pregnancy."""
+
+    def ReadRecords(self, filename='2002FemPreg.dat.gz'):
         self.ReadFile(filename, self.GetFields(), Pregnancy)
 
     def GetFields(self):
@@ -106,11 +118,3 @@ class Pregnancies(Table):
             ('finalwgt', 423, 440, float),
             ]
 
-def main(name):
-    resp = Respondents()
-    print 'Number of respondents', len(resp.records)
-    preg = Pregnancies()
-    print 'Number of pregnancies', len(preg.records)
-    
-if __name__ == '__main__':
-    main(*sys.argv)
