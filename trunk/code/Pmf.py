@@ -11,6 +11,9 @@ class Hist(object):
         self.d = d
         self.name = name
 
+    def GetDict(self):
+        return self.d
+
     def Count(self, x):
         """Increment the counter associated with the value x.
 

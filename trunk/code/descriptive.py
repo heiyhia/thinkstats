@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import first_baby
 import Pmf
+import Cdf
 
 class Pregnancies(first_baby.Pregnancies):
 
@@ -18,6 +19,7 @@ class Pregnancies(first_baby.Pregnancies):
     def MakePmf(self, name=''):
         self.hist = Pmf.MakeHist(self.lengths, name=name)
         self.pmf = self.hist.MakePmf()
+        self.cdf = Cdf.MakeCdfFromDict(self.hist.GetDict())
 
 
 def Mean(t):

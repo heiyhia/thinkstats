@@ -9,24 +9,14 @@ import unittest
 import matplotlib.pyplot as plt
 import Pmf
 import descriptive
+import plot
 
 class Test(unittest.TestCase):
 
     def testPlot(self):
         t = [1, 2, 2, 3, 5]
         hist = Pmf.MakeHist(t)
-        xs, fs = hist.Render()
-        list_of_rectangles = plt.bar(xs, fs)
-
-        self.assertEquals(len(list_of_rectangles), 4)
-
-        plt.xlabel('x')
-        plt.ylabel('frequency')
-        plt.title('Histogram')
-
-        format = 'png'
-        filename = 'figure.' + format
-        plt.savefig(filename, format=format)
+        plot.Hist(hist)
 
     def testDescriptive(self):
         constructor = descriptive.Pregnancies
@@ -51,21 +41,14 @@ class Test(unittest.TestCase):
         firsts.MakePmf(name='first babies')
         others.MakePmf(name='others')
 
-        width = 0.4
+        axis = [20, 50, 0, 2700]
+        plot.Hists([firsts.hist, others.hist], 'nsfg_hist', axis=axis)
 
-        xs, fs = firsts.hist.Render()
-        xs = Shift(xs, -width)
-        plt.bar(xs, fs, width=width, color='0.80', label=firsts.hist.name)
+        axis = [20, 50, 0, 0.6]
+        plot.Hists([firsts.pmf, others.pmf], 'nsfg_pmf', axis=axis)
 
-        xs, fs = others.hist.Render()
-        plt.bar(xs, fs, width=width, color='0.50', label=others.hist.name)
-
-        plt.axis([20, 50, 0, 2700])
-        plt.legend()
-        plt.show()
-
-def Shift(xs, shift):
-    return [x+shift for x in xs]
+        axis = [20, 50, 0, 1.0]
+        plot.Cdfs([firsts.cdf, others.cdf], 'nsfg_cdf', axis=axis)
 
 if __name__ == "__main__":
     unittest.main()

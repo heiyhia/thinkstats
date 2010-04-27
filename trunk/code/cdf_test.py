@@ -9,7 +9,7 @@ class Test(unittest.TestCase):
 
     def testMakeCdf(self):
         cdf = self.cdf
-        self.assertEqual(cdf.vs, [1, 2, 3, 5])
+        self.assertEqual(cdf.xs, [1, 2, 3, 5])
         self.assertEqual(cdf.ps, [0.2, 0.6, 0.8, 1.0])
         self.assertEqual(cdf.name, 'bob')
 
@@ -45,8 +45,10 @@ class Test(unittest.TestCase):
         
     def testRender(self):
         cdf = self.cdf
-        data = cdf.Render()
-        print data
+        vs, ps = cdf.Render()
+        self.assertEqual(vs, [1, 1, 2, 2, 3, 3, 5, 5])
+        for got, expected in zip(ps, [0.0, 0.2, 0.2, 0.6, 0.6, 0.8, 0.8, 1.0]):
+            self.assertAlmostEqual(got, expected)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testCdf']
