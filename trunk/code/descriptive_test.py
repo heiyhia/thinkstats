@@ -48,7 +48,7 @@ class Test(unittest.TestCase):
         plot.Hists([firsts.pmf, others.pmf], 'nsfg_pmf', axis=axis)
 
         axis = [20, 50, 0, 1.0]
-        plot.Cdfs([firsts.cdf, others.cdf], 'nsfg_cdf', axis=axis)
+        plot.Cdfs([others.cdf, firsts.cdf], 'nsfg_cdf', axis=axis)
 
 if __name__ == "__main__":
     unittest.main()

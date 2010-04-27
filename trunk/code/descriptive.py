@@ -19,7 +19,7 @@ class Pregnancies(first_baby.Pregnancies):
     def MakePmf(self, name=''):
         self.hist = Pmf.MakeHist(self.lengths, name=name)
         self.pmf = self.hist.MakePmf()
-        self.cdf = Cdf.MakeCdfFromDict(self.hist.GetDict())
+        self.cdf = Cdf.MakeCdfFromDict(self.hist.GetDict(), name=name)
 
 
 def Mean(t):
