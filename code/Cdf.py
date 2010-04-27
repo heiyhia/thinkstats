@@ -11,27 +11,27 @@ class Cdf(object):
     """Represents a cumulative distribution function.
 
     Attributes:
-        vs: sequence of values
+        xs: sequence of values
         ps: sequence of probabilities
         name: string used as a graph label.
     """
-    def __init__(self, vs=None, ps=None, name=''):
-        self.vs = vs
+    def __init__(self, xs=None, ps=None, name=''):
+        self.xs = xs
         self.ps = ps
         self.name = name
 
-    def Prob(self, v):
-        """Returns the probability that corresponds to value v.
+    def Prob(self, x):
+        """Returns the probability that corresponds to value x.
 
-        Computes CDF(v)
+        Computes CDF(x)
 
         Args:
-            v: number
+            x: number
         Returns:
             float probability
         """
-        if v < self.vs[0]: return 0.0
-        index = bisect.bisect(self.vs, v)
+        if x < self.xs[0]: return 0.0
+        index = bisect.bisect(self.xs, x)
         p = self.ps[index-1]
         return p
 
@@ -49,13 +49,13 @@ class Cdf(object):
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
-        if p == 0: return self.vs[0]
-        if p == 1: return self.vs[-1]
+        if p == 0: return self.xs[0]
+        if p == 1: return self.xs[-1]
         index = bisect.bisect(self.ps, p)
         if p == self.ps[index-1]:
-            return self.vs[index-1]
+            return self.xs[index-1]
         else:
-            return self.vs[index]
+            return self.xs[index]
 
     def Percentile(self, p):
         """Returns the value that corresponds to percentile p.
@@ -76,9 +76,9 @@ class Cdf(object):
         """
         old_p = 0
         total = 0.0
-        for v, new_p in zip(self.vs, self.ps):
+        for x, new_p in zip(self.xs, self.ps):
             p = new_p - old_p
-            total += p * v
+            total += p * x
             old_p = new_p
         return total
 
@@ -99,16 +99,20 @@ class Cdf(object):
         can be misleading.
 
         Returns:
-            sequence of (value, prob) pairs.
+            tuple of (xs, ps)
         """
-        data = [(self.vs[0], 0.0)]
+        xs = [self.xs[0]]
+        ps = [0.0]
         for i, p in enumerate(self.ps):
-            data.append((self.vs[i], p))
+            xs.append(self.xs[i])
+            ps.append(p)
+
             try:
-                data.append((self.vs[i+1], p))
+                xs.append(self.xs[i+1])
+                ps.append(p)
             except IndexError:
                 pass
-        return data
+        return xs, ps
 
 def MakeCdf(items, name=''):
     """Makes a cdf from an unsorted histogram.
@@ -121,18 +125,18 @@ def MakeCdf(items, name=''):
         cdf: list of (value, fraction) pairs
     """
     runsum = 0
-    vs = []
+    xs = []
     cs = []
 
     for value, count in sorted(items):
         runsum += count
-        vs.append(value)
+        xs.append(value)
         cs.append(runsum)
 
     total = float(runsum)
     ps = [c/total for c in cs]
 
-    cdf = Cdf(vs, ps, name)
+    cdf = Cdf(xs, ps, name)
     return cdf
 
 
@@ -187,12 +191,12 @@ def ProbLess(cdf1, cdf2):
     x = float('-Inf')
     while True:
         # sweep through cdf1 and compute p, the marginal prob of v2
-        unused_v1, p1 = cdf1.data[i]
-        v2, p2 = cdf1.data[i+1]
+        unused_x1, p1 = cdf1.data[i]
+        x2, p2 = cdf1.data[i+1]
         p = p2 - p1
     
-        # incr through cdf2 to find Prob{x < v2}
-        while x <= v2:
+        # incr through cdf2 to find Prob{x < x2}
+        while x <= x2:
             x, y = cdf2.data[j]
             if j == len(cdf2.data)-1:
                 break
