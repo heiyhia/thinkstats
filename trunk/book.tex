@@ -862,8 +862,8 @@ come back to this when we talk about estimation.
 
 \section{Distributions}
 
-Summary statistics are concise, but dangerous because they obscure
-the data.  The alternative is to look at the {\bf distribution} of the
+Summary statistics are concise, but dangerous, because they obscure
+the data.  An alternative is to look at the {\bf distribution} of the
 data, which describes how often each value appears.
 
 The most common representation of a distribution is a {\bf histogram},
@@ -871,7 +871,7 @@ which is a graph that shows the frequency or probability
 of each value.  
 
 In this context, {\bf frequency} means the number of times a value
-appears in a dataset; it has nothing to do with the pitch of a sound
+appears in a dataset---it has nothing to do with the pitch of a sound
 or tuning of a radio signal.  A {\bf probability} is a frequency expressed
 as a fraction of the sample size, $n$.
 
@@ -924,7 +924,7 @@ In {\tt Pmf.py}, write a definition for a class named {\tt Pmf} that
 represents a probability mass function with a dictionary that maps
 from values to probabilities.
 
-Write a function called {\tt MakeProb} that takes a sequence of
+Write a function called {\tt MakePmf} that takes a sequence of
 values and returns their pmf.
 
 Write a method called {\tt Prob} that
@@ -933,13 +933,13 @@ if the value has frequency 0.  Write unit tests to test your code.
 \end{ex}
 
 
-\section{Plotting}
+\section{Plotting histograms}
 
 There are a number of Python packages for making figures and graphs.
 The one I will use in the book is {\tt pyplot}, which is part of
 the {\tt matplotlib} package at \url{matplotlib.sourceforge.net}.
 
-This package is include with many Python distributions.  To see whether
+This package is included in many Python installations.  To see whether
 you have it, launch the Python interpreter and run:
 
 \begin{verbatim}
@@ -951,13 +951,354 @@ plt.show()
 If you have {\tt matplotlib} you should see a simple pie chart;
 otherwise you will have to install it.
 
+The {\tt import...as} statement lets you import a package and give
+it a nickname, which is convenient if the name of the package is long.
+I will use the nickname {\tt plt} to be consistent with the examples
+in the {\tt pyplot} documentation.
+
 Histograms and pmfs are most often plotted as bar charts.  The
 {\tt pyplot} function to draw a bar chart is {\tt bar}.
 
 The following figure shows histograms of the pregnancy lengths for
 first babies and others.
 
-cdf
+\beforefig
+\centerline{\includegraphics[height=2.5in]{code/nsfg_hist.eps}}
+\afterfig
+
+Histograms are useful because they make the following features immediately
+apparent:
+
+\begin{description}
+
+\item[Mode:]  The most obvious feature of this distribution is the large
+number of values at 39 weeks.  The most common value in a distribution is
+called the {\bf mode}.  In this case, the mode is the summary statistic
+that does the best job of describing the typical value.
+
+\item[Shape:] Around the mode, the distribution is asymmetric; it drops
+off quickly to the right and more slowly to the left.  From a medical
+point of view, this makes sense.  Babies are often born early, but
+seldom later than 42 weeks.  Also, the right side of the distribution is
+probably truncated because doctors often intervene after 42 weeks.
+
+\item[Outliers:] There are a small number of values far from the mode.
+Some of these are just unusual cases, like babies born at 30 weeks.
+But many of them are probably due to errors, either in the reporting
+or recording of data.
+
+\end{description}
+
+Although histograms make some features apparent, they are usually not
+useful for comparing two distributions.  In this example, there are
+fewer ``first babies'' than ``others,'' so some of the apparent
+differences in the histograms are due to sample sizes.
+
+\section{Plotting PMFs}
+
+We can solve that problem by normalizing the distributions---that
+is, dividing through by the sample sizes---to generate the PMFs:
+
+\beforefig
+\centerline{\includegraphics[height=2.5in]{code/nsfg_pmf.eps}}
+\afterfig
+
+Using the PMF, we can see more clearly where the distributions
+differ.  First babies seem to be less likely to arrive on time
+(week 39) and more likely to be a little late (weeks 41 and 42).
+
+\begin{ex}
+Create a file named {\tt plot.py} and write a function called
+{\tt Hist} that takes a Hist object and generates a bar chart
+using the {\tt pyplot} function {\tt bar}.
+
+Write another function called {\tt Hists} that takes two Hist objects
+and generates side-by-side histograms like the figures in this section.
+You will have to read the {\tt pyplot} documentation to adjust the
+width and position of the bars.
+
+Use the data from the NSFG to generate plots like the ones in this
+section.
+\end{ex}
+
+\section{Custom visualization}
+
+Histograms and PMFs are useful for exploratory data analysis;
+once you have an idea what is going on, it is often useful to
+design a visualization that focuses on the apparent effect.
+
+In the NSFG data, the biggest differences
+in the distributions are near the mode.  So it makes sense to
+zoom in on that part of the graph, and to transform the data to
+emphasize differences.
+
+The following figure shows the difference between the PMFs for weeks
+35-45.  I multiplied by 100 to express the differences in percentage
+points.
+
+\beforefig
+\centerline{\includegraphics[height=2.5in]{code/nsfg_ratios.eps}}
+\afterfig
+
+This figure makes the pattern clearer: first babies are
+less likely to be born in week 39, and somewhat more likely
+to be born in weeks 41 and 42.
+
+I am ignoring some of the smaller differences, but you might wonder
+whether any of these differences are statistically significant.
+We will come back to that question soon.
+
+\section{Conditional probability}
+
+Imagine that someone you know is pregnant, and it is the
+beginning of Week 39.  What is the chance that the baby will
+be born in the next week?  How much does the answer change if
+it's a first baby?
+
+We can answer these questions by computing a {\bf conditional
+probability}, which is a probability that depends on a condition.
+In this case, the condition is that we know the baby didn't arrive
+during Weeks 0--38.
+
+Here one way to do it:
+
+\begin{enumerate}
+
+\item Given a PMF, generate a fake cohort of 1000 pregnancies.
+For each number of weeks, $x$, the number of pregnancies with
+duration $x$ is $1000 PMF(x)$.
+
+\item Remove from the cohort all pregnancies with length less than 39.
+
+\item Compute the PMF of the remaining durations; the result is the
+conditional PMF.
+
+\item Evaluate the conditional PMF at $x = 39$ weeks.
+
+\end{enumerate}
+
+\begin{ex}
+Write a program that implements this algorithm and compute the
+conditional probability of $x = 39$ weeks for all pregnancies,
+first babies, and others.
+
+Based on these results, how would you answer the question
+from Chapter 1, ``Do first babies arrive late?''
+\end{ex}
+
+
+
+\chapter{Cumulative distribution functions}
+
+\section{Percentiles}
+
+If you have ever taken a standardized test, you probably got your
+results in the form of a raw score and a {\bf percentile rank}.
+In this context, the percentile rank is the fraction of people who
+scored lower than you (or the same).  So if you are ``in the 90th
+percentile,'' you did as well as or better than 90\% of the people who
+took the exam (congratulations!).
+
+If you had a sequence of test scores, {\tt scores},
+and a particular value, \verb"your_score", you could compute
+your percentile rank like this:
+
+\begin{verbatim}
+def PercentileRank(scores, your_score):
+    count = 0
+    for score in scores:
+        if score <= your_score:
+            count += 1
+
+    percentile_rank = 100.0 * count / len(scores)
+    return percentile_rank
+\end{verbatim}
+%
+% see score_example.py
+%
+For example, if the scores were 55, 66, 77, 88 and 99, and you got
+the 88, then your percentile rank is {\tt 100 * 4 / 5} which is 80.
+
+If you are given a value, it is easy to find its percentile rank; going
+the other way is slightly harder.  If you are given a percentile rank
+and you want to find the corresponding value, one option is to
+sort the values and search for the one you want:
+
+\begin{verbatim}
+def Percentile(scores, percentile_rank):
+    scores.sort()
+    for score in scores:
+        if PercentileRank(scores, score) >= percentile_rank:
+            return score
+\end{verbatim}
+
+The result of this calculation is a {\bf percentile}.  For example,
+the 50th percentile is the value with percentile rank 50.  In the
+distribution of exam scores, the 50th percentile is 77.
+
+\begin{ex}
+This implementation of {\tt Percentile} is not very efficient.  A
+better approach is to use the percentile rank to compute the index
+of the element.  Write a version of the function that uses this
+approach.
+\end{ex}
+
+\begin{ex}
+If you only want to compute one percentile, it is not efficient
+to sort the scores.  A better option is the selection algorithm,
+which you can read about at \url{wikipedia.org/wiki/Selection_algorithm}.
+
+Write (or find) an implementation of the selection algorithm and use
+it to write an efficient version of {\tt Percentile}.
+\end{ex}
+
+
+\section{Cumulative distribution functions}
+
+Now that we understand percentiles, we are ready to tackle the
+cumulative distribution function (CDF).  The CDF is the function that
+maps values to their percentile rank in a distribution.
+
+The CDF is a function of $x$, where $x$ is any value that might appear
+in the distribution.  To evaluate $CDF(x)$ for a particular value of
+$x$, we compute the fraction of the values in the sample less than (or
+equal to) $x$.
+
+Here's what that looks like as a Python function that takes
+a sample, {\tt t}, and a value, {\tt x}:
+
+\begin{verbatim}
+def Cdf(t, x):
+    count = 0.0
+    for value in t:
+        if value <= x:
+            count += 1.0
+
+    return count / len(t)
+\end{verbatim}
+
+This function should look familiar; it is almost identical to {\tt
+  PercentileRank}.  The CDF is the function that maps values to their
+percentile rank (in the range 0-100) or, more often, their
+cumulative probability (in the range 0-1).
+
+As an example, suppose a sample has the values ${1, 2, 2, 3, 5}$.
+Here are some values from its CDF:
+
+\begin{eqnarray*}
+CDF(0) &=& 0    \\
+CDF(1) &=& 0.2    \\
+CDF(2) &=& 0.6    \\
+CDF(3) &=& 0.8    \\
+CDF(4) &=& 0.8    \\
+CDF(5) &=& 1    \\
+\end{eqnarray*}
+%
+Notice that we can evaluate the CDF for any value of $x$, not just
+values that appear in the sample.
+If $x$ is less than the smallest value in the sample, $CDF(x)$ is 0.
+If $x$ is greater than the largest value, $CDF(x)$ is 1.
+
+Here is a graphical representation of this CDF.
+
+\beforefig
+\centerline{\includegraphics[height=2.5in]{code/example_cdf.eps}}
+\afterfig
+
+The function {\tt Cdf} above is efficient enough if we only want
+to evaluate the CDF at one point.  But there are several operations
+we might want to perform on CDFs:
+
+\begin{description}
+
+\item[Evaluate:] Given a value $x$, evaluate $CDF(x)$ to get a
+probability $p$.  We can use this operation to compute percentile
+ranks.
+
+\item[Invert:] Given a probability $p$, find
+the value $x$ so that $CDF(x) = p$.  We can use this operation
+to compute percentiles.
+
+\item[Render:] Generate a sequence of points suitable for plotting
+the CDF.
+
+\end{description}
+
+It is not obvious what data structures we should use to implement
+these operations; there are several reasonable choices.  In the
+following exercise I recommend an option that is simple and efficient
+(enough).
+
+\begin{ex}
+Create a file named {\tt Cdf.py} and write a definition for a class
+named {\tt Cdf} that represents a CDF.  The attributes of a Cdf
+object are {\tt xs}, which is a sorted list of the unique values
+in the sample, and {\tt ps} which is a list of probabilities that
+correspond to the values in {\tt xs}.
+
+Write a simple constructor that takes {\tt xs} and {\tt ps} as
+parameters, then write two factory functions:
+
+\begin{description}
+
+\item[{\tt MakeCdfFromDict}]: Takes a dictionary that maps from
+values to frequencies, computes {\tt xs} and {\tt ps}, and returns
+a {\tt Cdf} object.
+
+\item[{\tt MakeCdfFromList}]: Takes a sequence of values, makes
+a dictionary that maps from values to frequencies, and uses
+{\tt MakeCdfFromDict} to make and return a {\tt Cdf} object.
+
+\end{description}
+
+Now write the following methods for {\tt Cdf}:
+
+\begin{description}
+
+\item[{\tt Prob}]: Given a value $x$, compute the probability $p = CDF(x)$.
+
+\item[{\tt Value}]: Given a probability $p$, compute the
+corresponding value, $x$; that is, the inverse CDF of $p$.
+
+\item[{\tt Render}]: Return two lists, {\tt xs} and {\tt ps}, suitable
+for plotting the CDF.  Notice that the CDF is a step function, so these
+lists should have two elements for each unique value in the distribution.
+
+\end{description}
+
+Test your code by computing the CDF of the values ${1, 2, 2, 3, 5}$.
+Test {\tt Prob} and {\tt Value} using the examples in this section.
+
+Write a function that plots the CDF with the {\tt pyplot} function
+{\tt plot}.  Confirm that your plot looks like the figure above.
+
+You can download unit tests for this exercise from
+\url{thinkstatsbook.com/cdf_test.py}.  You can download a solution
+from \url{thinkstatsbook.com/Cdf.py}.
+
+\end{ex}
+
+\section{Back to the survey data}
+
+The following figure shows the CDFs of pregnancy length
+for first babies and others in the NSFG dataset.
+
+\beforefig
+\centerline{\includegraphics[height=2.5in]{code/nsfg_cdf.eps}}
+\afterfig
+
+This figure makes apparent where the difference between the
+distributions is greatest: in weeks 40, 41, and 42.  Except for these
+three weeks, the distributions are almost identical.
+
+Specifically, first babies seem less likely to arrive after 39
+weeks, and slightly more likely to arrive before.  Remember that
+the mean gestation period for first babies is slightly higher,
+so this is the {\tt opposite} of the effect we expected!
+
+How can that be?  If first babies are less likely to be born late,
+how can the mean be greater?
+
 
 percentiles
 
