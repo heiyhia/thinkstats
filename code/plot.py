@@ -8,69 +8,152 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import matplotlib
 import matplotlib.pyplot as plt
 
+# customize some matplotlib attributes
+matplotlib.rc('figure', figsize=(5, 4))
 
-def Hist(hist):
+#matplotlib.rc('font', size=20.0)
+#matplotlib.rc('axes', labelsize=22.0, titlesize=22.0)
+#matplotlib.rc('legend', fontsize=20.0)
+
+#matplotlib.rc('xtick.major', size=6.0)
+#matplotlib.rc('xtick.minor', size=3.0)
+
+#matplotlib.rc('ytick.major', size=6.0)
+#matplotlib.rc('ytick.minor', size=3.0)
+
+
+
+def Hist(hist, root, **options):
+    """Plots a histogram.
+
+    Args:
+      hist: Hist or Pmf object
+
+      root: string filename root
+
+      options: dictionary of options
+    """
+    plt.clf()
+
     xs, fs = hist.Render()
     plt.bar(xs, fs)
 
-    plt.xlabel('x')
-    plt.ylabel('frequency')
-    plt.title('Histogram')
-
-    Plot('histogram')
+    Plot(root, **options)
 
 
-def Hists(hists, root, axis=None, show=False):
+def Hists(hists, root, **options):
+    """Plots two histograms.
+
+    Args:
+      hists: list of two Hist or Pmf objects
+
+      root: string filename root
+
+      options: dictionary of options
+    """
     plt.clf()
 
     width = 0.4
     shifts = [-width, 0.0]
+    colors = ['0.5', '0.8']
 
     for i, hist in enumerate(hists):
         xs, fs = hist.Render()
         xs = Shift(xs, shifts[i])
-        plt.bar(xs, fs, width=width, color='0.80', label=hist.name)
+        plt.bar(xs, fs, width=width, color=colors[i], label=hist.name)
 
-    Plot(root, axis, show)
+    Plot(root, **options)
 
 
 def Shift(xs, shift):
+    """Adds a constant to a sequence of values.
+
+    Args:
+      xs: sequence of values
+
+      shift: value to add
+
+    Returns:
+      sequence of numbers
+    """
     return [x+shift for x in xs]
 
 
-def Plot(root, axis=None, show=False):
-    # TODO: make the labelsize work and put a title on these plots
-    matplotlib.rc('axes', labelsize='xx-large', titlesize=20.0)
-    matplotlib.rc('legend', fontsize=20.0)
+def Plot(root, formats=None, **options):
+    """Generate plots in the given formats.
 
+    Args:
+      root: string filename root
+
+      formats: list of string formats
+
+      options: dictionary of options
+    """
+    title = options.get('title', '')
+    plt.title(title)
+
+    xlabel = options.get('xlabel', '')
+    plt.xlabel(xlabel)
+
+    ylabel = options.get('ylabel', '')
+    plt.ylabel(ylabel)
+
+    axis = options.get('axis', None)
     if axis:
         plt.axis(axis)
 
-    plt.legend(loc=2)
+    loc = options.get('loc', 0)
+    legend = options.get('legend', True)
+    if legend:
+        plt.legend(loc=loc)
 
+    show = options.get('show', False)
     if show:
         plt.show()
 
-    Save(root, 'eps')
-    Save(root, 'png')
+    if formats is None:
+        formats = ['eps', 'png']
+
+    for format in formats:
+        Save(root, format)
 
 
 def Save(root, format='eps'):
+    """Writes the current figure to a file in the given format.
+
+    Args:
+      root: string filename root
+
+      format: string format
+    """
     filename = '%s.%s' % (root, format)
     plt.savefig(filename, format=format)
 
 
-def Cdfs(cdfs, root, axis=None, show=False):
+def Cdfs(cdfs, root, **options):
     plt.clf()
 
-    styles = ['r-', 'b--']
-    widths = [3, 2]
-    colors = ['0.5', '0.0']
+    styles = options.get('styles', None)
+    if styles is None:
+        styles = InfiniteList('-')
+
+    widths = [2, 2]
+    colors = ['0.0', '0.0']
 
     for i, cdf in enumerate(cdfs):
         
         xs, ps = cdf.Render()
-        line = plt.plot(xs, ps, linewidth=widths[i], color=colors[i], label=cdf.name)
+        line = plt.plot(xs, ps,
+                        styles[i],
+                        linewidth=widths[i], 
+                        color=colors[i],
+                        label=cdf.name)
 
-    Plot(root, axis, show)
+    Plot(root, **options)
 
+class InfiniteList(list):
+    def __init__(self, val):
+        self.val = val
+
+    def __getitem__(self, index):
+        return self.val

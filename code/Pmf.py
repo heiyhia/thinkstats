@@ -75,6 +75,9 @@ class Pmf(object):
         self.d = d
         self.name = name
 
+    def GetDict(self):
+        return self.d
+
     def Prob(self, x):
         """Returns the probability that corresponds to value x.
 

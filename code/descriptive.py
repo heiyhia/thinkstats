@@ -16,7 +16,11 @@ class Pregnancies(first_baby.Pregnancies):
         self.mu = Mean(self.lengths)
         self.var = Var(self.lengths, self.mu)
 
-    def MakePmf(self, name=''):
+        self.lengths.sort()
+        self.trim = TrimmedMean(self.lengths)
+
+    def MakeDist(self, name=''):
+        """Makes the histogram, PMF and CDF of self.lengths."""
         self.hist = Pmf.MakeHist(self.lengths, name=name)
         self.pmf = self.hist.MakePmf()
         self.cdf = Cdf.MakeCdfFromDict(self.hist.GetDict(), name=name)
@@ -32,6 +36,22 @@ def Mean(t):
         float
     """
     return float(sum(t)) / len(t)
+
+
+def TrimmedMean(t, p=0.01):
+    """Computes the trimmed mean of a sequence of numbers.
+
+    Args:
+        t: sequence of numbers
+
+        p: fraction of values to trim off each end
+
+    Returns:
+        float
+    """
+    n = int(p * len(t))
+    t = t[n:-n]
+    return Mean(t)
 
 
 def Var(t, mu=None):
