@@ -349,7 +349,7 @@ of statistics, which include:
 that was designed explicitly with the goal of generating statistically
 valid inferences about the U.S. population.
 
-\item[Exploratory data analysis:] We will start by exploring the dataset
+\item[Exploratory data analysis:] We will start by exploring the data
 to get a sense of what questions were asked, what form the answers
 are in, and what limitations we might have to address.
 
@@ -706,7 +706,7 @@ logic applied to raw data.
 
 \item[summary statistic:] The result of a computation that reduces
 a dataset to a single number (or at least a smaller set of numbers)
-that captures some characteristic of the dataset.
+that captures some characteristic of the data.
 
 \item[apparent effect:] A measurement or summary statistic that
 suggests that something interesting is happening.
@@ -732,7 +732,7 @@ conventional wisdom, or controversial topics, or questions that have
 political consequences, and see if you can formulate a question that
 lends itself to statistical inquiry.
 
-Now start looking for datasets to help you address the
+Now start looking for data to help you address the
 question.  Governments are good sources because data from
 public research is often freely available\footnote{On the day
 I wrote this paragraph, a court in the UK ruled that the
@@ -750,7 +750,7 @@ can be harder to evaluate the quality of resources on the web.
 If it seems like someone has answered your question, look closely to
 see whether the answer is justified.  There might be flaws in the data
 or the analysis that make the conclusion unreliable.  In that case you
-could perform a different analysis of the same dataset, or look for a
+could perform a different analysis of the same data, or look for a
 better source of data.
 
 If you find a published paper that addresses your question, you
@@ -764,9 +764,199 @@ the data, or agree to certain terms of use.  Be persistent!
 
 \chapter{Descriptive statistics}
 
-Distributions
+\section{Means and averages}
 
-pmf
+In the previous chapter, I mentioned three summary statistics---mean,
+variance and median---without explaining what they are.  So before
+we go any farther, let's take care of that.
+
+If you have a sample of $n$ values, $x_i$, the mean, $\mu$, is
+the sum of the values divided by the number of values; in other words
+
+\[ \mu = \frac{1}{n} \sum_i x_i \]
+
+\begin{ex}
+For the exercises in this chapter, create a file named {\tt descriptive.py}.
+
+Write a Python function named {\tt Mean} that takes a sequence 
+of numbers and returns their mean.  Hint: the result should
+be a floating-point value even if the numbers are integers.
+\end{ex}
+
+The words ``mean'' and ``average'' are sometimes used interchangeably,
+but I will maintain this distinction:
+
+\begin{itemize}
+
+\item The ``mean'' of a sample is the summary statistic computed with
+  the previous formula.
+
+\item An ``average'' is one of many summary statistics you might
+  choose to describe the typical value, or the expected value, or the
+  {\bf central tendency} of a sample.  
+
+\end{itemize}
+
+Sometimes the mean is a good description of a set of values.  For
+example, apples are all pretty much the same size (at least the ones
+sold in supermarkets).  So if I buy 6 apples and the total weight is 3
+pounds, it would be a reasonable summary to say they are about a half
+pound each.
+
+But pumpkins are more diverse.  Suppose I grow several varieties in my
+garden, and one day I harvest three decorative pumpkins that are 1
+pound each, two pie pumpkins that are 3 pounds each, and one Atlantic
+Giant\textregistered~pumpkin that weighs 591 pounds.  The mean of
+this sample is 100 pounds, but if I told you ``The average pumpkin
+in my garden is 100 pounds,'' that would be wrong, or at least
+misleading.
+
+In this example, there is no meaningful average because
+there is no typical pumpkin.
+
+\section{Variance}
+
+If there is no single number that summarizes pumpkin weights,
+we can do a little better with two numbers: mean and {\bf variance}.
+
+In the same way that the mean is intended to describe the central
+tendency, variance is intended to describe the ``spread''.
+The variance of a set of values is
+
+\[ \sigma^2 = \frac{1}{n} \sum_i (x_i - \mu)^2 \]
+
+The term $x_i - \mu$ is called the ``deviation from the mean,'' so
+variance is the mean squared deviation, which is why it is denoted
+$\sigma^2$.  The square root of variance, $\sigma$, is called the {\bf
+  standard deviation}.
+
+\begin{ex}
+Write a function named {\tt Var} that takes a sequence 
+of numbers and returns their variance.
+
+Compute the variance of the pumpkin data by hand and use the result
+to write a unit test for {\tt Var}.  If you are not familiar with unit
+testing, see \url{wikipedia.org/wiki/Unit_testing} and
+\url{docs.python.org/library/unittest.html}.
+\end{ex}
+
+\begin{ex}
+Using code from \verb"first_baby.py", compute the variance
+of gestation time for first babies and others.  Does it look
+like the spread is the same for the two groups?
+\end{ex}
+
+\begin{ex}
+Compute the standard deviation of the pooled data (first babies
+and others).  How big is the difference between the
+means compared to the standard deviation?  What does this comparison
+suggest about the statistical significance of the difference?
+\end{ex}
+
+If you have prior experience, you might have seen a 
+formula for variance with $n-1$ in the denominator, rather than $n$.
+This statistic is called the ``sample variance,'' and it is used
+to estimate the variance in a population using a sample.  We will
+come back to this when we talk about estimation.
+
+
+\section{Distributions}
+
+Summary statistics are concise, but dangerous because they obscure
+the data.  The alternative is to look at the {\bf distribution} of the
+data, which describes how often each value appears.
+
+The most common representation of a distribution is a {\bf histogram},
+which is a graph that shows the frequency or probability
+of each value.  
+
+In this context, {\bf frequency} means the number of times a value
+appears in a dataset; it has nothing to do with the pitch of a sound
+or tuning of a radio signal.  A {\bf probability} is a frequency expressed
+as a fraction of the sample size, $n$.
+
+In Python, an efficient way to compute frequencies is with a dictionary.
+Given a sequence of values, $t$:
+
+\begin{verbatim}
+hist = {}
+for x in t:
+    hist[x] = hist.get(x, 0) + 1
+\end{verbatim}
+
+So {\tt hist} is a dictionary that maps from values to frequencies.
+To get from frequencies to probabilities, we divide through by $n$,
+which is called {\bf normalization}:
+
+\begin{verbatim}
+n = float(len(t))
+pmf = {}
+for x, freq in hist.items():
+    pmf[x] = hist[x] / n
+\end{verbatim}
+
+The normalized histogram is called a {\bf pmf}, which stands for
+``probability mass function;''  that is, it's a function that
+maps from values to probabilities (I'll explain ``mass'' later).
+
+It might be confusing to call a Python dictionary a function.  In
+mathematics, a function is a mapping from one set of values to
+another.  In Python, we {\em usually} represent mathematical functions
+with function objects, but in this case we are using a dictionary
+(which is also called a ``map,'' if that helps).
+
+\begin{ex}
+Create a file named {\tt Pmf.py} and write a definition for a class
+named {\tt Hist} that represents a histogram with a dictionary
+that maps from values to frequencies.
+
+Write a function named {\tt MakeHist} that takes a sequence of
+values and returns a Hist object.
+
+Write a method named {\tt Freq} that takes a value and returns
+the corresponding frequency, or 0
+if the value hasn't appeared.  Write unit tests for your code.
+\end{ex}
+
+
+\begin{ex}
+In {\tt Pmf.py}, write a definition for a class named {\tt Pmf} that
+represents a probability mass function with a dictionary that maps
+from values to probabilities.
+
+Write a function called {\tt MakeProb} that takes a sequence of
+values and returns their pmf.
+
+Write a method called {\tt Prob} that
+takes a value and returns the corresponding probability, or 0
+if the value has frequency 0.  Write unit tests to test your code.
+\end{ex}
+
+
+\section{Plotting}
+
+There are a number of Python packages for making figures and graphs.
+The one I will use in the book is {\tt pyplot}, which is part of
+the {\tt matplotlib} package at \url{matplotlib.sourceforge.net}.
+
+This package is include with many Python distributions.  To see whether
+you have it, launch the Python interpreter and run:
+
+\begin{verbatim}
+import matplotlib.pyplot as plt
+plt.pie([1,2,3])
+plt.show()
+\end{verbatim}
+
+If you have {\tt matplotlib} you should see a simple pie chart;
+otherwise you will have to install it.
+
+Histograms and pmfs are most often plotted as bar charts.  The
+{\tt pyplot} function to draw a bar chart is {\tt bar}.
+
+The following figure shows histograms of the pregnancy lengths for
+first babies and others.
+
 cdf
 
 percentiles
