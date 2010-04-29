@@ -112,6 +112,9 @@ class Pregnancies(Table):
     def GetFields(self):
         return [
             ('caseid', 1, 12, int),
+            ('nbrnaliv', 22, 22, int),
+            ('birthwgt_lb', 57, 58, int),
+            ('birthwgt_oz', 59, 60, int),
             ('prglength', 275, 276, int),
             ('outcome', 277, 277, int),
             ('birthord', 278, 279, int),
