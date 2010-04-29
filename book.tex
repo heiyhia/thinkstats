@@ -346,22 +346,24 @@ of statistics, which include:
 \begin{description}
 
 \item[Data collection:] We will use data from a large national survey
-that was designed explicitly with the goal of generating statistically
-valid inferences about the U.S. population.
+  that was designed explicitly with the goal of generating
+  statistically valid inferences about the U.S. population.
 
-\item[Exploratory data analysis:] We will start by exploring the data
-to get a sense of what questions were asked, what form the answers
-are in, and what limitations we might have to address.
+\item[Descriptive statistics:] We will generate statistics that
+  summarize the data concisely, and evaluate different ways to
+  visualize data.
 
-\item[Descriptive statistics:] We will generate statistics that summarize
-large datasets concisely.
+\item[Exploratory data analysis:] We will examine the data looking for
+  patterns, differences, and other features that address the questions
+  we are interested in.  At the same time we will check for
+  inconsistencies and identify limitations.
 
-\item[Hypothesis testing:] Where we see apparently effects (like a
-difference between two groups), we will evaluate whether the effect
-is likely to be real, or whether it might have happened by chance.
+\item[Hypothesis testing:] Where we see apparent effects (like a
+  difference between two groups), we will evaluate whether the effect
+  is likely to be real, or whether it might have happened by chance.
 
 \item[Estimation:] We will use measurements in the dataset to estimate
-characteristics of the general population.
+  characteristics of the general population.
 
 \end{description}
 
@@ -859,7 +861,6 @@ This statistic is called the ``sample variance,'' and it is used
 to estimate the variance in a population using a sample.  We will
 come back to this when we talk about estimation.
 
-
 \section{Distributions}
 
 Summary statistics are concise, but dangerous, because they obscure
@@ -982,7 +983,7 @@ point of view, this makes sense.  Babies are often born early, but
 seldom later than 42 weeks.  Also, the right side of the distribution is
 probably truncated because doctors often intervene after 42 weeks.
 
-\item[Outliers:] There are a small number of values far from the mode.
+\item[Outliers:] Values far from the mode are called {\bf outliers}.
 Some of these are just unusual cases, like babies born at 30 weeks.
 But many of them are probably due to errors, either in the reporting
 or recording of data.
@@ -993,6 +994,7 @@ Although histograms make some features apparent, they are usually not
 useful for comparing two distributions.  In this example, there are
 fewer ``first babies'' than ``others,'' so some of the apparent
 differences in the histograms are due to sample sizes.
+
 
 \section{Plotting PMFs}
 
@@ -1021,16 +1023,30 @@ Use the data from the NSFG to generate plots like the ones in this
 section.
 \end{ex}
 
-\section{Custom visualization}
+
+\section{Outliers}
+
+Investigating by hand.
+
+Error or unusual case?
+
+Correcting other errors (like the bump at 35 weeks)?
+   (use birth weight?)
+
+Trimmed mean and variance.
+
+Don't get carried away.
+
+
+\section{Other visualizations}
 
 Histograms and PMFs are useful for exploratory data analysis;
 once you have an idea what is going on, it is often useful to
 design a visualization that focuses on the apparent effect.
 
-In the NSFG data, the biggest differences
-in the distributions are near the mode.  So it makes sense to
-zoom in on that part of the graph, and to transform the data to
-emphasize differences.
+In the NSFG data, the biggest differences in the distributions are
+near the mode.  So it makes sense to zoom in on that part of the
+graph, and to transform the data to emphasize differences.
 
 The following figure shows the difference between the PMFs for weeks
 35-45.  I multiplied by 100 to express the differences in percentage
@@ -1044,23 +1060,50 @@ This figure makes the pattern clearer: first babies are
 less likely to be born in week 39, and somewhat more likely
 to be born in weeks 41 and 42.
 
-I am ignoring some of the smaller differences, but you might wonder
-whether any of these differences are statistically significant.
-We will come back to that question soon.
+
+\section{Relative risk}
+
+We started with the question, ``Do first babies arrive late?''  To
+make that more precise, let's say that a baby is early if it is born
+during Week 37 or earlier, on time if it is born during Week 38, 39 or
+40, and late if it is born during Week 41 or later.  Ranges like these
+that are used to group data are called {\bf buckets}.
+
+\begin{ex}
+
+Write functions named {\tt ProbEarly}, {\tt ProbOnTime} and
+{\tt ProbLate} that take a PMF and compute the fraction of births
+that fall into each bucket.  Hint: write a generalized function
+that these functions call.
+
+Make three PMFs, one for first babies, one for others, and one for
+all live births.  For each PMF, compute the probability of being
+born early, on time, or late.
+
+One way to summarize data like this is with a {\bf relative risk},
+which is a ratio of two probabilities.  For example, the probability
+that a first baby is born early is 18.2\%.  For other babies it is
+16.8\%, so the relative risk is 1.08.  That means that first babies
+are about 8\% more likely to be early.
+
+Write code to confirm those results, then compute the relative risks of
+being born on time and being late.
+
+\end{ex}
+
 
 \section{Conditional probability}
 
-Imagine that someone you know is pregnant, and it is the
-beginning of Week 39.  What is the chance that the baby will
-be born in the next week?  How much does the answer change if
-it's a first baby?
+Imagine that someone you know is pregnant, and it is the beginning of
+Week 39.  What is the chance that the baby will be born in the next
+week?  How much does the answer change if it's a first baby?
 
 We can answer these questions by computing a {\bf conditional
 probability}, which is a probability that depends on a condition.
 In this case, the condition is that we know the baby didn't arrive
 during Weeks 0--38.
 
-Here one way to do it:
+Here's one way to do it:
 
 \begin{enumerate}
 
@@ -1082,8 +1125,45 @@ Write a program that implements this algorithm and compute the
 conditional probability of $x = 39$ weeks for all pregnancies,
 first babies, and others.
 
-Based on these results, how would you answer the question
-from Chapter 1, ``Do first babies arrive late?''
+\end{ex}
+
+
+\section{Reporting results}
+
+At this point we have explored the data and seen several apparent
+effects.  For now, let's assume that these effects are real (but let's
+remember that it is an assumption).  How should we report these
+results?
+
+The answer might depend on who is asking the question.  For example,
+a scientist might be interested in any (real) effect, no matter how
+small.  A doctor might only care about effects that are
+{\bf clinically significant}; that is, differences that make a difference.
+A pregnant woman might be interested in results that are relevant to
+her, like the conditional probabilities in the previous section.
+
+How you report results might also depend on your goals.  If you are
+trying to demonstrate the significance of an effect, you might choose
+summary statistics, like relative risk, that emphasize differences.
+If you are trying to reassure a patient, you might choose statistics
+that put the differences in context.
+
+\begin{ex}
+
+Based on the results from the previous exercises, suppose you were
+asked to summarize what you learned about whether first
+babies arrive late.
+
+Which summary statistics would you use if you wanted to get a story
+on the evening news?  Which ones would you use if you wanted to
+reassure an anxious patient?
+
+Finally, imagine that you are Cecil Adams, author of {\it The Straight
+  Dope} (\url{straightdope.com}), and your job is to answer the
+question, ``Do first babies arrive late?''  Write a paragraph that
+uses your results to answer this question clearly, precisely, and
+accurately.
+
 \end{ex}
 
 

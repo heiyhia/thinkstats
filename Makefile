@@ -33,10 +33,10 @@ html:	book.tex header.html footer.html
 # the following line is a kludge to prevent imagen from seeing
 # the definitions in latexonly
 	#grep -v latexonly book.image.tex > a; mv a book.image.tex
-	#imagen -png book
+	imagen -png book
 	hacha book.html
 	cp up.png next.png back.png html
-	mv index.html book.css book*.html *motif.gif html
+	mv index.html book.css book*.html book*.png *motif.gif html
 
 DEST = /home/downey/public_html/greent/thinkstats
 
