@@ -9,4 +9,4 @@ all:
 WORKSPACE = /home/downey/workspace.thinkstats/ThinkStats
 
 grab:
-	rsync $(WORKSPACE)/*.py .
+	rsync -av --progress $(WORKSPACE)/*.py .
