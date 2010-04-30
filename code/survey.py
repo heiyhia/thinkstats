@@ -121,3 +121,14 @@ class Pregnancies(Table):
             ('finalwgt', 423, 440, float),
             ]
 
+def main(name):
+    resp = Respondents()
+    resp.ReadRecords()
+    print 'Number of respondents', len(resp.records)
+
+    preg = Pregnancies()
+    preg.ReadRecords()
+    print 'Number of pregnancies', len(preg.records)
+    
+if __name__ == '__main__':
+    main(*sys.argv)

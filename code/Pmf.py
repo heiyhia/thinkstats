@@ -33,25 +33,6 @@ class Hist(object):
         """
         return self.d.get(x, 0)
 
-    def Total(self):
-        """Returns the total of the frequencies in the map."""
-        total = sum(self.d.values())
-        return float(total)
-
-    def MakePmf(self, n=None):
-        """Makes a PMF object by normalizing the frequencies in the map.
-
-        Args:
-            n: float divisor; if None, computes the total of all frequencies.
-        """
-        n = n or self.Total()
-        
-        d = {}
-        for x, f in self.d.iteritems():
-            d[x] = f / n
-
-        return Pmf(d, self.name)
-
     def Render(self):
         """Generates a sequence of points suitable for plotting.
 
@@ -74,6 +55,22 @@ class Pmf(object):
             d = {}
         self.d = d
         self.name = name
+
+    def Normalize(self, denom=None):
+        """Normalizes this PMF so the sum of all probs is 1.
+
+        Args:
+            denom: float divisor; if None, computes the total of all probs
+        """
+        denom = denom or self.Total()
+        
+        for x, p in self.d.iteritems():
+            self.d[x] = p / denom
+    
+    def Total(self):
+        """Returns the total of the frequencies in the map."""
+        total = sum(self.d.values())
+        return float(total)
 
     def GetDict(self):
         return self.d
@@ -136,5 +133,18 @@ def MakePmf(t, name=''):
         Pmf object
     """
     hist = MakeHist(t, name)
-    pmf = hist.MakePmf()
+    return MakePmfFromHist(hist)
+
+def MakePmfFromHist(hist):
+    """Makes a PMF from a Hist object.
+
+    Args:
+        hist: Hist object
+
+    Returns:
+        Pmf object
+    """
+    d = dict(hist.GetDict())
+    pmf = Pmf(d, hist.name)
+    pmf.Normalize()
     return pmf

@@ -5,3 +5,8 @@ DEST = /home/downey/public_html/greent/thinkstats
 
 all:
 	cp $(FILES) $(DEST)
+
+WORKSPACE = /home/downey/workspace.thinkstats/ThinkStats
+
+grab:
+	rsync $(WORKSPACE)/*.py .
