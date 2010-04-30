@@ -150,7 +150,7 @@ code has the effect of generating a device-independent representation
 of a textbook, which can be converted to other formats and printed.
 
 The \LaTeX\ source for this book is available from
-\url{www.thinkstats.com}.
+\url{www.thinkstatsbook.com}.
 
 The cover for this book is based on a photo by Paul Friel
 (\url{flickr.com/people/frielp/}), who made it available under
@@ -593,18 +593,19 @@ in the Pregnancies table.
 \begin{enumerate}
 
 \item In the directory where you put {\tt survey.py} and the
-data files, create a file named \verb"first_baby.py" and
+data files, create a file named \verb"first.py" and
 type or paste in the following code:
 
 \begin{verbatim}
 import survey
-preg_table = survey.Pregnancies()
-print 'Number of pregnancies', len(preg_table.records)
+table = survey.Pregnancies()
+table.ReadRecords()
+print 'Number of pregnancies', len(table.records)
 \end{verbatim}
 
 The result should be 13593 pregnancies.
 
-\item Write a loop that iterates \verb"preg_table" and counts
+\item Write a loop that iterates \verb"table" and counts
 the number of live births.  Find the documentation of {\tt outcome}
 and confirm that your result is consistent with the summary
 in the documentation.
@@ -628,7 +629,7 @@ Note: For now we are ignoring the {\tt finalwgt} variable.
 \end{enumerate}
 
 You can download a solution to this exercise from
-\url{thinkstatsbook.com/survey.py}.
+\url{thinkstatsbook.com/first.py}.
 
 \end{ex}
 
@@ -640,7 +641,7 @@ you found that first babies are born about 13 hours later,
 on average.
 
 A difference like that is called an {\bf apparent effect};
-that is, there seems to be something going on, but we are not
+that is, there might be something going on, but we are not
 yet sure.  There are several questions we still want to ask:
 
 \begin{itemize}
@@ -778,11 +779,23 @@ the sum of the values divided by the number of values; in other words
 \[ \mu = \frac{1}{n} \sum_i x_i \]
 
 \begin{ex}
-For the exercises in this chapter, create a file named {\tt descriptive.py}.
+For the exercises in this chapter, create two file:
 
-Write a Python function named {\tt Mean} that takes a sequence 
-of numbers and returns their mean.  Hint: the result should
-be a floating-point value even if the numbers are integers.
+\begin{description}
+
+\item[{\tt thinkstats.py}]: This file will contain general-purpose
+functions we will use throughout the book.
+
+\item[{\tt descriptive.py}]: This file will contain code specific
+to the exercises in this chapter.
+
+\end{description}
+
+In {\tt thinkstats.py} write a Python function named {\tt Mean} that
+takes a sequence of numbers and returns their mean.  Hint: the result
+should be a floating-point value even if the numbers are integers.
+
+In {\tt descriptive.py} write code that tests {\tt Mean}.
 \end{ex}
 
 The words ``mean'' and ``average'' are sometimes used interchangeably,
@@ -833,18 +846,16 @@ $\sigma^2$.  The square root of variance, $\sigma$, is called the {\bf
   standard deviation}.
 
 \begin{ex}
-Write a function named {\tt Var} that takes a sequence 
-of numbers and returns their variance.
+In {\tt thinkstats.py} write a function named {\tt Var} that takes a
+sequence of numbers and returns their variance.
 
-Compute the variance of the pumpkin data by hand and use the result
-to write a unit test for {\tt Var}.  If you are not familiar with unit
-testing, see \url{wikipedia.org/wiki/Unit_testing} and
-\url{docs.python.org/library/unittest.html}.
+In {\tt descriptive.py} write code that
+computes the variance of the pumpkin data.
 \end{ex}
 
 \begin{ex}
-Using code from \verb"first_baby.py", compute the variance
-of gestation time for first babies and others.  Does it look
+Reusing code from {\tt survey.py} and {\tt first.py}, compute the
+variance of gestation time for first babies and others.  Does it look
 like the spread is the same for the two groups?
 \end{ex}
 
@@ -916,7 +927,7 @@ values and returns a Hist object.
 
 Write a method named {\tt Freq} that takes a value and returns
 the corresponding frequency, or 0
-if the value hasn't appeared.  Write unit tests for your code.
+if the value hasn't appeared.  Write tests for your code.
 \end{ex}
 
 
@@ -930,7 +941,7 @@ values and returns their pmf.
 
 Write a method called {\tt Prob} that
 takes a value and returns the corresponding probability, or 0
-if the value has frequency 0.  Write unit tests to test your code.
+if the value has frequency 0.  Write tests to test your code.
 \end{ex}
 
 
@@ -1010,14 +1021,14 @@ differ.  First babies seem to be less likely to arrive on time
 (week 39) and more likely to be a little late (weeks 41 and 42).
 
 \begin{ex}
-Create a file named {\tt plot.py} and write a function called
-{\tt Hist} that takes a Hist object and generates a bar chart
-using the {\tt pyplot} function {\tt bar}.
+Create a file named {\tt plot.py} and write a function called {\tt
+  Hist} that takes a Hist object and generates a bar chart using {\tt
+  pyplot.bar}.  This function should also work for Pmf objects.
 
-Write another function called {\tt Hists} that takes two Hist objects
-and generates side-by-side histograms like the figures in this section.
-You will have to read the {\tt pyplot} documentation to adjust the
-width and position of the bars.
+Write another function called {\tt Hists} that takes two Hists (or Pmfs)
+and generates side-by-side histograms like the figures in this
+section.  You will have to read the {\tt pyplot} documentation to
+adjust the width and position of the bars.
 
 Use the data from the NSFG to generate plots like the ones in this
 section.
@@ -1026,9 +1037,51 @@ section.
 
 \section{Outliers}
 
-Investigating by hand.
+Outliers are values that are far from the mode.  Outliers might
+be caused by errors in collecting or processing the data, or
+they might be legitimate, if unusual, measurements.
 
-Error or unusual case?
+It is always a good idea to check for outliers, and sometimes
+it is useful, and appropriate, to discard them.
+
+In the list of pregnancy lengths for live births, the 10 lowest values are
+
+\begin{verbatim}
+weeks  count
+0      1
+4      1
+9      1
+13     1
+17     2
+18     1
+19     1
+20     1
+21     2
+22     7
+\end{verbatim}
+
+Values below 20 weeks are certainly errors, and values higher than 30
+weeks are probably legitimate.  But there are a non-negligible number of
+values in between that are hard to interpret.
+
+On the other end, the 10 highest values are
+
+\begin{verbatim}
+weeks  count
+40     1116
+41     587
+42     328
+43     148
+44     46
+45     10
+46     1
+47     1
+48     7
+50     2
+\end{verbatim}
+
+Again, there are some values here that are almost certainly errors, but
+it is hard to know for sure.
 
 Correcting other errors (like the bump at 35 weeks)?
    (use birth weight?)
@@ -1071,6 +1124,7 @@ that are used to group data are called {\bf buckets}.
 
 \begin{ex}
 
+Create a file named {\tt risk.py}.
 Write functions named {\tt ProbEarly}, {\tt ProbOnTime} and
 {\tt ProbLate} that take a PMF and compute the fraction of births
 that fall into each bucket.  Hint: write a generalized function
@@ -1099,7 +1153,7 @@ Week 39.  What is the chance that the baby will be born in the next
 week?  How much does the answer change if it's a first baby?
 
 We can answer these questions by computing a {\bf conditional
-probability}, which is a probability that depends on a condition.
+probability}, which is (ahem!) a probability that depends on a condition.
 In this case, the condition is that we know the baby didn't arrive
 during Weeks 0--38.
 
@@ -1121,9 +1175,16 @@ conditional PMF.
 \end{enumerate}
 
 \begin{ex}
-Write a program that implements this algorithm and compute the
-conditional probability of $x = 39$ weeks for all pregnancies,
-first babies, and others.
+Create a file named {\tt conditional.py}.
+Write a program that implements this algorithm and computes the
+probability that a baby will be born during Week 39, given that
+it was not born prior to Week 39.
+
+Generalize this program to compute the
+probability that a baby will be born during Week $x$, given that
+it was not born prior to Week $x$, for all $x$.
+
+Plot this value as a function of $x$ for first babies and others.
 
 \end{ex}
 
@@ -1169,6 +1230,18 @@ accurately.
 
 
 \chapter{Cumulative distribution functions}
+
+\section{The limits of PMFs}
+
+(Something uniform?)
+
+Birth weights
+
+Interarrival time between babies
+
+(something lognormal?)
+
+Sizes of towns
 
 \section{Percentiles}
 
