@@ -6,7 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import matplotlib
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplot
 
 # customize some matplotlib attributes
 matplotlib.rc('figure', figsize=(5, 4))
@@ -33,10 +33,10 @@ def Hist(hist, root, **options):
 
       options: dictionary of options
     """
-    plt.clf()
+    pyplot.clf()
 
     xs, fs = hist.Render()
-    plt.bar(xs, fs)
+    pyplot.bar(xs, fs, align='center')
 
     Plot(root, **options)
 
@@ -51,7 +51,7 @@ def Hists(hists, root, **options):
 
       options: dictionary of options
     """
-    plt.clf()
+    pyplot.clf()
 
     width = 0.4
     shifts = [-width, 0.0]
@@ -60,7 +60,7 @@ def Hists(hists, root, **options):
     for i, hist in enumerate(hists):
         xs, fs = hist.Render()
         xs = Shift(xs, shifts[i])
-        plt.bar(xs, fs, width=width, color=colors[i], label=hist.name)
+        pyplot.bar(xs, fs, width=width, color=colors[i], label=hist.name)
 
     Plot(root, **options)
 
@@ -90,26 +90,26 @@ def Plot(root, formats=None, **options):
       options: dictionary of options
     """
     title = options.get('title', '')
-    plt.title(title)
+    pyplot.title(title)
 
     xlabel = options.get('xlabel', '')
-    plt.xlabel(xlabel)
+    pyplot.xlabel(xlabel)
 
     ylabel = options.get('ylabel', '')
-    plt.ylabel(ylabel)
+    pyplot.ylabel(ylabel)
 
     axis = options.get('axis', None)
     if axis:
-        plt.axis(axis)
+        pyplot.axis(axis)
 
     loc = options.get('loc', 0)
     legend = options.get('legend', True)
     if legend:
-        plt.legend(loc=loc)
+        pyplot.legend(loc=loc)
 
     show = options.get('show', False)
     if show:
-        plt.show()
+        pyplot.show()
 
     if formats is None:
         formats = ['eps', 'png']
@@ -127,11 +127,12 @@ def Save(root, format='eps'):
       format: string format
     """
     filename = '%s.%s' % (root, format)
-    plt.savefig(filename, format=format)
+    print 'Writing', filename
+    pyplot.savefig(filename, format=format)
 
 
 def Cdfs(cdfs, root, **options):
-    plt.clf()
+    pyplot.clf()
 
     styles = options.get('styles', None)
     if styles is None:
@@ -143,7 +144,7 @@ def Cdfs(cdfs, root, **options):
     for i, cdf in enumerate(cdfs):
         
         xs, ps = cdf.Render()
-        line = plt.plot(xs, ps,
+        line = pyplot.plot(xs, ps,
                         styles[i],
                         linewidth=widths[i], 
                         color=colors[i],

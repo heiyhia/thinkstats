@@ -3,7 +3,7 @@ import survey
 
 class Test(unittest.TestCase):
 
-    def testRespondents(self):
+    def testMean(self):
         resp = survey.Respondents()
         resp.ReadRecords()
         self.assertEquals(len(resp.records), 7643)
