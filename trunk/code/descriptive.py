@@ -18,7 +18,8 @@ import plot
 def Process(table, name):
     """Runs various analyses on this table."""
     first.Process(table)
-    
+    table.name = name
+
     table.var = thinkstats.Var(table.lengths, table.mu)
     table.trim = thinkstats.TrimmedMean(table.lengths)
 

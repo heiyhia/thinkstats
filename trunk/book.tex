@@ -1233,28 +1233,54 @@ accurately.
 
 \section{The limits of PMFs}
 
-(Something uniform?)
+In general PMFs work well if the number of different values is less than
+about 50.  But as the number of possible values increases, the probability
+associated with each value gets smaller and the effect of random noise
+increases.
 
-Birth weights
+For example, we might be interested in the distribution of birth
+weights.  In the NSFG, the integer variables \verb"birthwgt_lb" and
+\verb"birthwgt_oz" encode birth weight in pounds and ounces.  The following
+figure shows the PMF of these values, converted to total weight in ounces,
+for first babies and others.
 
-Interarrival time between babies
+\beforefig
+\centerline{\includegraphics[height=2.5in]{code/nsfg_birthwgt_pmf.eps}}
+\afterfig
 
-(something lognormal?)
+Overall, these distributions resemble the familiar ``bell curve,'' with
+many values near the mean and a few values much higher and lower.
 
-Sizes of towns
+But parts of this figure are hard to interpret.  There are many spikes
+and valleys, and some apparent differences between the distributions,
+but it hard to tell which of these features are significant.  Also, it
+is hard to see overall patterns; for example, which distribution do
+you think has the higher mean?
+
+Some of these problems can be mitigated by {\bf binning} the data;
+that is, dividing the data into non-overlapping ranges, called
+``bins,'' and counting the number of points in each bin.  Binning can
+be useful, but it is tricky to get the size of the bin right.  If
+they are big enough to smooth out the noise, they might also smooth out
+useful information.
+
+An alternative that avoids these problems is the {\bf cumulative
+distribution function}, or {\bf CDF}.  But before we can get to that,
+we have to talk about percentiles.
+
 
 \section{Percentiles}
 
-If you have ever taken a standardized test, you probably got your
+If you have taken a standardized test, you probably got your
 results in the form of a raw score and a {\bf percentile rank}.
 In this context, the percentile rank is the fraction of people who
 scored lower than you (or the same).  So if you are ``in the 90th
 percentile,'' you did as well as or better than 90\% of the people who
-took the exam (congratulations!).
+took the exam (good job!).
 
-If you had a sequence of test scores, {\tt scores},
-and a particular value, \verb"your_score", you could compute
-your percentile rank like this:
+Here's how you could compute the percentile rank of a value,
+\verb"your_score", relative to the scores in the sequence {\tt
+  scores}:
 
 \begin{verbatim}
 def PercentileRank(scores, your_score):
@@ -1269,8 +1295,9 @@ def PercentileRank(scores, your_score):
 %
 % see score_example.py
 %
-For example, if the scores were 55, 66, 77, 88 and 99, and you got
-the 88, then your percentile rank is {\tt 100 * 4 / 5} which is 80.
+For example, if the scores in the sequence were 55, 66, 77, 88 and 99,
+and you got the 88, then your percentile rank would be {\tt 100 * 4 / 5}
+which is 80.
 
 If you are given a value, it is easy to find its percentile rank; going
 the other way is slightly harder.  If you are given a percentile rank
@@ -1292,11 +1319,13 @@ distribution of exam scores, the 50th percentile is 77.
 \begin{ex}
 This implementation of {\tt Percentile} is not very efficient.  A
 better approach is to use the percentile rank to compute the index
-of the element.  Write a version of the function that uses this
-approach.
+of the element.  Write a version of {\tt Percentile} that uses this
+algorithm.
 \end{ex}
 
 \begin{ex}
+This exercise is optional.
+
 If you only want to compute one percentile, it is not efficient
 to sort the scores.  A better option is the selection algorithm,
 which you can read about at \url{wikipedia.org/wiki/Selection_algorithm}.
@@ -1317,8 +1346,8 @@ in the distribution.  To evaluate $CDF(x)$ for a particular value of
 $x$, we compute the fraction of the values in the sample less than (or
 equal to) $x$.
 
-Here's what that looks like as a Python function that takes
-a sample, {\tt t}, and a value, {\tt x}:
+Here's what that looks like as a Python function that takes a sample,
+{\tt t}, and a value, {\tt x}:
 
 \begin{verbatim}
 def Cdf(t, x):
@@ -1331,9 +1360,8 @@ def Cdf(t, x):
 \end{verbatim}
 
 This function should look familiar; it is almost identical to {\tt
-  PercentileRank}.  The CDF is the function that maps values to their
-percentile rank (in the range 0-100) or, more often, their
-cumulative probability (in the range 0-1).
+  PercentileRank}, except that the result is in a probability in the
+range 0--1 rather than a percentile rank in the range 0--100.
 
 As an example, suppose a sample has the values ${1, 2, 2, 3, 5}$.
 Here are some values from its CDF:
@@ -1347,7 +1375,7 @@ CDF(4) &=& 0.8    \\
 CDF(5) &=& 1    \\
 \end{eqnarray*}
 %
-Notice that we can evaluate the CDF for any value of $x$, not just
+We can evaluate the CDF for any value of $x$, not just
 values that appear in the sample.
 If $x$ is less than the smallest value in the sample, $CDF(x)$ is 0.
 If $x$ is greater than the largest value, $CDF(x)$ is 1.
@@ -1358,7 +1386,7 @@ Here is a graphical representation of this CDF.
 \centerline{\includegraphics[height=2.5in]{code/example_cdf.eps}}
 \afterfig
 
-The function {\tt Cdf} above is efficient enough if we only want
+The function {\tt Cdf}, above, is efficient enough if we only want
 to evaluate the CDF at one point.  But there are several operations
 we might want to perform on CDFs:
 
@@ -1379,8 +1407,7 @@ the CDF.
 
 It is not obvious what data structures we should use to implement
 these operations; there are several reasonable choices.  In the
-following exercise I recommend an option that is simple and efficient
-(enough).
+following exercise I recommend an option that is simple and efficient.
 
 \begin{ex}
 Create a file named {\tt Cdf.py} and write a definition for a class
@@ -1390,7 +1417,7 @@ in the sample, and {\tt ps} which is a list of probabilities that
 correspond to the values in {\tt xs}.
 
 Write a simple constructor that takes {\tt xs} and {\tt ps} as
-parameters, then write two factory functions:
+parameters, then write two functions:
 
 \begin{description}
 
@@ -1426,40 +1453,71 @@ Write a function that plots the CDF with the {\tt pyplot} function
 {\tt plot}.  Confirm that your plot looks like the figure above.
 
 You can download unit tests for this exercise from
-\url{thinkstatsbook.com/cdf_test.py}.  You can download a solution
+\url{thinkstatsbook.com/Cdf_test.py}.  You can download a solution
 from \url{thinkstatsbook.com/Cdf.py}.
 
 \end{ex}
 
+
 \section{Back to the survey data}
 
-The following figure shows the CDFs of pregnancy length
+The following figure shows the CDFs of birth weight
 for first babies and others in the NSFG dataset.
 
 \beforefig
-\centerline{\includegraphics[height=2.5in]{code/nsfg_cdf.eps}}
+\centerline{\includegraphics[height=2.5in]{code/nsfg_birthwgt_cdf.eps}}
 \afterfig
 
-This figure makes apparent where the difference between the
-distributions is greatest: in weeks 40, 41, and 42.  Except for these
-three weeks, the distributions are almost identical.
+This figure makes the shape of the distributions, and the differences
+between them, much clearer.  We can see that...
 
-Specifically, first babies seem less likely to arrive after 39
-weeks, and slightly more likely to arrive before.  Remember that
-the mean gestation period for first babies is slightly higher,
-so this is the {\tt opposite} of the effect we expected!
+reading percentiles from CDFs
 
-How can that be?  If first babies are less likely to be born late,
-how can the mean be greater?
+\begin{ex}
+Compute some percentiles and percentile ranks.
 
 
-percentiles
+\end{ex}
+
+
+\section{Interarrival times}
+
+New Zealand birth data?
+
+
+
+\section{The Normal Distribution}
+
+The birth weight CDF has the characteristic sigma-shaped curve of the
+{\bf normal distribution}, also known as the Gaussian distribution.
+Strictly speaking, the normal distribution is {\bf continuous}, which means
+it is defined for all real values; the birth weight data is discrete,
+because it only contains integer values.  But the normal distribution
+is often a good approximation of discrete data.
+
+
 
 moments
 
 modes
 
-   multimodal distributions (artefact examples: heights, gestation)
+   multimodal distributions (artifact examples: heights, gestation)
+
+
+
+
+(Something uniform?)
+
+Birth weights
+
+Interarrival time between babies
+
+(something lognormal?)
+
+Sizes of towns
+
+
+
 
 \printindex
 
