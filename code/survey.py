@@ -110,6 +110,16 @@ class Pregnancies(Table):
         self.ReadFile(filename, self.GetFields(), Pregnancy)
 
     def GetFields(self):
+        """Gets information about the fields to extract from the survey data.
+
+        Documentation of the fields is at
+        http://nsfg.icpsr.umich.edu/cocoon/WebDocs/NSFG/public/index.htm
+
+        Returns:
+            sequence of (name, start, end, type) tuples
+        """
+
+
         return [
             ('caseid', 1, 12, int),
             ('nbrnaliv', 22, 22, int),

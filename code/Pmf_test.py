@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
 
     def testMakePmf(self):
         t = [1, 2, 2, 3, 5]
-        pmf = Pmf.MakePmf(t)
+        pmf = Pmf.MakePmfFromList(t)
         self.checkPmf(pmf)
 
 

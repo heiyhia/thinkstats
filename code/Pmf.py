@@ -121,7 +121,7 @@ def MakeHist(t, name=''):
     return hist
 
 
-def MakePmf(t, name=''):
+def MakePmfFromList(t, name=''):
     """Makes a PMF from an unsorted sequence of values.
 
     Args:
