@@ -768,6 +768,7 @@ the data, or agree to certain terms of use.  Be persistent!
 \chapter{Descriptive statistics}
 
 \section{Means and averages}
+\label{mean}
 
 In the previous chapter, I mentioned three summary statistics---mean,
 variance and median---without explaining what they are.  So before
@@ -971,13 +972,15 @@ in the {\tt pyplot} documentation.
 Histograms and pmfs are most often plotted as bar charts.  The
 {\tt pyplot} function to draw a bar chart is {\tt bar}.
 
-The following figure shows histograms of the pregnancy lengths for
+Figure~\ref{nsfg_hist} shows histograms of the pregnancy lengths for
 first babies and others.
 
-\beforefig
+\begin{figure}
 % descriptive.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_hist.eps}}
-\afterfig
+\caption{Histogram of pregnancy lengths.}
+\label{nsfg_hist}
+\end{figure}
 
 Histograms are useful because they make the following features immediately
 apparent:
@@ -1011,12 +1014,15 @@ differences in the histograms are due to sample sizes.
 \section{Plotting PMFs}
 
 We can solve that problem by normalizing the distributions---that
-is, dividing through by the sample sizes---to generate the PMFs:
+is, dividing through by the sample sizes---to generate the PMFs.
+Figure~\ref{nsfg_pmf} shows the result.
 
-\beforefig
+\begin{figure}
 % descriptive.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_pmf.eps}}
-\afterfig
+\caption{PMF of pregnancy lengths.}
+\label{nsfg_pmf}
+\end{figure}
 
 Using the PMF, we can see more clearly where the distributions
 differ.  First babies seem to be less likely to arrive on time
@@ -1103,14 +1109,16 @@ In the NSFG data, the biggest differences in the distributions are
 near the mode.  So it makes sense to zoom in on that part of the
 graph, and to transform the data to emphasize differences.
 
-The following figure shows the difference between the PMFs for weeks
+Figure~\ref{nsfg_diffs} shows the difference between the PMFs for weeks
 35-45.  I multiplied by 100 to express the differences in percentage
 points.
 
-\beforefig
+\begin{figure}
 % ???
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_ratios.eps}}
-\afterfig
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_diffs.eps}}
+\caption{Difference in percentage, by week.}
+\label{nsfg_diffs}
+\end{figure}
 
 This figure makes the pattern clearer: first babies are
 less likely to be born in week 39, and somewhat more likely
@@ -1231,6 +1239,84 @@ accurately.
 \end{ex}
 
 
+\section{Mean and variance of PMFs}
+
+In Section~\ref{mean} we computed the mean of a sample by adding up
+the elements and dividing by $n$.  If you are given a PMF, you can
+still compute the mean, but the process is slightly different:
+
+\[ \mu = \sum_i p_i x_i \]
+
+where the $x_i$ are the unique values in the PMF and $p_i = PMF(x_i)$.
+Similarly, you can compute variance like this:
+
+\[ \sigma^2 = \sum_i p_i (x_i - mu)^2\]
+
+\begin{ex}
+In {\tt Pmf.py}, add methods named {\tt Mean} and {\tt Var} that compute
+the mean and variance of a Pmf.
+
+To test these methods, check that they are consistent with the
+functions {\tt Mean} and {\tt Var} you wrote in {\tt thinkstats.py}.
+\end{ex}
+
+
+\section{The class size paradox}
+
+At many American colleges and universities, the student-to-faculty
+ratio is about 10:1.  But students are often surprised to discover
+that their average class size is (much) bigger than 10.  There
+are two reasons for the discrepancy:
+
+\begin{itemize}
+
+\item Students typically take 4--5 classes per semester, but
+professors often teach 1 or 2.
+
+\item The number of students who enjoy a small class is small,
+but the number who suffer in a large class is large.
+
+\end{itemize}
+
+The first effect is obvious (at least once it is pointed out);
+the second is more subtle.  So let's look at an example.  Suppose
+that a college offers 65 classes in a given semester, with the
+following distribution of sizes:
+
+\begin{verbatim}
+Sizes        Count
+-----        -----
+ 0- 4          0
+ 5- 9          8
+10-14          8
+15-19         14
+20-24          4
+25-29          6
+30-34         12
+35-39          8
+40-44          3
+45-49          2
+\end{verbatim}
+
+If you ask the Dean for the average class size, he would
+construct a PMF, compute the mean, and report that the
+average class size is 24.
+
+But if you survey a group of students, ask them how many
+students are in their classes, and compute the mean, you would
+conclude that the average class size is 29.
+
+\begin{ex}
+Build a PMF of these data and compute the mean.  Now compute the
+average class size as perceived by students.
+
+Note: since the data have been rounded off, you can use the mid-point
+of each range.  
+\end{ex}
+
+
+\section{Glossary}
+
 
 \chapter{Cumulative distribution functions}
 
@@ -1243,29 +1329,31 @@ increases.
 
 For example, we might be interested in the distribution of birth
 weights.  In the NSFG, the integer variables \verb"birthwgt_lb" and
-\verb"birthwgt_oz" encode birth weight in pounds and ounces.  The following
-figure shows the PMF of these values, converted to total weight in ounces,
-for first babies and others.
+\verb"birthwgt_oz" encode birth weight in pounds and ounces.
+Figure~\ref{nsfg_birthwgt_pmf} shows the PMF of these values,
+converted to total weight in ounces, for first babies and others.
 
-\beforefig
+\begin{figure}
 % cumulative.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_pmf.eps}}
-\afterfig
+\caption{PMF of birth weights.}
+\label{nsfg_birthwgt_pmf}
+\end{figure}
 
 Overall, these distributions resemble the familiar ``bell curve,'' with
 many values near the mean and a few values much higher and lower.
 
 But parts of this figure are hard to interpret.  There are many spikes
-and valleys, and some apparent differences between the distributions,
-but it hard to tell which of these features are significant.  Also, it
+and valleys, and some apparent differences between the distributions.
+But it hard to tell which of these features are significant.  Also, it
 is hard to see overall patterns; for example, which distribution do
 you think has the higher mean?
 
-Some of these problems can be mitigated by {\bf binning} the data;
+These problems can be mitigated by {\bf binning} the data;
 that is, dividing the domain into non-overlapping intervals and counting
 the number of values in each ``bin.''  Binning can be useful, but it is
 tricky to get the size of the bins right.  If they are big enough to
-smooth out the noise, they might also smooth out useful information.
+smooth out noise, they might also smooth out useful information.
 
 An alternative that avoids these problems is the {\bf cumulative
 distribution function}, or {\bf CDF}.  But before we can get to that,
@@ -1321,9 +1409,9 @@ distribution of exam scores, the 50th percentile is 77.
 
 \begin{ex}
 This implementation of {\tt Percentile} is not very efficient.  A
-better approach is to use the percentile rank to compute the index
-of the element.  Write a version of {\tt Percentile} that uses this
-algorithm.
+better approach is to use the percentile rank to compute the index of
+the corresponding percentile.  Write a version of {\tt Percentile} that
+uses this algorithm.
 \end{ex}
 
 \begin{ex}
@@ -1359,14 +1447,15 @@ def Cdf(t, x):
         if value <= x:
             count += 1.0
 
-    return count / len(t)
+    prob = count / len(t)
+    return prob
 \end{verbatim}
 
 This function should look familiar; it is almost identical to {\tt
   PercentileRank}, except that the result is in a probability in the
 range 0--1 rather than a percentile rank in the range 0--100.
 
-As an example, suppose a sample has the values ${1, 2, 2, 3, 5}$.
+As an example, suppose a sample has the values $\{1, 2, 2, 3, 5\}$.
 Here are some values from its CDF:
 
 \begin{eqnarray*}
@@ -1383,12 +1472,17 @@ values that appear in the sample.
 If $x$ is less than the smallest value in the sample, $CDF(x)$ is 0.
 If $x$ is greater than the largest value, $CDF(x)$ is 1.
 
-Here is a graphical representation of this CDF.
+Figure~\ref{example_cdf} is a graphical representation of this CDF.
 
-\beforefig
+\begin{figure}
 % Cdf_test.py
 \centerline{\includegraphics[height=2.5in]{workspace/example_cdf.eps}}
-\afterfig
+\caption{Example of a CDF.}
+\label{example_cdf}
+\end{figure}
+
+The CDF of a sample is a step function.  In the next chapter we
+will see distributions whose CDFs are continuous functions.  
 
 The function {\tt Cdf}, above, is efficient enough if we only want
 to evaluate the CDF at one point.  But there are several operations
@@ -1397,15 +1491,13 @@ we might want to perform on CDFs:
 \begin{description}
 
 \item[Evaluate:] Given a value $x$, evaluate $CDF(x)$ to get a
-probability $p$.  We can use this operation to compute percentile
-ranks.
+  probability $p$.  This operation computes percentile ranks.
 
-\item[Invert:] Given a probability $p$, find
-the value $x$ so that $CDF(x) = p$.  We can use this operation
-to compute percentiles.
+\item[Invert:] Given a probability $p$, find the value $x$ so that
+  $CDF(x) = p$.  This operation computes percentiles.
 
-\item[Render:] Generate a sequence of points suitable for plotting
-the CDF.
+\item[Render:] Generate a sequence of points suitable for plotting the
+  CDF.
 
 \end{description}
 
@@ -1450,28 +1542,27 @@ lists should have two elements for each unique value in the distribution.
 
 \end{description}
 
-Test your code by computing the CDF of the values ${1, 2, 2, 3, 5}$.
+Test your code by computing the CDF of the values $\{1, 2, 2, 3, 5\}$.
 Test {\tt Prob} and {\tt Value} using the examples in this section.
 
 Write a function that plots the CDF with the {\tt pyplot} function
 {\tt plot}.  Confirm that your plot looks like the figure above.
 
-You can download unit tests for this exercise from
-\url{thinkstatsbook.com/Cdf_test.py}.  You can download a solution
-from \url{thinkstatsbook.com/Cdf.py}.
-
+You can download a solution from \url{thinkstatsbook.com/Cdf.py}.
 \end{ex}
 
 
 \section{Back to the survey data}
 
-The following figure shows the CDFs of birth weight for first babies
-and others in the NSFG dataset.
+Figure~\ref{nsfg_birthwgt_cdf} shows the CDFs of birth weight for
+first babies and others in the NSFG dataset.
 
-\beforefig
+\begin{figure}
 % cumulative.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_cdf.eps}}
-\afterfig
+\caption{CDF of birth weights.}
+\label{nsfg_birthwgt_cdf}
+\end{figure}
 
 This figure makes the shape of the distributions, and the differences
 between them, much clearer.  We can see that first babies are slightly
@@ -1496,79 +1587,246 @@ in the two distributions?
 \end{ex}
 
 
+\section{Conditional distributions}
 
-\section{Closed-form distributions}
+A {\bf conditional distribution} is the distribution of a subset of
+the data which is selected according to a condition.
 
-The distributions we have seen so far are sometimes called {\bf
+For example, if you are above average in weight, but way above average
+in height, then you might be relatively light for your height.  Here's
+how you could make that claim more precise.
+
+\begin{enumerate}
+
+\item Select a cohort of people who are the same height as you (within
+some range).
+
+\item Find the CDF of weight for those people.
+
+\item Find the rank percentile of your weight in that distribution.
+
+\end{enumerate}
+
+
+\begin{ex}
+Find out how tall (long, actually) you were at birth.  If you don't
+know, call your mother again.  Find the CDF of birth weight for
+people who were the same height, and compute your percentile rank
+in that CDF.
+
+Now find the rank percentile of your height conditioned on your weight.
+\end{ex}
+
+
+\section{Age group ranking}
+
+Percentile ranks are useful for comparing measurements from different
+tests, or tests applied to different groups.
+
+For example, people who compete in foot races are usually grouped by
+age and gender.  To compare people in different groups, you can convert
+race times to percentile ranks.
+
+\begin{ex}
+
+I recently ran in the 27th Anniversary Edition James Joyce Ramble 10K
+in Dedham MA.  The results are available from
+\url{coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
+Go to that page and find my results.  I came in 97th in a field
+of 1633, so what is my percentile rank in the field?
+
+In my division (M4049 means ``male between 40 and 49 years of age'')
+I came in 26th out of 256.  What is my percentile rank in my division?
+What does that tell you about my division?
+
+If I am still running in 10 years (and I hope I am), I will be in
+the M5059 division.  Assuming that my percentile rank in my division
+is the same, how much slower should I expect to be?
+
+I maintain a friendly rivalry with a student of mine who is in the
+F2039 division.  How fast does she have to run her next 10K to
+``beat'' me in terms of percentile ranks?
+
+\end{ex}
+
+\section{Random numbers}
+
+CDFs are also useful for generating random numbers
+with a given distribution.  Here's how:
+
+\begin{itemize}
+
+\item Choose a random probability in the range 0--1.
+
+\item Use {\tt Cdf.Value} to find the value in the distribution
+that corresponds to the probability you chose.
+
+\end{itemize}
+
+It might not be obvious why this works, but since it is easier
+to implement than explain, let's try it out.
+
+\begin{ex}
+
+Add a method to the Cdf class, called {\tt sample}, that takes
+an integer {\tt n} and returns a list of $n$ values chosen at
+random from the distribution.  Hint: use {\tt random.random}.
+
+Using the distribution of birth weights from the NSFG, generate a
+random sample with 1000 elements.  Compute the CDF of the sample.
+Make a plot that shows the original CDF and the CDF of the random
+sample.  For large values of $n$, the distributions should be
+the same.
+
+\end{ex}
+
+This process, generating a random sample based on a measured sample,
+is called {\bf resampling}.
+
+
+\section{Summary statistics revisited}
+
+Once you have computed a CDF, it is easy to compute other summary
+statistics.  The median is just the 50th percentile\footnote{You might
+see other definitions of the median.  In particular,
+some sources suggest that if you have an even number of elements in
+a sample, the median is the average of the middle two elements.
+This is an unnecessary special case, and it has the odd effect of
+generating a value that is not in the sample.  As far
+as I'm concerned, the median is the 50th percentile.  Period.}.
+The 25th and 75th percentiles are often used to check whether
+a distribution is symmetric, and their difference, which is called
+the {\bf interquartile range} measures the spread.
+
+\begin{ex}
+Compute the 25th, 50th, and 75th percentiles of the birth weight
+CDF.  Do these values suggest that the distribution is symmetric?
+
+Add a method to {\tt Cdf}, called {\tt Interquartile}, that computes
+the interquartile range.
+\end{ex}
+
+
+\section{Glossary}
+
+
+
+\chapter{Continuous distributions}
+
+The distributions we have used so far are called {\bf
   empirical distributions} because they are based on empirical
 observations.
 
-An alternative is what I will call a {\bf closed-form distribution},
-which is characterized by a CDF that can be expressed as a closed-form
-function.  Many real world phenomena can be approximated by
-closed-form distributions, which is why they are useful.
+The alternative is a {\bf continuous distribution}, which is
+characterized by a CDF that is a continuous function (as opposed to a
+step function).  Many real world phenomena can be approximated by
+continuous distributions, which is why they are useful.
 
-For example, if you observe a mass of radioactive material with an
-instrument that can detect decay events, the distribution of times
-between events will most likely fit an exponential distribution.  The
-same is true for any series of events where an event is equally likely
-at any time.
+\section{The exponential distribution}
+
+We will start with the exponential distribution because it is
+easy to work with.  In the real world, exponential distributions
+come up when we look at a series of events and measure the
+times between events, which are called {\bf interarrival times}.
+If the events are equally likely to occur at any time, the distribution
+of interarrival times tends to look like an exponential distribution.
 
 The CDF of the exponential distribution is:
 
 \[ CDF(x) = 1 - e^{-\lambda x} \]
 
-The parameter, $\lambda$, determines the mean and variance of the
-distribution.  This equation can be used to derive a simple visual
-test for whether a dataset can be well approximated by an exponential
-distribution.  All you have to do is plot the {\bf complementary
-  distribution} on a log-$y$ scale.
+The parameter, $\lambda$, determines the shape of the
+distribution.  Figure~\ref{expo_cdf} shows what this CDF looks like with
+$\lambda = 2$.
 
-The complementary distribution (CCDF) is just $1 - CDF(x)$; 
-if you plot the complementary distribution of a dataset
-that you think is exponential, you expect to see a function
-like:
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/expo_cdf.eps}}
+\caption{CDF of exponential distribution.}
+\label{expo_cdf}
+\end{figure}
 
-\[ y = CCDF(x) \sim e^{-\lambda x} \]
+In general, the mean of an exponential distribution is $1 / \lambda$,
+so the mean of this distribution is 0.5.  The median is $log(2) / \lambda$,
+which is roughly 0.35.
+
+To see an example of a distribution that is approximately exponential,
+we will look at the interarrival time of babies.
+On December 18, 1997, 44 babies were born in a hospital in Brisbane,
+Australia\footnote{This example is based on information and data from
+  Dunn, ``A Simple Dataset for Demonstrating Common Distributions,''
+  Journal of Statistics Education v.7, n.3 (1999).}.  The times of
+birth for all 44 babies were reported in the local paper; you can
+download the data from \url{thinkstatsbook.com/babyboom.dat}.
+
+Figure~\ref{interarrivals} shows the CDF of the interarrival times
+in minutes.  It seems to have the general shape of an exponential
+distribution, but how can we tell?
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/interarrivals.eps}}
+\caption{Interarrival times.}
+\label{interarrivals}
+\end{figure}
+
+One way is to plot the complementary CDF, which is $1 - CDF(x)$, on a
+log-$y$ scale.  For data from an exponential distribution, the result
+is a straight line.  Let's see why that works...
+
+If you plot the complementary CDF of a dataset that you think is
+exponential, you expect to see a function like:
+
+\[ y = \sim e^{-\lambda x} \]
 
 If you take the log of both sides of this equation, you get:
 
 \[ \log y \sim -\lambda x \]
 
-So on a log-$y$ scale the CCDF should look like a straight line
+So on a log-$y$ scale the complementary CDF is a straight line
 with slope $-\lambda$.
 
-\begin{ex}
-
-As an example, I will analyze the time of
-birth for 44 babies born in a 24-hour period in a hospital in
-Brisbane, Australia.\footnote{This example is based on information
-  and data from Dunn, ``A Simple Dataset for Demonstrating Common
-  Distributions,'' Journal of Statistics Education v.7, n.3 (1999).
-You can download a file with this data from 
-\url{thinkstatsbook.com/babyboom.dat}.}.
-
-Using the list of birth times, I computed the ``interarrival times;''
-that is, the times between successive births.  The following figure
-shows the CCDF of these values.  The graph on the right is on a
-log-$y$ scale.  It is not particularly straight, which suggests that
+Figure~\ref{interarrivals_logy}
+shows the complementary CDF on a
+log-$y$ scale.  It is not exactly straight, which suggests that
 the exponential model is only an approximation of the observed
 process.  Most likely the underlying assumption---that a birth is
 equally likely at any time of day---is not exactly true.
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/interarrivals_logy.eps}}
+\caption{Interarrival times.}
+\label{interarrivals_logy}
+\end{figure}
+
+\begin{ex}
+For small values of $n$, we don't expect an empirical distribution
+to fit a continuous distribution exactly.  So one way to evaluate
+the quality of fit is to generate a sample from a continuous
+distribution and see how well it matches the data.
+
+The function {\tt expovariate} in the {\tt random} module
+generates random values from an exponential distribution with
+a given value of $\lambda$.
+
+Use it to generate 44 values from an exponential distribution with
+mean 32.6.  Plot the complementary CDF on a log-$y$ scale and compare
+it to Figure~\ref{interarrivals_logy}.
+
+Hint: use the function {\tt pyplot.yscale} to set the scale of the
+$y$ axis.
 \end{ex}
 
 \begin{ex}
-Use the function {\tt expovariate} in the {\tt random} module
-to generate 44 values from an exponential distribution with
-mean 32.6.  Plot the CCDF on linear and log-$y$ scales and compare
-it to the figure above.  
+Most people don't know what time they were born, but most people know
+their birthday.
 
-Transform the data yourself or use pyplot options
-
+Collect the birthdays of the students in your class, sort them, and
+compute the interarrival times.  Plot the CDF of the interarrival
+times and the complementary CDF on a log-$y$ scale.  Does it look like
+an exponential distribution?
 \end{ex}
 
 
-\section{Pareto distributions}
+\section{The Pareto distribution}
 
 The Pareto distribution is named after the economist Vilfredo
 Pareto, who used it to describe the distribution of wealth
@@ -1620,9 +1878,11 @@ from these two distributions:
 
 XXX HEIGHT CDF.eps
 
-%\beforefig
+%\begin{figure}
 %\centerline{\includegraphics[width=5.5in]{workspace/height_cdf.eps}}
-%\afterfig
+%\caption{CDFs with the same mean and different tail behavior.}
+%\label{height_cdf}
+%\end{figure}
 
 The figure on the left is on a log-$x$ scale.  It shows that the
 median and lower bounds of the distributions are the same, but
@@ -1733,6 +1993,27 @@ because it only contains integer values.  But the normal distribution
 is often a good approximation of discrete data.
 
 
+\chapter{Hypothesis testing}
+
+When something unusual happens, people often say something
+like, ``Wow!  What were the chances of {\em that}!''  This question
+makes sense because we have an intuitive sense that some things
+are more likely than others.  But this intuition doesn't
+always hold up to scrutiny.
+
+For example, supposed I toss a coin 10 times, and after each I write
+down H for heads and T for tails.  If the result was a sequence like
+THHTHTTTHH, you would't be to surprised.  But if the result was
+HHHHHHHHHH, you would say something
+like, ``Wow!  What were the chances of {\em that}!''
+
+In this case, I could answer your question.  The probability of
+getting the sequence HHHHHHHHHH is one
+in 1024.  But here's the catch, the probability of getting THHTHTTTHH
+is also one in 1024, and likewise for any other sequence.
+
+it comes up
+heads every time, you would be surprised.  
 
 moments
 
@@ -1753,17 +2034,9 @@ Interarrival time between babies
 
 Sizes of towns
 
-\section{Conditional distributions}
 
-\begin{ex}
-Find your height and weight at birth and compute your percentile
-rank for height, percentile
-rank for weight, percentile
-rank for height conditioned on weight, and
-percentile
-rank for weight conditioned on height.
-\end{ex}
-
+Gelman's paradox
+\url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
 
 \printindex
 
