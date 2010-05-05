@@ -34,7 +34,7 @@
 \newstyle{p+p}{margin-top:1em;margin-bottom:1em}
 \newstyle{img}{border:0px}
 
-% change the arrows
+% change the arrows in the HTML version
 \setlinkstext
   {\imgsrc[ALT="Previous"]{back.png}}
   {\imgsrc[ALT="Up"]{up.png}}
@@ -975,7 +975,8 @@ The following figure shows histograms of the pregnancy lengths for
 first babies and others.
 
 \beforefig
-\centerline{\includegraphics[height=2.5in]{code/nsfg_hist.eps}}
+% descriptive.py
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_hist.eps}}
 \afterfig
 
 Histograms are useful because they make the following features immediately
@@ -1013,7 +1014,8 @@ We can solve that problem by normalizing the distributions---that
 is, dividing through by the sample sizes---to generate the PMFs:
 
 \beforefig
-\centerline{\includegraphics[height=2.5in]{code/nsfg_pmf.eps}}
+% descriptive.py
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_pmf.eps}}
 \afterfig
 
 Using the PMF, we can see more clearly where the distributions
@@ -1106,7 +1108,8 @@ The following figure shows the difference between the PMFs for weeks
 points.
 
 \beforefig
-\centerline{\includegraphics[height=2.5in]{code/nsfg_ratios.eps}}
+% ???
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_ratios.eps}}
 \afterfig
 
 This figure makes the pattern clearer: first babies are
@@ -1245,7 +1248,8 @@ figure shows the PMF of these values, converted to total weight in ounces,
 for first babies and others.
 
 \beforefig
-\centerline{\includegraphics[height=2.5in]{code/nsfg_birthwgt_pmf.eps}}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_pmf.eps}}
 \afterfig
 
 Overall, these distributions resemble the familiar ``bell curve,'' with
@@ -1258,11 +1262,10 @@ is hard to see overall patterns; for example, which distribution do
 you think has the higher mean?
 
 Some of these problems can be mitigated by {\bf binning} the data;
-that is, dividing the data into non-overlapping ranges, called
-``bins,'' and counting the number of points in each bin.  Binning can
-be useful, but it is tricky to get the size of the bin right.  If
-they are big enough to smooth out the noise, they might also smooth out
-useful information.
+that is, dividing the domain into non-overlapping intervals and counting
+the number of values in each ``bin.''  Binning can be useful, but it is
+tricky to get the size of the bins right.  If they are big enough to
+smooth out the noise, they might also smooth out useful information.
 
 An alternative that avoids these problems is the {\bf cumulative
 distribution function}, or {\bf CDF}.  But before we can get to that,
@@ -1276,7 +1279,7 @@ results in the form of a raw score and a {\bf percentile rank}.
 In this context, the percentile rank is the fraction of people who
 scored lower than you (or the same).  So if you are ``in the 90th
 percentile,'' you did as well as or better than 90\% of the people who
-took the exam (good job!).
+took the exam.
 
 Here's how you could compute the percentile rank of a value,
 \verb"your_score", relative to the scores in the sequence {\tt
@@ -1383,7 +1386,8 @@ If $x$ is greater than the largest value, $CDF(x)$ is 1.
 Here is a graphical representation of this CDF.
 
 \beforefig
-\centerline{\includegraphics[height=2.5in]{code/example_cdf.eps}}
+% Cdf_test.py
+\centerline{\includegraphics[height=2.5in]{workspace/example_cdf.eps}}
 \afterfig
 
 The function {\tt Cdf}, above, is efficient enough if we only want
@@ -1461,32 +1465,265 @@ from \url{thinkstatsbook.com/Cdf.py}.
 
 \section{Back to the survey data}
 
-The following figure shows the CDFs of birth weight
-for first babies and others in the NSFG dataset.
+The following figure shows the CDFs of birth weight for first babies
+and others in the NSFG dataset.
 
 \beforefig
-\centerline{\includegraphics[height=2.5in]{code/nsfg_birthwgt_cdf.eps}}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_cdf.eps}}
 \afterfig
 
 This figure makes the shape of the distributions, and the differences
-between them, much clearer.  We can see that...
-
-reading percentiles from CDFs
+between them, much clearer.  We can see that first babies are slightly
+lighter throughout the distribution, with a larger discrepancy above 
+the mean.
 
 \begin{ex}
-Compute some percentiles and percentile ranks.
+This exercise is optional.  In the figure above, you might notice
+a sequence of equally-spaced values with higher frequency than
+their neighbors.  See if you can figure out what it going on.
+Hint: look at the PMF of \verb"birthwgt_oz".
+\end{ex}
 
+\begin{ex}
+How much did you weigh at birth?  If you don't know, call your mother
+or someone else who knows.  Using the pooled data (all live births),
+compute the distribution of birth weights and use it to find your
+percentile rank.  If you were a first baby, find your percentile rank
+in the distribution for first babies.  Otherwise use the distribution
+for others.  How big is the difference between your percentile ranks
+in the two distributions?
+\end{ex}
+
+
+
+\section{Closed-form distributions}
+
+The distributions we have seen so far are sometimes called {\bf
+  empirical distributions} because they are based on empirical
+observations.
+
+An alternative is what I will call a {\bf closed-form distribution},
+which is characterized by a CDF that can be expressed as a closed-form
+function.  Many real world phenomena can be approximated by
+closed-form distributions, which is why they are useful.
+
+For example, if you observe a mass of radioactive material with an
+instrument that can detect decay events, the distribution of times
+between events will most likely fit an exponential distribution.  The
+same is true for any series of events where an event is equally likely
+at any time.
+
+The CDF of the exponential distribution is:
+
+\[ CDF(x) = 1 - e^{-\lambda x} \]
+
+The parameter, $\lambda$, determines the mean and variance of the
+distribution.  This equation can be used to derive a simple visual
+test for whether a dataset can be well approximated by an exponential
+distribution.  All you have to do is plot the {\bf complementary
+  distribution} on a log-$y$ scale.
+
+The complementary distribution (CCDF) is just $1 - CDF(x)$; 
+if you plot the complementary distribution of a dataset
+that you think is exponential, you expect to see a function
+like:
+
+\[ y = CCDF(x) \sim e^{-\lambda x} \]
+
+If you take the log of both sides of this equation, you get:
+
+\[ \log y \sim -\lambda x \]
+
+So on a log-$y$ scale the CCDF should look like a straight line
+with slope $-\lambda$.
+
+\begin{ex}
+
+As an example, I will analyze the time of
+birth for 44 babies born in a 24-hour period in a hospital in
+Brisbane, Australia.\footnote{This example is based on information
+  and data from Dunn, ``A Simple Dataset for Demonstrating Common
+  Distributions,'' Journal of Statistics Education v.7, n.3 (1999).
+You can download a file with this data from 
+\url{thinkstatsbook.com/babyboom.dat}.}.
+
+Using the list of birth times, I computed the ``interarrival times;''
+that is, the times between successive births.  The following figure
+shows the CCDF of these values.  The graph on the right is on a
+log-$y$ scale.  It is not particularly straight, which suggests that
+the exponential model is only an approximation of the observed
+process.  Most likely the underlying assumption---that a birth is
+equally likely at any time of day---is not exactly true.
+\end{ex}
+
+\begin{ex}
+Use the function {\tt expovariate} in the {\tt random} module
+to generate 44 values from an exponential distribution with
+mean 32.6.  Plot the CCDF on linear and log-$y$ scales and compare
+it to the figure above.  
+
+Transform the data yourself or use pyplot options
 
 \end{ex}
 
 
-\section{Interarrival times}
+\section{Pareto distributions}
 
-New Zealand birth data?
+The Pareto distribution is named after the economist Vilfredo
+Pareto, who used it to describe the distribution of wealth
+(see \url{wikipedia.org/wiki/Pareto_distribution}).  Since then,
+people have used it to describe
+a variety of phenomena in the natural and social sciences,
+including sizes of cities and towns, sand particles
+and meteorites, forest fires and earthquakes.
+
+The Pareto distribution is characterized by a CDF with the following
+functional form:
+
+\[ CDF(x) = 1- \left( \frac{x}{x_m} \right) ^{-\alpha} \]
+
+The parameters $x_m$ and $\alpha$ determine the location and shape of
+the distribution.  $x_m$ is the minimum possibile quantity.
+
+Values from a Pareto distribution often have these properties:
+
+\begin{description}
+
+\item[Long tail:] Pareto distributions contain many small values
+and a few very large ones.  
+
+\item[80/20 rule:] The large values in a Pareto distribution are
+so large that they add up to a disproportionate share of the total.
+In the context of wealth, the 80/20 rule says that 20\% of the
+people own 80\% of the wealth.
+
+\item[Scale free:] If a distribution has a central tendency,
+the typical value is also called a {\bf scale}.  For example, the
+great majority of adult humans are between 100 and 200 cm in height,
+so we could say that the scale of human height is a few hundred
+centimeters.  But for long-tailed distributions, there is no
+similar range (bounded by a factor of two) that contains the
+bulk of the distribution.  So we say that these distributions
+are {\bf scale-free}.
+
+\end{description}
+
+To get a sense of the difference between the Pareto and Gaussian
+distributions, imagine what the world would be like if the
+distribution of human height were Pareto.  Using the same minimum
+height, $x_m = 100$ cm, we could choose $\alpha = 1.7$, so that the median
+height is about 150 cm.
+
+Here are empirical CDFs for samples with $n=9000$ drawn 
+from these two distributions:
+
+XXX HEIGHT CDF.eps
+
+%\beforefig
+%\centerline{\includegraphics[width=5.5in]{workspace/height_cdf.eps}}
+%\afterfig
+
+The figure on the left is on a log-$x$ scale.  It shows that the
+median and lower bounds of the distributions are the same, but
+the Pareto distribution has a longer tail.  The figure on the
+right is on a log-log scale.  The Pareto distribution is a straight
+line except in the extreme tail, where it is noisy because of
+the limitations of a finite sample.
+
+If you generate 6 billion random values from the Gaussian distribution
+shown in the figure, you would guess that the tallest person in the
+world is about 255 cm.  In fact, the tallest currently living person,
+Leonid Stadnyk, is 259 cm.
+
+But if you generate 6 billion random values from the Pareto
+distribution, you will see that the tallest person in the world could
+easily be taller than 80.5 km, which would technically make him or her
+an astronaut, at least in the United States (see
+\url{wikipedia.org/wiki/Earth's_atmosphere}).  That's what it means to
+be scale-free!
+
+There is a simple visual test that can indicate whether an empirical
+distribution is well-characterized by a Pareto distribution: on a
+log-log scale, the CCDF looks like a straight line.  The derivation is
+similar to what we saw in the previous section.
+
+The equation for the CCDF is:
+
+\[ y = 1 - cdf(x) \sim \left( \frac{x}{x_m} \right) ^{-\alpha} \]
+
+Taking the log of both sides yields:
+
+\[ \log y \sim -\alpha (\log x - \log x_m ) \]
+
+So if you plot $\log y$ versus $\log x$, it should look like a
+straight line with slope $-\alpha$ and intercept $-\alpha \log x_m$.
+
+
+\begin{ex}
+The distribution of populations for cities and towns has been proposed
+as an example of a real-world phenomenon that can be described
+with a Pareto distribution.
+
+The U.S. Census Bureau publishes data on the population of every
+incorporated city and town in the United States.  I have written a
+small program that downloads this data and converts it into a
+convenient form.  You can download it from
+\url{thinkstatsbook.com/populations.py}.  
+
+\begin{enumerate}
+
+\item Read over the program to make sure you know what it does and then
+  write a program that computes and plots the distribution of
+  populations for the 14593 cities and towns in the dataset.
+
+\item In your {\tt Dist} class, write a function called {\tt quantile}
+  that takes a percentile as a parameter and returns the corresponding
+  quantity.  What is the median size in this distribution (the
+  quantity that corresponds to the 50th percentile)?  What are the
+  25th and 75th percentiles?
+
+\item Plot the CDF on linear and log-$x$ scales so you can get a sense
+  of the shape of the distribution.  Then plot the CCDF on a log-log
+  scale to see if it has the characteristic shape of a Pareto
+  distribution.
+
+\item Use your plot to estimate values for the parameters $x_m$ and
+  $\alpha$.  Then use the function {\tt paretovariate} in the {\tt random}
+  module to generate 14593 values from a Pareto distribution with the
+  parameters you estimated in the previous problem.  Plot the CCDF on
+  a log-log scale and compare it the CCDF of the observed data.
+
+\end{enumerate}
+
+What conclusion do you draw about the distribution of sizes
+for cities and towns?
+
+\end{ex}
+
+\begin{ex}
+
+The Weibull distribution is a generalization of the exponential
+distribution that comes up in failure analysis
+(see \url{wikipedia.org/wiki/Weibull_distribution}).
+
+Can you find a transformation that makes a Weibull distribution look
+like a straight line?  What do the slope and intercept of the
+line indicate?
+
+Use {\tt random.weibullvariate} to generate a sample from a
+Weibull distribution and use it to test your transformation.
+
+\end{ex}
+
 
 
 
 \section{The Normal Distribution}
+
+Most common
+
+Not closed form, but good enough
 
 The birth weight CDF has the characteristic sigma-shaped curve of the
 {\bf normal distribution}, also known as the Gaussian distribution.
@@ -1516,7 +1753,16 @@ Interarrival time between babies
 
 Sizes of towns
 
+\section{Conditional distributions}
 
+\begin{ex}
+Find your height and weight at birth and compute your percentile
+rank for height, percentile
+rank for weight, percentile
+rank for height conditioned on weight, and
+percentile
+rank for weight conditioned on height.
+\end{ex}
 
 
 \printindex
