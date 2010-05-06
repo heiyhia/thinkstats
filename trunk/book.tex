@@ -185,6 +185,36 @@ Version \theversion
 
 \section*{Programming is a pedagogic wedge}
 
+Operational thinking vs relational thinking
+
+example: counting frequencies
+
+Notation: math notation and programming languages are formal languages
+designed for different purposes.
+
+Often consistent, so translation can be straightforward.
+
+Other examples are surprisingly different.
+
+Math notation is concise and general-purpose but suffers from
+ambiguity, sloppy typing, implied scoping, overloading, poor
+readability
+
+barrier for some people (more so than programming languages?)
+
+Programs are executable, and therefore testable, which gives students
+immediate feedback on their understanding of concepts.
+
+Also lend themselves to empirical tests.
+
+Probability is often tricky; hard to ``prove'' a result because it
+is easy to write a bad proof.
+
+A simulation can be a more compelling proof -- easier to read and check
+correctness.  Erdos and the Monty Hall problem.
+
+Comment on my vocabulary and notation: generally consistent with the
+Wikipedia.
 
 
 Allen B. Downey \\
@@ -1768,11 +1798,11 @@ distribution, but how can we tell?
 \label{interarrivals}
 \end{figure}
 
-One way is to plot the complementary CDF, which is $1 - CDF(x)$, on a
+One way is to plot the complementary CDF, $1 - CDF(x)$, on a
 log-$y$ scale.  For data from an exponential distribution, the result
 is a straight line.  Let's see why that works...
 
-If you plot the complementary CDF of a dataset that you think is
+If you plot the complementary CDF (CCDF) of a dataset that you think is
 exponential, you expect to see a function like:
 
 \[ y = \sim e^{-\lambda x} \]
@@ -1781,11 +1811,11 @@ If you take the log of both sides of this equation, you get:
 
 \[ \log y \sim -\lambda x \]
 
-So on a log-$y$ scale the complementary CDF is a straight line
+So on a log-$y$ scale the CCDF is a straight line
 with slope $-\lambda$.
 
 Figure~\ref{interarrivals_logy}
-shows the complementary CDF on a
+shows the CCDF of the interarrivals on a
 log-$y$ scale.  It is not exactly straight, which suggests that
 the exponential model is only an approximation of the observed
 process.  Most likely the underlying assumption---that a birth is
@@ -1799,7 +1829,7 @@ equally likely at any time of day---is not exactly true.
 
 \begin{ex}
 For small values of $n$, we don't expect an empirical distribution
-to fit a continuous distribution exactly.  So one way to evaluate
+to fit a continuous distribution exactly.  One way to evaluate
 the quality of fit is to generate a sample from a continuous
 distribution and see how well it matches the data.
 
@@ -1808,7 +1838,7 @@ generates random values from an exponential distribution with
 a given value of $\lambda$.
 
 Use it to generate 44 values from an exponential distribution with
-mean 32.6.  Plot the complementary CDF on a log-$y$ scale and compare
+mean 32.6.  Plot the CCDF on a log-$y$ scale and compare
 it to Figure~\ref{interarrivals_logy}.
 
 Hint: use the function {\tt pyplot.yscale} to set the scale of the
@@ -1820,97 +1850,49 @@ Most people don't know what time they were born, but most people know
 their birthday.
 
 Collect the birthdays of the students in your class, sort them, and
-compute the interarrival times.  Plot the CDF of the interarrival
-times and the complementary CDF on a log-$y$ scale.  Does it look like
+compute the interarrival times in days.  Plot the CDF of the interarrival
+times and the CCDF on a log-$y$ scale.  Does it look like
 an exponential distribution?
 \end{ex}
 
 
 \section{The Pareto distribution}
 
-The Pareto distribution is named after the economist Vilfredo
-Pareto, who used it to describe the distribution of wealth
-(see \url{wikipedia.org/wiki/Pareto_distribution}).  Since then,
-people have used it to describe
-a variety of phenomena in the natural and social sciences,
-including sizes of cities and towns, sand particles
+The Pareto distribution is named after the economist Vilfredo Pareto,
+who used it to describe the distribution of wealth (see
+\url{wikipedia.org/wiki/Pareto_distribution}).  Since then, people
+have used it to describe a variety of phenomena in the natural and
+social sciences, including sizes of cities and towns, sand particles
 and meteorites, forest fires and earthquakes.
 
-The Pareto distribution is characterized by a CDF with the following
-functional form:
+The Pareto distribution is characterized by the following CDF:
 
 \[ CDF(x) = 1- \left( \frac{x}{x_m} \right) ^{-\alpha} \]
 
 The parameters $x_m$ and $\alpha$ determine the location and shape of
-the distribution.  $x_m$ is the minimum possibile quantity.
+the distribution.  $x_m$ is the minimum possibile value.
+Figure~\ref{pareto_cdf} shows the CDF of a Pareto distribution with
+parameters $x_m = 0.5$ and $\alpha = 1$.
 
-Values from a Pareto distribution often have these properties:
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/pareto_cdf.eps}}
+\caption{CDF of a Pareto distribution.}
+\label{pareto_cdf}
+\end{figure}
 
-\begin{description}
-
-\item[Long tail:] Pareto distributions contain many small values
-and a few very large ones.  
-
-\item[80/20 rule:] The large values in a Pareto distribution are
-so large that they add up to a disproportionate share of the total.
-In the context of wealth, the 80/20 rule says that 20\% of the
-people own 80\% of the wealth.
-
-\item[Scale free:] If a distribution has a central tendency,
-the typical value is also called a {\bf scale}.  For example, the
-great majority of adult humans are between 100 and 200 cm in height,
-so we could say that the scale of human height is a few hundred
-centimeters.  But for long-tailed distributions, there is no
-similar range (bounded by a factor of two) that contains the
-bulk of the distribution.  So we say that these distributions
-are {\bf scale-free}.
-
-\end{description}
-
-To get a sense of the difference between the Pareto and Gaussian
-distributions, imagine what the world would be like if the
-distribution of human height were Pareto.  Using the same minimum
-height, $x_m = 100$ cm, we could choose $\alpha = 1.7$, so that the median
-height is about 150 cm.
-
-Here are empirical CDFs for samples with $n=9000$ drawn 
-from these two distributions:
-
-XXX HEIGHT CDF.eps
-
-%\begin{figure}
-%\centerline{\includegraphics[width=5.5in]{workspace/height_cdf.eps}}
-%\caption{CDFs with the same mean and different tail behavior.}
-%\label{height_cdf}
-%\end{figure}
-
-The figure on the left is on a log-$x$ scale.  It shows that the
-median and lower bounds of the distributions are the same, but
-the Pareto distribution has a longer tail.  The figure on the
-right is on a log-log scale.  The Pareto distribution is a straight
-line except in the extreme tail, where it is noisy because of
-the limitations of a finite sample.
-
-If you generate 6 billion random values from the Gaussian distribution
-shown in the figure, you would guess that the tallest person in the
-world is about 255 cm.  In fact, the tallest currently living person,
-Leonid Stadnyk, is 259 cm.
-
-But if you generate 6 billion random values from the Pareto
-distribution, you will see that the tallest person in the world could
-easily be taller than 80.5 km, which would technically make him or her
-an astronaut, at least in the United States (see
-\url{wikipedia.org/wiki/Earth's_atmosphere}).  That's what it means to
-be scale-free!
+The median of this distribution is $x_m 2^{1/alpha} = 1$, but the
+95th percentile is 10.  By contrast, the exponential distribution
+with median 1 has 95th percentile of only 1.5.
 
 There is a simple visual test that can indicate whether an empirical
 distribution is well-characterized by a Pareto distribution: on a
 log-log scale, the CCDF looks like a straight line.  The derivation is
 similar to what we saw in the previous section.
 
-The equation for the CCDF is:
+If you plot a the CCDF of a sample from a Pareto distibution on a
+linear scale, we expect to see a function like:
 
-\[ y = 1 - cdf(x) \sim \left( \frac{x}{x_m} \right) ^{-\alpha} \]
+\[ y \sim \left( \frac{x}{x_m} \right) ^{-\alpha} \]
 
 Taking the log of both sides yields:
 
@@ -1919,17 +1901,271 @@ Taking the log of both sides yields:
 So if you plot $\log y$ versus $\log x$, it should look like a
 straight line with slope $-\alpha$ and intercept $-\alpha \log x_m$.
 
+\begin{ex}
+
+The {\tt random} module provides {\tt paretovariate},
+which generates random values from a Pareto distribution.  It takes
+a parameter for $\alpha$, but no parameter for $x_m$.  What is
+the default value for $x_m$?
+
+Write a wrapper function named {\tt paretovariate} that takes $\alpha$
+and $x_m$ as parameters and uses {\tt random.paretovariate} to
+generate values from a two-parameter Pareto distribution.
+
+Use your function to generate a sample from a Pareto distribution.
+Compute the CCDF and plot it on a log-log scale.  Is it a straight
+line?  What is the slope?
+
+\end{ex}
+
+\begin{ex}
+
+Zipf's law is an observation about how often different words are used.
+The most common words have very high frequencies, but there are many
+unusual words, like ``hapaxlegomenon,'' that appear only a few times.
+Zipf's law predicts that in a body of text, called a ``corpus,'' the
+distribution of word frequencies is roughly Pareto.
+
+Find a large corpus in any language, in electronic
+format.  Count how many times each word appears.  Find the CCDF of the
+word counts and plot it on a log-log scale.  Does Zipf's law hold?
+What is the value of $\alpha$, approximately?
+
+\end{ex}
+
+\begin{ex}
+
+The Weibull distribution is a generalization of the exponential
+distribution that comes up in failure analysis
+(see \url{wikipedia.org/wiki/Weibull_distribution}).
+
+Can you find a transformation that makes a Weibull distribution look
+like a straight line?  What do the slope and intercept of the
+line indicate?
+
+Use {\tt random.weibullvariate} to generate a sample from a
+Weibull distribution and use it to test your transformation.
+
+\end{ex}
+
+
+
+
+\section{The Normal Distribution}
+
+\newcommand{\erf}{\mathrm{erf}}
+
+The normal distribution, also called Gaussian, is the most
+commonly used because it describes so many phenomena, at least
+approximately.  It turns out that there is a good reason for
+its ubiquity, which we will get to soon.
+
+The normal distribution has many properties that make it amenable for
+analysis, but unfortunately the CDF is not one of them.  Unlike the
+other distributions we have looked at, there is no closed-form
+expression for the normal CDF; the most common alternative is to write
+it in terms of a special function called the {\bf error function},
+written $\erf$:
+
+\[ erf(x) = \frac{2}{\sqrt{\pi}} \int_{-\infty}^x e^{-t^2} dt \]
+
+\[ CDF(x) = \frac{1}{2} \left[ 1 +
+  \erf \left( \frac{x - \mu}{\sigma \sqrt{2}} \right) \right] \]
+
+The parameters $\mu$ and $\sigma$ determine the mean and standard
+deviation of the distribution.
+
+If these formulas make your eyes hurt, don't worry; they are
+easy to implement in Python.  There are many fast and accurate ways
+to approximate $\erf$.  You can download one of them from
+\url{thinkstatsbook.com/erf.py}, which provides functions
+named {\tt erf} and {\tt NormalCdf}.
+
+Figure~\ref{normal_cdf} shows the CDF of the normal distribution
+with parameters $\mu=2.0$ and $\sigma=0.5$.  The sigmoid shape of
+this curve a recognizable characteristic of a normal distribution.
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/normal_cdf.eps}}
+\caption{CDF of a Normal distribution.}
+\label{normal_cdf}
+\end{figure}
+
+In the previous chapter we looked at the distribution of birth
+weights in the NSFG.  Figure~\ref{nsfg_birthwgt_normal} shows the
+empirical CDF of weights for all live births and the CDF of
+a normal distribution with the same mean and variance.
+
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_model.eps}}
+\caption{CDF of birth weights.}
+\label{nsfg_birthwgt_normal}
+\end{figure}
+
+The normal distribution is a good model for this dataset.  A {\bf
+  model} is a useful simplification.  In this case it is useful
+because we can summarize the entire distribution with just two
+numbers, $\mu=116.5$ and $\sigma=19.9$, and the resulting error
+(difference between the model and the data) is small.
+
+Below the 10th percentile there is a discrepancy between the data
+and the model; there are more light babies than we would expect in
+a normal distribution.  If we are interested in studying preterm
+babies, it would be important to get this part of the distribution
+right.  In that case it might not be appropriate to use the normal
+model.
+
+\begin{ex}
+The Wechsler Adult Intelligence Scale is a test that is intended
+to measure intelligence\footnote{Whether it does or not is a
+fascinating controversy that I invite you to investiage at your
+leisure.}.  Results are normalized so that the distribution of scores
+in the general population is normal with $\mu=100$ and $\sigma=15$.
+
+Use {\tt erf.NormalCdf} to investigate the frequency of rare events
+in a normal distribution.
+What fraction of the population has an IQ greater than the mean?
+What fraction is over 115?  130?  145?
+
+A ``six-sigma'' event is a value that exceeds the mean by 6 standard
+deviations, so a six-sigma IQ is 190.  In a world of 6 billion people,
+how many do we expect to have an IQ of 190 or more?
+\end{ex}
+
+
+\begin{ex}
+Plot the CDF of pregnancy lengths for all live births.  Does it
+look like a normal distribution?
+
+Compute the mean and variance of the sample and plot the normal
+distribution with the same parameters.  Is the normal distribution a
+good model for this data?  If you had to summarize this distribution
+with two statistics, what statistics would you choose?
+\end{ex}
+
+
+\section{Normal probability plot}
+
+For the exponential, Pareto and Weibull distributions, there are
+simple transformations we can use to test whether a continuous
+distribution is a good model of a dataset.
+
+For the normal distribution there is no such transformation, but
+there is an alternative called a {\bf normal probability plot}.
+
+It is based on {\bf rankits}: if you generate $n$
+values from a normal distribution and sort them,
+the $k$th rankit is expected value of the $k$the value.
+
+\begin{ex}
+This exercise is optional, but it might help you get your head around rankits.
+
+Write a function called {\tt Sample} that generates 6 samples from a
+normal distribution with $\mu = 0$ and $\sigma = 1$.  Sort and return
+the values.
+
+Write a function called {\tt Samples} that calls {\tt Sample} 100 times and
+returns a list of 1000 lists.
+
+If you apply {\tt zip} to this list of lists, the result is 6 lists
+with 1000 values in each.  Compute the mean of each of these lists
+and print the results.  I predict that you will get something like
+this:
+
+\[ -1.2672,   -0.6418,   -0.2016,   0.2016,   0.6418,   1.2672 \]
+
+If you increase the number of times you call {\tt Sample}, the
+results should converge on these values.
+
+% http://download.osgeo.org/grass/grass6_progman/as177_8c_source.html
+
+\end{ex}
+
+Computing rankits exactly is moderately difficult, but there are
+numerical methods for approximating them.  Also, there is a
+quick-and-dirty method that is very easy to implement:
+
+\begin{description}
+
+\item Sort the values in the dataset.
+
+\item From a normal distribution with $\mu = 0$ and $\sigma = 1$,
+generate a sample with the same size as your dataset and sort it.
+
+\item Plot the values from your dataset versus the random values.
+
+\end{description}
+
+For large datasets, this method actually does pretty well!
+Figure~\ref{} is a quick-and-dirty normal probability plot for
+the birth weight data.
+
+xxxx
+
+
+\section{The Lognormal distribution}
+
+The National Center for Chronic Disease Prevention and Health
+Promotion conducts an annual survey as part of the Behavioral Risk
+Factor Surveillance System (BRFSS)\footnote{Centers for Disease
+  Control and Prevention (CDC). Behavioral Risk Factor Surveillance
+  System Survey Data. Atlanta, Georgia: U.S. Department of Health and
+  Human Services, Centers for Disease Control and Prevention, 2008.}.
+In 2008, they interviewed 414,509 respondents and asked about their
+demographics, health and (as the name suggests) health risks.
+
+Among the data they collected are the weights, in kilograms, of
+398,484 respondents.  Figure~\ref{brfss_weight_model} shows the
+distribution of these weights and a normal model with the same mean
+and variance.
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/brfss_weight_model.eps}}
+\caption{CDF of adult weights from the BRFSS.}
+\label{brfss_weight_model}
+\end{figure}
+
+The agreement between the data and the model might be good enough
+for some purposes, but there are clear discrepancies below the 10th
+and above the 90th percentile.
+
+It turns out that we can do better by applying a logarithmic
+transformation\footnote{I was tipped off to this possibility by a
+  comment (without citation) at
+  \url{mathworld.wolfram.com/LogNormalDistribution.html}.
+  Subsequently I found this paper that proposes the log transform and
+  suggests a cause: Penman and Johnson, ``The Changing Shape of the
+  Body Mass Index Distribution Curve in the Population,'' Preventing
+  Chronic Disease, 2006 July; 3(3): A74.  Online
+  at\url{www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}}.
+Figure~\ref{workspace/brfss_weight_log} shows the distribution
+of $\log w$, where $w$ is weight in kilograms, along with a normal
+model.
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/brfss_weight_log.eps}}
+\caption{CDF of adult weights with a log transform.}
+\label{brfss_weight_log}
+\end{figure}
+
+The normal model is a good fit for the data (although, terrifyingly, the
+highest weights exceed the expectation of the normal model even after
+the log transform).
+
+If the log transform fits a normal model, that means that the data
+fit a lognormal model.
+
 
 \begin{ex}
 The distribution of populations for cities and towns has been proposed
 as an example of a real-world phenomenon that can be described
 with a Pareto distribution.
 
-The U.S. Census Bureau publishes data on the population of every
+The U.S.~Census Bureau publishes data on the population of every
 incorporated city and town in the United States.  I have written a
-small program that downloads this data and converts it into a
-convenient form.  You can download it from
-\url{thinkstatsbook.com/populations.py}.  
+small program that downloads this data and stores it in a file.  You
+can download it from \url{thinkstatsbook.com/populations.py}.
 
 \begin{enumerate}
 
@@ -1961,36 +2197,114 @@ for cities and towns?
 
 \end{ex}
 
+
+\section{Skew}
+
+Definition.
+
+Relationship between mean and median.
+
+Estimators: moments, percentiles.
+
+Apply to pregnancy lengths and weights.
+
 \begin{ex}
 
-The Weibull distribution is a generalization of the exponential
-distribution that comes up in failure analysis
-(see \url{wikipedia.org/wiki/Weibull_distribution}).
+The ``Lake Wobegon effect'' is an amusing nickname\footnote{If you
+  don't get it, see \url{wikipedia.org/wiki/Lake_Wobegon}.} for {\bf
+  illusory superiority}, which is the tendency for people to
+overestimate their abilities relative to others.  For example, in some
+surveys, more than 80\% of respondents believe that they are better
+than the average driver\footnote{See
+  \url{wikipedia.org/wiki/Illusory_superiority}.}.
 
-Can you find a transformation that makes a Weibull distribution look
-like a straight line?  What do the slope and intercept of the
-line indicate?
+If we interpret ``average'' to mean median, then this result is
+logically impossible (proof left as an exercise for the reader).
+But if ``average'' is the mean, this result is actually possible,
+although unlikely. 
 
-Use {\tt random.weibullvariate} to generate a sample from a
-Weibull distribution and use it to test your transformation.
+The Pareto distibution has an unusual property that we might the
+``anti-Wobegon effect.''  Because it is so skewed, the mean is
+often much larger than the median, and a large majority of the
+population is below the mean.
+
+Find a sample of U.S. incomes.  Compute the median, mean, and
+fraction below the mean.  XXX
 
 \end{ex}
 
 
 
 
-\section{The Normal Distribution}
 
-Most common
+\section{Tail behavior}
 
-Not closed form, but good enough
+  Values from a Pareto distribution often have
+these properties:
 
-The birth weight CDF has the characteristic sigma-shaped curve of the
-{\bf normal distribution}, also known as the Gaussian distribution.
-Strictly speaking, the normal distribution is {\bf continuous}, which means
-it is defined for all real values; the birth weight data is discrete,
-because it only contains integer values.  But the normal distribution
-is often a good approximation of discrete data.
+\begin{description}
+
+\item[Long tail:] Pareto distributions contain many small values
+and a few very large ones.  The part of the distribution that extends
+far from the average is called the {\bf tail}.
+
+\item[80/20 rule:] The large values in a Pareto distribution are
+so large that they add up to a disproportionate share of the total.
+In the context of wealth, the 80/20 rule says that 20\% of the
+people own 80\% of the wealth.
+
+\item[Scale free:] If a distribution has a central tendency,
+the typical value is also called a {\bf scale}.  For example, the
+great majority of adult humans are between 100 and 200 cm in height,
+so we could say that the scale of human height is a few hundred
+centimeters.  But for long-tailed distributions, there is no
+similar range (bounded by a factor of two) that contains the
+bulk of the distribution.  So we say that these distributions
+are {\bf scale-free}.
+
+\end{description}
+
+To get a feel for the Pareto distribution, imagine what the world
+would be like if the distribution of human height were Pareto.
+Choosing the parameters $x_m = 100$ cm and $\alpha = 1.7$, we
+get a distribution with a reasonable minimum, 100 cm,
+and median, 150 cm.  Figure~\ref{pareto_height} shows what this
+distribution looks like.
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/pareto_height.eps}}
+\caption{CDF of a Pareto distribution.}
+\label{pareto_cdf}
+\end{figure}
+
+The figure on the left is on a log-$x$ scale.  It shows that the
+median and lower bounds of the distributions are the same, but
+the Pareto distribution has a longer tail.  The figure on the
+right is on a log-log scale.  The Pareto distribution is a straight
+line except in the extreme tail, where it is noisy because of
+the limitations of a finite sample.
+
+If you generate 6 billion random values from the Gaussian distribution
+shown in the figure, you would guess that the tallest person in the
+world is about 255 cm.  In fact, the tallest currently living person,
+Leonid Stadnyk, is 259 cm.
+
+But if you generate 6 billion random values from the Pareto
+distribution, you will see that the tallest person in the world could
+easily be taller than 80.5 km, which would technically make him or her
+an astronaut, at least in the United States (see
+\url{wikipedia.org/wiki/Earth's_atmosphere}).  That's what it means to
+be scale-free!
+
+\section{Convolution}
+
+What happens when we add these things up?
+
+\section{Central limit theorem}
+
+What happens when we add up a lot of values?
+
+What happens when we multiply out a lot of values?
 
 
 \chapter{Hypothesis testing}
@@ -2004,16 +2318,15 @@ always hold up to scrutiny.
 For example, supposed I toss a coin 10 times, and after each I write
 down H for heads and T for tails.  If the result was a sequence like
 THHTHTTTHH, you would't be to surprised.  But if the result was
-HHHHHHHHHH, you would say something
-like, ``Wow!  What were the chances of {\em that}!''
+HHHHHHHHHH, you would say something like, ``Wow!  What were the
+chances of {\em that}!''
 
 In this case, I could answer your question.  The probability of
-getting the sequence HHHHHHHHHH is one
-in 1024.  But here's the catch, the probability of getting THHTHTTTHH
-is also one in 1024, and likewise for any other sequence.
+getting the sequence HHHHHHHHHH is one in 1024.  But here's the catch:
+the probability of getting THHTHTTTHH is also one in 1024, and
+likewise for any other sequence.
 
-it comes up
-heads every time, you would be surprised.  
+
 
 moments
 
