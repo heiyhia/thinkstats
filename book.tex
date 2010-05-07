@@ -1919,6 +1919,20 @@ line?  What is the slope?
 \end{ex}
 
 \begin{ex}
+To get a feel for the Pareto distribution, imagine what the world
+would be like if the distribution of human height were Pareto.
+Choosing the parameters $x_m = 100$ cm and $\alpha = 1.7$, we
+get a distribution with a reasonable minimum, 100 cm,
+and median, 150 cm.
+
+Generate 6 billion random values from this distribution.  What is the
+mean of this sample?  What fraction of the population is shorter than
+the mean?  How tall would we expect the tallest person in the world
+be?
+
+\end{ex}
+
+\begin{ex}
 
 Zipf's law is an observation about how often different words are used.
 The most common words have very high frequencies, but there are many
@@ -1951,7 +1965,7 @@ Weibull distribution and use it to test your transformation.
 
 
 
-\section{The Normal Distribution}
+\section{The normal Distribution}
 
 \newcommand{\erf}{\mathrm{erf}}
 
@@ -1992,7 +2006,7 @@ this curve a recognizable characteristic of a normal distribution.
 \end{figure}
 
 In the previous chapter we looked at the distribution of birth
-weights in the NSFG.  Figure~\ref{nsfg_birthwgt_normal} shows the
+weights in the NSFG.  Figure~\ref{nsfg_birthwgt_model} shows the
 empirical CDF of weights for all live births and the CDF of
 a normal distribution with the same mean and variance.
 
@@ -2000,7 +2014,7 @@ a normal distribution with the same mean and variance.
 % cumulative.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_model.eps}}
 \caption{CDF of birth weights.}
-\label{nsfg_birthwgt_normal}
+\label{nsfg_birthwgt_model}
 \end{figure}
 
 The normal distribution is a good model for this dataset.  A {\bf
@@ -2053,10 +2067,9 @@ distribution is a good model of a dataset.
 
 For the normal distribution there is no such transformation, but
 there is an alternative called a {\bf normal probability plot}.
-
 It is based on {\bf rankits}: if you generate $n$
 values from a normal distribution and sort them,
-the $k$th rankit is expected value of the $k$the value.
+the $k$th rankit is expected value of the $k$th value.
 
 \begin{ex}
 This exercise is optional, but it might help you get your head around rankits.
@@ -2078,13 +2091,14 @@ this:
 If you increase the number of times you call {\tt Sample}, the
 results should converge on these values.
 
-% http://download.osgeo.org/grass/grass6_progman/as177_8c_source.html
-
 \end{ex}
+
+% Algorithms for exact and approximate normal rank stats
+% http://download.osgeo.org/grass/grass6_progman/as177_8c_source.html
 
 Computing rankits exactly is moderately difficult, but there are
 numerical methods for approximating them.  Also, there is a
-quick-and-dirty method that is very easy to implement:
+quick-and-dirty method that is even easier to implement:
 
 \begin{description}
 
@@ -2097,14 +2111,36 @@ generate a sample with the same size as your dataset and sort it.
 
 \end{description}
 
-For large datasets, this method actually does pretty well!
-Figure~\ref{} is a quick-and-dirty normal probability plot for
-the birth weight data.
+For large datasets, this method actually does pretty well.
+For smaller datasets, you can improve it by generating $m (n+1) - 1$
+values from a normal distribution, where $n$ is the size of the
+dataset and $m$ is a multiplier.  Then select every $m$th element,
+starting with the $m$th.  Hint: use the Python slice operator.
 
-xxxx
+This method works with other distributions as well, as long as
+you know how to generate a random sample.
+
+Figure~\ref{nsfg_birthwgt_normal} is a quick-and-dirty normal
+probability plot for the birth weight data.
+
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_normal.eps}}
+\caption{Normal probability plot of birth weights.}
+\label{nsfg_birthwgt_normal}
+\end{figure}
+
+The curvature in this plot suggests that there are consistent
+deviations from a normal distribution; nevertheless, it is a
+good (enough) model for most purposes.
+
+\begin{ex}
+Sketch a line to fit this curve as well as you can, and
+eyeball the slope and intercept.  What meaning do these parameters have?
+\end{ex}
 
 
-\section{The Lognormal distribution}
+\section{The lognormal distribution}
 
 The National Center for Chronic Disease Prevention and Health
 Promotion conducts an annual survey as part of the Behavioral Risk
@@ -2139,7 +2175,7 @@ transformation\footnote{I was tipped off to this possibility by a
   Body Mass Index Distribution Curve in the Population,'' Preventing
   Chronic Disease, 2006 July; 3(3): A74.  Online
   at\url{www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}}.
-Figure~\ref{workspace/brfss_weight_log} shows the distribution
+Figure~\ref{brfss_weight_log} shows the distribution
 of $\log w$, where $w$ is weight in kilograms, along with a normal
 model.
 
@@ -2155,7 +2191,6 @@ the log transform).
 
 If the log transform fits a normal model, that means that the data
 fit a lognormal model.
-
 
 \begin{ex}
 The distribution of populations for cities and towns has been proposed
@@ -2173,22 +2208,13 @@ can download it from \url{thinkstatsbook.com/populations.py}.
   write a program that computes and plots the distribution of
   populations for the 14593 cities and towns in the dataset.
 
-\item In your {\tt Dist} class, write a function called {\tt quantile}
-  that takes a percentile as a parameter and returns the corresponding
-  quantity.  What is the median size in this distribution (the
-  quantity that corresponds to the 50th percentile)?  What are the
-  25th and 75th percentiles?
-
 \item Plot the CDF on linear and log-$x$ scales so you can get a sense
   of the shape of the distribution.  Then plot the CCDF on a log-log
   scale to see if it has the characteristic shape of a Pareto
   distribution.
 
-\item Use your plot to estimate values for the parameters $x_m$ and
-  $\alpha$.  Then use the function {\tt paretovariate} in the {\tt random}
-  module to generate 14593 values from a Pareto distribution with the
-  parameters you estimated in the previous problem.  Plot the CCDF on
-  a log-log scale and compare it the CCDF of the observed data.
+\item Try out the other transformations and plots in this chapter to
+  see if there is a better model for this data.
 
 \end{enumerate}
 
@@ -2198,15 +2224,58 @@ for cities and towns?
 \end{ex}
 
 
-\section{Skew}
+\section{Skewness}
 
-Definition.
+Skewness is a statistic that measures the asymmetry of a
+distribution.  Given a sequence of values, $x_i$, the sample skewness
+is:
 
-Relationship between mean and median.
+\[ g_1 = \frac{m_3}{m_2^{3/2}}\]
 
-Estimators: moments, percentiles.
+\[ m_2 = \frac{1}{n} \sum_i (x_i - \mu)^2 \]
 
-Apply to pregnancy lengths and weights.
+\[ m_3 = \frac{1}{n} \sum_i (x_i - \mu)^3 \]
+
+You might recognize $m_2$ as the mean squared deviation (also known as
+variance); similarly, $m_3$ is the mean cubed deviation.
+
+In theory, negative skewness indicates that a distribution 
+``skews left;'' that is, it extends
+farther to the left than the right.  Positive skewness indicates
+that a distribution skews right.
+
+In practice, computing the skewness of a sample is usually not
+a good idea.  If there are any outliers, they tend to
+have a disproportionate effect on $g_1$.
+
+Another way to evaluate the asymmetry of a distribution is to look
+at the relationship between the mean and median.
+Extreme values have more effect on the mean than the median, so
+in a distribution that skews left, the mean is less than the median.
+
+Pearson's median skewness coefficient is an alternative measure
+of skewness:
+
+\[ g_p = 3 (\mu − \mu_{1/2}) / \sigma \]
+
+where $\mu_{1/2}$ is the median of the sample.  This statistic is {\bf
+  robust}, which means that it is less vulnerable to the effect of
+outliers.
+
+\begin{ex}
+
+In {\tt thinkstats.py} add a function named {\tt Skewness} that computes
+$g_1$ for a sample.
+
+Compute the skewness for the distributions of pregnancy length and
+birth weight.  Are the results consistent with the shape of the
+distributions?
+
+Write a function named {\tt PearsonSkewness} that computes $g_p$
+for these distributions.  How does $g_p$ compare to $g_p$.
+
+\end{ex}
+
 
 \begin{ex}
 
@@ -2223,78 +2292,24 @@ logically impossible (proof left as an exercise for the reader).
 But if ``average'' is the mean, this result is actually possible,
 although unlikely. 
 
-The Pareto distibution has an unusual property that we might the
-``anti-Wobegon effect.''  Because it is so skewed, the mean is
-often much larger than the median, and a large majority of the
-population is below the mean.
+The Current Population Survey (CPS) is a joint effort between the
+Bureau of Labor Statistics and the Census Bureau.  Data from the
+survey are available from \url{www.census.gov/cps/}.
 
-Find a sample of U.S. incomes.  Compute the median, mean, and
-fraction below the mean.  XXX
+Extract the distribution of incomes from this dataset.  Are any of
+the continuous distributions in this chapter a good model of
+the data?
+
+Compute the median, mean, skewness and Pearson's skewness.  What
+fraction of the population is below the mean?
+
+Optional: Gini's coefficient is often used as a measure of income
+inequality.  Read about it at
+\url{wikipedia.org/wiki/Gini_coefficient} and write a function called
+    {\tt Gini} that computes it for the income distribution.
 
 \end{ex}
 
-
-
-
-
-\section{Tail behavior}
-
-  Values from a Pareto distribution often have
-these properties:
-
-\begin{description}
-
-\item[Long tail:] Pareto distributions contain many small values
-and a few very large ones.  The part of the distribution that extends
-far from the average is called the {\bf tail}.
-
-\item[80/20 rule:] The large values in a Pareto distribution are
-so large that they add up to a disproportionate share of the total.
-In the context of wealth, the 80/20 rule says that 20\% of the
-people own 80\% of the wealth.
-
-\item[Scale free:] If a distribution has a central tendency,
-the typical value is also called a {\bf scale}.  For example, the
-great majority of adult humans are between 100 and 200 cm in height,
-so we could say that the scale of human height is a few hundred
-centimeters.  But for long-tailed distributions, there is no
-similar range (bounded by a factor of two) that contains the
-bulk of the distribution.  So we say that these distributions
-are {\bf scale-free}.
-
-\end{description}
-
-To get a feel for the Pareto distribution, imagine what the world
-would be like if the distribution of human height were Pareto.
-Choosing the parameters $x_m = 100$ cm and $\alpha = 1.7$, we
-get a distribution with a reasonable minimum, 100 cm,
-and median, 150 cm.  Figure~\ref{pareto_height} shows what this
-distribution looks like.
-
-\begin{figure}
-\centerline{\includegraphics[height=2.5in]{workspace/pareto_height.eps}}
-\caption{CDF of a Pareto distribution.}
-\label{pareto_cdf}
-\end{figure}
-
-The figure on the left is on a log-$x$ scale.  It shows that the
-median and lower bounds of the distributions are the same, but
-the Pareto distribution has a longer tail.  The figure on the
-right is on a log-log scale.  The Pareto distribution is a straight
-line except in the extreme tail, where it is noisy because of
-the limitations of a finite sample.
-
-If you generate 6 billion random values from the Gaussian distribution
-shown in the figure, you would guess that the tallest person in the
-world is about 255 cm.  In fact, the tallest currently living person,
-Leonid Stadnyk, is 259 cm.
-
-But if you generate 6 billion random values from the Pareto
-distribution, you will see that the tallest person in the world could
-easily be taller than 80.5 km, which would technically make him or her
-an astronaut, at least in the United States (see
-\url{wikipedia.org/wiki/Earth's_atmosphere}).  That's what it means to
-be scale-free!
 
 \section{Convolution}
 
@@ -2305,6 +2320,31 @@ What happens when we add these things up?
 What happens when we add up a lot of values?
 
 What happens when we multiply out a lot of values?
+
+
+\chapter{Probability}
+
+Definition
+
+Independent events
+
+Conditional probability
+
+Bayes' theorem
+
+    forward analysis vs. backward probability
+
+Monte Carlo simulation
+
+Examples:
+
+Monty Hall problem, Erdos story
+
+Girl named Florida (and variations)
+
+Elvis's twin
+
+Examples from MacKay's Chapter 3
 
 
 \chapter{Hypothesis testing}
@@ -2326,27 +2366,90 @@ getting the sequence HHHHHHHHHH is one in 1024.  But here's the catch:
 the probability of getting THHTHTTTHH is also one in 1024, and
 likewise for any other sequence.
 
+p-values
 
+interpretation
+
+1) classical
+
+2) de facto use: no, yes, borderline.  Parameter intervals are more important.
+
+3) alternatives?
+
+
+
+Examples:
+
+   difference in mean pregnancy length
+
+   difference in mean birth weight
+
+   T-test
+
+   early vs. late
+
+   Chi-squared test
+
+   
+
+Pitfalls:
+
+1) Exploring and then testing
+
+2) Multiple tests
+
+3) Publication bias
+
+
+Solutions:
+
+1) two phases: exploratory and testing, on different data (possibly a subset)
+
+2) Holm–Bonferroni method
+
+3) publish everything and wait for consensus
+
+
+\section{Bayesian hypothesis testing}
+
+
+
+
+\chapter{Estimators}
+
+An estimator is a statistic that converges on a parameter.
+
+A statistic is a function that takes a dataset and returns a number.
+
+Confidence intervals, oh my.
+
+
+\section{Bayesian statistics}
+
+
+
+\chapter{Correlation}
+
+rank correlation
+
+Spearman's correlation
+
+least squares fit
+
+Examples:
+
+    weight gain vs. current weight, explanation of lognormal distribution
+
+Goodness of fit for evaluating distribution models
+
+
+\chapter{Reminders}
 
 moments
 
 modes
 
    multimodal distributions (artifact examples: heights, gestation)
-
-
-
-
-(Something uniform?)
-
-Birth weights
-
-Interarrival time between babies
-
-(something lognormal?)
-
-Sizes of towns
-
 
 Gelman's paradox
 \url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
