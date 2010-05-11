@@ -665,14 +665,13 @@ You can download a solution to this exercise from
 
 \section{Significance}
 
-In the previous exercise, you compared the gestation
-period for first babies and others, and if things worked out,
-you found that first babies are born about 13 hours later,
-on average.
+In the previous exercise, you compared the gestation period for first
+babies and others; if things worked out, you found that first
+babies are born about 13 hours later, on average.
 
-A difference like that is called an {\bf apparent effect};
-that is, there might be something going on, but we are not
-yet sure.  There are several questions we still want to ask:
+A difference like that is called an {\bf apparent effect}; that is,
+there might be something going on, but we are not yet sure.  There are
+several questions we still want to ask:
 
 \begin{itemize}
 
@@ -2256,7 +2255,7 @@ in a distribution that skews left, the mean is less than the median.
 Pearson's median skewness coefficient is an alternative measure
 of skewness:
 
-\[ g_p = 3 (\mu − \mu_{1/2}) / \sigma \]
+\[ g_p = 3 (\mu - \mu_{1/2}) / \sigma \]
 
 where $\mu_{1/2}$ is the median of the sample.  This statistic is {\bf
   robust}, which means that it is less vulnerable to the effect of
@@ -2349,42 +2348,303 @@ Examples from MacKay's Chapter 3
 
 \chapter{Hypothesis testing}
 
+Exploring the data from the NSFG, we saw several ``apparent effects;''
+including a number of differences between first babies and others.
+So far we have taken these effects at face value; in this chapter,
+finally, we will put them to the test.
+
+The fundamental question we want to address is whether these effects
+are real.  For example, if we see a difference in the mean pregnancy
+length for first babies and other, we want to know whether that
+difference is real, or whether it occurred by chance.
+
+That question turns out to be hard to address directly, so we will
+proceed in two steps.  First we will test whether the effect is {\bf
+  significant}, then we will try to interpret the result
+  as an answer to the original question.
+
+In the context of statistics, ``significant'' has a technical
+definition that is different from its use in common language.
+As we defined earlier, an apparent effect is statistically
+significant if it is unlikely to have occurred by change.
+
+To make this more precise, we have to answer three questions:
+
+\begin{enumerate}
+
+\item What do we mean by ``chance?''
+
+\item What do we mean by ``unlikely?''
+
+\item What do we mean by ``effect?''
+
+\end{enumerate}
+
+All three of these questions are harder than they look.  Nevertheless,
+there is a general structure that people use to test statistical
+significance:
+
+\begin{description}
+
+\item[Null hypothesis:] The null hypothesis is a model of the system
+  based on the assumption that the apparent effect was actually due to
+  chance.
+
+\item[p-value:] The {\bf p-value} is the probability of the apparent
+  effect under the null hypothesis.
+
+\item[Interpretation:] Based on the p-value, we conclude that the
+  effect is either statistically significant, or not.
+
+\end{description}
+
+This process is called {\bf hypothesis testing}.  The underlying
+logic is similar to a proof by contradiction.  To prove a mathematical
+statement, A, you can assume, temporarily, that A is false.  If this
+assumption leads to a contradiction, you conclude that A must actually
+be true.
+
+Similarly, to test a hypothesis like, ``This effect is real,'' we
+assume, temporarily, that is is not.  That's the null hypothesis.
+Based on that assumption, we compute the probability of the apparent
+effect.  That's the p-value.  If the p-value is low enough (more about
+that soon), we conclude that the null hypothesis is unlikely to be
+true.
+
+
+\section{Testing a difference in means}
+
+One of the easier hypotheses to test is an apparent difference in mean
+between two groups.  In the NSFG data, we saw that the mean pregnancy
+length for first babies is slightly longer, and the mean weight at
+birth is slightly smaller.  Now we will see if those effects are
+significant.
+
+For these examples, the null hypothesis is that the distributions
+for the two groups are the same, and that the apparent difference is
+due to chance.
+
+To compute p-values, we find the pooled distribution for all live
+births (first babies and others), generate random samples that are
+the same size as the observed samples, and compute the difference
+in means under the null hypothesis.
+
+If we generate a large number of samples, we can count how often the
+difference in means (due to chance) is as big or bigger than the
+difference we actually observed.  This fraction is the p-value.
+
+For pregnancy length, we observed $n=4413$ first babies and $m=4735$
+others, and the difference in mean was $\delta=0.078$.  To estimate
+the p-value of this effect, I found the pooled distribution, generated
+samples with sizes $n$ and $m$ and computed the difference in mean.
+
+This process is called {\bf resampling} because we are drawing a
+random sample from a dataset that is, itself, a sample of the general
+population.  I computed differences for 1000 sample pairs;
+Figure~\ref{length_deltas_cdf} shows their distribution.
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{workspace/length_deltas_cdf.eps}}
+\caption{CDF of difference in mean for resampled data.}
+\label{length_deltas_cdf}
+\end{figure}
+
+The mean difference is near 0, as you would expect with samples
+from the same distribution.  The vertical lines show the cutoffs where
+$x=-\delta$ or $x=\delta$.
+
+Of 1000 sample pairs, there were 168 where the difference in mean
+(positive or negative) was as big or bigger than $\delta$, so the
+p-value is approximately 0.168.  In other words, we expect to see an
+effect as big as $\delta$ 16.8\% of the time,
+even if the actual distribution for the two groups is the same.
+
+So the apparent effect is not very likely, but is it unlikely enough?
+I'll address that in the next section.
+
+\begin{ex}
+
+In the NSFG dataset, the difference in mean weight for first
+births is 2.0 ounces.  Estimate the p-value of this difference.
+
+Hint: for this kind of resampling it is important to sample
+with replacement, so you should use {\tt random.choice} rather
+than {\tt random.sample}.
+
+\end{ex}
+
+
+\section{Choosing a threshold}
+
+In hypothesis testing we have to worry about two kinds of errors.
+
+\begin{itemize}
+
+\item A Type I error, also called a {\bf false positive} is when we accept
+a hypothesis that is actually false; that is, we consider an
+effect significant when it was actually due to chance. 
+
+\item A Type II error, also called a {\bf false negative} is when we
+reject a hypothesis that is actually true; that is, we attribute an
+effect to chance when it was actually real.
+
+\end{itemize}
+
+The most common approach to hypothesis testing is to choose a
+threshold, $\alpha$, for the p-value and to accept as significant any
+effect with a p-value less than $\alpha$.  A common choice for
+$\alpha$ if 5\%.  By this criterion, the apparent difference in
+pregnancy length for first babies is not significant, but the
+difference in weight is.
+
+For this kind of hypothesis testing, we can compute the probability of
+a false positive.  It turns out to be $\alpha$.
+
+To see why, think about the definition of false positive, the chance
+of accepting a hypothesis that is false, and the definition of a
+p-value, the chance of generating the measured effect if the
+hypothesis is false.
+
+Putting these together, we can ask: if the hypothesis is false,
+what is the chance of generating a measured effect that will be
+considered significant with threshold $\alpha$.  The answer is
+$\alpha$.
+
+We can decrease the chance of a false positive by decreasing the
+threshold.  For example, if the threshold is 1\%, there is only a 1\%
+chance of a false positive.
+
+But there is a price to pay---decreasing the threshold raises the
+standard of evidence, which increases the chance of rejecting
+a valid hypothesis.
+
+In general there is a tradeoff between Type I and Type II errors.
+The only way to decrease both at the same time is to increase the
+sample size (or, in some cases, decrease measurement error).
+
+\begin{ex}
+
+To investigate the effect of sample size on p-value, see what happens
+if you discard half of the data from the NSFG.  Hint: use {\tt
+  random.sample}.  What if you discard three-quarters of the data, and
+so on?
+
+What is the smallest sample size where the difference in mean birth
+weight is still significant with $\alpha=5$\%?  How much
+larger does the sample size have to be with $\alpha=1$\%?
+
+\end{ex}
+
+
+\section{Defining the effect}
+
 When something unusual happens, people often say something
 like, ``Wow!  What were the chances of {\em that}!''  This question
 makes sense because we have an intuitive sense that some things
 are more likely than others.  But this intuition doesn't
 always hold up to scrutiny.
 
-For example, supposed I toss a coin 10 times, and after each I write
-down H for heads and T for tails.  If the result was a sequence like
-THHTHTTTHH, you would't be to surprised.  But if the result was
+For example, supposed I toss a coin 10 times, and after each toss I
+write down H for heads and T for tails.  If the result was a sequence
+like THHTHTTTHH, you would't be to surprised.  But if the result was
 HHHHHHHHHH, you would say something like, ``Wow!  What were the
 chances of {\em that}!''
 
-In this case, I could answer your question.  The probability of
-getting the sequence HHHHHHHHHH is one in 1024.  But here's the catch:
-the probability of getting THHTHTTTHH is also one in 1024, and
-likewise for any other sequence.
+For this example, at least, I can answer the question.  The
+probability of getting the sequence HHHHHHHHHH is one in 1024.  But
+here's the catch: the probability of getting THHTHTTTHH is also one in
+1024, and likewise for any other sequence.
 
-p-values
+So when we ask, ``What were the chances of {\em that},'' we have
+to be careful about what we mean by ``that.''
 
-interpretation
+For the NSFG data, I defined the effect as ``a difference in mean
+(positive or negative) as big or bigger than $\delta$.''  By making
+this choice, I decided to evaluate the magnitude of the difference,
+ignoring the sign.
 
-1) classical
+A test like that is called {\bf two-sided}, because we consider both
+sides (positive and negative) in the distribution from
+Figure~\ref{length_deltas_cdf.eps}.  By using a two-sided test we are
+testing the hypothesis that there is a signficant difference between
+the distributions, without specifying the sign of the difference.
 
-2) de facto use: no, yes, borderline.  Parameter intervals are more important.
+The alternative is to use a {\bf one-sided} test, which asks whether
+the mean for first babies is significanly {\em higher} higher than
+the mean for others.  Because the hypothesis is more specific, the
+p-value is lower---in this case it is roughly half.
 
-3) alternatives?
 
+\section{Interpreting the result}
+
+At the beginning of this chapter I said that the question we want to
+address is whether an apparent effect is real.  We started by defining
+the null hypothesis, which I will denote $H_0$, which is the
+hypothesis that the effect is not real.  Then we defined the p-value,
+which is $P(E | H_0)$, where $E$ is an effect as big as or bigger than
+the apparent effect.  Then we computed p-values and compared
+them to a threshold, $\alpha$.
+
+That's a useful step, but it doesn't answer the original question,
+which is whether the effect is real.  There are several ways to
+interpret the result of a hypothesis test:
+
+\begin{description}
+
+\item[Classical:] In classical hypothesis testing, if a p-value
+  is less than $\alpha$, so can say that the effect is statistically
+  significant, but you can't conclude that it's real.  This
+  formulation is careful to avoid leaping to conclusions, but it is
+  also deeply unsatisfying.
+
+\item[Practical:] In practice, people are not so formal.  In most
+  science journals, researchers report p-values without apology, and
+  readers interpret them as evidence that the apparent effect is real.
+  The lower the p-value, the higher their confidence in this
+  conclusion.
+
+\item[Bayesian:] What we really want to know is $P(H_A | E)$, where
+  $H_A$ is the hypothesis that the effect is real.  By Bayes' Theorem
+
+  \[ P(H_A | E) = \frac{P(E | H_A)}{P(E)} P(H_A) \]
+
+  Where $P(H_A)$ is the prior probability of $H_A$ before we saw the
+  effect, $P(E | H_A)$ is the probability of seeing $E$, assuming that
+  the effect is real, and $P(E)$ is the probability of seeing $E$
+  under any hypothesis.  But the effect is either real or it's not, so 
+
+  \[ P(E) = P(E | H_A) + P(E | H_0) \]
+
+\end{description}
+
+We have already computed $P(E | H_0)$, so all that's left is to compute
+$P(E | H_A)$ and choose a value for the prior.
+
+For the pregnancy lengths in the NSFG, we have already
+computed $P(E | H_0) = xxx$.
+
+To compute $P(E | H_A)$, we assume that the effect is real---that is,
+that the distributions are different for first babies and others---and
+compute that probability of seeing an effect as big or bigger than
+$\delta = xxx$.  By generating 1000 sample pairs, one from each
+distribution, I estimated $P(E | H_A) = xxx$.  With the prior
+$P(H_A)=0.5$, the posterior probability of $H_A$ is xxx.
+
+\begin{ex}
+
+What is the posterior probability that the distribution of birth
+weights is different for first babies and others?
+
+\end{ex}
+
+Palatability of priors
+
+Reporting likelihood ratios
 
 
 Examples:
 
-   difference in mean pregnancy length
-
-   difference in mean birth weight
-
-   T-test
+   T-test?
 
    early vs. late
 
@@ -2405,12 +2665,9 @@ Solutions:
 
 1) two phases: exploratory and testing, on different data (possibly a subset)
 
-2) Holm–Bonferroni method
+2) Holm-Bonferroni method
 
 3) publish everything and wait for consensus
-
-
-\section{Bayesian hypothesis testing}
 
 
 
