@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.0.0}
+\newcommand{\theversion}{1.0.1}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -306,9 +306,6 @@ These topics are often presented from a mathematical perspective, and
 that approach works well for some people.  But some important ideas
 in this area are hard to work with mathematically and relatively
 easy to approach computationally.
-
-Both approaches have merits, and the ideal might combine both, but
-the goal of this book is to explore the computational path.
 
 The rest of this chapter presents a case study motivated by a question
 I heard when my wife and I were expecting our first child: do first
@@ -2145,6 +2142,7 @@ eyeball the slope and intercept.  What meaning do these parameters have?
 
 
 \section{The lognormal distribution}
+\label{lognormal}
 
 The National Center for Chronic Disease Prevention and Health
 Promotion conducts an annual survey as part of the Behavioral Risk
@@ -2440,6 +2438,22 @@ This might not be as easy to remember, but if you read it a few times,
 it should make sense.  This relationship holds whether $A$ and $B$
 are independent or not.
 
+Because all probabilities are in the range from 0 to 1, it is
+easy to show that 
+
+\[ P(A \and B) \le P(A) \]
+
+To picture this, imagine a club that only admits people
+who satisfy some requirement, $A$.  Now suppose they add a new
+requirement for membership, $B$.  It seems obvious that the club
+will get smaller, or stay the same if it happens that all the
+members satisfy $B$.
+
+But there are some scenarios where people are surprisingly bad at this
+kind of analysis.  For examples and discussion of this phenomenon, see
+\url{wikipedia.org/wiki/Conjunction_fallacy}.
+
+
 \begin{ex}
 
 If I roll two dice and the total is 8, what is the chance that
@@ -2471,13 +2485,6 @@ The following questions are adapted from Mlodinow, {\em The Drunkard's Walk}.
 You can use the assumptions that the probability that any child
 is a girl is 50\%, and that the percentage of girls named
 Florida is small.
-
-\end{ex}
-
-
-\begin{ex}
-
-\url{wikipedia.org/wiki/Conjunction_fallacy}
 
 \end{ex}
 
@@ -2573,8 +2580,10 @@ that by deciding which door to open, Monty is giving you information.
 To see why this matters, imagine the case where Monty doesn't
 know where the prizes are, so he chooses Door B or C at random.
 
-Assuming that Monty gets lucky and doesn't open the door with the
-car, are you better off switching or sticking?
+If he opens the door with the car, the game is over, you lose, and
+you don't get to choose whether to switch or stick.
+
+Otherwise, are you better off switching or sticking?
 
 \end{ex}
 
@@ -2584,21 +2593,20 @@ car, are you better off switching or sticking?
 
 \section{\Poincare}
 
-Henri \Poincare~ was a French mathematician who taught at the
-Sorbonne from 1881 until his death in 1912.  The following
-anecdote about him is probably apocryphal, but it makes
-an interesting probability problem.
+Henri \Poincare~was a French mathematician who taught at the Sorbonne
+from 1881 until his death in 1912.  The following anecdote about him
+is probably apocryphal, but it makes an interesting probability
+problem.
 
-Supposedly \Poincare~ suspected that his local bakery was
-selling loaves of bread that were lighter than the advertised
-weight of 1 kg, so every day for a year he bought a loaf of
-bread, brought it home and weighed it.  At the end of the
-year, he plotted the distribution of his measurements and
-showed that it fit a normal distribution with mean 950 g and
-standard deviation 50 g.  He brought this evidence to
+Supposedly \Poincare~suspected that his local bakery was selling
+loaves of bread that were lighter than the advertised weight of 1 kg,
+so every day for a year he bought a loaf of bread, brought it home and
+weighed it.  At the end of the year, he plotted the distribution of
+his measurements and showed that it fit a normal distribution with
+mean 950 g and standard deviation 50 g.  He brought this evidence to
 the bread police, who gave the baker a warning.
 
-For the next year, \Poincare~ continued the practice of weighing his
+For the next year, \Poincare~continued the practice of weighing his
 bread every day.  At the end of the year, he found that the average
 weight was 1000 g, just as it should be, but again he complained to
 the bread police, and this time they fined the baker.
@@ -2606,7 +2614,7 @@ the bread police, and this time they fined the baker.
 Why?  Because the shape of the distribution was asymmetric.  Unlike
 the normal distribution, it was skewed to the right, which is
 consistent with the hypothesis that the baker was still making 950 g
-loaves, but deliberately giving \Poincare~ the heavier ones.
+loaves, but deliberately giving \Poincare~the heavier ones.
 
 
 \begin{ex}
@@ -2625,12 +2633,26 @@ the distribution big enough to convince the bread police?
 
 \begin{ex}
 
-If you go to a dance where partners are paired up randomly,
-what percentage of (opposite sex) couples will you see where
-the woman is taller than the man?
+If you go to a dance where partners are paired up randomly, what
+percentage of opposite sex couples will you see where the woman is
+taller than the man?
 
-You might have to look around to get the average and standard
-deviation of height for men and women.
+In the BRFSS (see Section~\ref{lognormal}), the distribution of
+heights is roughly normal with parameters $\mu=178$ cm and
+$\sigma=59.4$ cm for men, and $\mu=163$ cm and $\sigma=52.8$ cm for
+women.
+
+As an aside, you might notice that the standard deviation for men is
+higher and wonder whether men's heights are more variable.  To compare
+variability between groups, it is useful to compute the {\bf
+  coefficient of variation}, which is the standard deviation as a
+fraction of the mean, $\mu / \sigma$.  By this measure, women's
+heights are slightly more variable.
+
+% From brfss.py
+%    mean          var           std           cv
+% 1 178.090966766 59.4275328443 7.70892553112 0.0432864488925
+% 2 163.226104443 52.7684723388 7.26419110011 0.0445038563217
 
 \end{ex}
 
@@ -2643,7 +2665,7 @@ sequences that are random-looking, but actually more ordered than real
 random sequences.  Conversely, if you show them a real random
 sequence, they tend to see patterns where there are none.
 
-A classic example of the second phenomenon is the prevalence of belief
+An example of the second phenomenon is the prevalence of belief
 in ``streaks'' in sports: a player that has been successful recently
 is said to have a ``hot hand;'' a player that has been unsuccessful is
 ``in a slump.''
@@ -2685,6 +2707,21 @@ save a lot of computing.
 
 \begin{ex}
 
+In 1941 Joe DiMaggio got at least one hit
+in 56 consecutive games\footnote{See
+  \url{wikipedia.org/wiki/Hitting_streak}.}.  Many baseball fans
+consider this streak the greatest achievement in any sport in history,
+because it was so unlikely.
+
+Use a Monte Carlo simulation to estimate the probability that
+any player in major league baseball will have a hitting streak
+of 57 or more games in the next century.
+
+\end{ex}
+
+
+\begin{ex}
+
 A cancer cluster is defined by the Centers for Disease Control (CDC)
 as ``greater-than-expected number of cancer cases that occurs within a
 group of people in a geographic area over a period of
@@ -2713,14 +2750,14 @@ obligated to investigate.  According to their web page:
 
 \begin{enumerate}
 
-\item Suppose that a particular cancer has an incidence of 1 case
-per thousand people per year.  If you follow a particular cohort
-of 100 people for 10 years, you would expect to see about 1 case.
-If you saw two cases, that would not be very surprising, but more
-than than two would be rare.  
+\item Suppose that a particular cancer has an incidence of 1 case per
+  thousand people per year.  If you follow a particular cohort of 100
+  people for 10 years, you would expect to see about 1 case.  If you
+  saw two cases, that would not be very surprising, but more than than
+  two would be rare.
 
 Write a program that simulates a large number of cohorts over
-a 10 year period and estimate the distribution of total cases.
+a 10 year period and estimates the distribution of total cases.
 
 \item An observation is considered statistically significant if its
   probability by chance alone, called a $p$-value, is less than 5\%.
@@ -2744,23 +2781,6 @@ a 10 year period and estimate the distribution of total cases.
 
 \end{enumerate}
 
-
-
-\end{ex}
-
-
-\begin{ex}
-
-In 1941 Joe DiMaggio got at least one hit
-in 56 consecutive games\footnote{See
-  \url{wikipedia.org/wiki/Hitting_streak}.}.  Many baseball fans
-consider this streak the greatest achievement in any sport in history,
-because it was so unlikely.
-
-Use a Monte Carlo simulation to estimate the probability that
-any player in major league baseball will have a hitting streak
-of 57 or more games in the next century.
-
 \end{ex}
 
 
@@ -2774,14 +2794,14 @@ Event B has occurred.  Bayes' theorem states:
 
 \[ P(A|B) = \frac{P(B|A)P(A)}{P(B)} \]
 
-To see that this is true, it helps to write $P(A and B)$, which
+To see that this is true, it helps to write $P(A \and B)$, which
 is the probability that A and B occur
 
-\[ P(A and B) = P(A) P(B|A) \]
+\[ P(A \and B) = P(A) P(B|A) \]
 
 But it is also true that 
  
-\[ P(A and B) = P(B) P(A|B) \]
+\[ P(A \and B) = P(B) P(A|B) \]
 
 So
 
@@ -2795,20 +2815,18 @@ hypothesis, $H$:
 
 \[ P(H|E) = P(H) \frac{P(E|H)}{P(E)} \]
 
-In word, this equation says that the probability of $H$
-after you have seen $E$ is the product of $P(H)$, which
-is the probability of $H$ before you saw the evidence,
-and the ratio of $P(E|H)$, the probability of seeing the
-evidence assuming that $H$ is true, and 
-$P(E)$, the probability of seeing the evidence under
-any circumstances ($H$ true or not).
+In words, this equation says that the probability of $H$ after you
+have seen $E$ is the product of $P(H)$, which is the probability of
+$H$ before you saw the evidence, and the ratio of $P(E|H)$, the
+probability of seeing the evidence assuming that $H$ is true, and
+$P(E)$, the probability of seeing the evidence under any circumstances
+($H$ true or not).
 
 This way of reading Bayes' theorem is called the ``diachronic''
-interpretation because it describes how the probability
-of a hypothesis gets updated over time in light of
-new evidence.  In this context, $P(H)$ is called the
-{\bf prior} probability and $P(H|E)$ is called the
-{\bf posterior}.  The update term $P(E|H)/P(E)$ is called
+interpretation because it describes how the probability of a
+hypothesis gets updated over time in light of new evidence.  In this
+context, $P(H)$ is called the {\bf prior} probability and $P(H|E)$ is
+called the {\bf posterior}.  The update term $P(E|H)/P(E)$ is called
 the {\bf likelihood ratio}.
 
 A classic use of Bayes' Theorem is the interpretation of clinical
@@ -2824,7 +2842,7 @@ there are no drugs.
 Studies from the Journal of the American Medical
 Association\footnote{I got these number from Gleason and Barnum,
   ``Predictive Probabilities In Employee Drug-Testing,'' at
-  \url{piercelaw.edu/risk/vol2/winter/gleason.htm}.} to estimate that
+  \url{piercelaw.edu/risk/vol2/winter/gleason.htm}.} estimate that
 the sensitivity of common drug tests is about 60\% and the specificity
 is about 99\%.
 
@@ -2887,29 +2905,13 @@ This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 
 \end{ex}
 
-
-
-Definition
-
-Independent events
-
-Conditional probability
-
-Bayes' theorem
-
-    forward analysis vs. backward probability
-
-Monte Carlo simulation
-
-Examples:
-
-Monty Hall problem, Erdos story
-
-Girl named Florida (and variations)
+\begin{ex}
 
 Elvis's twin
 
-Examples from MacKay's Chapter 3
+Other Examples from MacKay's Chapter 3?
+
+\end{ex}
 
 
 \chapter{Hypothesis testing}
@@ -3000,8 +3002,8 @@ difference in means (due to chance) is as big or bigger than the
 difference we actually observed.  This fraction is the p-value.
 
 For pregnancy length, we observed $n=4413$ first babies and $m=4735$
-others, and the difference in mean was $\delta=0.078$.  To estimate
-the p-value of this effect, I found the pooled distribution, generated
+others, and the difference in mean was $\delta=0.073$.  To estimate
+the p-value of this effect, I pooled the distributions, generated
 samples with sizes $n$ and $m$ and computed the difference in mean.
 
 This process is called {\bf resampling} because we are drawing a
@@ -3019,11 +3021,11 @@ The mean difference is near 0, as you would expect with samples
 from the same distribution.  The vertical lines show the cutoffs where
 $x=-\delta$ or $x=\delta$.
 
-Of 1000 sample pairs, there were 168 where the difference in mean
+Of 1000 sample pairs, there were 127 where the difference in mean
 (positive or negative) was as big or bigger than $\delta$, so the
-p-value is approximately 0.168.  In other words, we expect to see an
-effect as big as $\delta$ 16.8\% of the time,
-even if the actual distribution for the two groups is the same.
+p-value is approximately 0.127.  In other words, we expect to see an
+effect as big as $\delta$ 12.7\% of the time, even if the actual
+distribution for the two groups is the same.
 
 So the apparent effect is not very likely, but is it unlikely enough?
 I'll address that in the next section.
@@ -3046,29 +3048,29 @@ In hypothesis testing we have to worry about two kinds of errors.
 
 \begin{itemize}
 
-\item A Type I error, also called a {\bf false positive} is when we accept
-a hypothesis that is actually false; that is, we consider an
-effect significant when it was actually due to chance. 
+\item A Type I error, also called a {\bf false positive} is when we
+  accept a hypothesis that is actually false; that is, we consider an
+  effect significant when it was actually due to chance.
 
 \item A Type II error, also called a {\bf false negative} is when we
-reject a hypothesis that is actually true; that is, we attribute an
-effect to chance when it was actually real.
+  reject a hypothesis that is actually true; that is, we attribute an
+  effect to chance when it was actually real.
 
 \end{itemize}
 
 The most common approach to hypothesis testing is to choose a
 threshold, $\alpha$, for the p-value and to accept as significant any
 effect with a p-value less than $\alpha$.  A common choice for
-$\alpha$ if 5\%.  By this criterion, the apparent difference in
+$\alpha$ is 5\%.  By this criterion, the apparent difference in
 pregnancy length for first babies is not significant, but the
 difference in weight is.
 
 For this kind of hypothesis testing, we can compute the probability of
-a false positive.  It turns out to be $\alpha$.
+a false positive explicitly: it turns out to be $\alpha$.
 
-To see why, think about the definition of false positive, the chance
-of accepting a hypothesis that is false, and the definition of a
-p-value, the chance of generating the measured effect if the
+To see why, think about the definition of false positive---the chance
+of accepting a hypothesis that is false---and the definition of a
+p-value---the chance of generating the measured effect if the
 hypothesis is false.
 
 Putting these together, we can ask: if the hypothesis is false,
@@ -3080,7 +3082,7 @@ We can decrease the chance of a false positive by decreasing the
 threshold.  For example, if the threshold is 1\%, there is only a 1\%
 chance of a false positive.
 
-But there is a price to pay---decreasing the threshold raises the
+But there is a price to pay: decreasing the threshold raises the
 standard of evidence, which increases the chance of rejecting
 a valid hypothesis.
 
@@ -3104,11 +3106,11 @@ larger does the sample size have to be with $\alpha=1$\%?
 
 \section{Defining the effect}
 
-When something unusual happens, people often say something
-like, ``Wow!  What were the chances of {\em that}!''  This question
-makes sense because we have an intuitive sense that some things
-are more likely than others.  But this intuition doesn't
-always hold up to scrutiny.
+When something unusual happens, people often say something like,
+``Wow!  What were the chances of {\em that}!''  This question makes
+sense because we have an intuitive sense that some things are more
+likely than others.  But this intuition doesn't always hold up to
+scrutiny.
 
 For example, supposed I toss a coin 10 times, and after each toss I
 write down H for heads and T for tails.  If the result was a sequence
@@ -3116,7 +3118,7 @@ like THHTHTTTHH, you would't be to surprised.  But if the result was
 HHHHHHHHHH, you would say something like, ``Wow!  What were the
 chances of {\em that}!''
 
-For this example, at least, I can answer the question.  The
+For this example, at least, we can answer the question.  The
 probability of getting the sequence HHHHHHHHHH is one in 1024.  But
 here's the catch: the probability of getting THHTHTTTHH is also one in
 1024, and likewise for any other sequence.
@@ -3136,7 +3138,7 @@ testing the hypothesis that there is a signficant difference between
 the distributions, without specifying the sign of the difference.
 
 The alternative is to use a {\bf one-sided} test, which asks whether
-the mean for first babies is significanly {\em higher} higher than
+the mean for first babies is significanly {\em higher} than
 the mean for others.  Because the hypothesis is more specific, the
 p-value is lower---in this case it is roughly half.
 
@@ -3145,7 +3147,7 @@ p-value is lower---in this case it is roughly half.
 
 At the beginning of this chapter I said that the question we want to
 address is whether an apparent effect is real.  We started by defining
-the null hypothesis, which I will denote $H_0$, which is the
+the null hypothesis, denoted $H_0$, which is the
 hypothesis that the effect is not real.  Then we defined the p-value,
 which is $P(E | H_0)$, where $E$ is an effect as big as or bigger than
 the apparent effect.  Then we computed p-values and compared
@@ -3158,7 +3160,7 @@ interpret the result of a hypothesis test:
 \begin{description}
 
 \item[Classical:] In classical hypothesis testing, if a p-value
-  is less than $\alpha$, so can say that the effect is statistically
+  is less than $\alpha$, you can say that the effect is statistically
   significant, but you can't conclude that it's real.  This
   formulation is careful to avoid leaping to conclusions, but it is
   also deeply unsatisfying.
@@ -3177,24 +3179,36 @@ interpret the result of a hypothesis test:
   Where $P(H_A)$ is the prior probability of $H_A$ before we saw the
   effect, $P(E | H_A)$ is the probability of seeing $E$, assuming that
   the effect is real, and $P(E)$ is the probability of seeing $E$
-  under any hypothesis.  But the effect is either real or it's not, so 
+  under any hypothesis.  Since the effect is either real or it's not,
 
-  \[ P(E) = P(E | H_A) + P(E | H_0) \]
+  \[ P(E) = P(E | H_A)P(H_A) + P(E | H_0)P(H_0) \]
 
 \end{description}
 
-We have already computed $P(E | H_0)$, so all that's left is to compute
-$P(E | H_A)$ and choose a value for the prior.
-
-For the pregnancy lengths in the NSFG, we have already
-computed $P(E | H_0) = xxx$.
+As an example, I'll compute $P(H_A | E)$ for pregnancy lengths in the
+NSFG.  We have already computed $P(E | H_0)=0.127$, so all we have to
+do is compute $P(E | H_A)$ and choose a value for the prior.
 
 To compute $P(E | H_A)$, we assume that the effect is real---that is,
 that the distributions are different for first babies and others---and
-compute that probability of seeing an effect as big or bigger than
-$\delta = xxx$.  By generating 1000 sample pairs, one from each
-distribution, I estimated $P(E | H_A) = xxx$.  With the prior
-$P(H_A)=0.5$, the posterior probability of $H_A$ is xxx.
+compute the probability of seeing an effect as big or bigger than
+$\delta = 0.73$.  By generating 1000 sample pairs, one from each
+distribution, I estimated $P(E | H_A) = 0.503$.  With the prior
+$P(H_A)=0.5$, the posterior probability of $H_A$ is 0.798.
+
+% P(H_A) = 0.5 * (0.503) / (0.5*0.503 + 0.5*0.127) = 0.79841269841269846
+
+So if the prior probability of $H_A$ is 50\%, the updated
+probability, taking into account the evidence from this dataset,
+is almost 80\%.  It makes sense that the posterior probability
+is higher, since the data provide some support for the hypothesis.
+But it might seem surprising that the difference is so large,
+especially since we found that the difference in means was not
+statistically significant.
+
+In fact, the method we used in this section is not quite right, and
+it tends to overstate the impact of the evidence.  In the next section
+we will correct this tendency.
 
 \begin{ex}
 
@@ -3203,20 +3217,86 @@ weights is different for first babies and others?
 
 \end{ex}
 
-Palatability of priors
 
-Reporting likelihood ratios
+\section{Cross-validation}
 
+In the previous example, we used the dataset to formulate the
+hypothesis $H_A$, and then we used the same dataset to test it.
+Methods like this can sometimes be acceptable, but in general
+they are risky.
+
+The problem is that even when the null hypothesis is true, there is
+likely to be some difference, $\delta$, between any two groups, just
+by chance.  If we use the observed value of $\delta$ to formulate
+the hypothesis, $P(H_A | E)$ is likely to be high even when $H_A$ is
+false.
+
+We can address this problem with {\bf cross-validation}, which uses
+one dataset to estimate $\delta$ and a {\em different} dataset to
+evaluate $H_A$.  This first dataset is called the {\bf training set};
+the second is called the {\bf testing set}.
+
+In a study like the NSFG, which studies a different cohort in each
+cycle, we can use one cycle for training and another for testing.
+Or we can partition the data into subsets (at random), then use
+one for training and one for testing.
+
+I implemented the second approach, dividing the Cycle 6 data roughly
+in half.  I ran the test several times with different random partitions.
+The average posterior probability was $P(H_A | E) = 0.621$.  As
+expected, the impact of the evidence is smaller, partly because of
+the smaller sample size in the test set, and also because we are
+no longer using the same data for training and testing.
+
+% t = [0.656, 0.622, 0.511, 0.651, 0.665]
+% sum(t)/len(t)
+
+
+\section{Reporting Bayesian probabilities}
+
+In the previous section we chose the prior probability $P(H_A) = 0.5$.
+If we have no reason to think one hypothesis is more likely than another,
+it is common to assign each 
+
+Some people object to Bayesian probabilities because they depend on
+prior probabilities, and people might not be able to agree on
+the right prior.  For people who expect scientific results to be
+objective and universal, this property is deeply unsettling.
+
+One response to this objection is that, in practice, strong evidence
+tends to swamp the effect of the prior, so people who start with
+different priors will eventually converge to the same posterior
+probability.
+
+Another option is to report just the likelihood ratio, 
+$P(H_A | E)/P(E)$, rather than the posterior probability.  That way
+readers can plug in whatever prior they like and compute their own
+posteriors, no pun intended.
+
+
+\section{Efficient resampling}
+
+Using the central limit theorem to compute the distribution of a sample mean.
+
+
+
+\section{Power}
+
+Definition
+
+Compute it
+
+Comment on the loss of power in cross-validation due to smaller sample size 
 
 Examples:
 
    T-test?
 
-   early vs. late
+   pregnancy length: early vs. on time vs. late
 
    Chi-squared test
 
-   
+   Test difference in variance?
 
 Pitfalls:
 
@@ -3247,7 +3327,7 @@ A statistic is a function that takes a dataset and returns a number.
 Confidence intervals, oh my.
 
 
-\section{Bayesian statistics}
+\section{Bayesian estimation}
 
 
 

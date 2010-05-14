@@ -23,8 +23,8 @@ class Respondent(survey.Respondent):
 class Respondents(survey.Table):
     """Represents the respondent table."""
 
-    def ReadRecords(self, filename='CDBRFS08.ASC.gz'):
-        self.ReadFile(filename, self.GetFields(), Respondent)
+    def ReadRecords(self, filename='CDBRFS08.ASC.gz', n=None):
+        self.ReadFile(filename, self.GetFields(), Respondent, n)
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
@@ -37,6 +37,8 @@ class Respondents(survey.Table):
         """
         return [
             ('wtkg2', 1254, 1258, int),
+            ('htm3', 1251, 1253, int),
+            ('sex', 143, 143, int),
             ]
 
     def MakeFigure(self, weights, root,
@@ -79,6 +81,18 @@ class Respondents(survey.Table):
                         xmax=xmax,
                         xlabel='adult weight (log kg)',
                         axis=axis)
+        
+    def SummarizeHeight(self):
+        d = {1:[], 2:[]}
+        [d[r.sex].append(r.htm3) for r in self.records
+                                             if r.htm3 != 999]
+        
+        for key, t in d.iteritems():
+            mu, var = thinkstats.TrimmedMeanVar(t)
+            sigma = math.sqrt(var)
+            cv = sigma / mu
+            print key, mu, var, sigma, cv
+        
     
 
 
@@ -102,8 +116,10 @@ def ReadPickle(filename='brfss.pkl'):
 def main(name):
     #WritePickle()
     
-    resp = ReadPickle()
-    resp.MakeFigures()
+    resp = Respondents()
+    resp.ReadRecords(n=None)
+    #resp.MakeFigures()
+    resp.SummarizeHeight()
     
 if __name__ == '__main__':
     main(*sys.argv)

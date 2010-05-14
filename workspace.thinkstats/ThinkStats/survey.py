@@ -23,7 +23,7 @@ class Table(object):
     def __init__(self):
         self.records = []
 
-    def ReadFile(self, filename, fields, constructor):
+    def ReadFile(self, filename, fields, constructor, n=None):
         """Reads a compressed data file builds one object per record.
 
         Args:
@@ -39,7 +39,9 @@ class Table(object):
         else:
             fp = open(filename)
 
-        for line in fp:
+        for i, line in enumerate(fp):
+            if i == n:
+                break
             record = self.MakeRecord(line, fields, constructor)
             self.AddRecord(record)
         fp.close()
@@ -87,8 +89,8 @@ class Table(object):
 class Respondents(Table):
     """Represents the respondent table."""
 
-    def ReadRecords(self, filename='2002FemResp.dat.gz'):
-        self.ReadFile(filename, self.GetFields(), Respondent)
+    def ReadRecords(self, filename='2002FemResp.dat.gz', n=None):
+        self.ReadFile(filename, self.GetFields(), Respondent, n)
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
@@ -106,8 +108,8 @@ class Respondents(Table):
 class Pregnancies(Table):
     """Contains survey data about a Pregnancy."""
 
-    def ReadRecords(self, filename='2002FemPreg.dat.gz'):
-        self.ReadFile(filename, self.GetFields(), Pregnancy)
+    def ReadRecords(self, filename='2002FemPreg.dat.gz', n=None):
+        self.ReadFile(filename, self.GetFields(), Pregnancy, n)
 
     def GetFields(self):
         """Gets information about the fields to extract from the survey data.
