@@ -2276,7 +2276,7 @@ birth weight.  Are the results consistent with the shape of the
 distributions?
 
 Write a function named {\tt PearsonSkewness} that computes $g_p$
-for these distributions.  How does $g_p$ compare to $g_p$.
+for these distributions.  How does $g_p$ compare to $g_p$?
 
 \end{ex}
 
@@ -2307,7 +2307,7 @@ the data?
 Compute the median, mean, skewness and Pearson's skewness.  What
 fraction of the population is below the mean?
 
-Optional: Gini's coefficient is often used as a measure of income
+Optional: The Gini coefficient is often used as a measure of income
 inequality.  Read about it at
 \url{wikipedia.org/wiki/Gini_coefficient} and write a function called
     {\tt Gini} that computes it for the income distribution.
@@ -2346,8 +2346,8 @@ called a {\bf trial}.
 
 As an example, suppose that we roll a standard six-sided die and we
 want to know the probability of rolling a 6.  Each roll of the die
-would be a trial.  Each time a 6 appeared would be considered a
-{\bf success}; the other trials would be considered {\bf failures}.
+is a trial.  Each time a 6 appeared is considered a
+{\bf success}; other trials are considered {\bf failures}.
 These terms are used even in scenarios where ``success'' is bad
 and ``failure is good.
 
@@ -2383,8 +2383,9 @@ this reason, many people think that Bayesian probabilities are
 
 As an example, what is the probability that Thaksin Shinawatra is the
 Prime Minister of Thailand?  A frequentist would say that there is no
-well-defined probability for this event because there is no series
-of trials.  He either is or he isn't; it's not a question of probability.
+well-defined probability for this event because there is no series of
+trials.  Thaksin either is, or is not, the PM; it's not a question of
+probability.
 
 In contrast, a Bayesian would be willing to assign a probability to
 this event based on his or her state of knowledge.  For example, if
@@ -2394,14 +2395,91 @@ assign a probability like $0.1$, which acknowledges the possibility
 that your recollection is incorrect, or that Thaksin has been
 reinstated.
 
-Then if you consulted the Wikipedia, you would learn that Thaksin
-is not the PM, at least at the time I am writing, and you might
-revise your probability estimate to $0.01$, reflecting the possibility
-that the Wikipedia is wrong.
+If you consult the Wikipedia, you will learn that Thaksin is not the
+PM of Thailand (at least at the time I am writing).  Based on this
+information, you might revise your probability estimate to $0.01$,
+reflecting the possibility that the Wikipedia is wrong.
 
 
 \section{Rules of probability}
 
+For frequency probabilities, we can derive rules that relate 
+probabilities of different events.  Probably the best known of
+these rules is
+
+\renewcommand{\and}{\wedge}
+
+\[ P(A \and B) = P(A) P(B) \]
+
+where $P(A \and B)$ is the probability that events $A$ and $B$ both
+occur.  This formula is easy to remember, but it only applies if $A$
+and $B$ are {\bf independent}, which means that if I know $A$
+occurred, that doesn't change the probablility of $B$, and vice versa.
+
+For example, if $A$ is tossing a coin and getting heads, and $B$
+is rolling a die and getting 1, $A$ and $B$ are independent, because
+the coin toss doesn't tell me anything about the die roll, and vice
+versa.
+
+But if I roll two dice, and $A$ is getting at least one six, and
+$B$ is getting two sixes, $A$ and $B$ are not independent, because
+if I know that $A$ occurred, the probability of $B$ is higher, and
+if I know $B$ occurred, the probability of $A$ is 1.
+
+When $A$ and $B$ are not independent, it is often useful to compute
+the conditional probability, $P(A|B)$, which is the probability of
+$A$ given that we know $B$ occurred
+
+\[ P(A|B) = \frac{P(A \and B)}{P(B)} \]
+
+From that we can derive the general relation
+
+\[ P(A \and B) = P(A) P(B|A) = P(B) P(A|B) \]
+
+This might not be as easy to remember, but if you read it a few times,
+it should make sense.  This relationship holds whether $A$ and $B$
+are independent or not.
+
+\begin{ex}
+
+If I roll two dice and the total is 8, what is the chance that
+one of the dice is a 6?
+
+\end{ex}
+
+\begin{ex}
+
+The following questions are adapted from Mlodinow, {\em The Drunkard's Walk}.
+
+\begin{enumerate}
+
+\item If a family has two children, what is the chance that they
+  have two girls?
+
+\item If a family has two children and we know that one of them is a
+  girl, what is the chance that they have two girls?
+
+\item If a family has two children and we know that the older one is a
+  girl, what is the chance that they have two girls?
+
+\item If a family has two children and we know that at least one of
+  them is a girl named Florida, what is the chance that they have
+  two girls?
+
+\end{enumerate}
+
+You can use the assumptions that the probability that any child
+is a girl is 50\%, and that the percentage of girls named
+Florida is small.
+
+\end{ex}
+
+
+\begin{ex}
+
+\url{wikipedia.org/wiki/Conjunction_fallacy}
+
+\end{ex}
 
 
 \section{Monty Hall}
@@ -2500,36 +2578,6 @@ car, are you better off switching or sticking?
 
 \end{ex}
 
-
-\begin{ex}
-
-The following questions\footnote{Adapted from
-  Mlodinow, {\em The Drunkard's Walk}.} are similar to the Monty Hall
-  problem---they are easy to get wrong, but also easy
-  to simulate:
-
-\begin{enumerate}
-
-\item If a family has two children, what is the chance that they
-  have two girls?
-
-\item If a family has two children and we know that one of them is a
-  girl, what is the chance that they have two girls?
-
-\item If a family has two children and we know that the older one is a
-  girl, what is the chance that they have two girls?
-
-\item If a family has two children and we know that at least one of
-  them is a girl named Florida, what is the chance that they have
-  two girls?
-
-\end{enumerate}
-
-You can use the assumptions that the probability that any child
-is a girl is 50\%, and that the percentage of girls named
-Florida is small.
-
-\end{ex}
 
 
 \newcommand{\Poincare}{Poincar\'{e}}
