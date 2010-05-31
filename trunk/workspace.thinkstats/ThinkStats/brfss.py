@@ -5,16 +5,17 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import sys
-import survey
+import cPickle
 import continuous
 import Cdf
 import math
-import thinkstats
+import matplotlib
 import matplotlib.pyplot as pyplot
 import myplot
-import cPickle
-
+import random
+import sys
+import survey
+import thinkstats
 
 class Respondent(survey.Respondent): 
     """Represents a respondent."""
@@ -28,6 +29,9 @@ class Respondents(survey.Table):
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
+        
+        BRFSS codebook 
+        http://www.cdc.gov/brfss/technical_infodata/surveydata/2008.htm
 
         The elements of the tuple are field, start, end, case.
 
@@ -36,6 +40,8 @@ class Respondents(survey.Table):
                 cast is a callable that converts the result to int, float, etc.
         """
         return [
+            ('weight2', 119, 122, int),
+            ('wtyrago', 127, 130, int),
             ('wtkg2', 1254, 1258, int),
             ('htm3', 1251, 1253, int),
             ('sex', 143, 143, int),
@@ -85,7 +91,7 @@ class Respondents(survey.Table):
     def SummarizeHeight(self):
         d = {1:[], 2:[]}
         [d[r.sex].append(r.htm3) for r in self.records
-                                             if r.htm3 != 999]
+                                     if r.htm3 != 999]
         
         for key, t in d.iteritems():
             mu, var = thinkstats.TrimmedMeanVar(t)
@@ -93,7 +99,46 @@ class Respondents(survey.Table):
             cv = sigma / mu
             print key, mu, var, sigma, cv
         
-    
+    def SummarizeWeight(self):
+        
+        data = [(r.weight2, r.wtyrago) for r in self.records
+                    if r.weight2 <= 999 and r.wtyrago <= 999]
+        
+        changes = [(curr - prev) for curr, prev in data]
+            
+        print 'Mean change', thinkstats.Mean(changes)
+        
+    def ScatterWeight(self):
+        
+        weights = []
+        changes = []
+        for r in self.records:
+            if r.weight2 > 999 or r.wtyrago > 999:
+                continue
+            
+            if r.weight2 == r.wtyrago:
+                continue
+            
+            jitter = 3
+            fudge = random.uniform(-jitter, jitter)
+            change = (r.wtyrago - r.weight2) + jitter
+            
+            weights.append(r.weight2)
+            changes.append(change)
+            
+        print 'Mean change', thinkstats.Mean(changes)
+        
+        
+        # pyplot.scatter(weights, changes, s=1)
+        pyplot.hexbin(weights, changes, cmap=matplotlib.cm.gray_r)
+        myplot.Plot('brfss_scatter',
+                  title = 'Weight change vs. weight',
+                  xlabel = 'Current weight (pounds)',
+                  ylabel = 'Weight change (pounds)',
+                  axis = [50, 350, -50, 50],
+                  legend=False,
+                  show=True,
+                  )
 
 
 def WritePickle(filename='brfss.pkl'):
@@ -117,9 +162,10 @@ def main(name):
     #WritePickle()
     
     resp = Respondents()
-    resp.ReadRecords(n=None)
+    resp.ReadRecords(n=100000)
     #resp.MakeFigures()
-    resp.SummarizeHeight()
+    #resp.SummarizeHeight()
+    resp.SummarizeWeight()
     
 if __name__ == '__main__':
     main(*sys.argv)
