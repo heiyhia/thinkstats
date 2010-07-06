@@ -283,7 +283,7 @@ I will present three related pieces:
 \begin{description}
 
 \item[Probability] is the study of random events.  Most people have an
-  intuitive understanding of degrees of probability, which is why we
+  intuitive understanding of degrees of probability, which is why you
   can use words like ``probably'' and ``unlikely'' without special
   training, but we will talk about how to make quantitative claims
   about those degrees.
@@ -382,7 +382,7 @@ of statistics, which include:
   summarize the data concisely, and evaluate different ways to
   visualize data.
 
-\item[Exploratory data analysis:] We will examine the data looking for
+\item[Exploratory data analysis:] We will look for
   patterns, differences, and other features that address the questions
   we are interested in.  At the same time we will check for
   inconsistencies and identify limitations.
@@ -391,7 +391,7 @@ of statistics, which include:
   difference between two groups), we will evaluate whether the effect
   is likely to be real, or whether it might have happened by chance.
 
-\item[Estimation:] We will use measurements in the dataset to estimate
+\item[Estimation:] We will use data from a sample to estimate
   characteristics of the general population.
 
 \end{description}
@@ -521,7 +521,7 @@ If you read {\tt survey.py} you will see class definitions for {\tt
   Table}, which represents a table.
 
 There are two subclasses of
-{\tt Record}, {\tt Respondent} and {\tt Pregnancy}, which will
+{\tt Record}, {\tt Respondent} and {\tt Pregnancy}, which
 contain records from the respondent and pregnancy tables.
 For the time being, these classes are empty; in particular, there
 is no {\tt init} method to initialize their attributes.  Instead
@@ -536,7 +536,8 @@ named {\tt records}, which is a list of {\tt Record} objects.
 
 For each {\tt Table}, the {\tt GetFields} method returns
 a list of tuples that specify the fields from the record that
-will be stored as attributes in each {\tt Record} object.
+will be stored as attributes in each {\tt Record} object.  (You
+might want to read that last sentence twice.)
 
 For example, here is {\tt Pregnancies.GetFields}:
 
@@ -551,7 +552,9 @@ For example, here is {\tt Pregnancies.GetFields}:
             ]
 \end{verbatim}
 
-The elements of these tuples are:
+The first tuple says that the field {\tt caseid} is in columns
+1 through 12 and it's an integer.  Each tuple contains the following
+information:
 
 \begin{description}
 
@@ -559,19 +562,19 @@ The elements of these tuples are:
 will be stored.  Most of the time I use the names from the
 NSFG codebook, converted to all lower case.
 
-\item[start:] The index of the starting location for this
+\item[start:] The index of the starting column for this
 field.  You can look up these indices in the NSFG codebook
 at \url{nsfg.icpsr.umich.edu/cocoon/WebDocs/NSFG/public/index.htm}.
 For example, the indices for {\tt caseid} are
 1--12.
 
-\item[end:] The index of the ending location for this
-field.
+\item[end:] The index of the ending column for this
+field.  Unlike in Python, the end index is inclusive.
 
 \item[conversion function:] A function that takes a string
 and converts it to an appropriate type.  You can use built-in
-functions like {\tt int} and {\tt float} or a user-defined
-function.  If the conversion fails, the attribute gets the
+functions, like {\tt int} and {\tt float}, or user-defined
+functions.  If the conversion fails, the attribute gets the
 string value {\tt 'NA'}.  If you don't want to convert a
 field, you can provide an identity function or use {\tt str}.
 
@@ -581,7 +584,7 @@ For pregnancy records, we extract the following variables:
 
 \begin{description}
 
-\item[caseid] is the integer ID of the associated respondent.
+\item[caseid] is the integer ID of the respondent.
 
 \item[prglength] is the integer duration of the pregnancy in weeks.
 
@@ -685,7 +688,7 @@ several questions we still want to ask:
 
 \item Is it possible that the apparent effect is due to sample bias or
   some other error in the experimental setup?  If so, then we might
-  conclude that the effect is an {\bf artefact}; that is, something we
+  conclude that the effect is an {\bf artifact}; that is, something we
   created (by accident) rather than found. 
 
 \end{itemize}
@@ -697,7 +700,7 @@ We will address these questions in the next few chapters.
 \begin{description}
 
 \item[anecdotal evidence:] Evidence, often personal, that is collected
-  casually rather by a well-designed study.
+  casually rather than by a well-designed study.
 
 \item[population:] A group we are interested in studying, often a
   group of people, but the term is also used for animals, vegetables
@@ -745,7 +748,7 @@ suggests that something interesting is happening.
 \item[statistically significant:] An apparent effect is statistically
   significant if it is unlikely to occur by chance.
 
-\item[artefact:] An apparent effect that is caused by bias,
+\item[artifact:] An apparent effect that is caused by bias,
   measurement error, or some other kind of error.
 
 \end{description}
@@ -763,7 +766,7 @@ conventional wisdom, or controversial topics, or questions that have
 political consequences, and see if you can formulate a question that
 lends itself to statistical inquiry.
 
-Now start looking for data to help you address the
+Look for data to help you address the
 question.  Governments are good sources because data from
 public research is often freely available\footnote{On the day
 I wrote this paragraph, a court in the UK ruled that the
@@ -809,7 +812,7 @@ the sum of the values divided by the number of values; in other words
 \[ \mu = \frac{1}{n} \sum_i x_i \]
 
 \begin{ex}
-For the exercises in this chapter, create two file:
+For the exercises in this chapter, create two files:
 
 \begin{description}
 
@@ -826,6 +829,7 @@ takes a sequence of numbers and returns their mean.  Hint: the result
 should be a floating-point value even if the numbers are integers.
 
 In {\tt descriptive.py} write code that tests {\tt Mean}.
+
 \end{ex}
 
 The words ``mean'' and ``average'' are sometimes used interchangeably,
@@ -837,8 +841,8 @@ but I will maintain this distinction:
   the previous formula.
 
 \item An ``average'' is one of many summary statistics you might
-  choose to describe the typical value, or the expected value, or the
-  {\bf central tendency} of a sample.  
+  choose to describe the typical value or the
+  {\bf central tendency} of a sample.
 
 \end{itemize}
 
@@ -865,7 +869,7 @@ If there is no single number that summarizes pumpkin weights,
 we can do a little better with two numbers: mean and {\bf variance}.
 
 In the same way that the mean is intended to describe the central
-tendency, variance is intended to describe the ``spread''.
+tendency, variance is intended to describe the {\bf spread}.
 The variance of a set of values is
 
 \[ \sigma^2 = \frac{1}{n} \sum_i (x_i - \mu)^2 \]
@@ -971,32 +975,27 @@ values and returns their pmf.
 
 Write a method called {\tt Prob} that
 takes a value and returns the corresponding probability, or 0
-if the value has frequency 0.  Write tests to test your code.
+if the value has frequency 0.  Write tests for your code.
 \end{ex}
 
 
 \section{Plotting histograms}
 
 There are a number of Python packages for making figures and graphs.
-The one I will use in the book is {\tt pyplot}, which is part of
+The one I will demonstrate is {\tt pyplot}, which is part of
 the {\tt matplotlib} package at \url{matplotlib.sourceforge.net}.
 
 This package is included in many Python installations.  To see whether
 you have it, launch the Python interpreter and run:
 
 \begin{verbatim}
-import matplotlib.pyplot as plt
-plt.pie([1,2,3])
-plt.show()
+import matplotlib.pyplot
+pyplot.pie([1,2,3])
+pyplot.show()
 \end{verbatim}
 
 If you have {\tt matplotlib} you should see a simple pie chart;
 otherwise you will have to install it.
-
-The {\tt import...as} statement lets you import a package and give
-it a nickname, which is convenient if the name of the package is long.
-I will use the nickname {\tt plt} to be consistent with the examples
-in the {\tt pyplot} documentation.
 
 Histograms and pmfs are most often plotted as bar charts.  The
 {\tt pyplot} function to draw a bar chart is {\tt bar}.
@@ -1016,21 +1015,23 @@ apparent:
 
 \begin{description}
 
-\item[Mode:]  The most obvious feature of this distribution is the large
-number of values at 39 weeks.  The most common value in a distribution is
-called the {\bf mode}.  In this case, the mode is the summary statistic
-that does the best job of describing the typical value.
+\item[Mode:] The most obvious feature of this distribution is the
+  large frequency at 39 weeks.  The most common value in a
+  distribution is called the {\bf mode}.  In this case, the mode is
+  the summary statistic that does the best job of describing the
+  typical value.
 
-\item[Shape:] Around the mode, the distribution is asymmetric; it drops
-off quickly to the right and more slowly to the left.  From a medical
-point of view, this makes sense.  Babies are often born early, but
-seldom later than 42 weeks.  Also, the right side of the distribution is
-probably truncated because doctors often intervene after 42 weeks.
+\item[Shape:] Around the mode, the distribution is asymmetric; it
+  drops off quickly to the right and more slowly to the left.  From a
+  medical point of view, this makes sense.  Babies are often born
+  early, but seldom later than 42 weeks.  Also, the right side of the
+  distribution is truncated because doctors often intervene after 42
+  weeks.
 
 \item[Outliers:] Values far from the mode are called {\bf outliers}.
-Some of these are just unusual cases, like babies born at 30 weeks.
-But many of them are probably due to errors, either in the reporting
-or recording of data.
+  Some of these are just unusual cases, like babies born at 30 weeks.
+  But many of them are probably due to errors, either in the reporting
+  or recording of data.
 
 \end{description}
 
@@ -1058,12 +1059,13 @@ differ.  First babies seem to be less likely to arrive on time
 (week 39) and more likely to be a little late (weeks 41 and 42).
 
 \begin{ex}
+
 Create a file named {\tt plot.py} and write a function called {\tt
   Hist} that takes a Hist object and generates a bar chart using {\tt
   pyplot.bar}.  This function should also work for Pmf objects.
 
-Write another function called {\tt Hists} that takes two Hists (or Pmfs)
-and generates side-by-side histograms like the figures in this
+Write another function called {\tt Hists} that takes two Hists (or
+Pmfs) and generates side-by-side histograms like the figures in this
 section.  You will have to read the {\tt pyplot} documentation to
 adjust the width and position of the bars.
 
@@ -1098,8 +1100,8 @@ weeks  count
 \end{verbatim}
 
 Values below 20 weeks are certainly errors, and values higher than 30
-weeks are probably legitimate.  But there are a non-negligible number of
-values in between that are hard to interpret.
+weeks are probably legitimate.  But there are several values in
+between that are hard to interpret.
 
 On the other end, the 10 highest values are
 
@@ -1119,9 +1121,6 @@ weeks  count
 
 Again, there are some values here that are almost certainly errors, but
 it is hard to know for sure.
-
-Correcting other errors (like the bump at 35 weeks)?
-   (use birth weight?)
 
 Trimmed mean and variance.
 
@@ -1155,19 +1154,20 @@ to be born in weeks 41 and 42.
 
 
 \section{Relative risk}
+\label{relative.risk}
 
 We started with the question, ``Do first babies arrive late?''  To
 make that more precise, let's say that a baby is early if it is born
 during Week 37 or earlier, on time if it is born during Week 38, 39 or
 40, and late if it is born during Week 41 or later.  Ranges like these
-that are used to group data are called {\bf buckets}.
+that are used to group data are called {\bf bins}.
 
 \begin{ex}
 
 Create a file named {\tt risk.py}.
 Write functions named {\tt ProbEarly}, {\tt ProbOnTime} and
 {\tt ProbLate} that take a PMF and compute the fraction of births
-that fall into each bucket.  Hint: write a generalized function
+that fall into each bin.  Hint: write a generalized function
 that these functions call.
 
 Make three PMFs, one for first babies, one for others, and one for
@@ -1180,7 +1180,7 @@ that a first baby is born early is 18.2\%.  For other babies it is
 16.8\%, so the relative risk is 1.08.  That means that first babies
 are about 8\% more likely to be early.
 
-Write code to confirm those results, then compute the relative risks of
+Write code to confirm that result, then compute the relative risks of
 being born on time and being late.
 
 \end{ex}
@@ -1303,7 +1303,7 @@ are two reasons for the discrepancy:
 professors often teach 1 or 2.
 
 \item The number of students who enjoy a small class is small,
-but the number who suffer in a large class is large.
+but the number of students in a large class is...wait for it...large.
 
 \end{itemize}
 
@@ -1339,12 +1339,59 @@ conclude that the average class size is 29.
 Build a PMF of these data and compute the mean.  Now compute the
 average class size as perceived by students.
 
-Note: since the data have been rounded off, you can use the mid-point
-of each range.  
+Note: since the data have been grouped in bins, you can use the
+mid-point of each bin.
 \end{ex}
 
 
 \section{Glossary}
+
+\begin{description}
+
+\item[central tendency:] A characteristic of a sample or population;
+intuitively, it is the most average value. 
+
+\item[spread:] A characteristic of a sample or population;
+intuitively, it describes how much variability there is.
+
+\item[variance:] A summary statistic often used to quantify spread.
+
+\item[standard deviation:] The square root of variance, also used
+as a measure of spread.
+
+\item[frequency:] The number of times a value appears in a sample.
+
+\item[histogram:] A mapping from values to frequencies, or a graph
+that shows this mapping.
+
+\item[probability:] A frequency expressed as a fraction of the sample
+size.
+
+\item[normalization:] The process of dividing a frequency by a sample
+size to get a probability.
+
+\item[distribution:] A summary of the values that appear in a sample
+and the frequency, or probability, of each.
+
+\item[pmf:] Probability mass function: a representation of a distribution
+as a function that maps from values to probabilities.
+
+\item[mode:] The most frequent value in a sample.
+
+\item[outlier:] A value far from the central tendency.
+
+\item[bin:] A range used to group nearby values.
+
+\item[relative risk:] A ratio of two probabilities, often used to measure
+a difference between distributions.
+
+\item[conditional probability:] A probability computed under the assumption
+that some condition holds.
+
+\item[clinically significant:] A result, like a difference between groups,
+that is relevant in (often medical) practice.
+
+\end{description}
 
 
 \chapter{Cumulative distribution functions}
@@ -1352,8 +1399,8 @@ of each range.
 
 \section{The limits of PMFs}
 
-In general PMFs work well if the number of different values is less than
-about 50.  But as the number of possible values increases, the probability
+PMFs work well if the number of different values is less than
+about 50.  But as the number of values increases, the probability
 associated with each value gets smaller and the effect of random noise
 increases.
 
@@ -1375,13 +1422,13 @@ many values near the mean and a few values much higher and lower.
 
 But parts of this figure are hard to interpret.  There are many spikes
 and valleys, and some apparent differences between the distributions.
-But it hard to tell which of these features are significant.  Also, it
+It is hard to tell which of these features are significant.  Also, it
 is hard to see overall patterns; for example, which distribution do
 you think has the higher mean?
 
-These problems can be mitigated by {\bf binning} the data;
+These problems can be mitigated by binning the data;
 that is, dividing the domain into non-overlapping intervals and counting
-the number of values in each ``bin.''  Binning can be useful, but it is
+the number of values in each bin.  Binning can be useful, but it is
 tricky to get the size of the bins right.  If they are big enough to
 smooth out noise, they might also smooth out useful information.
 
@@ -1539,8 +1586,7 @@ following exercise I recommend an option that is simple and efficient.
 Create a file named {\tt Cdf.py} and write a definition for a class
 named {\tt Cdf} that represents a CDF.  The attributes of a Cdf
 object are {\tt xs}, which is a sorted list of the unique values
-in the sample, and {\tt ps} which is a list of probabilities that
-correspond to the values in {\tt xs}.
+in the sample, and {\tt ps} which is a list of probabilities.
 
 Write a simple constructor that takes {\tt xs} and {\tt ps} as
 parameters, then write two functions:
@@ -1614,6 +1660,12 @@ percentile rank.  If you were a first baby, find your percentile rank
 in the distribution for first babies.  Otherwise use the distribution
 for others.  How big is the difference between your percentile ranks
 in the two distributions?
+\end{ex}
+
+\begin{ex}
+Suppose you and your classmates compute the percentile rank of your
+birth weights and then compute the CDF of the percentile ranks.  What do
+you expect it to look like?
 \end{ex}
 
 
@@ -1698,7 +1750,7 @@ to implement than explain, let's try it out.
 
 \begin{ex}
 
-Add a method to the Cdf class, called {\tt sample}, that takes
+Add a method to the Cdf class, called {\tt Sample}, that takes
 an integer {\tt n} and returns a list of $n$ values chosen at
 random from the distribution.  Hint: use {\tt random.random}.
 
@@ -1732,12 +1784,30 @@ the {\bf interquartile range} measures the spread.
 Compute the 25th, 50th, and 75th percentiles of the birth weight
 CDF.  Do these values suggest that the distribution is symmetric?
 
-Add a method to {\tt Cdf}, called {\tt Interquartile}, that computes
+Int {\tt Cdf}, add a method called {\tt Median} that computes the
+median, and one called {\tt Interquartile} that computes
 the interquartile range.
 \end{ex}
 
 
 \section{Glossary}
+
+\begin{description}
+
+\item[percentile rank:] The percentage of values in a distribution that are
+less than or equal to a given value.
+
+\item[CDF:] A function that maps from values to their percentile ranks.
+
+\item[percentile:] The value associated with a given percentile rank.
+
+\item[conditional distribution:] A distribution computed under the assumption
+that some condition holds.
+
+\item[resampling:] The process of generating a random sample from a
+distribution that was computed from a sample.
+
+\end{description}
 
 
 
@@ -1755,7 +1825,7 @@ continuous distributions, which is why they are useful.
 
 \section{The exponential distribution}
 
-We will start with the exponential distribution because it is
+I'll start with the exponential distribution because it is
 easy to work with.  In the real world, exponential distributions
 come up when we look at a series of events and measure the
 times between events, which are called {\bf interarrival times}.
@@ -1815,12 +1885,11 @@ If you take the log of both sides of this equation, you get:
 So on a log-$y$ scale the CCDF is a straight line
 with slope $-\lambda$.
 
-Figure~\ref{interarrivals_logy}
-shows the CCDF of the interarrivals on a
-log-$y$ scale.  It is not exactly straight, which suggests that
-the exponential model is only an approximation of the observed
-process.  Most likely the underlying assumption---that a birth is
-equally likely at any time of day---is not exactly true.
+Figure~\ref{interarrivals_logy} shows the CCDF of the interarrivals on
+a log-$y$ scale.  It is not exactly straight, which suggests that the
+exponential distribution is only an approximation.  Most likely the
+underlying assumption---that a birth is equally likely at any time of
+day---is not exactly true.
 
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{workspace/interarrivals_logy.eps}}
@@ -1842,8 +1911,8 @@ Use it to generate 44 values from an exponential distribution with
 mean 32.6.  Plot the CCDF on a log-$y$ scale and compare
 it to Figure~\ref{interarrivals_logy}.
 
-Hint: use the function {\tt pyplot.yscale} to set the scale of the
-$y$ axis.
+Hint: use the function {\tt pyplot.yscale} to plot the $y$ axis
+on a log scale.
 \end{ex}
 
 \begin{ex}
@@ -1885,13 +1954,13 @@ The median of this distribution is $x_m 2^{1/alpha} = 1$, but the
 95th percentile is 10.  By contrast, the exponential distribution
 with median 1 has 95th percentile of only 1.5.
 
-There is a simple visual test that can indicate whether an empirical
+There is a simple visual test that indicates whether an empirical
 distribution is well-characterized by a Pareto distribution: on a
 log-log scale, the CCDF looks like a straight line.  The derivation is
 similar to what we saw in the previous section.
 
 If you plot a the CCDF of a sample from a Pareto distibution on a
-linear scale, we expect to see a function like:
+linear scale, you expect to see a function like:
 
 \[ y \sim \left( \frac{x}{x_m} \right) ^{-\alpha} \]
 
@@ -1928,8 +1997,7 @@ and median, 150 cm.
 
 Generate 6 billion random values from this distribution.  What is the
 mean of this sample?  What fraction of the population is shorter than
-the mean?  How tall would we expect the tallest person in the world
-be?
+the mean?  How tall is the tallest person in Pareto World?
 
 \end{ex}
 
@@ -1941,7 +2009,7 @@ unusual words, like ``hapaxlegomenon,'' that appear only a few times.
 Zipf's law predicts that in a body of text, called a ``corpus,'' the
 distribution of word frequencies is roughly Pareto.
 
-Find a large corpus in any language, in electronic
+Find a large corpus, in any language, in electronic
 format.  Count how many times each word appears.  Find the CCDF of the
 word counts and plot it on a log-log scale.  Does Zipf's law hold?
 What is the value of $\alpha$, approximately?
@@ -1998,7 +2066,7 @@ named {\tt erf} and {\tt NormalCdf}.
 
 Figure~\ref{normal_cdf} shows the CDF of the normal distribution
 with parameters $\mu=2.0$ and $\sigma=0.5$.  The sigmoid shape of
-this curve a recognizable characteristic of a normal distribution.
+this curve is a recognizable characteristic of a normal distribution.
 
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{workspace/normal_cdf.eps}}
@@ -2066,11 +2134,11 @@ For the exponential, Pareto and Weibull distributions, there are
 simple transformations we can use to test whether a continuous
 distribution is a good model of a dataset.
 
-For the normal distribution there is no such transformation, but
-there is an alternative called a {\bf normal probability plot}.
-It is based on {\bf rankits}: if you generate $n$
-values from a normal distribution and sort them,
-the $k$th rankit is expected value of the $k$th value.
+For the normal distribution there is no such transformation, but there
+is an alternative called a {\bf normal probability plot}.  It is based
+on {\bf rankits}: if you generate $n$ values from a normal
+distribution and sort them, the $k$th rankit is the mean of the
+distribution for the $k$th value.
 
 \begin{ex}
 This exercise is optional, but it might help you get your head around rankits.
@@ -2079,7 +2147,7 @@ Write a function called {\tt Sample} that generates 6 samples from a
 normal distribution with $\mu = 0$ and $\sigma = 1$.  Sort and return
 the values.
 
-Write a function called {\tt Samples} that calls {\tt Sample} 100 times and
+Write a function called {\tt Samples} that calls {\tt Sample} 1000 times and
 returns a list of 1000 lists.
 
 If you apply {\tt zip} to this list of lists, the result is 6 lists
@@ -2133,7 +2201,7 @@ probability plot for the birth weight data.
 
 The curvature in this plot suggests that there are consistent
 deviations from a normal distribution; nevertheless, it is a
-good (enough) model for most purposes.
+good (enough) model for many purposes.
 
 \begin{ex}
 Sketch a line to fit this curve as well as you can, and
@@ -2172,7 +2240,7 @@ It turns out that we can do better by applying a logarithmic
 transformation\footnote{I was tipped off to this possibility by a
   comment (without citation) at
   \url{mathworld.wolfram.com/LogNormalDistribution.html}.
-  Subsequently I found this paper that proposes the log transform and
+  Subsequently I found a paper that proposes the log transform and
   suggests a cause: Penman and Johnson, ``The Changing Shape of the
   Body Mass Index Distribution Curve in the Population,'' Preventing
   Chronic Disease, 2006 July; 3(3): A74.  Online
@@ -2192,8 +2260,17 @@ highest weights exceed the expectation of the normal model even after
 the log transform).
 
 If the log transform fits a normal model, that means that the data
-fit a lognormal model.  In Chapter~\ref{correlation} we will come back
-and look at a possible explanation of this phenomenon.
+fit a lognormal model.
+
+%In Chapter~\ref{correlation} we will come back
+%and look at a possible explanation of this phenomenon.
+
+\begin{ex}
+
+You can download code to work with the BRFSS dataset from \url{}.
+General normal probability plots for $w$ and $\log w$.
+
+\end{ex}
 
 \begin{ex}
 The distribution of populations for cities and towns has been proposed
@@ -2209,7 +2286,7 @@ can download it from \url{thinkstatsbook.com/populations.py}.
 
 \item Read over the program to make sure you know what it does and then
   write a program that computes and plots the distribution of
-  populations for the 14593 cities and towns in the dataset.
+  populations for the 14,593 cities and towns in the dataset.
 
 \item Plot the CDF on linear and log-$x$ scales so you can get a sense
   of the shape of the distribution.  Then plot the CCDF on a log-log
@@ -2229,7 +2306,7 @@ for cities and towns?
 
 \section{Skewness}
 
-Skewness is a statistic that measures the asymmetry of a
+{\bf Skewness} is a statistic that measures the asymmetry of a
 distribution.  Given a sequence of values, $x_i$, the sample skewness
 is:
 
@@ -2325,6 +2402,47 @@ What happens when we add up a lot of values?
 What happens when we multiply out a lot of values?
 
 
+\section{Glossary}
+
+\begin{description}
+
+\item[empirical distribution:] The distribution of values in a sample.
+
+\item[continuous distribution:] A distribution described by a continuous
+function.
+
+\item[interarrival time:] The elapsed time between two events.
+
+\item[error function:] A special mathematical function, so-named
+  because it comes up in the study of measurement errors.
+
+\item[normal probability plot:] A plot of the sorted values in a sample
+versus the expected value for each if their distribution is normal.
+
+\item[rankit:] The expected value of an element in a sorted list of
+values from a normal distribution.
+
+\item[model:] A useful simplification.  Continuous distributions are
+often good models of more complex empirical distributions.
+
+\item[skewness:] A characteristic of a distribution; intuitively, it
+is a measure of how asymmetric the distribution is.
+
+\item[robust:] A statistic is robust if it is relatively immune to the
+effect of outliers.
+
+\item[illusory superiority:] The tendency of people to imagine that
+they are better than average.
+
+\item[corpus:] A body of text used as a sample of a language.
+
+\item[hapaxlegomenon:] A word that appear only once in a corpus.
+It appears twice in this book, so far.
+
+\end{description}
+
+
+
 \chapter{Probability}
 \label{probability}
 
@@ -2343,28 +2461,29 @@ $E$ represents an event, then $P(E)$ represents the probability that
 $E$ will occur.  A situation where $E$ might or might not happen is
 called a {\bf trial}.
 
-As an example, suppose that we roll a standard six-sided die and we
-want to know the probability of rolling a 6.  Each roll of the die
-is a trial.  Each time a 6 appeared is considered a
-{\bf success}; other trials are considered {\bf failures}.
-These terms are used even in scenarios where ``success'' is bad
-and ``failure is good.
+As an example, suppose you have a standard six-sided
+die\footnote{``Die'' is the singular of ``dice''.} and want to know
+the probability of rolling a 6.  Each roll is a trial.
+Each time a 6 appears is considered a {\bf success}; other trials are
+considered {\bf failures}.  These terms are used even in scenarios
+where ``success'' is bad and ``failure'' is good.
 
 If we have a finite sample of $n$ trials and we observe $s$ successes,
-the probability of success is $s/n$.
-If the set of trials is infinite, defining probabilities is a little
-trickier, but most people are willing to accept probablistic claims
-about a hypothetical series of identical trials, like tossing a coin
-or rolling a die.
+the probability of success is $s/n$.  If the set of trials is
+infinite, defining probabilities is a little trickier, but most people
+are willing to accept probablistic claims about a hypothetical series
+of identical trials, like tossing a coin or rolling a die.
 
 We start to run into trouble when we talk about probabilities of
 unique events.  For example, we might like to know the probability
 that a candidate will win an election.  But every election is unique,
-so there is so series of identical trials to consider.
+so there is no series of identical trials to consider.
 
 In cases like this some people would say that the notion of
 probability does not apply.  This position is sometimes called {\bf
   frequentism} because it defines probability in terms of frequencies.
+If there is no set of identical trials, there is no probability.
+
 Frequentism is relatively safe, from a philosophic point of view, but
 frustrating because it limits the scope of probability to physical
 systems that are either random (like atomic decay) or so unpredictable
@@ -2382,7 +2501,7 @@ this reason, many people think that Bayesian probabilities are
 
 As an example, what is the probability that Thaksin Shinawatra is the
 Prime Minister of Thailand?  A frequentist would say that there is no
-well-defined probability for this event because there is no series of
+well-defined probability for this event because there is no set of
 trials.  Thaksin either is, or is not, the PM; it's not a question of
 probability.
 
@@ -2402,9 +2521,9 @@ reflecting the possibility that the Wikipedia is wrong.
 
 \section{Rules of probability}
 
-For frequency probabilities, we can derive rules that relate 
-probabilities of different events.  Probably the best known of
-these rules is
+For frequency probabilities, we can derive rules that relate
+probabilities of different events.  Probably the best known of these
+rules is
 
 \renewcommand{\and}{\wedge}
 
@@ -2464,15 +2583,16 @@ one of the dice is a 6?
 
 \begin{ex}
 
-The following questions are adapted from Mlodinow, {\em The Drunkard's Walk}.
+The following questions are adapted from Mlodinow, {\em The Drunkard's
+  Walk}.
 
 \begin{enumerate}
 
 \item If a family has two children, what is the chance that they
   have two girls?
 
-\item If a family has two children and we know that one of them is a
-  girl, what is the chance that they have two girls?
+\item If a family has two children and we know that at least one of
+  them is a girl, what is the chance that they have two girls?
 
 \item If a family has two children and we know that the older one is a
   girl, what is the chance that they have two girls?
@@ -2483,8 +2603,9 @@ The following questions are adapted from Mlodinow, {\em The Drunkard's Walk}.
 
 \end{enumerate}
 
-You can use the assumptions that the probability that any child
-is a girl is 50\%, and that the percentage of girls named
+You can assume that the probability that any child is a girl is $1/2$,
+and that the children in a family are independent trials (in more ways
+than one).  You can also assume that the percentage of girls named
 Florida is small.
 
 \end{ex}
@@ -2493,7 +2614,7 @@ Florida is small.
 \section{Monty Hall}
 
 The Monty Hall problem might be the most contentious question in
-the history of probability.  The problem is simple, but the correct
+the history of probability.  The scenario is simple, but the correct
 answer is so counterintuitive that many people just can't accept
 it, and many smart people have embarrassed themselves not just by
 getting it wrong but by arguing the wrong side, aggressively,
@@ -2501,8 +2622,7 @@ in public.
 
 Monty Hall was the original host of the game show {\em Let's Make a
 Deal}.  The Monty Hall problem is based on one of the regular
-games on the show.  If you were on the show, here's what
-happens:
+games on the show.  If you are on the show, here's what happens:
 
 \begin{itemize}
 
@@ -2825,7 +2945,7 @@ $P(E)$, the probability of seeing the evidence under any circumstances
 
 This way of reading Bayes' theorem is called the ``diachronic''
 interpretation because it describes how the probability of a
-hypothesis gets updated over time in light of new evidence.  In this
+hypothesis gets updated, over time, in light of new evidence.  In this
 context, $P(H)$ is called the {\bf prior} probability and $P(H|E)$ is
 called the {\bf posterior}.  The update term $P(E|H)/P(E)$ is called
 the {\bf likelihood ratio}.
@@ -2834,11 +2954,10 @@ A classic use of Bayes' Theorem is the interpretation of clinical
 tests.  For example, routine testing for illegal drug use is
 increasingly common in workplaces and schools (See
 \url{aclu.org/drugpolicy/testing/index.html}.).  The companies that
-perform these tests maintain that the tests are
-sensitive, which means that they are likely to produce a positive
-result if there are drugs in a sample, and specific, which
-means that they are likely to yield a negative result if
-there are no drugs.
+perform these tests maintain that the tests are sensitive, which means
+that they are likely to produce a positive result if there are drugs
+(or metabolites) in a sample, and specific, which means that they are
+likely to yield a negative result if there are no drugs.
 
 Studies from the Journal of the American Medical
 Association\footnote{I got these number from Gleason and Barnum,
@@ -2915,6 +3034,29 @@ Other Examples from MacKay's Chapter 3?
 \end{ex}
 
 
+\section{Glossary}
+
+\begin{description}
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\end{description}
+
+
 \chapter{Hypothesis testing}
 
 Exploring the data from the NSFG, we saw several ``apparent effects;''
@@ -2924,7 +3066,7 @@ finally, we will put them to the test.
 
 The fundamental question we want to address is whether these effects
 are real.  For example, if we see a difference in the mean pregnancy
-length for first babies and other, we want to know whether that
+length for first babies and others, we want to know whether that
 difference is real, or whether it occurred by chance.
 
 That question turns out to be hard to address directly, so we will
@@ -2935,7 +3077,7 @@ proceed in two steps.  First we will test whether the effect is {\bf
 In the context of statistics, ``significant'' has a technical
 definition that is different from its use in common language.
 As we defined earlier, an apparent effect is statistically
-significant if it is unlikely to have occurred by change.
+significant if it is unlikely to have occurred by chance.
 
 To make this more precise, we have to answer three questions:
 
@@ -2976,14 +3118,13 @@ be true.
 Similarly, to test a hypothesis like, ``This effect is real,'' we
 assume, temporarily, that is is not.  That's the null hypothesis.
 Based on that assumption, we compute the probability of the apparent
-effect.  That's the p-value.  If the p-value is low enough (more about
-that soon), we conclude that the null hypothesis is unlikely to be
-true.
+effect.  That's the p-value.  If the p-value is low enough, we
+conclude that the null hypothesis is unlikely to be true.
 
 
 \section{Testing a difference in means}
 
-One of the easier hypotheses to test is an apparent difference in mean
+One of the easiest hypotheses to test is an apparent difference in mean
 between two groups.  In the NSFG data, we saw that the mean pregnancy
 length for first babies is slightly longer, and the mean weight at
 birth is slightly smaller.  Now we will see if those effects are
@@ -3040,10 +3181,14 @@ Hint: for this kind of resampling it is important to sample
 with replacement, so you should use {\tt random.choice} rather
 than {\tt random.sample}.
 
+
+%%%%%% Need to go back and introduce sampling with and without replacement.
+
 \end{ex}
 
 
 \section{Choosing a threshold}
+\label{threshold}
 
 In hypothesis testing we have to worry about two kinds of errors.
 
@@ -3143,6 +3288,7 @@ the mean for first babies is significanly {\em higher} than
 the mean for others.  Because the hypothesis is more specific, the
 p-value is lower---in this case it is roughly half.
 
+%%% Do I mean higher or lower?
 
 \section{Interpreting the result}
 
@@ -3256,8 +3402,8 @@ no longer using the same data for training and testing.
 \section{Reporting Bayesian probabilities}
 
 In the previous section we chose the prior probability $P(H_A) = 0.5$.
-If we have no reason to think one hypothesis is more likely than another,
-it is common to assign each 
+If we have a set of hypothesis and no reason to think one is more
+likely than another, it is common to assign each the same probability.
 
 Some people object to Bayesian probabilities because they depend on
 prior probabilities, and people might not be able to agree on
@@ -3266,13 +3412,83 @@ objective and universal, this property is deeply unsettling.
 
 One response to this objection is that, in practice, strong evidence
 tends to swamp the effect of the prior, so people who start with
-different priors will eventually converge to the same posterior
+different priors will converge toward the same posterior
 probability.
 
 Another option is to report just the likelihood ratio, 
 $P(H_A | E)/P(E)$, rather than the posterior probability.  That way
 readers can plug in whatever prior they like and compute their own
-posteriors, no pun intended.
+posteriors (no pun intended).
+
+
+\section{Pregnancy lengths one more time}
+
+In Section~\ref{threshold} we concluded that the apparent difference
+in mean pregnancy length for first babies and others was not
+significant.  But in Section~\ref{relative.risk}, when we computed
+relative risk, we saw that first babies are more likely to be early,
+less likely to be on time, and more likely to be late.
+
+So maybe the distributions have the same mean and different variance.
+We could test the significance of the difference in variance, but
+the variance is less robust than the mean, and hypothesis tests for
+variance often behave badly.
+
+An alternative is to test a hypothesis that more directly reflects the
+effect as it appears; that is, the hypothesis that first babies are
+more likely to be early, less likely to be in time, and more likely to
+be late.
+
+We proceed in five easy steps:
+
+\begin{enumerate}
+
+\item We define a set of categories, called {\bf cells}, that each
+  baby might fall into.  In this example, there are six cells because
+  there are two groups (first babies and others) and three bins
+  (early, on time or late).
+
+I'll use the definitions from Section~\ref{relative.risk}: a baby is
+early if it is born during Week 37 or earlier, on time if it is born
+during Week 38, 39 or 40, and late if it is born during Week 41 or
+later.
+
+\item We compute the number of babies we expect in each cell.  Under
+  the null hypothesis, we assume that the distributions are the same
+  for the two groups, so we can compute the pooled probabilities:
+  $p_{early}$, $p_{ontime}$ and $p_{late}$.
+
+For first babies, we have $n=4413$ samples, so under the null hypothesis
+we expect $n p_{early}$ first babies to be early, $n p_{ontime}$ to be
+on time, etc.  Likewise, we have $m=4735$ other babies, so we expect
+$m p_{early}$ other babies to be early, etc.
+
+\item For each cell we compute the deviation; that is, the difference
+  between the observed value, $O_i$, and the expected value, $E_i$
+
+\item We compute some measure of the total deviation; the most common
+choice is the chi-squared statistic:
+
+  \[ \chi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
+
+%% Consider using upper case chi, which is more strictly correct,
+%% but harder to distinguish from X.
+
+\item We can use a Monte Carlo simulation to compute the p-value,
+  which is the probability of seeing a chi-squared statistic as high
+  as the observed value under the null hypothesis.
+
+\end{enumerate}
+
+\begin{ex}
+
+Use the data from the ??? to compute $p_{early}$, $p_{ontime}$ and
+$p_{late}$.  The compute the $E_i$, $O_i$ and $\chi^2$.  What is the
+p-value of $\chi^2$ under the null hypothesis.  According to this
+test, is the observed effect statistically significant?
+
+\end{ex}
+
 
 
 \section{Efficient resampling}
@@ -3319,6 +3535,29 @@ Solutions:
 
 
 
+\section{Glossary}
+
+\begin{description}
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\end{description}
+
+
 \chapter{Estimators}
 
 An estimator is a statistic that converges on a parameter.
@@ -3330,6 +3569,29 @@ Confidence intervals, oh my.
 
 \section{Bayesian estimation}
 
+
+
+\section{Glossary}
+
+\begin{description}
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\item[:] 
+
+\end{description}
 
 
 \chapter{Correlation}
