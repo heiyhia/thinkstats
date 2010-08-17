@@ -22,6 +22,9 @@ class Table(object):
 
     def __init__(self):
         self.records = []
+        
+    def __len__(self):
+        return len(self.records)
 
     def ReadFile(self, filename, fields, constructor, n=None):
         """Reads a compressed data file builds one object per record.
