@@ -32,6 +32,13 @@ def TrimmedMean(t, p=0.01):
     return Mean(t)
 
 
+
+def MeanVar(t):
+    mu = Mean(t)
+    var = Var(t, mu)
+    return mu, var
+
+
 def TrimmedMeanVar(t, p=0.01):
     """Computes the trimmed mean of a sequence of numbers.
 
@@ -44,8 +51,7 @@ def TrimmedMeanVar(t, p=0.01):
         float
     """
     t = Trim(t, p)
-    mu = Mean(t)
-    var = Var(t, mu)
+    mu, var = MeanVar(t)
     return mu, var
 
 
