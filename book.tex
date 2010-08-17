@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.0.1}
+\newcommand{\theversion}{1.0.2}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -402,6 +402,7 @@ correct.
 
 
 \section{The National Survey of Family Growth}
+\label{nsfg}
 
 Since 1973 the U.S. Centers for Disease Control and Prevention (CDC)
 have conducted the National Survey of Family Growth (NSFG),
@@ -2038,16 +2039,16 @@ Weibull distribution and use it to test your transformation.
 
 \newcommand{\erf}{\mathrm{erf}}
 
-The normal distribution, also called Gaussian, is the most
-commonly used because it describes so many phenomena, at least
-approximately.  It turns out that there is a good reason for
-its ubiquity, which we will get to soon.
+The normal distribution, also called Gaussian, is the most commonly
+used because it describes so many phenomena, at least approximately.
+It turns out that there is a good reason for its ubiquity, which we
+will get to soon.
 
 The normal distribution has many properties that make it amenable for
 analysis, but unfortunately the CDF is not one of them.  Unlike the
 other distributions we have looked at, there is no closed-form
 expression for the normal CDF; the most common alternative is to write
-it in terms of a special function called the {\bf error function},
+it in terms of the {\bf error function}, which is a special function
 written $\erf$:
 
 \[ erf(x) = \frac{2}{\sqrt{\pi}} \int_{-\infty}^x e^{-t^2} dt \]
@@ -2096,13 +2097,13 @@ Below the 10th percentile there is a discrepancy between the data
 and the model; there are more light babies than we would expect in
 a normal distribution.  If we are interested in studying preterm
 babies, it would be important to get this part of the distribution
-right.  In that case it might not be appropriate to use the normal
+right, so it might not be appropriate to use the normal
 model.
 
 \begin{ex}
 The Wechsler Adult Intelligence Scale is a test that is intended
 to measure intelligence\footnote{Whether it does or not is a
-fascinating controversy that I invite you to investiage at your
+fascinating controversy that I invite you to investigate at your
 leisure.}.  Results are normalized so that the distribution of scores
 in the general population is normal with $\mu=100$ and $\sigma=15$.
 
@@ -2113,7 +2114,10 @@ What fraction is over 115?  130?  145?
 
 A ``six-sigma'' event is a value that exceeds the mean by 6 standard
 deviations, so a six-sigma IQ is 190.  In a world of 6 billion people,
-how many do we expect to have an IQ of 190 or more?
+how many do we expect to have an IQ of 190 or more\footnote{On this
+  topic, you might be interested to read
+  \url{wikipedia.org/wiki/Christopher_Langan}}?
+
 \end{ex}
 
 
@@ -2180,7 +2184,7 @@ generate a sample with the same size as your dataset and sort it.
 
 \end{description}
 
-For large datasets, this method actually does pretty well.
+For large datasets, this method works well.
 For smaller datasets, you can improve it by generating $m (n+1) - 1$
 values from a normal distribution, where $n$ is the size of the
 dataset and $m$ is a multiplier.  Then select every $m$th element,
@@ -2199,7 +2203,7 @@ probability plot for the birth weight data.
 \label{nsfg_birthwgt_normal}
 \end{figure}
 
-The curvature in this plot suggests that there are consistent
+The curvature in this plot suggests that there are
 deviations from a normal distribution; nevertheless, it is a
 good (enough) model for many purposes.
 
@@ -2267,8 +2271,9 @@ fit a lognormal model.
 
 \begin{ex}
 
-You can download code to work with the BRFSS dataset from \url{}.
-General normal probability plots for $w$ and $\log w$.
+You can download code to work with the BRFSS dataset from
+\url{thinkstatsbook.com/brfss.py}.  Generate normal probability plots
+  for $w$ and $\log w$.
 
 \end{ex}
 
@@ -2284,7 +2289,7 @@ can download it from \url{thinkstatsbook.com/populations.py}.
 
 \begin{enumerate}
 
-\item Read over the program to make sure you know what it does and then
+\item Read over the program to make sure you know what it does; then
   write a program that computes and plots the distribution of
   populations for the 14,593 cities and towns in the dataset.
 
@@ -2333,14 +2338,14 @@ at the relationship between the mean and median.
 Extreme values have more effect on the mean than the median, so
 in a distribution that skews left, the mean is less than the median.
 
-Pearson's median skewness coefficient is an alternative measure
-of skewness:
+Pearson's median skewness coefficient is an alternative measure of
+skewness that explicitly captures the relationship between the mean,
+$\mu$, and the median, $\mu_{1/2}$:
 
 \[ g_p = 3 (\mu - \mu_{1/2}) / \sigma \]
 
-where $\mu_{1/2}$ is the median of the sample.  This statistic is {\bf
-  robust}, which means that it is less vulnerable to the effect of
-outliers.
+This statistic is {\bf robust}, which means that it is less vulnerable
+to the effect of outliers.
 
 \begin{ex}
 
@@ -2352,7 +2357,7 @@ birth weight.  Are the results consistent with the shape of the
 distributions?
 
 Write a function named {\tt PearsonSkewness} that computes $g_p$
-for these distributions.  How does $g_p$ compare to $g_p$?
+for these distributions.  How does $g_p$ compare to $g_1$?
 
 \end{ex}
 
@@ -2391,9 +2396,42 @@ inequality.  Read about it at
 \end{ex}
 
 
+\section{Why normal?}
+
+I said earlier that normal distributions are amenable to analysis,
+but I didn't say why.  One of the primary reasons is that they are
+closed under linear combination and convolution.  To explain what
+that means, it will help to introduce some notation.
+
+If the distribution of a variable, $X$, is (at least approximately)
+normal with parameters $\mu$ and $\sigma$, you can write
+
+\[ X \sim \mathcal{N} (\mu, \sigma^2) \]
+
+where the symbol $\sim$ means ``is distributed'' and the script letter
+$\mathcal{N}$ stands for ``normal.''
+
+The other continuous distributions in this chapter are sometimes
+written $Exponential(\lambda)$, $Pareto(x_m, \alpha)$ and
+$Log-\mathcal{N} (\mu, \sigma^2)$ (for lognormal).
+
+A family of distributions is closed under linear combination if
+
+
+\begin{ex}
+
+Try out some combinations.
+
+Choose parameters so the mean and variance are similar, so one
+distribution isn't swamped by the other.
+
+\end{ex}
+
+
 \section{Convolution}
 
 What happens when we add these things up?
+
 
 \section{Central limit theorem}
 
@@ -3431,7 +3469,7 @@ less likely to be on time, and more likely to be late.
 
 So maybe the distributions have the same mean and different variance.
 We could test the significance of the difference in variance, but
-the variance is less robust than the mean, and hypothesis tests for
+variances are less robust than means, and hypothesis tests for
 variance often behave badly.
 
 An alternative is to test a hypothesis that more directly reflects the
@@ -3482,10 +3520,15 @@ choice is the chi-squared statistic:
 
 \begin{ex}
 
-Use the data from the ??? to compute $p_{early}$, $p_{ontime}$ and
-$p_{late}$.  The compute the $E_i$, $O_i$ and $\chi^2$.  What is the
-p-value of $\chi^2$ under the null hypothesis.  According to this
-test, is the observed effect statistically significant?
+Use the data from the NSFG (see Section~\ref{nsfg}) to compute
+$p_{early}$, $p_{ontime}$ and $p_{late}$.  The compute the $E_i$,
+$O_i$ and $\chi^2$.  What is the p-value of $\chi^2$ under the null
+hypothesis.
+
+You can download a solution to this exercise from
+\url{thinkstatsbook.com/chi.py}.
+If your results are consistent with mine, the value of $\chi^2$ is 91.64,
+which would occur by chance about one time in 10,000.
 
 \end{ex}
 
@@ -3493,9 +3536,67 @@ test, is the observed effect statistically significant?
 
 \section{Efficient resampling}
 
-Using the central limit theorem to compute the distribution of a sample mean.
+Anyone reading this book who has prior training in statistics probably
+laughed when they saw Figure~\ref{length_deltas_cdf}, because I used a
+lot of computer power to simulate something I could have figured out
+analytically.
 
+Obviously mathematical analysis is not the focus of this book.  I am
+willing to use computers to do things the ``dumb'' way, because I
+think it is easier for beginners to understand simulations, and easier
+to demonstrate that they are correct.  So as long as the simulations
+don't take too long to run, I don't feel guilty for skipping the
+analysis.
 
+However, there are many times when a little analysis can save a lot of
+computing, and Figure~\ref{length_deltas_cdf} is one of those times.
+
+Remember that we were testing the observed difference in the mean between
+pregnancy lengths for $n=4413$ first babies and $m=4735$ others.  We formed
+the pooled distribution for all babies, drew samples with sizes $n$ and
+$m$, and computed the difference in sample means.
+
+Instead, we could directly compute the distribution of the difference
+in sample means.  To get started, let's think about what a sample mean
+is: we draw $n$ samples from a distribution, add them up, and
+divide by $n$.  If the distribution has mean $\mu$ and variance
+$\sigma^2$, then by the Central Limit Theorem, we know that the sum of
+the samples is $\mathcal{N} (n \mu, n \sigma^2)$.
+
+To figure out the distribution of the sample means, we have to invoke
+one of the properties of the normal distribution: if $X$ is
+$\mathcal{N} (\mu, \sigma^2)$,
+
+\[ aX + b \sim \mathcal{N} (a \mu + b, a^2 \sigma^2) \]
+
+When we divide by $n$, $a=1/n$ and $b=0$, so
+
+\[ X/n \sim \mathcal{N} (\mu / n, \sigma^2/ n^2) \]
+
+So the distribution of the sample mean is $\mathcal{N} (\mu, \sigma^2/n)$.
+
+To get the distribution of the difference between two sample means,
+we invoke another property of the normal distribution: if $X_1$ is
+$\mathcal{N} (\mu_1, \sigma_1^2)$ and $X_2$ is
+$\mathcal{N} (\mu_2, \sigma_2^2)$,
+
+\[ aX_1 + bX_2 \sim \mathcal{N} (a\mu_1 + b\mu_2, 
+                                 a^2\sigma_1^2 + b^2\sigma_2^2) \]
+
+So as a special case:
+
+\[ X_1 - X_2 \sim \mathcal{N} (a\mu_1 - b\mu_2, 
+                               \sigma_1^2 + \sigma_2^2) \]
+
+Putting it all together, we conclude that the sample in Figure~\ref{}
+is drawn from $\mathcal{N} (0, f \sigma^2)$, where $f = 1/n + 1/m$.
+Plugging in $n=4413$ and $m=4735$, we expect the difference of sample
+means to be $\mathcal{N} (0, 0.0065)$.
+
+%For pregnancy length, we observed $n=4413$ first babies and $m=4735$
+%others, and the difference in mean was $\delta=0.073$.  To estimate
+%the p-value of this effect, I pooled the distributions, generated
+%samples with sizes $n$ and $m$ and computed the difference in mean.
 
 \section{Power}
 
