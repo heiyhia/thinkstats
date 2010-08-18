@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.0.2}
+\newcommand{\theversion}{1.0.3}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -908,6 +908,7 @@ to estimate the variance in a population using a sample.  We will
 come back to this when we talk about estimation.
 
 \section{Distributions}
+\label{distributions}
 
 Summary statistics are concise, but dangerous, because they obscure
 the data.  An alternative is to look at the {\bf distribution} of the
@@ -2059,11 +2060,12 @@ written $\erf$:
 The parameters $\mu$ and $\sigma$ determine the mean and standard
 deviation of the distribution.
 
-If these formulas make your eyes hurt, don't worry; they are
-easy to implement in Python.  There are many fast and accurate ways
-to approximate $\erf$.  You can download one of them from
-\url{thinkstatsbook.com/erf.py}, which provides functions
-named {\tt erf} and {\tt NormalCdf}.
+If these formulas make your eyes hurt, don't worry; they are easy to
+implement in Python\footnote{As of Python 3.2, it is even easier; {\tt
+    erf} is in the {\tt math} module.}.  There are many fast and
+accurate ways to approximate $\erf$.  You can download one of them
+from \url{thinkstatsbook.com/erf.py}, which provides functions named
+{\tt erf} and {\tt NormalCdf}.
 
 Figure~\ref{normal_cdf} shows the CDF of the normal distribution
 with parameters $\mu=2.0$ and $\sigma=0.5$.  The sigmoid shape of
@@ -2309,6 +2311,105 @@ for cities and towns?
 \end{ex}
 
 
+\section{Glossary}
+
+\begin{description}
+
+\item[empirical distribution:] The distribution of values in a sample.
+
+\item[continuous distribution:] A distribution described by a continuous
+function.
+
+\item[interarrival time:] The elapsed time between two events.
+
+\item[error function:] A special mathematical function, so-named
+  because it comes up in the study of measurement errors.
+
+\item[normal probability plot:] A plot of the sorted values in a sample
+versus the expected value for each if their distribution is normal.
+
+\item[rankit:] The expected value of an element in a sorted list of
+values from a normal distribution.
+
+\item[model:] A useful simplification.  Continuous distributions are
+often good models of more complex empirical distributions.
+
+\item[corpus:] A body of text used as a sample of a language.
+
+\item[hapaxlegomenon:] A word that appear only once in a corpus.
+It appears twice in this book, so far.
+
+\end{description}
+
+
+\chapter{Operations on distributions}
+
+
+\section{PDFs}
+
+Mass-density analogy.
+
+Use exponential pdf as example.
+
+
+\section{Why normal?}
+
+I said earlier that normal distributions are amenable to analysis,
+but I didn't say why.  One of the primary reasons is that they are
+closed under linear combination and convolution.  To explain what
+that means, it will help to introduce some notation.
+
+If the distribution of a variable, $X$, is (at least approximately)
+normal with parameters $\mu$ and $\sigma$, you can write
+
+\[ X \sim \mathcal{N} (\mu, \sigma^2) \]
+
+where the symbol $\sim$ means ``is distributed'' and the script letter
+$\mathcal{N}$ stands for ``normal.''
+
+The other continuous distributions in this chapter are sometimes
+written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
+\alpha)$ and, for lognormal, $\mathrm{Log}-\mathcal{N} (\mu,
+\sigma^2)$.
+
+If $X$ is a random variable, a linear combination of $X$ is something
+like $Y = aX + b$.  
+A family of distributions is closed under linear combination if
+
+
+\begin{ex}
+
+Try out some combinations.
+
+Choose parameters so the mean and variance are similar, so one
+distribution isn't swamped by the other.
+
+\end{ex}
+
+
+\section{Chi-square}
+
+What happens when we add these things up?
+
+chi-square distribution = sum of k samples from N(0,1)
+
+Evaluate Gamma and gamma in Python
+
+
+\section{Convolution}
+
+What happens when you mix samples from different distributions.  Who wins?
+
+Mandelbrot's theory about the prevalence of long-tailed distributions.
+
+
+\section{Central limit theorem}
+
+What happens when we add up a lot of values?
+
+What happens when we multiply out a lot of values?
+
+
 \section{Skewness}
 
 {\bf Skewness} is a statistic that measures the asymmetry of a
@@ -2396,78 +2497,18 @@ inequality.  Read about it at
 \end{ex}
 
 
-\section{Why normal?}
-
-I said earlier that normal distributions are amenable to analysis,
-but I didn't say why.  One of the primary reasons is that they are
-closed under linear combination and convolution.  To explain what
-that means, it will help to introduce some notation.
-
-If the distribution of a variable, $X$, is (at least approximately)
-normal with parameters $\mu$ and $\sigma$, you can write
-
-\[ X \sim \mathcal{N} (\mu, \sigma^2) \]
-
-where the symbol $\sim$ means ``is distributed'' and the script letter
-$\mathcal{N}$ stands for ``normal.''
-
-The other continuous distributions in this chapter are sometimes
-written $Exponential(\lambda)$, $Pareto(x_m, \alpha)$ and
-$Log-\mathcal{N} (\mu, \sigma^2)$ (for lognormal).
-
-A family of distributions is closed under linear combination if
-
-
-\begin{ex}
-
-Try out some combinations.
-
-Choose parameters so the mean and variance are similar, so one
-distribution isn't swamped by the other.
-
-\end{ex}
-
-
-\section{Convolution}
-
-What happens when we add these things up?
-
-
-\section{Central limit theorem}
-
-What happens when we add up a lot of values?
-
-What happens when we multiply out a lot of values?
-
 
 \section{Glossary}
 
 \begin{description}
 
-\item[empirical distribution:] The distribution of values in a sample.
-
-\item[continuous distribution:] A distribution described by a continuous
-function.
-
-\item[interarrival time:] The elapsed time between two events.
-
-\item[error function:] A special mathematical function, so-named
-  because it comes up in the study of measurement errors.
-
-\item[normal probability plot:] A plot of the sorted values in a sample
-versus the expected value for each if their distribution is normal.
-
-\item[rankit:] The expected value of an element in a sorted list of
-values from a normal distribution.
-
-\item[model:] A useful simplification.  Continuous distributions are
-often good models of more complex empirical distributions.
+\item[:]
 
 \item[skewness:] A characteristic of a distribution; intuitively, it
 is a measure of how asymmetric the distribution is.
 
 \item[robust:] A statistic is robust if it is relatively immune to the
-effect of outliers.
+  effect of outliers.
 
 \item[illusory superiority:] The tendency of people to imagine that
 they are better than average.
@@ -2478,7 +2519,6 @@ they are better than average.
 It appears twice in this book, so far.
 
 \end{description}
-
 
 
 \chapter{Probability}
@@ -2944,12 +2984,12 @@ a 10 year period and estimates the distribution of total cases.
 
 
 
-\section{Bayes' theorem}
+\section{Bayes's theorem}
 
-Bayes' theorem is a relationship between the conditional probabilities
+Bayes's theorem is a relationship between the conditional probabilities
 of two events.  A conditional probability, often written $P(A|B)$ is
 the probability that Event A will occur given that we know that
-Event B has occurred.  Bayes' theorem states:
+Event B has occurred.  Bayes's theorem states:
 
 \[ P(A|B) = \frac{P(B|A)P(A)}{P(B)} \]
 
@@ -2966,9 +3006,9 @@ So
 
 \[ P(B) P(A|B) = P(A) P(B|A) \]
 
-Dividing through by $P(B)$ yields Bayes' theorem.
+Dividing through by $P(B)$ yields Bayes's theorem.
 
-Bayes' theorem is often interpreted as a statement about 
+Bayes's theorem is often interpreted as a statement about 
 how a body of evidence, $E$, affects the probability of a 
 hypothesis, $H$:
 
@@ -2981,14 +3021,14 @@ probability of seeing the evidence assuming that $H$ is true, and
 $P(E)$, the probability of seeing the evidence under any circumstances
 ($H$ true or not).
 
-This way of reading Bayes' theorem is called the ``diachronic''
+This way of reading Bayes's theorem is called the ``diachronic''
 interpretation because it describes how the probability of a
-hypothesis gets updated, over time, in light of new evidence.  In this
-context, $P(H)$ is called the {\bf prior} probability and $P(H|E)$ is
-called the {\bf posterior}.  The update term $P(E|H)/P(E)$ is called
-the {\bf likelihood ratio}.
+hypothesis gets {\bf updated}, over time, in light of new evidence.
+In this context, $P(H)$ is called the {\bf prior} probability and
+$P(H|E)$ is called the {\bf posterior}.  The update term $P(E|H)/P(E)$
+is called the {\bf likelihood ratio}.
 
-A classic use of Bayes' Theorem is the interpretation of clinical
+A classic use of Bayes's theorem is the interpretation of clinical
 tests.  For example, routine testing for illegal drug use is
 increasingly common in workplaces and schools (See
 \url{aclu.org/drugpolicy/testing/index.html}.).  The companies that
@@ -3009,7 +3049,7 @@ actual rate of drug use is 5\%.  Of the employees who test positive,
 how many of them actually use drugs?
 
 In Bayesian terms, we want to compute the probability of
-drug use given a positive test, $P(D|+)$.  By Bayes' Theorem:
+drug use given a positive test, $P(D|+)$.  By Bayes's theorem:
 
 \[ P(D|+) = P(D) \frac{P(+|D)}{P(+)} \]
 
@@ -3037,7 +3077,7 @@ that of the people who test positive, about 1 in 4 is innocent.
 \begin{ex}
 
 Write a program that takes the actual rate of drug use, and the
-sensitivity and specificity of the test, and uses Bayes' Theorem
+sensitivity and specificity of the test, and uses Bayes's theorem
 to compute $P(D|+)$.
 
 Suppose the same test is applied to a population where the actual
@@ -3076,23 +3116,38 @@ Other Examples from MacKay's Chapter 3?
 
 \begin{description}
 
-\item[:] 
+\item[event:] Something that may or may not occur, with some probability.
 
-\item[:] 
+\item[trial:] One in a series of occaisons when an event might occur.
 
-\item[:] 
+\item[success:] A trial in which an event occurs.
 
-\item[:] 
+\item[failure:] A trail in which no event occurs.
 
-\item[:] 
+\item[frequentism:] A strict interpretation of probability that only
+applies to a series of identical trials.
 
-\item[:] 
+\item[Bayesianism:] A more general interpretation that used
+probability to represent a subjective degree of belief.
 
-\item[:] 
+\item[independent:] Two events are independent if the occurrence of
+one does has no effect on the probability of another.
 
-\item[:] 
+\item[coefficient of variation:] A statistic that measures spread,
+normalized by central tendency, for comparison between distributions
+with different means.
+
+\item[update:] The process of using data to revise a probability.
+
+\item[prior:] A probability before a Bayesian update.
+
+\item[posterior:] A probability computed by a Bayesian update.
+
+\item[likelihood ratio:] One of the terms in Bayes's theorem, the
+relative likelihood of an observation conditioned on a given hypothesis.
 
 \end{description}
+
 
 
 \chapter{Hypothesis testing}
@@ -3357,7 +3412,7 @@ interpret the result of a hypothesis test:
   conclusion.
 
 \item[Bayesian:] What we really want to know is $P(H_A | E)$, where
-  $H_A$ is the hypothesis that the effect is real.  By Bayes' Theorem
+  $H_A$ is the hypothesis that the effect is real.  By Bayes's theorem
 
   \[ P(H_A | E) = \frac{P(E | H_A)}{P(E)} P(H_A) \]
 
@@ -3459,7 +3514,7 @@ readers can plug in whatever prior they like and compute their own
 posteriors (no pun intended).
 
 
-\section{Pregnancy lengths one more time}
+\section{Chi-square test}
 
 In Section~\ref{threshold} we concluded that the apparent difference
 in mean pregnancy length for first babies and others was not
@@ -3504,8 +3559,9 @@ $m p_{early}$ other babies to be early, etc.
 \item For each cell we compute the deviation; that is, the difference
   between the observed value, $O_i$, and the expected value, $E_i$
 
-\item We compute some measure of the total deviation; the most common
-choice is the chi-squared statistic:
+\item We compute some measure of the total deviation; this quantity
+is called the {\bf test statistic}.  The most common
+choice is the chi-square statistic:
 
   \[ \chi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
 
@@ -3513,10 +3569,14 @@ choice is the chi-squared statistic:
 %% but harder to distinguish from X.
 
 \item We can use a Monte Carlo simulation to compute the p-value,
-  which is the probability of seeing a chi-squared statistic as high
+  which is the probability of seeing a chi-square statistic as high
   as the observed value under the null hypothesis.
 
 \end{enumerate}
+
+When the chi-square statistic is used, this process is called a 
+{\bf chi-square test}.  One feature of the chi-square test is that
+the distribution of the test statistic can be computed analytically.
 
 \begin{ex}
 
@@ -3560,7 +3620,7 @@ Instead, we could directly compute the distribution of the difference
 in sample means.  To get started, let's think about what a sample mean
 is: we draw $n$ samples from a distribution, add them up, and
 divide by $n$.  If the distribution has mean $\mu$ and variance
-$\sigma^2$, then by the Central Limit Theorem, we know that the sum of
+$\sigma^2$, then by the Central Limit theorem, we know that the sum of
 the samples is $\mathcal{N} (n \mu, n \sigma^2)$.
 
 To figure out the distribution of the sample means, we have to invoke
@@ -3593,10 +3653,17 @@ is drawn from $\mathcal{N} (0, f \sigma^2)$, where $f = 1/n + 1/m$.
 Plugging in $n=4413$ and $m=4735$, we expect the difference of sample
 means to be $\mathcal{N} (0, 0.0065)$.
 
-%For pregnancy length, we observed $n=4413$ first babies and $m=4735$
-%others, and the difference in mean was $\delta=0.073$.  To estimate
-%the p-value of this effect, I pooled the distributions, generated
-%samples with sizes $n$ and $m$ and computed the difference in mean.
+\begin{ex}
+
+Use erf.NormalCdf to compute the p-value of the observed difference
+in the means, $\delta=0.073$.  How does it compare to the value
+we estimated by resampling.
+
+\end{ex}
+
+% Note: this looks like it's not working!  There's a bug in here
+% somewhere.
+
 
 \section{Power}
 
@@ -3606,15 +3673,8 @@ Compute it
 
 Comment on the loss of power in cross-validation due to smaller sample size 
 
-Examples:
 
-   T-test?
-
-   pregnancy length: early vs. on time vs. late
-
-   Chi-squared test
-
-   Test difference in variance?
+\section{Discussion}
 
 Pitfalls:
 
@@ -3640,57 +3700,430 @@ Solutions:
 
 \begin{description}
 
-\item[:] 
+\item[significant:] An effect is statistically significant if it is unlikely
+to occur by chance.
 
-\item[:] 
+\item[p-value:] The probability that an effect could occur by chance.
 
-\item[:] 
+\item[hypothesis testing:] The process of determining whether an apparent
+effect is statistically significant.
 
-\item[:] 
+\item[resampling:] A process for estimating the distribution of a summary
+statistic by drawing random samples from a population that is, itself, a
+sample.
 
-\item[:] 
+\item[false positive:] The conclusion that an effect is real when it is not.
 
-\item[:] 
+\item[false negative:] The conclusion that an effect is due to chance when it
+is not.
 
-\item[:] 
+\item[two-sided test:] A test that asks, "What is the chance of an effect
+as big as the observed effect, positive or negative?"
 
-\item[:] 
+\item[one-sided test:] A test that asks, "What is the chance of an effect
+as big as the observed effect, and with the same sign?"
+
+\item[cross-validation:] A process of hypothesis testing that uses one
+dataset for exploratory data analysis and another dataset for testing.
+
+\item[training set:] A dataset used to formulate a hypothesis for testing.
+
+\item[testing set:] A dataset used for testing.
+
+\item[test statistic:] A statistic used to measure the deviation of an
+apparent effect from what is expected by chance.
+
+\item[chi-square test:] A test that uses the chi-square statistic as
+the test statistic.
+
+\item[cell:] In a chi-square test, the categories the observations are
+divided into.
 
 \end{description}
 
 
-\chapter{Estimators}
 
-An estimator is a statistic that converges on a parameter.
+\chapter{Estimation}
 
-A statistic is a function that takes a dataset and returns a number.
+\section{The estimation game}
 
-Confidence intervals, oh my.
+Let's play a game.  I'll think of a distribution, and you have to guess
+what it is.  We'll start out easy and work our way up.
+
+{\em I'm thinking of a distribution.}  I'll give you two hints; it's a
+normal distribution, and here's a random sample drawn from it:
+
+\[ \{ -0.441, 1.774, -0.101, -1.138, 2.975, -2.138 \} \]
+
+What do you think is the mean parameter, $\mu$, of this distribution?
+
+\newcommand{\xbar}{\bar{x}}
+
+One choice is to use the sample mean to estimate $\mu$.  Up
+until now we have used the symbol $\mu$ for both the sample mean and
+the mean parameter, but now to distinguish them I will use $\xbar$
+for the sample mean.  In this example, $\xbar$ is $0.155$, so it would
+be reasonable to guess $\mu = 0.155$.
+
+This process is called {\bf estimation}, and the statistic we used
+(the sample mean) is called an {\bf estimator}.
+
+Using the sample mean to estimate $\mu$ is so obvious that it is hard
+to imagine a reasonable alternative.  But suppose we change the game by
+introducing outliers.  
+
+{\em I'm thinking of a distribution.}  It's a normal distribution, and
+here's a sample that was collected by an unreliable surveyor who
+occasionally puts the decimal point in the wrong place.
+
+\[ \{ -0.441, 1.774, -0.101, -1.138, 2.975, -213.8 \} \]
+
+Now what's your estimate of $\mu$?  If you use the sample mean your
+guess is -35.12.  Is that your final answer?  What are the alternatives?
+
+One option is to identify and discard outliers, then compute the sample
+mean of the rest.  Another option is to use the median as an estimator.
+
+Which estimator is the best depends on the circumstances (for example,
+whether there are outliers) and on what the goal is.  Are you
+trying to minimize errors, or maximize your chance of getting the
+right answer?
+
+If there are no outliers, the sample mean minimizes the {\bf mean squared
+error} (MSE).  If we play the game many times, and each time
+compute the error $\xbar - \mu$, the sample mean minimizes
+
+\[ MSE = \sum (\xbar - \mu)^2 \]
+
+That's a nice property, but it's not necessarily the best strategy.
+For example, suppose we are estimating the distribution of wind speeds
+at a building site.  If we guess too high, we might overbuild the structure,
+increasing its cost.  But if we guess too low, the building might collapse.
+Because the cost, as a function of error, is asymmetric, minimizing
+MSE is not the best strategy.
+
+As another example, suppose I roll three six-sided dice and ask you
+to predict the total.  If you get it exactly right, you get a prize;
+otherwise you get nothing.  In this case the value that minimizes MSE
+is 10.5, but that would be a terrible guess.  For this game, you
+want an estimator that has the highest chance of being right, which is
+a {\bf maximum likelihood estimator} (MLE).  If you pick 10 or 11, your
+chance of winning is 1 in 8, and that's the best you can do.
+
+\begin{ex}
+
+Write a function that draws 6 values from a normal distribution with
+$\mu=0$ and $\sigma=1$.  Use the sample mean to estimate $\mu$ and
+compute the error $\xbar - \mu$.  Run the function 1000 times and
+compute MSE.
+
+Now modify the program to use the median as an
+estimator.  Compute MSE again and compare to the MSE for $\xbar$.
+
+\end{ex}
+
+
+\section{Guess the variance}
+
+{\em I'm thinking of a distribution.}  It's a normal distribution, and 
+here's a (familiar) sample:
+
+\[ \{ -0.441, 1.774, -0.101, -1.138, 2.975, -2.138 \} \]
+
+What do you think is the variance, $\sigma^2$, of my distribution?
+Again, the obvious choice is to use the sample variance as an estimator.
+I will use $S^2$ to denote the sample variance, to distinguish from the
+unknown parameter $\sigma^2$.
+
+\[ S^2 = \frac{1}{N} \sum (x_i - \xbar)^2 \] 
+
+For large samples, $S^2$ is an adequate estimator, but for small
+samples it tends to tends to be too low.  Because of this unfortunate
+property, it is called a {\bf biased} estimator.
+
+Fortunately, there is another simple statistic that is an unbiased
+estimator of $\sigma^2$:
+
+\[ S_{N-1}^2 = \frac{1}{N-1} \sum (x_i - \xbar)^2 \] 
+
+The biggest problem with this estimator is that its name and symbol
+are used inconsistently.  The name ``sample variance'' can refer to
+either $S^2$ or $S_{N-1}^2$, and the symbol $S^2$ is used
+for either or both.
+
+For an explanation of why $S^2$ is biased, and a proof that
+$S_{N-1}^2$ is unbiased, see
+\url{wikipedia.org/wiki/Bias_of_an_estimator}.
+
+\begin{ex}
+
+Write a function that draws 6 values from a normal distribution with
+$\mu=0$ and $\sigma=1$.  Use the sample variance to estimate
+$\sigma^2$ and compute the error $S^2 - \sigma^2$.  Run the function 1000
+times and compute mean error (not squared).
+
+Now modify the program to use the unbiased estimator $S_{N-1}^2$.
+Compute the mean error again and see if it converges to zero as you
+increase the number of games.
+
+\end{ex}
+
+\section{Exponential distributions}
+
+{\em I'm thinking of a distribution.}  It's an exponential distribution, and 
+here's a sample:
+
+\[ \{ 5.384, 4.493, 19.198, 2.790, 6.122, 12.844 \} \]
+
+What do you think is the parameter, $\lambda$, of this distribution?
+
+\newcommand{\lamhat}{\hat{\lambda}}
+\newcommand{\lamhatmed}{\hat{\lambda}_{1/2}}
+
+In general, the mean of an exponential distribution is $1 / \lambda$,
+so working backwards, we might choose
+
+\[ \lamhat = 1 / \xbar \]
+
+It is common to use hat-notation for estimators, so $\lamhat$ is an
+estimator of $\lambda$.  And not just any estimator; it is also the
+MLE estimator\footnote{See
+\url{wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}}.
+So if you want to maximize your chance of guessing $\lambda$ exactly,
+$\lamhat$ is the way to go.
+
+But we know that $\xbar$ is not robust in the presence of outliers, so
+we expect $\lamhat$ to have the same problem.
+
+Maybe we can find an alternative based on the sample median.  Remember
+that the median of an exponential distribution is $log(2) / \lambda$,
+so working backwards again, we can define an estimator
+
+\[ \lamhatmed = log(2) / \mu_{1/2} \]
+
+where $\mu_{1/2}$ is the sample median.
+
+\begin{ex}
+
+Run an experiment to see which of $\lamhat$ and $\lamhatmed$ yields
+lower MSE.
+
+Test whether either of them is biased.
+
+\end{ex}
+
+
+\section{Confidence intervals}
+
+So far we have looked at estimators that generate single values, known
+as {\bf point estimates}.  For many problems, we might prefer an interval
+that specifies and upper and lower bound on the unknown parameter.
+
+Or, more generally, we might want that whole distribution; that is,
+the range of values the parameter could have, and for each value in
+the range, a notion of how likely it is.
+
+Let's start with {\bf confidence intervals}.
+
+{\em I'm thinking of a distribution.}  It's an exponential distribution, and 
+here's a sample:
+
+\[ \{ 5.384, 4.493, 19.198, 2.790, 6.122, 12.844 \} \]
+
+I want you to give me a range of values that you think is likely to
+contain the unknown parameter $\lambda$.  More specifically, I want
+a 90\% confidence interval, which mean that if we play this game over
+and over, your interval will contain $\lambda$ 90\% of the time.
+
+It turns out that this version of the game is very hard, so I'm just going
+to tell you the answer, and all you have to do is test it.
+
+Confidence intervals are usually described in terms of the miss rate,
+$\alpha$, so a 90\% confidence interval has miss rate $\alpha = 0.1$.
+The confidence interval for the $\lambda$ parameter of an exponential
+distribution is
+
+\[ \left( \lamhat \frac{\chi^2(2n, 1-\alpha/2)}{2n},
+      \lamhat \frac{\chi^2(2n, \alpha/2)}{2n} \right) \]
+
+where $n$ is the sample size, $\lamhat$ is the mean-based estimator 
+from the previous section, and $\chi^2(k, x)$ is the CDF of a chi-squared
+distribution with $k$ degrees of freedom, evaluated at $x$.
+
+\begin{ex}
+
+Write a function that evaluates the CDF of a chi-squared distribution,
+and use it to compute a 90\% confidence interval for $\lambda$, given
+$\lamhat$, $n$ and $\alpha$.
+
+Write a function that takes a value for $\lambda$,
+generates a sample of six values, computes a 90\% confidence interval,
+and checks whether the interval contains the actual value of $\lambda$.
+
+Run the function 1000 times and see how often the interval contains
+$lambda$.
+
+\end{ex}
 
 
 \section{Bayesian estimation}
 
+If you collect a sample and compute a 90\% confidence interval, it is
+tempting to say that the true value of the parameter has a 90\% chance
+of falling in the interval.  But from a frequentist point of view,
+that is not correct because the parameter is an unknown but fixed
+value.  It is either in the interval you computed or not, so the
+frequentist definition of probability doesn't apply.
 
+So let's try a different version of the game.
+
+\newcommand{\boldx}{\mathbf{x}}
+
+{\em I'm thinking of a distribution.}  It's an exponential
+distribution, and I chose $\lambda$ from a uniform distribution
+between 0.5 and 1.5.  Here's a sample, which I'll call $\boldx$:
+
+\[ \{ 2.675, 0.198, 1.152, 0.787, 2.717, 4.269 \} \]
+
+Based on this sample, what value of $\lambda$ do you think I chose?
+
+In this version of the game, $\lambda$ {\em is} a random variable, so we
+can reasonably talk about its distribution, and we can compute it
+easily using Bayes's theorem.
+
+Here are the steps:
+
+\begin{enumerate}
+
+\item Divide the range (0.5, 1.5) into a set of equal-sized bins.
+For each bin, we define $H_i$, which is the hypothesis that the
+actual value of $\lambda$ falls in the $i$th bin.
+Since $\lambda$ was drawn from a uniform distribution, the prior
+probability, $P(H_i)$, is the same for all $i$.
+
+\item For each hypothesis, we compute the likelihood, $P(\boldx|H_i)$,
+which is the chance of drawing the sample $\boldx$ given $H_i$.
+
+\[ P(\boldx|H_i) = \prod_j \mathrm{expo}(\lambda_i, x_j)  \]
+
+where $\mathrm{expo}(\lambda, x)$ is a function that
+computes the PDF of the exponential distribution with parameter $\lambda$,
+evaluated at $x$.
+
+\[ \mathrm{expo}(\lambda, x) = \lambda e^{-lambda x}\]
+
+\item Then by Bayes's theorem the posterior distribution is
+
+\[ P(H_i|\boldx) =  P(\boldx|H_i) P(H_i) / f \]
+
+where $f$ is the normalization factor
+
+\[ f = \sum_i P(\boldx|H_i) P(H_i) \]
+
+\end{enumerate}
+
+
+\begin{ex}
+
+Write a function that takes a prior distribution and a sample and
+returns a posterior distribution.
+
+Hint: to represent distributions, you can use
+the {\tt Pmf} class we defined in Section~\ref{distributions}.
+
+\end{ex}
+
+\begin{ex}
+
+Given a posterior distribution, it is easy to compute a confidence
+interval.  For example, to compute a 90\% CI, you can
+use the 5th and 95th percentiles.
+
+Bayesian confidence intervals are sometimes called {\bf credible
+intervals}; for a discussion of the differences, see
+\url{wikipedia.org/wiki/Credible_interval}.
+
+Compute a 90\% CI for the distribution in the previous exercise.
+
+\end{ex}
+
+
+\begin{ex}
+
+Compute the analytic version using a prior Gamma distribution with the
+same mean and variance as the actual uniform distribution, and compare
+it to the discrete approximation.
+
+See \url{wikipedia.org/wiki/Exponential_distribution#Bayesian_inference}.
+
+\end{ex}
+
+
+\section{Censored data}
+
+The following problem appears in Chapter 3 of David MacKay's
+extraordinary book {\em Information Theory, Inference and Learning
+  Algorithms}, which you can download from
+\url{www.inference.phy.cam.ac.uk/mackay/itprnn/ps/}.
+
+\begin{quote}
+
+Unstable particles are emitted from a source and decay at a distance $x$,
+a real number that has an exponential probability distribution with
+[] $\lambda$.  Decay events can only be observed if they
+occur in a window extending from $x=1$ cm to $x=20$ cm.  $N$ decays are
+observed at locations $\{ x_1, ... , x_N \}$.  What is $\lambda$? 
+
+\end{quote}
+
+This is an example of an estimation problem with {\bf censored data};
+that is, we know that some data are systematically excluded.
+
+One of the strengths of Bayesian inference is that it can deal with
+censored data with (relative) ease.  We can use the method from the
+previous section with only one change: we have to replace
+$\mathrm{expo}$ with a conditional distribution:
+
+\[ \mathrm{expo_{cond}}(\lambda, x) = \lambda e^{-lambda x} / Z(\lambda)  \]
+
+for $1 < x < 20$, and 0 otherwise, with
+
+\[ Z(\lambda) = \int_1^{20} \lambda e^{-lambda x} dx = (e^{1} - e^{20} ) \]
+
+\begin{ex}
+
+Compute the posterior distribution of $\lambda$ for the sample
+$\boldx = \{ 1.5, 2, 3, 4, 5, 12 \}$.  For the prior distribution you
+can use a uniform distribution between 0 and 100 (not including 0).
+
+\end{ex}
 
 \section{Glossary}
 
 \begin{description}
 
-\item[:] 
+\item[estimation:] The process of inferring the parameters of a distribution
+from a sample.
 
-\item[:] 
+\item[estimator:] A statistic used to estimate a parameter.
 
-\item[:] 
+\item[mean squared error:] A measure of estimation error.
 
-\item[:] 
+\item[maximum likelihood estimator:] An estimator that computes the
+point estimate with the highest likelihood.
 
-\item[:] 
+\item[bias:] The tendency of an estimator to be above or below the actual
+value of the parameter, when averaged over repeated samples.
 
-\item[:] 
+\item[point estimate:] An estimate expressed as a single value.
 
-\item[:] 
+\item[confidence interval:] An estimate expressed as an interval with a
+given probability of containing the true value of the parameter.
 
-\item[:] 
+\item[credible interval:] Another name for a Bayesian confidence interval.
+
+\item[censored data:] A dataset from which some data have been systematically
+excluded.
 
 \end{description}
 
