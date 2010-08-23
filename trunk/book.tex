@@ -7,7 +7,7 @@
 %
 
 %\documentclass[10pt,b5paper]{book}
-\documentclass[10pt]{book}
+\documentclass[12pt]{book}
 \usepackage[width=5.5in,height=8.5in,
   hmarginratio=3:2,vmarginratio=1:1]{geometry}
 
@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.0.3}
+\newcommand{\theversion}{1.0.4}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -2876,7 +2876,7 @@ streak\footnote{For example, see Gilovich, Vallone and Tversky, ``The
   1985.}.  If you assume that each attempt is independent of previous
 attempts, you will see occasional long strings of successes or
 failures.  These apparent streaks are not sufficient evidence that
-there is any correlation between successive attempts.
+there is any relationship between successive attempts.
 
 A related phenomenon is the clustering illusion, which is the
 tendency to see clusters in spatial patterns that are actually
@@ -3758,6 +3758,7 @@ normal distribution, and here's a random sample drawn from it:
 What do you think is the mean parameter, $\mu$, of this distribution?
 
 \newcommand{\xbar}{\bar{x}}
+\newcommand{\ybar}{\bar{y}}
 
 One choice is to use the sample mean to estimate $\mu$.  Up
 until now we have used the symbol $\mu$ for both the sample mean and
@@ -4130,12 +4131,300 @@ excluded.
 
 \chapter{Correlation}
 
-In Chapter~\ref{continuous} we saw that the distribution of weight for adults
-in the BRFSS is approximately lognormal, and 
+\section{Standard scores}
 
-rank correlation
+In this chapter we will look at relationships between variables.  For
+example, we have a sense that height is related to weight; people who
+are taller tend to be heavier.  {\bf Correlation} is a description of
+the dependence between variables.
 
-Spearman's correlation
+One challenge in measuring correlation is that the variables we want
+to compare may not be expressed in the same units.  For example, height
+might be in centimeters and weight in kilograms.  And even if they are
+in the same units, they come from different distributions.
+
+There are two common solutions to these problems:
+
+\begin{enumerate}
+
+\item Transform all values to their percentile ranks.
+
+\item Transform all values to {\bf standard scores}.
+
+\end{enumerate}
+
+If $X$ is a series of values, $x_i$, we can convert to standard
+scores by subtracting the mean and dividing by the standard deviation:
+
+\[ z_i = (x_i - \mu) / \sigma \]
+
+The numerator is a deviation: the distance from the mean.  Dividing by
+$\sigma$ {\bf normalizes} the deviation, so the values of $Z$ are
+dimensionless (no units) and their distribution has $\mu=0$ and
+$\sigma=1$.
+
+If $X$ is normally-distributed, then so is $Z$; but if $Z$ is skewed
+or has outliers, so does $Z$.  In those cases it is more robust to
+use percentile ranks.  If
+
+\[ r_i = \mathrm{percentile rank} (x_i) \]
+
+then the distribution of $R$ is uniform between 0 and 100, regardless of
+the distribution of $X$.
+
+
+\section{Covariance}
+
+{\bf Covariance} is a measure of the tendency of two variables
+to vary together.  If we have two series, $X$ and $Y$, their
+deviations from the mean are
+
+\[ dx_i = x_i - \mu_X \]
+
+\[ dy_i = y_i - \mu_Y \]
+
+If $X$ and $Y$ vary together, their deviations tend to have the
+same sign; when one is high (above the mean), the other tends to be
+high, and vice versa.  
+
+If we multiply them together, the product is positive whenever the
+deviations have the same sign.
+The mean of these products is the covariance:
+
+\[ Cov(X,Y) = \frac{1}{n} \sum dx_i dy_i \]
+
+Covariance is useful in some computations (as we will see soon), but
+it is seldom reported as a summary statistic because it is hard to
+interpret.  Among other problems, its units are the product of the
+units of $X$ and $Y$.  So the covariance of weight and height might be
+in units of kilogram-meters\footnote{You might notice that energy and
+  work can be expressed in these units, for all the good that
+  does.}.
+
+
+\section{Correlation}
+
+One solution to this problem is to normalize the deviations (divide by
+$\sigma$).  The result is the product of normal scores:
+
+\[ p_i = \frac{(x_i - \mu_X)}{\sigma_X} \frac{(y_i - \mu_Y)}{\sigma_Y} \]
+
+Adding them up, we get 
+
+\[ \rho = \sum p_i \]
+
+This value is called {\bf Pearson's correlation} after Karl Pearson,
+an influential early statistician.  It is easy to compute and easy to
+interpret.  Because the normal scores are dimensionless, so is $\rho$.
+
+Also, the result is necessarily between -1 and +1.  To see why, we
+can rewrite $\rho$ by factoring out $\sigma_X$ and $\sigma_Y$:
+
+\[ \rho = \frac{Cov(X,Y)}{\sigma_X \sigma_Y} \]
+
+Expressed in terms of deviations, we have
+
+\[ \rho = \frac{\sum dx_i dy_x}{\sum dx_i \sum dy_i} \]
+
+Then by the ever-useful Cauchy–Schwarz
+inequality\footnote{wikipedia.org/wiki/Cauchy-Schwarz\_inequality}, we
+can show that $\rho^2 \le 1$, so $-1 \le \rho \le 1$.
+
+When $\rho=1$, the variables are 
+
+\begin{description}
+
+\item[Perfectly correlated:] If 
+you know one, you can make a perfect prediction about the other.
+In some sense, perfect correlation means that the variables are two
+measurements of the same thing.  For example, height in centimeters and
+height in inches would be perfectly correlated.
+
+Most correlation in the real world is not perfect, but it
+is still useful.  For example, if you know someone's height, you might
+be able to guess their weight.  You might not get it exactly right, but
+your guess will be better than if you didn't know the height.
+
+\item[Positively correlated:] Positive correlation means that when one
+  variables is high, the other tends to be high.  Negative correlation
+  means that when one is high, the other tends to be low.  Remember that
+  negative correlation is still correlation, and for purposes of
+  prediction it is just as useful as positive correlation.
+
+\end{description}
+
+So if Pearson's correlation is 0, does that mean there is no
+relationship between the variables?  Unfortunately, no.  Pearson's
+correlation only measures {\em linear} relationships.  If there is a
+nonlinear relationship, $\rho$ understates the strength of the
+dependence.
+
+\begin{figure}
+% descriptive.py
+\centerline{\includegraphics[height=2.5in]{figs/Correlation_examples.eps}}
+\caption{Examples of datasets with a range of correlations.}
+\label{corr_examples}
+\end{figure}
+
+Figure~\ref{corr_examples} is from the Wikipedia page
+\url{wikipedia.org/wiki/Correlation_and_dependence}.  It shows
+scatterplots for several carefully-constructed datasets and their
+correlations.
+
+The top row shows plain old ordinary linear relationships with a range
+of strengths.  The second row shows perfect correlations with a range
+of slopes, which makes the point that correlation is unrelated to slope
+(we'll talk about estimating slope later in the chapter).  The third
+row shows variables with various non-linear relationships 
+
+The moral of this story is that you should look at a scatterplot of
+your data before blindly computing a correlation coefficient.
+
+\begin{ex}
+
+Using data from the NSFG, transform length and weight at birth to
+standard scores and make a scatterplot of the z-values.  Is there
+a relationship?  Does it appear to be linear?  Comparing your scatterplot
+to Figure~\ref{corr_examples}, what value do you expect for Pearson's
+correlation?  What value do you get?
+
+\end{ex}
+
+
+\section{Spearman's rank correlation}
+
+Pearson's correlation works well if the relationship between variables
+is linear and if the variables are roughly normal.  But it is not
+robust in the presence of outliers.
+
+One alternative is {\bf Spearman's rank correlation}, which replaces
+each value with its percentile rank before computing Pearson's correlation.
+
+Another alternative is to apply a transform that makes the data more
+nearly normal.  For example, if the data are lognormal, taking the log
+of each value yields a normal distribution.
+
+\begin{ex}
+
+Repeat your analysis with adult height and weight from the BRFSS.
+Because the distribution of adult weight is lognormal, the relationship
+may be nonlinear.  Make a scatterplot and see what it looks like.
+
+Now try plotting $\log \mathrm{weight}$ versus height, and compute
+Pearson's correlation for the transformed variable.
+
+Finally, compute Spearman's rank correlation between weight and height.
+
+Which of these correlation coefficients do you think is the best
+measure of the strength of the relationship?
+
+\end{ex}
+
+
+\section{Least squares fit}
+
+Correlation coefficients measure the strength and direction of a
+relationship, but not the slope.  If we think there is a linear
+relationship between two variables, there are several ways to estimate
+the slope.  The most common is a {\bf linear least squares fit}.  A
+``linear fit'' is a line intended to model the relationship between
+variables.  A ``least squares'' fit is one that minimizes the mean
+squared error (MSE) between the line and the data.
+
+Suppose we have a sequence of points $Y$ that we want to express
+as a function of another sequence $X$.  If we think that there is
+a linear relationship between $X$ and $Y$, with slope $a$ and
+intercept $b$, then we expect each $y_i$ to be roughly $a x_i + b$.
+
+But unless the correlation is perfect, this prediction is only
+approximate.  The deviation, or {\bf residual}, is 
+
+\newcommand{\eps}{\varepsilon}
+
+\[ \eps_i = (a x_i + b) - y_i \]
+
+The residual might be due to random factors like measurement error,
+or non-random factors that are unknown.  For example, if we are
+trying to predict weight as a function of height, unknown factors
+include diet, exercise, body type, etc.
+
+If we get the parameters $a$ and $b$ wrong, that will tend to make
+the residuals bigger, so it makes sense that the parameters we want
+are the ones that minimize the residuals.
+
+As usual, we could choose to minimize the absolute residuals, or
+their squares, or their cubes, etc.  But the most common choice
+is to minimize the sum of squared residuals
+
+\[ \sum \eps_i^2 \]
+
+Why?  Well, there are three good reasons and one bad one:
+
+\begin{itemize}
+
+\item Squaring has the obvious feature of treating positive and
+negative residuals the same, which is usually what we want.
+
+\item Squaring gives more weight to large residuals, but it isn't
+too extreme.
+
+\item If the residuals are independent of $x$, random, and uniformly
+  distributed with $\mu=0$ and constant (but unknown) $\sigma$, then
+  the least squares fit is also the maximum likelihood estimator of
+  $a$ and $b$\footnote{See
+    \url{http://www.nrbook.com/a/bookcpdf/c15-1.pdf}.}.
+
+\item The values of $a$ and $b$ that minimize the square residuals can
+  be found analytically.
+
+\end{itemize}
+
+The third reason made sense when computational efficiency was more
+important than choosing the method most appropriate to the problem
+at hand.  But that's no longer the case, so it is worth considering
+whether squared residuals are the right thing to minimize.
+
+For example, if you are using values of $X$ to predict values of $Y$,
+guessing too high might be better (or worse) than
+guessing too low.  In that case you might want to compute some
+cost function, $\mathrm{cost}(r)$, and minimize that.
+
+However, a least squares fit is quick, easy and often good enough;
+here's how:
+
+\begin{enumerate}
+
+\item Compute the sample means, $\xbar$ and $\ybar$, the variance
+of $X$, and the covariance of $X$ and $Y$.
+
+\item Then the slope is
+
+\[ a = \frac{Cov(X,Y)}{Var(X)} \]
+
+\item And the intercept is
+
+\[ b = \]
+
+and the squared
+deviation of $x$
+
+\[ \delta_X^2 = \sum_i (x_i - \xbar)^2 \]
+
+\item Compute these sums:
+
+\[ S_x = \sum x_i \]
+\[ S_y = \sum y_i \]
+\[ S_{xx} = \sum x_i^2 \]
+\[ S_{xy} = \sum x_i y_i \]
+
+\item Compute the slope:
+
+\[ a =   \]
+
+\end{enumerate}
+
+To see how this is derived, read
+\url{wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
 least squares fit
 
