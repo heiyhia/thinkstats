@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.0.4}
+\newcommand{\theversion}{1.0.5}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -181,42 +181,84 @@ Version \theversion
 \end{htmlonly}
 
 
-\chapter{Preface}
-\label{preface}
+%\chapter{Preface}
+%\label{preface}
 
-\section*{Programming is a pedagogic wedge}
+%\section*{Programming is a pedagogic wedge}
 
-Operational thinking vs relational thinking
+%Operational thinking vs relational thinking
 
-example: counting frequencies
+%example: counting frequencies
 
-Notation: math notation and programming languages are formal languages
-designed for different purposes.
+%Notation: math notation and programming languages are formal languages
+%designed for different purposes.
 
-Often consistent, so translation can be straightforward.
+%Often consistent, so translation can be straightforward.
 
-Other examples are surprisingly different.
+%Other examples are surprisingly different.
 
-Math notation is concise and general-purpose but suffers from
-ambiguity, sloppy typing, implied scoping, overloading, poor
-readability
+%Math notation is concise and general-purpose but suffers from
+%ambiguity, sloppy typing, implied scoping, overloading, poor
+%readability
 
-barrier for some people (more so than programming languages?)
+%barrier for some people (more so than programming languages?)
 
-Programs are executable, and therefore testable, which gives students
-immediate feedback on their understanding of concepts.
+%Programs are executable, and therefore testable, which gives students
+%immediate feedback on their understanding of concepts.
 
-Also lend themselves to empirical tests.
+%Also lend themselves to empirical tests.
 
-Probability is often tricky; hard to ``prove'' a result because it
-is easy to write a bad proof.
+%Probability is often tricky; hard to ``prove'' a result because it
+%is easy to write a bad proof.
 
-A simulation can be a more compelling proof -- easier to read and check
-correctness.  Erdos and the Monty Hall problem.
+%A simulation can be a more compelling proof -- easier to read and check
+%correctness.  Erdos and the Monty Hall problem.
 
-Comment on my vocabulary and notation: generally consistent with the
-Wikipedia.
+When someone sits down to
+write a textbook, they usually start by reading a stack of existing
+textbooks.  The result is that most books contain the same material in
+pretty much the same order.  Often there are phrases, examples,
+and errors that propagate from one book to the next;  Stephen Jay
+Gould pointed out an example of this phenomenon in his
+essay, ``The Case of the Creeping Fox Terrier\footnote{A breed of dog
+  that is about twice the size of a Hyracotherium (see
+  \url{wikipedia.org/wiki/Hyracotherium}).}.''
 
+I did not do that.  In fact, I used almost no printed material while I
+was writing this book, for several reasons:
+
+\begin{itemize}
+
+\item My goal was to explore a new approach to this material, so I didn't
+want much exposure to existing approaches.
+
+\item Since I am making this book available under a free license, I wanted
+to make sure that no part of it was encumbered by copyright restrictions.
+
+\item Many readers of my books don't have access to libraries of
+printed material, so I tried to make references to resources that are
+freely available on the Internet.
+
+\item Librarians and other proponents of old media think that the exclusive
+use of electronic resources is lazy and unreliable.  They might be right
+about the first part, but I think they are wrong about the second, so
+I wanted to test my theory.
+
+% http://www.ala.org/ala/mgrps/rts/nmrt/news/footnotes/may2010/in_defense_of_wikipedia_bonnett.cfm
+
+\end{itemize}
+
+The resource I used more than any other is the Wikipedia, the bugbear
+of librarians everywhere.  In general, the articles I read on
+statistical topics were very good (although I made a few small changes
+along the way).  I include references to Wikipedia pages throughout
+the book and I encourage you to follow those links; in many cases, the
+Wikipedia page picks up where my description leaves off.  The
+vocabulary and notation in this book are generally consistent with the
+Wikipedia, unless I had a good reason to deviate.
+
+Other resources I found useful were Wolfram MathWorld and (of course)
+Google.
 
 Allen B. Downey \\
 Needham MA\\
@@ -249,7 +291,8 @@ Thanks!
 
 \begin{itemize}
 
-\item 
+\item Lisa Downey and June Downey read an early draft and made many
+corrections and suggestions.
 
 % ENDCONTRIB
 
@@ -295,7 +338,7 @@ I will present three related pieces:
 
 \item[Computation] is a tool that is well-suited to quantitative
   analysis, and computers are commonly used to process statistics.
-  Also (and more importantly for this book) computational experiments
+  Also, computational experiments
   are useful for exploring concepts in probability and statistics.
 
 \end{description}
@@ -348,8 +391,7 @@ evidence usually fails, because:
 \item[Small number of observations:] If the gestation period is longer
   for first babies, the difference is probably small compared to the
   natural variation.  In that case, we might have to compare a large
-  number of pregnancies to be sure there is really a difference (or
-  not).
+  number of pregnancies to be sure that a difference exists.
 
 \item[Selection bias:] People who join a discussion of this question
   might be interested because their first babies were late.  In that
@@ -359,8 +401,8 @@ evidence usually fails, because:
   likely to contribute examples that confirm it.  People who doubt the
   claim are more likely to cite counterexamples.
 
-\item[Inaccuracy:] Anecotes are often personal stories that are
-  (deliberately or not) misremembered, misrepresented, repeated
+\item[Inaccuracy:] Anecdotes are often personal stories, and often
+  misremembered, misrepresented, repeated
   inaccurately, etc.
 
 \end{description}
@@ -387,16 +429,16 @@ of statistics, which include:
   we are interested in.  At the same time we will check for
   inconsistencies and identify limitations.
 
-\item[Hypothesis testing:] Where we see apparent effects (like a
-  difference between two groups), we will evaluate whether the effect
-  is likely to be real, or whether it might have happened by chance.
+\item[Hypothesis testing:] Where we see apparent effects, like a
+  difference between two groups, we will evaluate whether the effect
+  is real, or whether it might have happened by chance.
 
 \item[Estimation:] We will use data from a sample to estimate
   characteristics of the general population.
 
 \end{description}
 
-By performing these steps with care to avoid common pitfalls, we can
+By performing these steps with care to avoid pitfalls, we can
 reach conclusions that are more justifiable and more likely to be
 correct.
 
@@ -437,7 +479,7 @@ population has an equal chance of participating.  Of course that ideal
 is hard to achieve in practice, but people who conduct surveys come as
 close as they can.
 
-The NSFG not representative; instead it is deliberately {\bf
+The NSFG is not representative; instead it is deliberately {\bf
   oversampled}.  The designers of the study recruited three
 groups---Hispanics, African-Americans and teenagers---at rates higher
 than their representation in the U.S. population.
@@ -570,7 +612,7 @@ For example, the indices for {\tt caseid} are
 1--12.
 
 \item[end:] The index of the ending column for this
-field.  Unlike in Python, the end index is inclusive.
+field.  Unlike in Python, the end index is {\em inclusive}.
 
 \item[conversion function:] A function that takes a string
 and converts it to an appropriate type.  You can use built-in
@@ -3152,7 +3194,7 @@ relative likelihood of an observation conditioned on a given hypothesis.
 
 \chapter{Hypothesis testing}
 
-Exploring the data from the NSFG, we saw several ``apparent effects;''
+Exploring the data from the NSFG, we saw several ``apparent effects,''
 including a number of differences between first babies and others.
 So far we have taken these effects at face value; in this chapter,
 finally, we will put them to the test.
@@ -3176,11 +3218,11 @@ To make this more precise, we have to answer three questions:
 
 \begin{enumerate}
 
-\item What do we mean by ``chance?''
+\item What do we mean by ``chance''?
 
-\item What do we mean by ``unlikely?''
+\item What do we mean by ``unlikely''?
 
-\item What do we mean by ``effect?''
+\item What do we mean by ``effect''?
 
 \end{enumerate}
 
@@ -3287,22 +3329,22 @@ In hypothesis testing we have to worry about two kinds of errors.
 
 \begin{itemize}
 
-\item A Type I error, also called a {\bf false positive} is when we
+\item A Type I error, also called a {\bf false positive}, is when we
   accept a hypothesis that is actually false; that is, we consider an
   effect significant when it was actually due to chance.
 
-\item A Type II error, also called a {\bf false negative} is when we
+\item A Type II error, also called a {\bf false negative}, is when we
   reject a hypothesis that is actually true; that is, we attribute an
   effect to chance when it was actually real.
 
 \end{itemize}
 
 The most common approach to hypothesis testing is to choose a
-threshold, $\alpha$, for the p-value and to accept as significant any
-effect with a p-value less than $\alpha$.  A common choice for
-$\alpha$ is 5\%.  By this criterion, the apparent difference in
-pregnancy length for first babies is not significant, but the
-difference in weight is.
+threshold\footnote{Also known as a ``Significance criterion.''},
+$\alpha$, for the p-value and to accept as significant any effect with
+a p-value less than $\alpha$.  A common choice for $\alpha$ is 5\%.
+By this criterion, the apparent difference in pregnancy length for
+first babies is not significant, but the difference in weight is.
 
 For this kind of hypothesis testing, we can compute the probability of
 a false positive explicitly: it turns out to be $\alpha$.
@@ -3314,7 +3356,7 @@ hypothesis is false.
 
 Putting these together, we can ask: if the hypothesis is false,
 what is the chance of generating a measured effect that will be
-considered significant with threshold $\alpha$.  The answer is
+considered significant with threshold $\alpha$?  The answer is
 $\alpha$.
 
 We can decrease the chance of a false positive by decreasing the
@@ -3346,16 +3388,16 @@ larger does the sample size have to be with $\alpha=1$\%?
 \section{Defining the effect}
 
 When something unusual happens, people often say something like,
-``Wow!  What were the chances of {\em that}!''  This question makes
+``Wow!  What were the chances of {\em that}?''  This question makes
 sense because we have an intuitive sense that some things are more
 likely than others.  But this intuition doesn't always hold up to
 scrutiny.
 
-For example, supposed I toss a coin 10 times, and after each toss I
+For example, suppose I toss a coin 10 times, and after each toss I
 write down H for heads and T for tails.  If the result was a sequence
-like THHTHTTTHH, you would't be to surprised.  But if the result was
+like THHTHTTTHH, you wouldn't be too surprised.  But if the result was
 HHHHHHHHHH, you would say something like, ``Wow!  What were the
-chances of {\em that}!''
+chances of {\em that}?''
 
 For this example, at least, we can answer the question.  The
 probability of getting the sequence HHHHHHHHHH is one in 1024.  But
@@ -3377,7 +3419,7 @@ testing the hypothesis that there is a signficant difference between
 the distributions, without specifying the sign of the difference.
 
 The alternative is to use a {\bf one-sided} test, which asks whether
-the mean for first babies is significanly {\em higher} than
+the mean for first babies is significantly {\em higher} than
 the mean for others.  Because the hypothesis is more specific, the
 p-value is lower---in this case it is roughly half.
 
@@ -3403,7 +3445,7 @@ interpret the result of a hypothesis test:
   is less than $\alpha$, you can say that the effect is statistically
   significant, but you can't conclude that it's real.  This
   formulation is careful to avoid leaping to conclusions, but it is
-  also deeply unsatisfying.
+  deeply unsatisfying.
 
 \item[Practical:] In practice, people are not so formal.  In most
   science journals, researchers report p-values without apology, and
@@ -3414,14 +3456,14 @@ interpret the result of a hypothesis test:
 \item[Bayesian:] What we really want to know is $P(H_A | E)$, where
   $H_A$ is the hypothesis that the effect is real.  By Bayes's theorem
 
-  \[ P(H_A | E) = \frac{P(E | H_A)}{P(E)} P(H_A) \]
-
-  Where $P(H_A)$ is the prior probability of $H_A$ before we saw the
+  \[ P(H_A | E) = \frac{P(E | H_A) P(H_A)}{P(E)} \]
+  
+  where $P(H_A)$ is the prior probability of $H_A$ before we saw the
   effect, $P(E | H_A)$ is the probability of seeing $E$, assuming that
   the effect is real, and $P(E)$ is the probability of seeing $E$
   under any hypothesis.  Since the effect is either real or it's not,
 
-  \[ P(E) = P(E | H_A)P(H_A) + P(E | H_0)P(H_0) \]
+  \[ P(E) = P(E | H_A) P(H_A) + P(E | H_0) P(H_0) \]
 
 \end{description}
 
@@ -3495,7 +3537,7 @@ no longer using the same data for training and testing.
 \section{Reporting Bayesian probabilities}
 
 In the previous section we chose the prior probability $P(H_A) = 0.5$.
-If we have a set of hypothesis and no reason to think one is more
+If we have a set of hypotheses and no reason to think one is more
 likely than another, it is common to assign each the same probability.
 
 Some people object to Bayesian probabilities because they depend on
@@ -3529,7 +3571,7 @@ variance often behave badly.
 
 An alternative is to test a hypothesis that more directly reflects the
 effect as it appears; that is, the hypothesis that first babies are
-more likely to be early, less likely to be in time, and more likely to
+more likely to be early, less likely to be on time, and more likely to
 be late.
 
 We proceed in five easy steps:
@@ -3557,7 +3599,7 @@ on time, etc.  Likewise, we have $m=4735$ other babies, so we expect
 $m p_{early}$ other babies to be early, etc.
 
 \item For each cell we compute the deviation; that is, the difference
-  between the observed value, $O_i$, and the expected value, $E_i$
+  between the observed value, $O_i$, and the expected value, $E_i$.
 
 \item We compute some measure of the total deviation; this quantity
 is called the {\bf test statistic}.  The most common
@@ -3583,7 +3625,7 @@ the distribution of the test statistic can be computed analytically.
 Use the data from the NSFG (see Section~\ref{nsfg}) to compute
 $p_{early}$, $p_{ontime}$ and $p_{late}$.  The compute the $E_i$,
 $O_i$ and $\chi^2$.  What is the p-value of $\chi^2$ under the null
-hypothesis.
+hypothesis?
 
 You can download a solution to this exercise from
 \url{thinkstatsbook.com/chi.py}.
@@ -3648,16 +3690,17 @@ So as a special case:
 \[ X_1 - X_2 \sim \mathcal{N} (a\mu_1 - b\mu_2, 
                                \sigma_1^2 + \sigma_2^2) \]
 
-Putting it all together, we conclude that the sample in Figure~\ref{}
-is drawn from $\mathcal{N} (0, f \sigma^2)$, where $f = 1/n + 1/m$.
-Plugging in $n=4413$ and $m=4735$, we expect the difference of sample
-means to be $\mathcal{N} (0, 0.0065)$.
+Putting it all together, we conclude that the sample in
+Figure~\ref{length_deltas_cdf} is drawn from 
+$\mathcal{N} (0, f \sigma^2)$, where $f = 1/n + 1/m$.  Plugging in
+$n=4413$ and $m=4735$, we expect the difference of sample means to be
+$\mathcal{N} (0, 0.0065)$.
 
 \begin{ex}
 
 Use erf.NormalCdf to compute the p-value of the observed difference
 in the means, $\delta=0.073$.  How does it compare to the value
-we estimated by resampling.
+we estimated by resampling?
 
 \end{ex}
 
@@ -3667,31 +3710,52 @@ we estimated by resampling.
 
 \section{Power}
 
-Definition
+When the result of a hypothesis test is negative (that is, the effect is
+not statistically significant), can we conclude that the effect is not
+real?  That depends on the power of the test.
 
-Compute it
+Statistical {\bf power} is the probability that the test will be
+positive if the null hypothesis is false.  In general, the power of a
+test depends on the sample size, the magnitude of the effect, and the
+threshold $\alpha$.
 
-Comment on the loss of power in cross-validation due to smaller sample size 
+\begin{ex}
+
+What is the power of the test in Section~\ref{threshold}, using
+$\alpha=0.05$ and assuming that the actual difference between the
+means is $0.073$ weeks?
+
+You can estimate power by generating random samples from distributions
+with the given difference in the mean, testing the observed distance
+in the mean, and counting the number of positive tests.
+
+What is the power of the test with $\alpha=0.10$?
+
+\end{ex}
+
+One way to report the power of a test, along with a negative result,
+is to say something like, ``If the apparent effect were as large
+as X, this test would reject the null hypothesis with probability P.''
 
 
-\section{Discussion}
+%\section{Discussion}
 
-Pitfalls:
+%Pitfalls:
 
-1) Exploring and then testing
+%1) Exploring and then testing
 
-2) Multiple tests
+%2) Multiple tests
 
-3) Publication bias
+%3) Publication bias
 
 
-Solutions:
+%Solutions:
 
-1) two phases: exploratory and testing, on different data (possibly a subset)
+%1) two phases: exploratory and testing, on different data (possibly a subset)
 
-2) Holm-Bonferroni method
+%2) Holm-Bonferroni method
 
-3) publish everything and wait for consensus
+%3) publish everything and wait for consensus
 
 
 
@@ -3717,11 +3781,11 @@ sample.
 \item[false negative:] The conclusion that an effect is due to chance when it
 is not.
 
-\item[two-sided test:] A test that asks, "What is the chance of an effect
-as big as the observed effect, positive or negative?"
+\item[two-sided test:] A test that asks, ``What is the chance of an effect
+as big as the observed effect, positive or negative?''
 
-\item[one-sided test:] A test that asks, "What is the chance of an effect
-as big as the observed effect, and with the same sign?"
+\item[one-sided test:] A test that asks, ``What is the chance of an effect
+as big as the observed effect, and with the same sign?''
 
 \item[cross-validation:] A process of hypothesis testing that uses one
 dataset for exploratory data analysis and another dataset for testing.
@@ -3738,6 +3802,9 @@ the test statistic.
 
 \item[cell:] In a chi-square test, the categories the observations are
 divided into.
+
+\item[power:] The probability that a test will reject the null hypothesis
+if it is false.
 
 \end{description}
 
@@ -4163,7 +4230,7 @@ $\sigma$ {\bf normalizes} the deviation, so the values of $Z$ are
 dimensionless (no units) and their distribution has $\mu=0$ and
 $\sigma=1$.
 
-If $X$ is normally-distributed, then so is $Z$; but if $Z$ is skewed
+If $X$ is normally-distributed, so is $Z$; but if $X$ is skewed
 or has outliers, so does $Z$.  In those cases it is more robust to
 use percentile ranks.  If
 
@@ -4188,8 +4255,8 @@ same sign; when one is high (above the mean), the other tends to be
 high, and vice versa.  
 
 If we multiply them together, the product is positive whenever the
-deviations have the same sign.
-The mean of these products is the covariance:
+deviations have the same sign.  The mean of these products is the
+covariance:
 
 \[ Cov(X,Y) = \frac{1}{n} \sum dx_i dy_i \]
 
@@ -4205,7 +4272,7 @@ in units of kilogram-meters\footnote{You might notice that energy and
 \section{Correlation}
 
 One solution to this problem is to normalize the deviations (divide by
-$\sigma$).  The result is the product of normal scores:
+$\sigma$) and compute the product of normal scores:
 
 \[ p_i = \frac{(x_i - \mu_X)}{\sigma_X} \frac{(y_i - \mu_Y)}{\sigma_Y} \]
 
@@ -4246,7 +4313,7 @@ be able to guess their weight.  You might not get it exactly right, but
 your guess will be better than if you didn't know the height.
 
 \item[Positively correlated:] Positive correlation means that when one
-  variables is high, the other tends to be high.  Negative correlation
+  variable is high, the other tends to be high.  Negative correlation
   means that when one is high, the other tends to be low.  Remember that
   negative correlation is still correlation, and for purposes of
   prediction it is just as useful as positive correlation.
@@ -4268,14 +4335,15 @@ dependence.
 
 Figure~\ref{corr_examples} is from the Wikipedia page
 \url{wikipedia.org/wiki/Correlation_and_dependence}.  It shows
-scatterplots for several carefully-constructed datasets and their
-correlations.
+scatterplots and correlations for several carefully-constructed
+datasets.
 
-The top row shows plain old ordinary linear relationships with a range
+The top row shows linear relationships with a range
 of strengths.  The second row shows perfect correlations with a range
-of slopes, which makes the point that correlation is unrelated to slope
+of slopes, which shows that correlation is unrelated to slope
 (we'll talk about estimating slope later in the chapter).  The third
-row shows variables with various non-linear relationships 
+row shows variables that are clearly related, but because the relationship
+is non-linear, the correlation coefficient is 0.
 
 The moral of this story is that you should look at a scatterplot of
 your data before blindly computing a correlation coefficient.
@@ -4298,7 +4366,8 @@ is linear and if the variables are roughly normal.  But it is not
 robust in the presence of outliers.
 
 One alternative is {\bf Spearman's rank correlation}, which replaces
-each value with its percentile rank before computing Pearson's correlation.
+each value with its percentile rank before computing Pearson's
+correlation.
 
 Another alternative is to apply a transform that makes the data more
 nearly normal.  For example, if the data are lognormal, taking the log
@@ -4312,8 +4381,7 @@ may be nonlinear.  Make a scatterplot and see what it looks like.
 
 Now try plotting $\log \mathrm{weight}$ versus height, and compute
 Pearson's correlation for the transformed variable.
-
-Finally, compute Spearman's rank correlation between weight and height.
+Finally, compute Spearman's rank correlation for weight and height.
 
 Which of these correlation coefficients do you think is the best
 measure of the strength of the relationship?
@@ -4323,34 +4391,38 @@ measure of the strength of the relationship?
 
 \section{Least squares fit}
 
-Correlation coefficients measure the strength and direction of a
+\newcommand{\slope}{\beta}
+\newcommand{\inter}{\alpha}
+
+Correlation coefficients measure the strength and sign of a
 relationship, but not the slope.  If we think there is a linear
 relationship between two variables, there are several ways to estimate
 the slope.  The most common is a {\bf linear least squares fit}.  A
 ``linear fit'' is a line intended to model the relationship between
 variables.  A ``least squares'' fit is one that minimizes the mean
-squared error (MSE) between the line and the data.
+squared error (MSE) between the line and the data\footnote{See
+  \url{wikipedia.org/wiki/Simple_linear_regression}}.
 
 Suppose we have a sequence of points $Y$ that we want to express
 as a function of another sequence $X$.  If we think that there is
-a linear relationship between $X$ and $Y$, with slope $a$ and
-intercept $b$, then we expect each $y_i$ to be roughly $a x_i + b$.
+a linear relationship between $X$ and $Y$, with intercept $\inter$
+and slope $\slope$, we expect each $y_i$ to be roughly $\inter + \slope x_i$.
 
 But unless the correlation is perfect, this prediction is only
 approximate.  The deviation, or {\bf residual}, is 
 
 \newcommand{\eps}{\varepsilon}
 
-\[ \eps_i = (a x_i + b) - y_i \]
+\[ \eps_i = (\inter + \slope x_i) - y_i \]
 
 The residual might be due to random factors like measurement error,
 or non-random factors that are unknown.  For example, if we are
 trying to predict weight as a function of height, unknown factors
-include diet, exercise, body type, etc.
+include diet, exercise, and body type.
 
-If we get the parameters $a$ and $b$ wrong, that will tend to make
-the residuals bigger, so it makes sense that the parameters we want
-are the ones that minimize the residuals.
+If we get the parameters $\inter$ and $\slope$ wrong, that will tend
+to make the residuals bigger, so it makes intuitive sense that the
+parameters we want are the ones that minimize the residuals.
 
 As usual, we could choose to minimize the absolute residuals, or
 their squares, or their cubes, etc.  But the most common choice
@@ -4365,21 +4437,21 @@ Why?  Well, there are three good reasons and one bad one:
 \item Squaring has the obvious feature of treating positive and
 negative residuals the same, which is usually what we want.
 
-\item Squaring gives more weight to large residuals, but it isn't
-too extreme.
+\item Squaring gives more weight to large residuals, but not
+so much weight that the largest residual always dominates.
 
 \item If the residuals are independent of $x$, random, and uniformly
   distributed with $\mu=0$ and constant (but unknown) $\sigma$, then
   the least squares fit is also the maximum likelihood estimator of
-  $a$ and $b$\footnote{See
-    \url{http://www.nrbook.com/a/bookcpdf/c15-1.pdf}.}.
+  $\inter$ and $\slope$\footnote{See Press et al., {\em Numerical Recipes in C},
+    Chapter 15 at \url{www.nrbook.com/a/bookcpdf/c15-1.pdf}.}.
 
-\item The values of $a$ and $b$ that minimize the square residuals can
-  be found analytically.
+\item The values of $\inter$ and $\slope$ that minimize the squared
+  residuals can be found analytically.
 
 \end{itemize}
 
-The third reason made sense when computational efficiency was more
+That last reason made sense when computational efficiency was more
 important than choosing the method most appropriate to the problem
 at hand.  But that's no longer the case, so it is worth considering
 whether squared residuals are the right thing to minimize.
@@ -4397,57 +4469,95 @@ here's how:
 \item Compute the sample means, $\xbar$ and $\ybar$, the variance
 of $X$, and the covariance of $X$ and $Y$.
 
-\item Then the slope is
+\item The estimated slope is
 
-\[ a = \frac{Cov(X,Y)}{Var(X)} \]
+\[ \hat{\slope} = \frac{Cov(X,Y)}{Var(X)} \]
 
 \item And the intercept is
 
-\[ b = \]
-
-and the squared
-deviation of $x$
-
-\[ \delta_X^2 = \sum_i (x_i - \xbar)^2 \]
-
-\item Compute these sums:
-
-\[ S_x = \sum x_i \]
-\[ S_y = \sum y_i \]
-\[ S_{xx} = \sum x_i^2 \]
-\[ S_{xy} = \sum x_i y_i \]
-
-\item Compute the slope:
-
-\[ a =   \]
+\[ \hat{\inter} = \ybar - \hat{\slope} \xbar\]
 
 \end{enumerate}
 
 To see how this is derived, read
 \url{wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
-least squares fit
+\begin{ex}
 
-Examples:
+Compute a linear least-squares fit for length and weight at birth
+in the NSFG.  What are the units of the estimated parameters
+$\hat{\inter}$ and $\hat{\slope}$?  How would you summarize these results
+in a sentence or two?
 
-    weight gain vs. current weight, explanation of lognormal distribution
-
-Goodness of fit for evaluating distribution models
-
-Show CLT rate of convergence to normal for different distributions 
-(test linearity on a normal prob graph)
+\end{ex}
 
 
-\chapter{Reminders}
+\section{Goodness of fit}
 
-moments
+Having fit a linear model to the data, we might want to know how good
+it is.  Well, that depends on what it's for.  One way to evaluate a model
+is its predictive power.  For example, if you were trying to guess
+someone's weight, how much would it help to know their height?
 
-modes
+In the context of prediction, the quantity we are trying to guess is
+called an {\bf dependent variable} and the quantity we are using
+to make the guess is called an {\bf independent variable} or sometimes
+an {\bf explanatory variable}.
 
-   multimodal distributions (artifact examples: heights, gestation)
+To describe the predictive power of a model, we can compute the {\bf
+  coefficient of determination}, more commonly known as ``R-squared'':
 
-Gelman's paradox
-\url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
+\[ R^2 = 1 - \frac{Var(\eps)}{Var(Y)}\]
+
+The second term measures the the fraction of variability unexplained
+by the model, so $R^2$ is the fraction of variability the model
+explains, although we have to be careful about what we mean by
+``explains.''
+
+It is more precise to think of $R^2$ in terms of prediction rather
+than explanation.  If you had to guess someone's weight without
+knowing their height, your best strategy would be to guess $\ybar$; in
+that case the MSE of your guesses would be $Var(Y)$.  But if I told
+you their height, you would guess $\hat{\inter} + \hat{\slope} x_i$;
+in that case the MSE would be $Var(\eps)$.  So the term
+$Var(\eps)/Var(Y)$ measures the effect of the model on your prediction
+errors.
+
+If a model yields $R^2 = 0.64$, you could say that the model explains
+64\% of the variability, or you could say that it can reduce the MSE
+of your predictions by 64\%.
+
+In the context of a linear least model, it turns out that there is
+a simple relationship between the coefficient of determination and
+Spearman's correlation coefficient, $\rho$:
+
+\[ R^2 = \rho^2 \]
+
+How about that?
+
+
+% Reminders
+
+%least squares fit
+
+%Examples:
+
+%    weight gain vs. current weight, explanation of lognormal distribution
+
+%Goodness of fit for evaluating distribution models
+
+%Show CLT rate of convergence to normal for different distributions 
+%(test linearity on a normal prob graph)
+
+
+% moments
+
+% modes
+
+%   multimodal distributions (artifact examples: heights, gestation)
+
+% Gelman's paradox
+% \url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
 
 \printindex
 
