@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.0.5}
+\newcommand{\theversion}{1.0.6}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -214,12 +214,12 @@ Version \theversion
 %A simulation can be a more compelling proof -- easier to read and check
 %correctness.  Erdos and the Monty Hall problem.
 
-When someone sits down to
+When people sit down to
 write a textbook, they usually start by reading a stack of existing
-textbooks.  The result is that most books contain the same material in
-pretty much the same order.  Often there are phrases, examples,
-and errors that propagate from one book to the next;  Stephen Jay
-Gould pointed out an example of this phenomenon in his
+textbooks.  As a result, most books contain the same material in
+pretty much the same order.  Often there are phrases,
+and errors, that propagate from one book to the next;  Stephen Jay
+Gould pointed out an example in his
 essay, ``The Case of the Creeping Fox Terrier\footnote{A breed of dog
   that is about twice the size of a Hyracotherium (see
   \url{wikipedia.org/wiki/Hyracotherium}).}.''
@@ -258,10 +258,15 @@ vocabulary and notation in this book are generally consistent with the
 Wikipedia, unless I had a good reason to deviate.
 
 Other resources I found useful were Wolfram MathWorld and (of course)
-Google.
+Google.  I also used two books, David MacKay's {\em Information
+  Theory, Inference, and Learning Algorithms}, which is the book that
+got me hooked on Bayesian statistics, and Press et al.'s {\em
+  Numerical Recipes in C}.  But both books are available online,
+so I don't feel too bad.
 
 Allen B. Downey \\
 Needham MA\\
+August 27, 2010
 
 Allen Downey is an Associate Professor of Computer Science at 
 the Franklin W. Olin College of Engineering.
@@ -932,22 +937,21 @@ computes the variance of the pumpkin data.
 
 \begin{ex}
 Reusing code from {\tt survey.py} and {\tt first.py}, compute the
-variance of gestation time for first babies and others.  Does it look
-like the spread is the same for the two groups?
+standard deviation of gestation time for first babies and others.
+Does it look like the spread is the same for the two groups?
 \end{ex}
 
 \begin{ex}
-Compute the standard deviation of the pooled data (first babies
-and others).  How big is the difference between the
-means compared to the standard deviation?  What does this comparison
-suggest about the statistical significance of the difference?
+How big is the difference in the means compared to these standard
+deviations?  What does this comparison suggest about the statistical
+significance of the difference?
 \end{ex}
 
 If you have prior experience, you might have seen a 
 formula for variance with $n-1$ in the denominator, rather than $n$.
 This statistic is called the ``sample variance,'' and it is used
 to estimate the variance in a population using a sample.  We will
-come back to this when we talk about estimation.
+come back to this in Chapter~\ref{estimation}.
 
 \section{Distributions}
 \label{distributions}
@@ -985,7 +989,7 @@ for x, freq in hist.items():
     pmf[x] = hist[x] / n
 \end{verbatim}
 
-The normalized histogram is called a {\bf pmf}, which stands for
+The normalized histogram is called a {\bf PMF}, which stands for
 ``probability mass function;''  that is, it's a function that
 maps from values to probabilities (I'll explain ``mass'' later).
 
@@ -1015,7 +1019,7 @@ represents a probability mass function with a dictionary that maps
 from values to probabilities.
 
 Write a function called {\tt MakePmf} that takes a sequence of
-values and returns their pmf.
+values and returns their PMF.
 
 Write a method called {\tt Prob} that
 takes a value and returns the corresponding probability, or 0
@@ -1041,7 +1045,7 @@ pyplot.show()
 If you have {\tt matplotlib} you should see a simple pie chart;
 otherwise you will have to install it.
 
-Histograms and pmfs are most often plotted as bar charts.  The
+Histograms and PMFs are most often plotted as bar charts.  The
 {\tt pyplot} function to draw a bar chart is {\tt bar}.
 
 Figure~\ref{nsfg_hist} shows histograms of the pregnancy lengths for
@@ -1186,7 +1190,6 @@ Figure~\ref{nsfg_diffs} shows the difference between the PMFs for weeks
 points.
 
 \begin{figure}
-% ???
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_diffs.eps}}
 \caption{Difference in percentage, by week.}
 \label{nsfg_diffs}
@@ -1277,7 +1280,7 @@ Plot this value as a function of $x$ for first babies and others.
 
 At this point we have explored the data and seen several apparent
 effects.  For now, let's assume that these effects are real (but let's
-remember that it is an assumption).  How should we report these
+remember that it's an assumption).  How should we report these
 results?
 
 The answer might depend on who is asking the question.  For example,
@@ -1327,7 +1330,7 @@ Similarly, you can compute variance like this:
 
 \begin{ex}
 In {\tt Pmf.py}, add methods named {\tt Mean} and {\tt Var} that compute
-the mean and variance of a Pmf.
+the mean and variance of a PMF.
 
 To test these methods, check that they are consistent with the
 functions {\tt Mean} and {\tt Var} you wrote in {\tt thinkstats.py}.
@@ -1417,7 +1420,7 @@ size to get a probability.
 \item[distribution:] A summary of the values that appear in a sample
 and the frequency, or probability, of each.
 
-\item[pmf:] Probability mass function: a representation of a distribution
+\item[PMF:] Probability mass function: a representation of a distribution
 as a function that maps from values to probabilities.
 
 \item[mode:] The most frequent value in a sample.
@@ -1794,7 +1797,7 @@ to implement than explain, let's try it out.
 
 \begin{ex}
 
-Add a method to the Cdf class, called {\tt Sample}, that takes
+Add a method to the {\tt Cdf} class, called {\tt Sample}, that takes
 an integer {\tt n} and returns a list of $n$ values chosen at
 random from the distribution.  Hint: use {\tt random.random}.
 
@@ -1841,7 +1844,8 @@ the interquartile range.
 \item[percentile rank:] The percentage of values in a distribution that are
 less than or equal to a given value.
 
-\item[CDF:] A function that maps from values to their percentile ranks.
+\item[CDF:] Cumulative distribution function, a function that maps
+  from values to their percentile ranks.
 
 \item[percentile:] The value associated with a given percentile rank.
 
@@ -1850,6 +1854,9 @@ that some condition holds.
 
 \item[resampling:] The process of generating a random sample from a
 distribution that was computed from a sample.
+
+\item[interquartile range:] A measure of spread, the difference between
+the 75th and 25th percentiles.
 
 \end{description}
 
@@ -1860,12 +1867,12 @@ distribution that was computed from a sample.
 
 The distributions we have used so far are called {\bf
   empirical distributions} because they are based on empirical
-observations.
+observations, which are necessarily finite samples.
 
 The alternative is a {\bf continuous distribution}, which is
 characterized by a CDF that is a continuous function (as opposed to a
 step function).  Many real world phenomena can be approximated by
-continuous distributions, which is why they are useful.
+continuous distributions.
 
 \section{The exponential distribution}
 
@@ -1920,7 +1927,7 @@ is a straight line.  Let's see why that works...
 If you plot the complementary CDF (CCDF) of a dataset that you think is
 exponential, you expect to see a function like:
 
-\[ y = \sim e^{-\lambda x} \]
+\[ y \sim e^{-\lambda x} \]
 
 If you take the log of both sides of this equation, you get:
 
@@ -1942,6 +1949,7 @@ day---is not exactly true.
 \end{figure}
 
 \begin{ex}
+
 For small values of $n$, we don't expect an empirical distribution
 to fit a continuous distribution exactly.  One way to evaluate
 the quality of fit is to generate a sample from a continuous
@@ -1957,9 +1965,11 @@ it to Figure~\ref{interarrivals_logy}.
 
 Hint: use the function {\tt pyplot.yscale} to plot the $y$ axis
 on a log scale.
+
 \end{ex}
 
 \begin{ex}
+
 Most people don't know what time they were born, but most people know
 their birthday.
 
@@ -1967,6 +1977,7 @@ Collect the birthdays of the students in your class, sort them, and
 compute the interarrival times in days.  Plot the CDF of the interarrival
 times and the CCDF on a log-$y$ scale.  Does it look like
 an exponential distribution?
+
 \end{ex}
 
 
@@ -1974,17 +1985,17 @@ an exponential distribution?
 
 The Pareto distribution is named after the economist Vilfredo Pareto,
 who used it to describe the distribution of wealth (see
-\url{wikipedia.org/wiki/Pareto_distribution}).  Since then, people
-have used it to describe a variety of phenomena in the natural and
-social sciences, including sizes of cities and towns, sand particles
-and meteorites, forest fires and earthquakes.
+\url{wikipedia.org/wiki/Pareto_distribution}).  Since then, it has
+been used to describe phenomena in the natural and social
+sciences including sizes of cities and towns, sand particles and
+meteorites, forest fires and earthquakes.
 
-The Pareto distribution is characterized by the following CDF:
+The CDF of the Pareto distribution is:
 
 \[ CDF(x) = 1- \left( \frac{x}{x_m} \right) ^{-\alpha} \]
 
 The parameters $x_m$ and $\alpha$ determine the location and shape of
-the distribution.  $x_m$ is the minimum possibile value.
+the distribution.  $x_m$ is the minimum possible value.
 Figure~\ref{pareto_cdf} shows the CDF of a Pareto distribution with
 parameters $x_m = 0.5$ and $\alpha = 1$.
 
@@ -1999,11 +2010,10 @@ The median of this distribution is $x_m 2^{1/alpha} = 1$, but the
 with median 1 has 95th percentile of only 1.5.
 
 There is a simple visual test that indicates whether an empirical
-distribution is well-characterized by a Pareto distribution: on a
-log-log scale, the CCDF looks like a straight line.  The derivation is
-similar to what we saw in the previous section.
+distribution fits a Pareto distribution: on a log-log scale, the CCDF
+looks like a straight line.
 
-If you plot a the CCDF of a sample from a Pareto distibution on a
+If you plot a the CCDF of a sample from a Pareto distribution on a
 linear scale, you expect to see a function like:
 
 \[ y \sim \left( \frac{x}{x_m} \right) ^{-\alpha} \]
@@ -2033,6 +2043,7 @@ line?  What is the slope?
 \end{ex}
 
 \begin{ex}
+
 To get a feel for the Pareto distribution, imagine what the world
 would be like if the distribution of human height were Pareto.
 Choosing the parameters $x_m = 100$ cm and $\alpha = 1.7$, we
@@ -2064,7 +2075,9 @@ What is the value of $\alpha$, approximately?
 
 The Weibull distribution is a generalization of the exponential
 distribution that comes up in failure analysis
-(see \url{wikipedia.org/wiki/Weibull_distribution}).
+(see \url{wikipedia.org/wiki/Weibull_distribution}).  Its CDF is
+
+\[ CDF(x) = 1 - e^{-(x / \lambda)^k} \]
 
 Can you find a transformation that makes a Weibull distribution look
 like a straight line?  What do the slope and intercept of the
@@ -2076,8 +2089,6 @@ Weibull distribution and use it to test your transformation.
 \end{ex}
 
 
-
-
 \section{The normal Distribution}
 
 \newcommand{\erf}{\mathrm{erf}}
@@ -2085,7 +2096,7 @@ Weibull distribution and use it to test your transformation.
 The normal distribution, also called Gaussian, is the most commonly
 used because it describes so many phenomena, at least approximately.
 It turns out that there is a good reason for its ubiquity, which we
-will get to soon.
+will get to in Section~\ref{CLT}.
 
 The normal distribution has many properties that make it amenable for
 analysis, but unfortunately the CDF is not one of them.  Unlike the
@@ -2094,17 +2105,17 @@ expression for the normal CDF; the most common alternative is to write
 it in terms of the {\bf error function}, which is a special function
 written $\erf$:
 
-\[ erf(x) = \frac{2}{\sqrt{\pi}} \int_{-\infty}^x e^{-t^2} dt \]
-
 \[ CDF(x) = \frac{1}{2} \left[ 1 +
   \erf \left( \frac{x - \mu}{\sigma \sqrt{2}} \right) \right] \]
+
+\[ \erf(x) = \frac{2}{\sqrt{\pi}} \int_{-\infty}^x e^{-t^2} dt \]
 
 The parameters $\mu$ and $\sigma$ determine the mean and standard
 deviation of the distribution.
 
 If these formulas make your eyes hurt, don't worry; they are easy to
-implement in Python\footnote{As of Python 3.2, it is even easier; {\tt
-    erf} is in the {\tt math} module.}.  There are many fast and
+implement in Python\footnote{As of Python 3.2, it is even easier; 
+{\tt erf} is in the {\tt math} module.}.  There are many fast and
 accurate ways to approximate $\erf$.  You can download one of them
 from \url{thinkstatsbook.com/erf.py}, which provides functions named
 {\tt erf} and {\tt NormalCdf}.
@@ -2145,10 +2156,11 @@ right, so it might not be appropriate to use the normal
 model.
 
 \begin{ex}
+
 The Wechsler Adult Intelligence Scale is a test that is intended
 to measure intelligence\footnote{Whether it does or not is a
 fascinating controversy that I invite you to investigate at your
-leisure.}.  Results are normalized so that the distribution of scores
+leisure.}.  Results are transformed so that the distribution of scores
 in the general population is normal with $\mu=100$ and $\sigma=15$.
 
 Use {\tt erf.NormalCdf} to investigate the frequency of rare events
@@ -2160,12 +2172,13 @@ A ``six-sigma'' event is a value that exceeds the mean by 6 standard
 deviations, so a six-sigma IQ is 190.  In a world of 6 billion people,
 how many do we expect to have an IQ of 190 or more\footnote{On this
   topic, you might be interested to read
-  \url{wikipedia.org/wiki/Christopher_Langan}}?
+  \url{wikipedia.org/wiki/Christopher_Langan}.}?
 
 \end{ex}
 
 
 \begin{ex}
+
 Plot the CDF of pregnancy lengths for all live births.  Does it
 look like a normal distribution?
 
@@ -2173,6 +2186,7 @@ Compute the mean and variance of the sample and plot the normal
 distribution with the same parameters.  Is the normal distribution a
 good model for this data?  If you had to summarize this distribution
 with two statistics, what statistics would you choose?
+
 \end{ex}
 
 
@@ -2189,7 +2203,6 @@ distribution and sort them, the $k$th rankit is the mean of the
 distribution for the $k$th value.
 
 \begin{ex}
-This exercise is optional, but it might help you get your head around rankits.
 
 Write a function called {\tt Sample} that generates 6 samples from a
 normal distribution with $\mu = 0$ and $\sigma = 1$.  Sort and return
@@ -2232,7 +2245,9 @@ For large datasets, this method works well.
 For smaller datasets, you can improve it by generating $m (n+1) - 1$
 values from a normal distribution, where $n$ is the size of the
 dataset and $m$ is a multiplier.  Then select every $m$th element,
-starting with the $m$th.  Hint: use the Python slice operator.
+starting with the $m$th.  
+
+%Hint: use the Python slice operator.
 
 This method works with other distributions as well, as long as
 you know how to generate a random sample.
@@ -2252,47 +2267,66 @@ deviations from a normal distribution; nevertheless, it is a
 good (enough) model for many purposes.
 
 \begin{ex}
+
 Sketch a line to fit this curve as well as you can, and
 eyeball the slope and intercept.  What meaning do these parameters have?
+
 \end{ex}
 
 
 \section{The lognormal distribution}
 \label{lognormal}
 
-The National Center for Chronic Disease Prevention and Health
-Promotion conducts an annual survey as part of the Behavioral Risk
-Factor Surveillance System (BRFSS)\footnote{Centers for Disease
-  Control and Prevention (CDC). Behavioral Risk Factor Surveillance
-  System Survey Data. Atlanta, Georgia: U.S. Department of Health and
-  Human Services, Centers for Disease Control and Prevention, 2008.}.
-In 2008, they interviewed 414,509 respondents and asked about their
-demographics, health and (as the name suggests) health risks.
+If the logarithms of a set of values have a normal distribution, the
+values have a {\bf lognormal} distribution.  The CDF of the lognormal
+distribution is the same as the CDF of the normal distribution,
+with $\log x$ substituted for $x$.
 
-Among the data they collected are the weights, in kilograms, of
-398,484 respondents.  Figure~\ref{brfss_weight_model} shows the
-distribution of these weights and a normal model with the same mean
-and variance.
+\[ CDF_{lognormal}(x) = CDF_{normal}(\log x) \]
 
-\begin{figure}
-\centerline{\includegraphics[height=2.5in]{workspace/brfss_weight_model.eps}}
-\caption{CDF of adult weights from the BRFSS.}
-\label{brfss_weight_model}
-\end{figure}
+The parameters of the lognormal distribution are usually denoted $\mu$
+and $\sigma$.  But remember that these parameters are {\em not} the
+mean and standard deviation; the mean of a lognormal distribution is
+$\exp(\mu + \sigma^2/2)$ and the standard deviation is
+ugly\footnote{See \url{wikipedia.org/wiki/Log-normal_distribution}.}.
 
-The agreement between the data and the model might be good enough
-for some purposes, but there are clear discrepancies below the 10th
-and above the 90th percentile.
-
-It turns out that we can do better by applying a logarithmic
-transformation\footnote{I was tipped off to this possibility by a
+It turns out that the distribution of weights for adults is
+approximately lognormal\footnote{I was tipped off to this possibility by a
   comment (without citation) at
   \url{mathworld.wolfram.com/LogNormalDistribution.html}.
   Subsequently I found a paper that proposes the log transform and
   suggests a cause: Penman and Johnson, ``The Changing Shape of the
   Body Mass Index Distribution Curve in the Population,'' Preventing
   Chronic Disease, 2006 July; 3(3): A74.  Online
-  at\url{www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}}.
+  at\url{www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}.}.
+
+The National Center for Chronic Disease
+Prevention and Health Promotion conducts an annual survey as part of
+the Behavioral Risk Factor Surveillance System
+(BRFSS)\footnote{Centers for Disease Control and Prevention
+  (CDC). Behavioral Risk Factor Surveillance System Survey
+  Data. Atlanta, Georgia: U.S. Department of Health and Human
+  Services, Centers for Disease Control and Prevention, 2008.}.  In
+2008, they interviewed 414,509 respondents and asked about their
+demographics, health and health risks.
+
+Among the data they collected are the weights in kilograms of
+398,484 respondents.
+
+%Figure~\ref{brfss_weight_model} shows the
+%distribution of these weights and a normal model with the same mean
+%and variance.
+
+%\begin{figure}
+%\centerline{\includegraphics[height=2.5in]{workspace/brfss_weight_model.eps}}
+%\caption{CDF of adult weights from the BRFSS.}
+%\label{brfss_weight_model}
+%\end{figure}
+
+%The agreement between the data and the model might be good enough
+%for some purposes, but there are clear discrepancies below the 10th
+%and above the 90th percentile.
+
 Figure~\ref{brfss_weight_log} shows the distribution
 of $\log w$, where $w$ is weight in kilograms, along with a normal
 model.
@@ -2303,15 +2337,12 @@ model.
 \label{brfss_weight_log}
 \end{figure}
 
-The normal model is a good fit for the data (although the
-highest weights exceed the expectation of the normal model even after
-the log transform).
+The normal model is a good fit for the data, although the
+highest weights exceed what we expect from the normal model even after
+the log transform.
 
-If the log transform fits a normal model, that means that the data
-fit a lognormal model.
-
-%In Chapter~\ref{correlation} we will come back
-%and look at a possible explanation of this phenomenon.
+Since the distribution of $\log w$ fits a normal model, we conclude that 
+$w$ fits a lognormal model.
 
 \begin{ex}
 
@@ -2322,6 +2353,7 @@ You can download code to work with the BRFSS dataset from
 \end{ex}
 
 \begin{ex}
+
 The distribution of populations for cities and towns has been proposed
 as an example of a real-world phenomenon that can be described
 with a Pareto distribution.
@@ -2384,192 +2416,13 @@ It appears twice in this book, so far.
 \end{description}
 
 
-\chapter{Operations on distributions}
-
-
-\section{PDFs}
-
-Mass-density analogy.
-
-Use exponential pdf as example.
-
-
-\section{Why normal?}
-
-I said earlier that normal distributions are amenable to analysis,
-but I didn't say why.  One of the primary reasons is that they are
-closed under linear combination and convolution.  To explain what
-that means, it will help to introduce some notation.
-
-If the distribution of a variable, $X$, is (at least approximately)
-normal with parameters $\mu$ and $\sigma$, you can write
-
-\[ X \sim \mathcal{N} (\mu, \sigma^2) \]
-
-where the symbol $\sim$ means ``is distributed'' and the script letter
-$\mathcal{N}$ stands for ``normal.''
-
-The other continuous distributions in this chapter are sometimes
-written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
-\alpha)$ and, for lognormal, $\mathrm{Log}-\mathcal{N} (\mu,
-\sigma^2)$.
-
-If $X$ is a random variable, a linear combination of $X$ is something
-like $Y = aX + b$.  
-A family of distributions is closed under linear combination if
-
-
-\begin{ex}
-
-Try out some combinations.
-
-Choose parameters so the mean and variance are similar, so one
-distribution isn't swamped by the other.
-
-\end{ex}
-
-
-\section{Chi-square}
-
-What happens when we add these things up?
-
-chi-square distribution = sum of k samples from N(0,1)
-
-Evaluate Gamma and gamma in Python
-
-
-\section{Convolution}
-
-What happens when you mix samples from different distributions.  Who wins?
-
-Mandelbrot's theory about the prevalence of long-tailed distributions.
-
-
-\section{Central limit theorem}
-
-What happens when we add up a lot of values?
-
-What happens when we multiply out a lot of values?
-
-
-\section{Skewness}
-
-{\bf Skewness} is a statistic that measures the asymmetry of a
-distribution.  Given a sequence of values, $x_i$, the sample skewness
-is:
-
-\[ g_1 = \frac{m_3}{m_2^{3/2}}\]
-
-\[ m_2 = \frac{1}{n} \sum_i (x_i - \mu)^2 \]
-
-\[ m_3 = \frac{1}{n} \sum_i (x_i - \mu)^3 \]
-
-You might recognize $m_2$ as the mean squared deviation (also known as
-variance); similarly, $m_3$ is the mean cubed deviation.
-
-In theory, negative skewness indicates that a distribution 
-``skews left;'' that is, it extends
-farther to the left than the right.  Positive skewness indicates
-that a distribution skews right.
-
-In practice, computing the skewness of a sample is usually not
-a good idea.  If there are any outliers, they tend to
-have a disproportionate effect on $g_1$.
-
-Another way to evaluate the asymmetry of a distribution is to look
-at the relationship between the mean and median.
-Extreme values have more effect on the mean than the median, so
-in a distribution that skews left, the mean is less than the median.
-
-Pearson's median skewness coefficient is an alternative measure of
-skewness that explicitly captures the relationship between the mean,
-$\mu$, and the median, $\mu_{1/2}$:
-
-\[ g_p = 3 (\mu - \mu_{1/2}) / \sigma \]
-
-This statistic is {\bf robust}, which means that it is less vulnerable
-to the effect of outliers.
-
-\begin{ex}
-
-In {\tt thinkstats.py} add a function named {\tt Skewness} that computes
-$g_1$ for a sample.
-
-Compute the skewness for the distributions of pregnancy length and
-birth weight.  Are the results consistent with the shape of the
-distributions?
-
-Write a function named {\tt PearsonSkewness} that computes $g_p$
-for these distributions.  How does $g_p$ compare to $g_1$?
-
-\end{ex}
-
-
-\begin{ex}
-
-The ``Lake Wobegon effect'' is an amusing nickname\footnote{If you
-  don't get it, see \url{wikipedia.org/wiki/Lake_Wobegon}.} for {\bf
-  illusory superiority}, which is the tendency for people to
-overestimate their abilities relative to others.  For example, in some
-surveys, more than 80\% of respondents believe that they are better
-than the average driver\footnote{See
-  \url{wikipedia.org/wiki/Illusory_superiority}.}.
-
-If we interpret ``average'' to mean median, then this result is
-logically impossible (proof left as an exercise for the reader).
-But if ``average'' is the mean, this result is actually possible,
-although unlikely. 
-
-The Current Population Survey (CPS) is a joint effort between the
-Bureau of Labor Statistics and the Census Bureau.  Data from the
-survey are available from \url{www.census.gov/cps/}.
-
-Extract the distribution of incomes from this dataset.  Are any of
-the continuous distributions in this chapter a good model of
-the data?
-
-Compute the median, mean, skewness and Pearson's skewness.  What
-fraction of the population is below the mean?
-
-Optional: The Gini coefficient is often used as a measure of income
-inequality.  Read about it at
-\url{wikipedia.org/wiki/Gini_coefficient} and write a function called
-    {\tt Gini} that computes it for the income distribution.
-
-\end{ex}
-
-
-
-\section{Glossary}
-
-\begin{description}
-
-\item[:]
-
-\item[skewness:] A characteristic of a distribution; intuitively, it
-is a measure of how asymmetric the distribution is.
-
-\item[robust:] A statistic is robust if it is relatively immune to the
-  effect of outliers.
-
-\item[illusory superiority:] The tendency of people to imagine that
-they are better than average.
-
-\item[corpus:] A body of text used as a sample of a language.
-
-\item[hapaxlegomenon:] A word that appear only once in a corpus.
-It appears twice in this book, so far.
-
-\end{description}
-
-
 \chapter{Probability}
 \label{probability}
 
 In Chapter~\ref{descriptive}, I said that a probability is a frequency
 expressed as a fraction of the sample size.  That's one definition of
 probability, but it's not the only one.  In fact, the meaning
-of probability is a topic of surprising controversy.
+of probability is a topic of some controversy.
 
 We'll start with the uncontroversial parts and work our way up.  There
 is general agreement that a probability is a real value between 0 and
@@ -2591,7 +2444,7 @@ where ``success'' is bad and ``failure'' is good.
 If we have a finite sample of $n$ trials and we observe $s$ successes,
 the probability of success is $s/n$.  If the set of trials is
 infinite, defining probabilities is a little trickier, but most people
-are willing to accept probablistic claims about a hypothetical series
+are willing to accept probabilistic claims about a hypothetical series
 of identical trials, like tossing a coin or rolling a die.
 
 We start to run into trouble when we talk about probabilities of
@@ -2604,7 +2457,7 @@ probability does not apply.  This position is sometimes called {\bf
   frequentism} because it defines probability in terms of frequencies.
 If there is no set of identical trials, there is no probability.
 
-Frequentism is relatively safe, from a philosophic point of view, but
+Frequentism is philosophically safe, but
 frustrating because it limits the scope of probability to physical
 systems that are either random (like atomic decay) or so unpredictable
 that we model them as random (like a tumbling die).  Anything involving
@@ -2617,7 +2470,7 @@ One difficulty with Bayesian probability is that it depends on
 a person's state of knowledge; people with different information
 might have different degrees of belief about the same event.  For
 this reason, many people think that Bayesian probabilities are
-(at least more) subjective than frequency probabilities.
+more subjective than frequency probabilities.
 
 As an example, what is the probability that Thaksin Shinawatra is the
 Prime Minister of Thailand?  A frequentist would say that there is no
@@ -2634,7 +2487,7 @@ that your recollection is incorrect, or that Thaksin has been
 reinstated.
 
 If you consult the Wikipedia, you will learn that Thaksin is not the
-PM of Thailand (at least at the time I am writing).  Based on this
+PM of Thailand (at the time I am writing).  Based on this
 information, you might revise your probability estimate to $0.01$,
 reflecting the possibility that the Wikipedia is wrong.
 
@@ -2652,12 +2505,11 @@ rules is
 where $P(A \and B)$ is the probability that events $A$ and $B$ both
 occur.  This formula is easy to remember, but it only applies if $A$
 and $B$ are {\bf independent}, which means that if I know $A$
-occurred, that doesn't change the probablility of $B$, and vice versa.
+occurred, that doesn't change the probability of $B$, and vice versa.
 
 For example, if $A$ is tossing a coin and getting heads, and $B$
 is rolling a die and getting 1, $A$ and $B$ are independent, because
-the coin toss doesn't tell me anything about the die roll, and vice
-versa.
+the coin toss doesn't tell me anything about the die roll.
 
 But if I roll two dice, and $A$ is getting at least one six, and
 $B$ is getting two sixes, $A$ and $B$ are not independent, because
@@ -2678,18 +2530,16 @@ This might not be as easy to remember, but if you read it a few times,
 it should make sense.  This relationship holds whether $A$ and $B$
 are independent or not.
 
-Because all probabilities are in the range from 0 to 1, it is
+Because all probabilities are in the range 0 to 1, it is
 easy to show that 
 
 \[ P(A \and B) \le P(A) \]
 
-To picture this, imagine a club that only admits people
-who satisfy some requirement, $A$.  Now suppose they add a new
-requirement for membership, $B$.  It seems obvious that the club
-will get smaller, or stay the same if it happens that all the
-members satisfy $B$.
-
-But there are some scenarios where people are surprisingly bad at this
+To picture this, imagine a club that only admits people who satisfy
+some requirement, $A$.  Now suppose they add a new requirement for
+membership, $B$.  It seems obvious that the club will get smaller, or
+stay the same if it happens that all the members satisfy $B$.  But
+there are some scenarios where people are surprisingly bad at this
 kind of analysis.  For examples and discussion of this phenomenon, see
 \url{wikipedia.org/wiki/Conjunction_fallacy}.
 
@@ -2735,7 +2585,7 @@ Florida is small.
 
 The Monty Hall problem might be the most contentious question in
 the history of probability.  The scenario is simple, but the correct
-answer is so counterintuitive that many people just can't accept
+answer is so counter-intuitive that many people just can't accept
 it, and many smart people have embarrassed themselves not just by
 getting it wrong but by arguing the wrong side, aggressively,
 in public.
@@ -2770,7 +2620,7 @@ games on the show.  If you are on the show, here's what happens:
 The question is, should you ``stick'' or ``switch'' or does it
 make no difference?
 
-Most people have the very strong intuition that it makes no difference.
+Most people have the strong intuition that it makes no difference.
 There are two doors left, they reason, so the chance that the car
 is behind Door A is 50\%.
 
@@ -2802,7 +2652,7 @@ a computer simulation to bring him around.
 \begin{ex}
 
 Write a program that simulates the Monty Hall problem and use
-it to estimate the probability of winning if you stick, and if
+it to estimate the probability of winning if you stick and if
 you switch.
 
 Then read the discussion of the problem at
@@ -2835,9 +2685,8 @@ Otherwise, are you better off switching or sticking?
 \section{\Poincare}
 
 Henri \Poincare~was a French mathematician who taught at the Sorbonne
-from 1881 until his death in 1912.  The following anecdote about him
-is probably apocryphal, but it makes an interesting probability
-problem.
+around 1900.  The following anecdote about him is probably fabricated,
+but it makes an interesting probability problem.
 
 Supposedly \Poincare~suspected that his local bakery was selling
 loaves of bread that were lighter than the advertised weight of 1 kg,
@@ -3145,13 +2994,13 @@ This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 
 \end{ex}
 
-\begin{ex}
+%\begin{ex}
 
-Elvis's twin
+%Elvis's twin
 
-Other Examples from MacKay's Chapter 3?
+%Other Examples from MacKay's Chapter 3?
 
-\end{ex}
+%\end{ex}
 
 
 \section{Glossary}
@@ -3160,7 +3009,7 @@ Other Examples from MacKay's Chapter 3?
 
 \item[event:] Something that may or may not occur, with some probability.
 
-\item[trial:] One in a series of occaisons when an event might occur.
+\item[trial:] One in a series of occasions when an event might occur.
 
 \item[success:] A trial in which an event occurs.
 
@@ -3190,6 +3039,424 @@ relative likelihood of an observation conditioned on a given hypothesis.
 
 \end{description}
 
+
+
+\chapter{Operations on distributions}
+
+\section{Skewness}
+
+{\bf Skewness} is a statistic that measures the asymmetry of a
+distribution.  Given a sequence of values, $x_i$, the sample skewness
+is:
+
+\[ g_1 = \frac{m_3}{m_2^{3/2}}\]
+
+\[ m_2 = \frac{1}{n} \sum_i (x_i - \mu)^2 \]
+
+\[ m_3 = \frac{1}{n} \sum_i (x_i - \mu)^3 \]
+
+You might recognize $m_2$ as the mean squared deviation (also known as
+variance); similarly, $m_3$ is the mean cubed deviation.
+
+Negative skewness indicates that a distribution 
+``skews left;'' that is, it extends
+farther to the left than the right.  Positive skewness indicates
+that a distribution skews right.
+
+In practice, computing the skewness of a sample is usually not
+a good idea.  If there are any outliers, they
+have a disproportionate effect on $g_1$.
+
+Another way to evaluate the asymmetry of a distribution is to look
+at the relationship between the mean and median.
+Extreme values have more effect on the mean than the median, so
+in a distribution that skews left, the mean is less than the median.
+
+{\bf Pearson's median skewness coefficient} is an alternative measure
+of skewness that explicitly captures the relationship between the
+mean, $\mu$, and the median, $\mu_{1/2}$:
+
+\[ g_p = 3 (\mu - \mu_{1/2}) / \sigma \]
+
+This statistic is {\bf robust}, which means that it is less vulnerable
+to the effect of outliers.
+
+\begin{ex}
+
+In {\tt thinkstats.py} add a function named {\tt Skewness} that computes
+$g_1$ for a sample.
+
+Compute the skewness for the distributions of pregnancy length and
+birth weight.  Are the results consistent with the shape of the
+distributions?
+
+Write a function named {\tt PearsonSkewness} that computes $g_p$
+for these distributions.  How does $g_p$ compare to $g_1$?
+
+\end{ex}
+
+
+\begin{ex}
+
+The ``Lake Wobegon effect'' is an amusing nickname\footnote{If you
+  don't get it, see \url{wikipedia.org/wiki/Lake_Wobegon}.} for {\bf
+  illusory superiority}, which is the tendency for people to
+overestimate their abilities relative to others.  For example, in some
+surveys, more than 80\% of respondents believe that they are better
+than the average driver (see
+  \url{wikipedia.org/wiki/Illusory_superiority}).
+
+If we interpret ``average'' to mean median, then this result is
+logically impossible (proof left as an exercise for the reader).
+But if ``average'' is the mean, this result is actually possible,
+although unlikely. 
+
+The Current Population Survey (CPS) is a joint effort between the
+Bureau of Labor Statistics and the Census Bureau.  Data from the
+survey are available from \url{www.census.gov/cps/}.
+
+Extract the distribution of incomes from this dataset.  Are any of
+the continuous distributions in this chapter a good model of
+the data?
+
+Compute the median, mean, skewness and Pearson's skewness.  What
+fraction of the population is below the mean?
+
+Optional: The Gini coefficient is a measure of income inequality.
+Read about it at \url{wikipedia.org/wiki/Gini_coefficient} and write a
+function called {\tt Gini} that computes it for the income
+distribution.
+
+\end{ex}
+
+
+\section{PDFs}
+
+The derivative of a CDF is called a {\bf probability density function},
+or PDF.  For example, the PDF of an exponential distribution is
+
+\[ PDF_{expo} = \lambda e^{-\lambda x}   \]
+
+The PDF of a normal distribution is
+
+\[ PDF_{normal} = \frac{1}{\sigma \sqrt{2 \pi}} 
+                 \exp \left[ -\frac{1}{2} 
+                 \left( \frac{x - \mu}{\sigma} \right)^2 \right]  \]
+
+Evaluating a PDF for a particular value of $x$ is almost never useful.
+The result is not a probability; it is a probability {\em density}.
+
+In physics, density is mass per unit of
+volume; in order to get a mass, you have to multiply by volume or,
+if the density is not constant, you have to integrate over volume.
+
+Similarly, probability density measures probability per unit of $x$.
+In order to get a probability mass, you have to integrate over $x$.
+For example, the probability that a value from a normal distribution
+falls between 0 and 1 is
+
+\[ P[0 \le X \le 1] = \int_0^1 PDF_{normal}(x) dx \]
+
+Since $CDF_{normal}$ is the integral of $PDF_{normal}$, we can write
+
+\[ P[0 \le X \le 1] = CDF_{normal}(1) - CDF_{normal}(0) \]
+
+
+\begin{ex}
+\label{expo_pdf}
+
+What is the probability that a value chosen from an exponential
+distribution with parameter $\lambda$ falls between 1 and 20?
+Express your answer as a function of $\lambda$.
+
+Note: keep this result handy; we will use it in
+Section~\ref{censored}.
+
+\end{ex}
+
+
+\section{Convolution}
+
+PDFs are useful for computing operations on distributions.  For
+example, suppose we have two values, $X$ and $Y$, drawn independently
+from distributions $CDF_X$ and $CDF_Y$.  What is the distribution of
+the sum $Z = X + Y$?
+
+One way to get to the answer it to imagine that we know the particular
+sum we want is $z$, and pretend we know the particular value of $X$ is
+$x$.  Then we can compute
+
+\[ P[Z \le z | X = x] = P[Y \le z-x] = CDF_Y(z-x) \]
+
+The notation is getting a little dense, so let's read it back.  
+$P[Z \le z | X = x]$ is ``the probability that the sum is less than
+$z$, given that we know the first term of the sum is $x$.''  Well, if
+the first term is $x$ and the sum has to be less than $z$, then the
+second term has to be less than $z-x$.
+
+Good so far?  OK, let's make it harder.  Since we don't actually know
+the value of $X$, we have to consider all values it could have and
+integrate over them:
+
+\newcommand{\infint}{\int_{-\infty}^{\infty}}
+
+\[ P[Z \le z] = \infint P[Z \le z | X = x] PDF_X(x) dx \]
+
+Substituting in the previous equation we get
+
+\[ P[Z \le z] = \infint CDF_Y(z-x) PDF_X(x) dx \]
+
+The left side of this equation is the definition of
+$CDF_Z$, so we could stop here and declare victory.  Or, if
+we are interested in $PDF_Z$, we could take the derivative of
+both sides with respect to $z$.  The result is
+
+\[ PDF_Z(z) = \infint PDF_Y(z-x) PDF_X(x) dx  \]
+
+\newcommand{\convolution}{\star}
+
+If you have studied signals and systems, you might recognize that
+integral.  It is the {\bf convolution} of $PDF_Y$ and $PDF_z$, denoted
+with the operator $\convolution$.
+
+\[ PDF_Z = PDF_Y \convolution PDF_X \]
+
+So the distribution of the sum is the convolution of the distributions.
+See \url{wikipedia.org/wiki/Booya}!
+
+\begin{ex}
+
+If $X$ and $Y$ are values drawn independently from exponential
+distributions with parameters $\lambda_X$ and $\lambda_Y$, what is the
+distribution of their sum?  What if $\lambda_X = \lambda_Y$?
+See \url{wikipedia.org/wiki/Erlang_distribution}.
+
+\end{ex}
+
+\begin{ex}
+
+Suppose I draw two values from a distribution; what is the distribution
+of the larger value?
+
+As the number of values increases, the distribution of the maximum
+converges on one of the extreme value distributions; see
+\url{http://en.wikipedia.org/wiki/Gumbel_distribution}.
+
+\end{ex}
+
+
+
+\section{Why normal?}
+
+I said earlier that normal distributions are amenable to analysis,
+but I didn't say why.  One reason is that they are
+closed under linear transformation and convolution.  To explain what
+that means, it will help to introduce some notation.
+
+If the distribution of a variable, $X$, is
+normal with parameters $\mu$ and $\sigma$, you can write
+
+\newcommand{\normal}{\mathcal{N}}
+\newcommand{\hasdist}{\sim}
+
+\[ X \hasdist \normal (\mu, \sigma^2) \]
+
+where the symbol $\hasdist$ means ``is distributed'' and the script letter
+$\normal$ stands for ``normal.''
+
+%The other continuous distributions in this chapter are sometimes
+%written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
+%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
+%\sigma^2)$.
+
+A linear transformation of $X$ is something like $X' = aX + b$, where $a$
+and $b$ are real numbers.  A family of distributions is closed under
+linear transformation if $X'$ is in the same family as $X$.  The normal
+distribution has this property; if $X \hasdist \normal (\mu,
+\sigma^2)$,
+
+\[ X' \hasdist \normal (a \mu + b, a^2 \sigma^2) \]
+
+Normal distributions are also closed under convolution.  
+If $Z = X+Y$ and
+$X \hasdist \normal (\mu_X, \sigma_X^2)$ and
+$Y \hasdist \normal (\mu_Y, \sigma_Y^2)$ then
+
+\[ Z \hasdist \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
+
+The other distributions we have looked at do not have these
+properties.
+
+\begin{ex}
+
+If 
+$X \hasdist \normal (\mu_X, \sigma_X^2)$ and
+$Y \hasdist \normal (\mu_Y, \sigma_Y^2)$, what is the distribution
+of $Z = aX + bY$?
+
+\end{ex}
+
+\begin{ex}
+
+Let's see what happens when we add values from
+other distributions.  Choose a pair of distributions (any two of
+exponential, normal, lognormal, and Pareto) and choose parameters
+that make their mean and variance similar.
+
+Generate random numbers from these distributions and compute the
+distribution of their sums.  Use the tests from
+Chapter~\ref{continuous} to see if the sum can be modeled by a
+continuous distribution.
+
+\end{ex}
+
+
+\section{Chi-square distribution}
+
+If we draw a sample $X_1 ... X_k$ from $\normal(0,1)$ and compute
+the sum of squares
+
+\[ Q = \sum_i X_i^2 \]
+
+the distribution of $Q$ is called a {\bf chi-squared distribution} with
+$k$ {\bf degrees of freedom}, which is written
+
+\[ Q \hasdist \chi_k^2 \]
+
+``Degrees of freedom'' is an odd term, but it means the number of
+values that are free to vary.  If some values are constrained, then
+there are fewer degrees of freedom.  For example, if I cut a
+kiwi\footnote{See \url{wikipedia.org/wiki/Kiwi}.} into 6 slices and
+measure the percentage of the kiwi in each slice, I will get 6 values,
+but since they are constrained to add up to 100\%, there are only 5
+degrees of freedom.
+
+The CDF of the chi-squared distribution with $k$ degrees of freedom is
+
+\[ \chi^2(k, x) = P(k/2, x/2) \]
+
+where $P$ is the regularized gamma function (see
+\url{wikipedia.org/wiki/Regularized_Gamma_function}).
+
+\begin{ex}
+\label{chi-squared}
+
+Write a function to evaluate $\chi^2(k, x)$.  Keep it handy; we will
+need it for Exercise~\ref{expo_ci}.
+
+\end{ex}
+
+
+
+\section{Central limit theorem}
+\label{CLT}
+
+So far we have seen:
+
+\begin{itemize}
+
+\item If we add values drawn from normal distributions, the distribution
+of the sum is normal.
+
+\item If we add values drawn from other distributions, the sum does not
+generally have one of the continuous distributions we have seen.
+
+\end{itemize}
+
+But it turns out that if we add up a large number of values from
+almost any distribution, the distribution of the sum converges on a
+normal distribution.
+
+More specifically, if the distribution has mean and standard deviation
+$\mu$ and $\sigma$, the distribution of the sum is
+approximately $\normal(n \mu, n \sigma^2)$.
+
+This is called the {\bf Central Limit Theorem}.  It is one of the
+most useful tools for statistical analysis, but it comes with
+caveats:
+
+\begin{itemize}
+
+\item The values have to be drawn independently.
+
+\item The values have to come from the same distribution (although
+  this requirement can be relaxed).
+
+\item The values have to be drawn
+  from a distribution with finite mean and variance, so most Pareto
+  distributions are out.
+
+\item The number of values you need before you see convergence depends
+  on the skewness of the distribution.  Samples from an exponential
+  distribution converge for small sample sizes.  Samples from a
+  lognormal distribution do not.
+
+\end{itemize}
+
+%To see why the values have to be independent, consider the kiwi I
+%mentioned in the previous section.  If I choose the size of each slice
+%from a random distribution, but the slices have to add up to 100\%,
+%they are not independent.  And since the sum is always
+
+The Central Limit Theorem explains, at least in part, the prevalence
+of normal distributions in the natural world.  Most characteristics of
+animals and other life forms are affected by a large number of genetic
+and environmental factors whose effect is additive.  The characteristics
+we measure are the sum of a large number of small effects, so their
+distribution tends to be normal.
+
+\begin{ex}
+
+Choose a distribution (one of exponential, lognormal or Pareto) and
+choose values for the parameter(s).  Generate samples with sizes
+2, 4, 8, etc., and compute the distribution of their sums.  Use
+a normal probability plot to see if the distribution is approximately
+normal.  What sample size do you need to see convergence?
+
+\end{ex}
+
+
+\begin{ex}
+
+Instead of the distribution of sums, compute the distribution
+of products for samples with various sizes.  What happens as
+the sample size increases?
+
+Hint: look at the distribution of the log of the products.
+What does this result suggest about the prevalence of lognormal
+distributions in the world?
+
+\end{ex}
+
+
+\section{Glossary}
+
+\begin{description}
+
+\item[skewness:] A characteristic of a distribution; intuitively, it
+is a measure of how asymmetric the distribution is.
+
+\item[robust:] A statistic is robust if it is relatively immune to the
+  effect of outliers.
+
+\item[illusory superiority:] The tendency of people to imagine that
+they are better than average.
+
+\item[PDF:] Probability density function, the derivative of a continuous CDF.
+
+\item[convolution:] An operation that computes the distribution of the
+sum of values from two distributions. 
+
+\item[Chi-squared distribution:] The distribution of the sum of squared
+values from a normal distribution.
+
+\item[Degrees of freedom:] The number of values in a sample that are
+free to vary.
+
+\item[Central Limit Theorem:] ''The supreme law of Unreason,'' according
+to Sir Francis Galton, an early statistician (among other things).
+
+\end{description}
 
 
 \chapter{Hypothesis testing}
@@ -3415,7 +3682,7 @@ ignoring the sign.
 A test like that is called {\bf two-sided}, because we consider both
 sides (positive and negative) in the distribution from
 Figure~\ref{length_deltas_cdf}.  By using a two-sided test we are
-testing the hypothesis that there is a signficant difference between
+testing the hypothesis that there is a significant difference between
 the distributions, without specifying the sign of the difference.
 
 The alternative is to use a {\bf one-sided} test, which asks whether
@@ -3628,9 +3895,9 @@ $O_i$ and $\chi^2$.  What is the p-value of $\chi^2$ under the null
 hypothesis?
 
 You can download a solution to this exercise from
-\url{thinkstatsbook.com/chi.py}.
-If your results are consistent with mine, the value of $\chi^2$ is 91.64,
-which would occur by chance about one time in 10,000.
+\url{thinkstatsbook.com/chi.py}.  If your results are consistent with
+mine, the value of $\chi^2$ is 91.64, which would occur by chance
+about one time in 10,000.  See \url{en.wiktionary.org/wiki/voila}!
 
 \end{ex}
 
@@ -3662,39 +3929,39 @@ Instead, we could directly compute the distribution of the difference
 in sample means.  To get started, let's think about what a sample mean
 is: we draw $n$ samples from a distribution, add them up, and
 divide by $n$.  If the distribution has mean $\mu$ and variance
-$\sigma^2$, then by the Central Limit theorem, we know that the sum of
-the samples is $\mathcal{N} (n \mu, n \sigma^2)$.
+$\sigma^2$, then by the Central Limit Theorem, we know that the sum of
+the samples is $\normal (n \mu, n \sigma^2)$.
 
 To figure out the distribution of the sample means, we have to invoke
 one of the properties of the normal distribution: if $X$ is
-$\mathcal{N} (\mu, \sigma^2)$,
+$\normal (\mu, \sigma^2)$,
 
-\[ aX + b \sim \mathcal{N} (a \mu + b, a^2 \sigma^2) \]
+\[ aX + b \hasdist \normal (a \mu + b, a^2 \sigma^2) \]
 
 When we divide by $n$, $a=1/n$ and $b=0$, so
 
-\[ X/n \sim \mathcal{N} (\mu / n, \sigma^2/ n^2) \]
+\[ X/n \hasdist \normal (\mu / n, \sigma^2/ n^2) \]
 
-So the distribution of the sample mean is $\mathcal{N} (\mu, \sigma^2/n)$.
+So the distribution of the sample mean is $\normal (\mu, \sigma^2/n)$.
 
 To get the distribution of the difference between two sample means,
 we invoke another property of the normal distribution: if $X_1$ is
-$\mathcal{N} (\mu_1, \sigma_1^2)$ and $X_2$ is
-$\mathcal{N} (\mu_2, \sigma_2^2)$,
+$\normal (\mu_1, \sigma_1^2)$ and $X_2$ is
+$\normal (\mu_2, \sigma_2^2)$,
 
-\[ aX_1 + bX_2 \sim \mathcal{N} (a\mu_1 + b\mu_2, 
+\[ aX_1 + bX_2 \hasdist \normal (a\mu_1 + b\mu_2, 
                                  a^2\sigma_1^2 + b^2\sigma_2^2) \]
 
 So as a special case:
 
-\[ X_1 - X_2 \sim \mathcal{N} (a\mu_1 - b\mu_2, 
+\[ X_1 - X_2 \hasdist \normal (a\mu_1 - b\mu_2, 
                                \sigma_1^2 + \sigma_2^2) \]
 
 Putting it all together, we conclude that the sample in
 Figure~\ref{length_deltas_cdf} is drawn from 
-$\mathcal{N} (0, f \sigma^2)$, where $f = 1/n + 1/m$.  Plugging in
+$\normal (0, f \sigma^2)$, where $f = 1/n + 1/m$.  Plugging in
 $n=4413$ and $m=4735$, we expect the difference of sample means to be
-$\mathcal{N} (0, 0.0065)$.
+$\normal (0, 0.0065)$.
 
 \begin{ex}
 
@@ -3811,6 +4078,7 @@ if it is false.
 
 
 \chapter{Estimation}
+\label{estimation}
 
 \section{The estimation game}
 
@@ -3906,7 +4174,7 @@ unknown parameter $\sigma^2$.
 \[ S^2 = \frac{1}{N} \sum (x_i - \xbar)^2 \] 
 
 For large samples, $S^2$ is an adequate estimator, but for small
-samples it tends to tends to be too low.  Because of this unfortunate
+samples it tends to be too low.  Because of this unfortunate
 property, it is called a {\bf biased} estimator.
 
 Fortunately, there is another simple statistic that is an unbiased
@@ -3985,7 +4253,7 @@ Test whether either of them is biased.
 
 So far we have looked at estimators that generate single values, known
 as {\bf point estimates}.  For many problems, we might prefer an interval
-that specifies and upper and lower bound on the unknown parameter.
+that specifies an upper and lower bound on the unknown parameter.
 
 Or, more generally, we might want that whole distribution; that is,
 the range of values the parameter could have, and for each value in
@@ -4000,10 +4268,10 @@ here's a sample:
 
 I want you to give me a range of values that you think is likely to
 contain the unknown parameter $\lambda$.  More specifically, I want
-a 90\% confidence interval, which mean that if we play this game over
+a 90\% confidence interval, which means that if we play this game over
 and over, your interval will contain $\lambda$ 90\% of the time.
 
-It turns out that this version of the game is very hard, so I'm just going
+It turns out that this version of the game is hard, so I'm going
 to tell you the answer, and all you have to do is test it.
 
 Confidence intervals are usually described in terms of the miss rate,
@@ -4014,22 +4282,23 @@ distribution is
 \[ \left( \lamhat \frac{\chi^2(2n, 1-\alpha/2)}{2n},
       \lamhat \frac{\chi^2(2n, \alpha/2)}{2n} \right) \]
 
-where $n$ is the sample size, $\lamhat$ is the mean-based estimator 
-from the previous section, and $\chi^2(k, x)$ is the CDF of a chi-squared
-distribution with $k$ degrees of freedom, evaluated at $x$.
+where $n$ is the sample size, $\lamhat$ is the mean-based estimator
+from the previous section, and $\chi^2(k, x)$ is the CDF of a
+chi-squared distribution with $k$ degrees of freedom, evaluated at $x$
+(see Exercise~\ref{chi-squared}).
 
 \begin{ex}
+\label{expo_ci}
 
-Write a function that evaluates the CDF of a chi-squared distribution,
-and use it to compute a 90\% confidence interval for $\lambda$, given
-$\lamhat$, $n$ and $\alpha$.
+Write a function that computes a 90\% confidence interval for
+$\lambda$, given $\lamhat$, $n$ and $\alpha$.
 
 Write a function that takes a value for $\lambda$,
 generates a sample of six values, computes a 90\% confidence interval,
 and checks whether the interval contains the actual value of $\lambda$.
 
 Run the function 1000 times and see how often the interval contains
-$lambda$.
+$\lambda$.
 
 \end{ex}
 
@@ -4128,6 +4397,7 @@ See \url{wikipedia.org/wiki/Exponential_distribution#Bayesian_inference}.
 
 
 \section{Censored data}
+\label{censored}
 
 The following problem appears in Chapter 3 of David MacKay's
 extraordinary book {\em Information Theory, Inference and Learning
@@ -4136,11 +4406,14 @@ extraordinary book {\em Information Theory, Inference and Learning
 
 \begin{quote}
 
-Unstable particles are emitted from a source and decay at a distance $x$,
-a real number that has an exponential probability distribution with
-[] $\lambda$.  Decay events can only be observed if they
-occur in a window extending from $x=1$ cm to $x=20$ cm.  $N$ decays are
-observed at locations $\{ x_1, ... , x_N \}$.  What is $\lambda$? 
+Unstable particles are emitted from a source and decay at a distance
+$x$, a real number that has an exponential probability distribution
+with parameter\footnote{MacKay uses $\lambda$ to represent the mean or
+  ``characteristic length'' of the distribution; I am changing his
+  notation to be consistent with mine.} $\lambda$.  Decay events can
+only be observed if they occur in a window extending from $x=1$ cm to
+$x=20$ cm.  $N$ decays are observed at locations $\{ x_1, ... , x_N
+\}$.  What is $\lambda$?
 
 \end{quote}
 
@@ -4152,11 +4425,14 @@ censored data with (relative) ease.  We can use the method from the
 previous section with only one change: we have to replace
 $\mathrm{expo}$ with a conditional distribution:
 
-\[ \mathrm{expo_{cond}}(\lambda, x) = \lambda e^{-lambda x} / Z(\lambda)  \]
+\[ \mathrm{expo_{cond}}(\lambda, x) = \lambda e^{-\lambda x} / Z(\lambda)  \]
 
 for $1 < x < 20$, and 0 otherwise, with
 
-\[ Z(\lambda) = \int_1^{20} \lambda e^{-lambda x} dx = (e^{1} - e^{20} ) \]
+\[ Z(\lambda) = \int_1^{20} \lambda e^{-\lambda x} dx = (e^{1} - e^{20} ) \]
+
+You might remember $Z(\lambda)$ from Exercise~\ref{expo_pdf}.  I told
+you to keep it handy.
 
 \begin{ex}
 
@@ -4254,9 +4530,12 @@ If $X$ and $Y$ vary together, their deviations tend to have the
 same sign; when one is high (above the mean), the other tends to be
 high, and vice versa.  
 
-If we multiply them together, the product is positive whenever the
-deviations have the same sign.  The mean of these products is the
-covariance:
+If we multiply them together, the product is positive when the
+deviations have the same sign and negative when they have the opposite
+sign.  So adding up the products gives a measure of the tendency to
+vary together.
+
+Covariance is the mean of the products of the deviations:
 
 \[ Cov(X,Y) = \frac{1}{n} \sum dx_i dy_i \]
 
@@ -4271,8 +4550,8 @@ in units of kilogram-meters\footnote{You might notice that energy and
 
 \section{Correlation}
 
-One solution to this problem is to normalize the deviations (divide by
-$\sigma$) and compute the product of normal scores:
+One solution to this problem is to divide the deviations by $\sigma$,
+which yields normal scores, and compute the product of normal scores:
 
 \[ p_i = \frac{(x_i - \mu_X)}{\sigma_X} \frac{(y_i - \mu_Y)}{\sigma_Y} \]
 
@@ -4282,7 +4561,7 @@ Adding them up, we get
 
 This value is called {\bf Pearson's correlation} after Karl Pearson,
 an influential early statistician.  It is easy to compute and easy to
-interpret.  Because the normal scores are dimensionless, so is $\rho$.
+interpret.  Because normal scores are dimensionless, so is $\rho$.
 
 Also, the result is necessarily between -1 and +1.  To see why, we
 can rewrite $\rho$ by factoring out $\sigma_X$ and $\sigma_Y$:
@@ -4293,7 +4572,7 @@ Expressed in terms of deviations, we have
 
 \[ \rho = \frac{\sum dx_i dy_x}{\sum dx_i \sum dy_i} \]
 
-Then by the ever-useful Cauchy–Schwarz
+Then by the ever-useful Cauchy-Schwarz
 inequality\footnote{wikipedia.org/wiki/Cauchy-Schwarz\_inequality}, we
 can show that $\rho^2 \le 1$, so $-1 \le \rho \le 1$.
 
@@ -4335,11 +4614,11 @@ dependence.
 
 Figure~\ref{corr_examples} is from the Wikipedia page
 \url{wikipedia.org/wiki/Correlation_and_dependence}.  It shows
-scatterplots and correlations for several carefully-constructed
-datasets.
+scatterplots and correlation coefficients for several
+carefully-constructed datasets.
 
 The top row shows linear relationships with a range
-of strengths.  The second row shows perfect correlations with a range
+of correlations.  The second row shows perfect correlations with a range
 of slopes, which shows that correlation is unrelated to slope
 (we'll talk about estimating slope later in the chapter).  The third
 row shows variables that are clearly related, but because the relationship
@@ -4418,15 +4697,15 @@ approximate.  The deviation, or {\bf residual}, is
 The residual might be due to random factors like measurement error,
 or non-random factors that are unknown.  For example, if we are
 trying to predict weight as a function of height, unknown factors
-include diet, exercise, and body type.
+might include diet, exercise, and body type.
 
 If we get the parameters $\inter$ and $\slope$ wrong, that will tend
 to make the residuals bigger, so it makes intuitive sense that the
 parameters we want are the ones that minimize the residuals.
 
-As usual, we could choose to minimize the absolute residuals, or
-their squares, or their cubes, etc.  But the most common choice
-is to minimize the sum of squared residuals
+As usual, we could choose to minimize the absolute value of the
+residuals, or their squares, or their cubes, etc.  The most common
+choice is to minimize the sum of squared residuals
 
 \[ \sum \eps_i^2 \]
 
@@ -4447,7 +4726,7 @@ so much weight that the largest residual always dominates.
     Chapter 15 at \url{www.nrbook.com/a/bookcpdf/c15-1.pdf}.}.
 
 \item The values of $\inter$ and $\slope$ that minimize the squared
-  residuals can be found analytically.
+  residuals can be computed efficiently.
 
 \end{itemize}
 
@@ -4461,8 +4740,8 @@ guessing too high might be better (or worse) than
 guessing too low.  In that case you might want to compute some
 cost function, $\mathrm{cost}(r)$, and minimize that.
 
-However, a least squares fit is quick, easy and often good enough;
-here's how:
+However, computing a least squares fit is quick, easy and often good
+enough, so here's how:
 
 \begin{enumerate}
 
@@ -4494,13 +4773,13 @@ in a sentence or two?
 
 \section{Goodness of fit}
 
-Having fit a linear model to the data, we might want to know how good
+Having fit a model to the data, we might want to know how good
 it is.  Well, that depends on what it's for.  One way to evaluate a model
 is its predictive power.  For example, if you were trying to guess
 someone's weight, how much would it help to know their height?
 
-In the context of prediction, the quantity we are trying to guess is
-called an {\bf dependent variable} and the quantity we are using
+The quantity we are trying to guess is
+called a {\bf dependent variable} and the quantity we are using
 to make the guess is called an {\bf independent variable} or sometimes
 an {\bf explanatory variable}.
 
@@ -4511,15 +4790,15 @@ To describe the predictive power of a model, we can compute the {\bf
 
 The second term measures the the fraction of variability unexplained
 by the model, so $R^2$ is the fraction of variability the model
-explains, although we have to be careful about what we mean by
+explains.  But we have to be careful about what we mean by
 ``explains.''
 
-It is more precise to think of $R^2$ in terms of prediction rather
+It is more precise to think of $R^2$ in terms of prediction, rather
 than explanation.  If you had to guess someone's weight without
 knowing their height, your best strategy would be to guess $\ybar$; in
 that case the MSE of your guesses would be $Var(Y)$.  But if I told
 you their height, you would guess $\hat{\inter} + \hat{\slope} x_i$;
-in that case the MSE would be $Var(\eps)$.  So the term
+in that case your MSE would be $Var(\eps)$.  So the term
 $Var(\eps)/Var(Y)$ measures the effect of the model on your prediction
 errors.
 
@@ -4527,13 +4806,55 @@ If a model yields $R^2 = 0.64$, you could say that the model explains
 64\% of the variability, or you could say that it can reduce the MSE
 of your predictions by 64\%.
 
-In the context of a linear least model, it turns out that there is
-a simple relationship between the coefficient of determination and
-Spearman's correlation coefficient, $\rho$:
+In the context of a linear least squares model, it turns out that
+there is a simple relationship between the coefficient of
+determination and Spearman's correlation coefficient, $\rho$:
 
 \[ R^2 = \rho^2 \]
 
-How about that?
+See \url{wikipedia.org/wiki/Howzzat}!
+
+
+\section{Serial correlation}
+
+Time series
+
+Correlation of adjacent elements
+
+Autocorrelation function
+
+
+\section{Glossary}
+
+\begin{description}
+
+\item[correlation:] a description of
+the dependence between variables.
+
+\item[normalize:] Transform a set of values so that their mean is 0 and
+their variance is 1.
+
+\item[standard score:] A value that has been normalized.
+
+\item[covariance:] a measure of the tendency of two variables
+to vary together.
+
+\item[least squares fit:] A model of a dataset that minimizes the
+sum of squares of the residuals.
+
+\item[residual:] A measure of the deviation of an actual value from a model.
+
+\item[dependent variable:] A variable we are trying to predict or explain.
+
+\item[independent variable:] A variable we are using to predict a dependent
+variable, also called an explanatory variable.
+
+\item[coefficient of determination:] A measure of the goodness of fit
+of a linear model.
+
+\end{description}
+
+
 
 
 % Reminders
@@ -4559,7 +4880,9 @@ How about that?
 % Gelman's paradox
 % \url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
 
-\printindex
+% NOTE: bring back the index once there is something in it!
+
+% \printindex
 
 \clearemptydoublepage
 %\blankpage
