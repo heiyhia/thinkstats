@@ -23,7 +23,7 @@ def RunTests(iters=1000):
     
     RunTest('length', pool.lengths, firsts.lengths, others.lengths, 
             iters,
-            partition=True)
+            partition=False)
     
 
 def RunTest(root, pool, actual1, actual2, 
@@ -116,11 +116,11 @@ def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
     f = 1.0 / n + 1.0 / m
     mu, var = (0, f * var_pooled)
     sigma = math.sqrt(var)
-    print 'Expected', mu, var
+    print 'Expected mean var deltas', mu, var
 
     if plot:
         PlotCdf(root, cdf, delta)
-        PlotModel(root, cdf, mu, sigma)
+        # PlotModel(root, cdf, mu, sigma)
         
     return pvalue
     
@@ -128,7 +128,7 @@ def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
 def PValue(model1, model2, n, m, delta, iters=1000, plot=False):
     deltas = [Resample(model1, model2, n, m) for i in range(iters)]
     mean_var = thinkstats.MeanVar(deltas)
-    print 'Mean var deltas', mean_var
+    print 'Actual mean var deltas', mean_var
 
     cdf = Cdf.MakeCdfFromList(deltas)
 
@@ -183,8 +183,8 @@ def Resample(t1, t2, n, m):
     """Computes the difference in mean of two samples.
     
     Args:
-        t1:
-        t2: sequences of values
+        t1: sequence of values
+        t2: sequence of values
         
         n: size of the sample to draw from t1
         m: size of the sample to draw from t2

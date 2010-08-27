@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.0.6}
+\newcommand{\theversion}{1.1}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -181,8 +181,8 @@ Version \theversion
 \end{htmlonly}
 
 
-%\chapter{Preface}
-%\label{preface}
+\chapter{Preface}
+\label{preface}
 
 %\section*{Programming is a pedagogic wedge}
 
@@ -990,14 +990,15 @@ for x, freq in hist.items():
 \end{verbatim}
 
 The normalized histogram is called a {\bf PMF}, which stands for
-``probability mass function;''  that is, it's a function that
-maps from values to probabilities (I'll explain ``mass'' later).
+``probability mass function''; that is, it's a function that maps from
+values to probabilities (I'll explain ``mass'' in
+Section~\ref{density}).
 
 It might be confusing to call a Python dictionary a function.  In
 mathematics, a function is a mapping from one set of values to
 another.  In Python, we {\em usually} represent mathematical functions
 with function objects, but in this case we are using a dictionary
-(which is also called a ``map,'' if that helps).
+(or ``map,'' if that helps).
 
 \begin{ex}
 Create a file named {\tt Pmf.py} and write a definition for a class
@@ -1221,7 +1222,7 @@ Make three PMFs, one for first babies, one for others, and one for
 all live births.  For each PMF, compute the probability of being
 born early, on time, or late.
 
-One way to summarize data like this is with a {\bf relative risk},
+One way to summarize data like this is with {\bf relative risk},
 which is a ratio of two probabilities.  For example, the probability
 that a first baby is born early is 18.2\%.  For other babies it is
 16.8\%, so the relative risk is 1.08.  That means that first babies
@@ -1290,7 +1291,7 @@ small.  A doctor might only care about effects that are
 A pregnant woman might be interested in results that are relevant to
 her, like the conditional probabilities in the previous section.
 
-How you report results might also depend on your goals.  If you are
+How you report results also depends on your goals.  If you are
 trying to demonstrate the significance of an effect, you might choose
 summary statistics, like relative risk, that emphasize differences.
 If you are trying to reassure a patient, you might choose statistics
@@ -1380,13 +1381,13 @@ average class size is 24.
 
 But if you survey a group of students, ask them how many
 students are in their classes, and compute the mean, you would
-conclude that the average class size is 29.
+think that the average class size was higher.
 
 \begin{ex}
 Build a PMF of these data and compute the mean.  Now compute the
 average class size as perceived by students.
 
-Note: since the data have been grouped in bins, you can use the
+Note: Since the data have been grouped in bins, you can use the
 mid-point of each bin.
 \end{ex}
 
@@ -1539,7 +1540,6 @@ uses this algorithm.
 \end{ex}
 
 \begin{ex}
-This exercise is optional.
 
 If you only want to compute one percentile, it is not efficient
 to sort the scores.  A better option is the selection algorithm,
@@ -1547,6 +1547,7 @@ which you can read about at \url{wikipedia.org/wiki/Selection_algorithm}.
 
 Write (or find) an implementation of the selection algorithm and use
 it to write an efficient version of {\tt Percentile}.
+
 \end{ex}
 
 
@@ -1633,7 +1634,7 @@ following exercise I recommend an option that is simple and efficient.
 Create a file named {\tt Cdf.py} and write a definition for a class
 named {\tt Cdf} that represents a CDF.  The attributes of a Cdf
 object are {\tt xs}, which is a sorted list of the unique values
-in the sample, and {\tt ps} which is a list of probabilities.
+in the sample, and {\tt ps}, which is a list of probabilities.
 
 Write a simple constructor that takes {\tt xs} and {\tt ps} as
 parameters, then write two functions:
@@ -1693,10 +1694,12 @@ lighter throughout the distribution, with a larger discrepancy above
 the mean.
 
 \begin{ex}
-This exercise is optional.  In the figure above, you might notice
+
+In the figure above, you might notice
 a sequence of equally-spaced values with higher frequency than
-their neighbors.  See if you can figure out what it going on.
+their neighbors.  See if you can figure out what is going on.
 Hint: look at the PMF of \verb"birthwgt_oz".
+
 \end{ex}
 
 \begin{ex}
@@ -1758,7 +1761,7 @@ race times to percentile ranks.
 
 \begin{ex}
 
-I recently ran in the 27th Anniversary Edition James Joyce Ramble 10K
+I recently ran the James Joyce Ramble 10K
 in Dedham MA.  The results are available from
 \url{coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
 Go to that page and find my results.  I came in 97th in a field
@@ -1773,12 +1776,13 @@ the M5059 division.  Assuming that my percentile rank in my division
 is the same, how much slower should I expect to be?
 
 I maintain a friendly rivalry with a student of mine who is in the
-F2039 division.  How fast does she have to run her next 10K to
+F2029 division.  How fast does she have to run her next 10K to
 ``beat'' me in terms of percentile ranks?
 
 \end{ex}
 
 \section{Random numbers}
+\label{random}
 
 CDFs are also useful for generating random numbers
 with a given distribution.  Here's how:
@@ -1793,7 +1797,7 @@ that corresponds to the probability you chose.
 \end{itemize}
 
 It might not be obvious why this works, but since it is easier
-to implement than explain, let's try it out.
+to implement than to explain, let's try it out.
 
 \begin{ex}
 
@@ -1812,6 +1816,21 @@ the same.
 This process, generating a random sample based on a measured sample,
 is called {\bf resampling}.
 
+There are two ways to draw a sample from a population: with and
+without replacement.  If you imagine drawing marbles from an
+urn\footnote{The marbles-in-an-urn scenario is a standard model for
+  random sampling processes (see
+  \url{wikipedia.org/wiki/Urn_problem}).}, ``replacement'' means
+putting the marbles back as you go (and stirring), so the population
+is the same for every draw.  ``Without replacement,'' means that each
+marble can only be drawn once, so the remaining population is
+different after each draw.
+
+In Python, sampling with replacement can be implemented with
+{\tt random.random} to choose a percentile rank, or {\tt random.choice}
+to choose an element from a sequence.  Sampling without replacement
+is provided by {\tt random.sample}.
+
 
 \section{Summary statistics revisited}
 
@@ -1825,13 +1844,13 @@ generating a value that is not in the sample.  As far
 as I'm concerned, the median is the 50th percentile.  Period.}.
 The 25th and 75th percentiles are often used to check whether
 a distribution is symmetric, and their difference, which is called
-the {\bf interquartile range} measures the spread.
+the {\bf interquartile range}, measures the spread.
 
 \begin{ex}
 Compute the 25th, 50th, and 75th percentiles of the birth weight
 CDF.  Do these values suggest that the distribution is symmetric?
 
-Int {\tt Cdf}, add a method called {\tt Median} that computes the
+In class {\tt Cdf}, add a method called {\tt Median} that computes the
 median, and one called {\tt Interquartile} that computes
 the interquartile range.
 \end{ex}
@@ -1854,6 +1873,10 @@ that some condition holds.
 
 \item[resampling:] The process of generating a random sample from a
 distribution that was computed from a sample.
+
+\item[replacement:] During a sampling process, ``replacement'' indicates
+that the population is the same for every sample.  ``Without replacement''
+indicates that each element can be selected only once.
 
 \item[interquartile range:] A measure of spread, the difference between
 the 75th and 25th percentiles.
@@ -1898,7 +1921,7 @@ $\lambda = 2$.
 \end{figure}
 
 In general, the mean of an exponential distribution is $1 / \lambda$,
-so the mean of this distribution is 0.5.  The median is $log(2) / \lambda$,
+so the mean of this distribution is 0.5.  The median is $\log(2) / \lambda$,
 which is roughly 0.35.
 
 To see an example of a distribution that is approximately exponential,
@@ -1922,16 +1945,16 @@ distribution, but how can we tell?
 
 One way is to plot the complementary CDF, $1 - CDF(x)$, on a
 log-$y$ scale.  For data from an exponential distribution, the result
-is a straight line.  Let's see why that works...
+is a straight line.  Let's see why that works.
 
 If you plot the complementary CDF (CCDF) of a dataset that you think is
 exponential, you expect to see a function like:
 
-\[ y \sim e^{-\lambda x} \]
+\[ y \approx e^{-\lambda x} \]
 
 If you take the log of both sides of this equation, you get:
 
-\[ \log y \sim -\lambda x \]
+\[ \log y \approx -\lambda x \]
 
 So on a log-$y$ scale the CCDF is a straight line
 with slope $-\lambda$.
@@ -2016,11 +2039,11 @@ looks like a straight line.
 If you plot a the CCDF of a sample from a Pareto distribution on a
 linear scale, you expect to see a function like:
 
-\[ y \sim \left( \frac{x}{x_m} \right) ^{-\alpha} \]
+\[ y \approx \left( \frac{x}{x_m} \right) ^{-\alpha} \]
 
 Taking the log of both sides yields:
 
-\[ \log y \sim -\alpha (\log x - \log x_m ) \]
+\[ \log y \approx -\alpha (\log x - \log x_m ) \]
 
 So if you plot $\log y$ versus $\log x$, it should look like a
 straight line with slope $-\alpha$ and intercept $-\alpha \log x_m$.
@@ -2089,7 +2112,7 @@ Weibull distribution and use it to test your transformation.
 \end{ex}
 
 
-\section{The normal Distribution}
+\section{The normal distribution}
 
 \newcommand{\erf}{\mathrm{erf}}
 
@@ -2103,7 +2126,7 @@ analysis, but unfortunately the CDF is not one of them.  Unlike the
 other distributions we have looked at, there is no closed-form
 expression for the normal CDF; the most common alternative is to write
 it in terms of the {\bf error function}, which is a special function
-written $\erf$:
+written $\erf(x)$:
 
 \[ CDF(x) = \frac{1}{2} \left[ 1 +
   \erf \left( \frac{x - \mu}{\sigma \sqrt{2}} \right) \right] \]
@@ -2116,7 +2139,7 @@ deviation of the distribution.
 If these formulas make your eyes hurt, don't worry; they are easy to
 implement in Python\footnote{As of Python 3.2, it is even easier; 
 {\tt erf} is in the {\tt math} module.}.  There are many fast and
-accurate ways to approximate $\erf$.  You can download one of them
+accurate ways to approximate $\erf(x)$.  You can download one of them
 from \url{thinkstatsbook.com/erf.py}, which provides functions named
 {\tt erf} and {\tt NormalCdf}.
 
@@ -2126,7 +2149,7 @@ this curve is a recognizable characteristic of a normal distribution.
 
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{workspace/normal_cdf.eps}}
-\caption{CDF of a Normal distribution.}
+\caption{CDF of a normal distribution.}
 \label{normal_cdf}
 \end{figure}
 
@@ -2298,7 +2321,7 @@ approximately lognormal\footnote{I was tipped off to this possibility by a
   suggests a cause: Penman and Johnson, ``The Changing Shape of the
   Body Mass Index Distribution Curve in the Population,'' Preventing
   Chronic Disease, 2006 July; 3(3): A74.  Online
-  at\url{www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}.}.
+  at \url{www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}.}.
 
 The National Center for Chronic Disease
 Prevention and Health Promotion conducts an annual survey as part of
@@ -2474,7 +2497,7 @@ more subjective than frequency probabilities.
 
 As an example, what is the probability that Thaksin Shinawatra is the
 Prime Minister of Thailand?  A frequentist would say that there is no
-well-defined probability for this event because there is no set of
+probability for this event because there is no set of
 trials.  Thaksin either is, or is not, the PM; it's not a question of
 probability.
 
@@ -2518,7 +2541,7 @@ if I know $B$ occurred, the probability of $A$ is 1.
 
 When $A$ and $B$ are not independent, it is often useful to compute
 the conditional probability, $P(A|B)$, which is the probability of
-$A$ given that we know $B$ occurred
+$A$ given that we know $B$ occurred:
 
 \[ P(A|B) = \frac{P(A \and B)}{P(B)} \]
 
@@ -2898,6 +2921,7 @@ So
 \[ P(B) P(A|B) = P(A) P(B|A) \]
 
 Dividing through by $P(B)$ yields Bayes's theorem.
+See \url{wikipedia.org/wiki/Q.E.D.}!
 
 Bayes's theorem is often interpreted as a statement about 
 how a body of evidence, $E$, affects the probability of a 
@@ -2929,7 +2953,7 @@ that they are likely to produce a positive result if there are drugs
 likely to yield a negative result if there are no drugs.
 
 Studies from the Journal of the American Medical
-Association\footnote{I got these number from Gleason and Barnum,
+Association\footnote{I got these numbers from Gleason and Barnum,
   ``Predictive Probabilities In Employee Drug-Testing,'' at
   \url{piercelaw.edu/risk/vol2/winter/gleason.htm}.} estimate that
 the sensitivity of common drug tests is about 60\% and the specificity
@@ -3122,7 +3146,7 @@ the data?
 Compute the median, mean, skewness and Pearson's skewness.  What
 fraction of the population is below the mean?
 
-Optional: The Gini coefficient is a measure of income inequality.
+The Gini coefficient is a measure of income inequality.
 Read about it at \url{wikipedia.org/wiki/Gini_coefficient} and write a
 function called {\tt Gini} that computes it for the income
 distribution.
@@ -3131,6 +3155,7 @@ distribution.
 
 
 \section{PDFs}
+\label{density}
 
 The derivative of a CDF is called a {\bf probability density function},
 or PDF.  For example, the PDF of an exponential distribution is
@@ -3151,7 +3176,9 @@ volume; in order to get a mass, you have to multiply by volume or,
 if the density is not constant, you have to integrate over volume.
 
 Similarly, probability density measures probability per unit of $x$.
-In order to get a probability mass, you have to integrate over $x$.
+In order to get a probability mass\footnote{To take the analogy one
+step farther, the mean of a distribution is its center of mass, and
+the variance is its moment of inertia.}, you have to integrate over $x$.
 For example, the probability that a value from a normal distribution
 falls between 0 and 1 is
 
@@ -3565,10 +3592,10 @@ The mean difference is near 0, as you would expect with samples
 from the same distribution.  The vertical lines show the cutoffs where
 $x=-\delta$ or $x=\delta$.
 
-Of 1000 sample pairs, there were 127 where the difference in mean
+Of 1000 sample pairs, there were 139 where the difference in mean
 (positive or negative) was as big or bigger than $\delta$, so the
-p-value is approximately 0.127.  In other words, we expect to see an
-effect as big as $\delta$ 12.7\% of the time, even if the actual
+p-value is approximately 0.139.  In other words, we expect to see an
+effect as big as $\delta$ 13.9\% of the time, even if the actual
 distribution for the two groups is the same.
 
 So the apparent effect is not very likely, but is it unlikely enough?
@@ -3581,10 +3608,7 @@ births is 2.0 ounces.  Estimate the p-value of this difference.
 
 Hint: for this kind of resampling it is important to sample
 with replacement, so you should use {\tt random.choice} rather
-than {\tt random.sample}.
-
-
-%%%%%% Need to go back and introduce sampling with and without replacement.
+than {\tt random.sample} (see Section~\ref{random}).
 
 \end{ex}
 
@@ -3690,7 +3714,6 @@ the mean for first babies is significantly {\em higher} than
 the mean for others.  Because the hypothesis is more specific, the
 p-value is lower---in this case it is roughly half.
 
-%%% Do I mean higher or lower?
 
 \section{Interpreting the result}
 
@@ -4232,10 +4255,10 @@ But we know that $\xbar$ is not robust in the presence of outliers, so
 we expect $\lamhat$ to have the same problem.
 
 Maybe we can find an alternative based on the sample median.  Remember
-that the median of an exponential distribution is $log(2) / \lambda$,
+that the median of an exponential distribution is $\log(2) / \lambda$,
 so working backwards again, we can define an estimator
 
-\[ \lamhatmed = log(2) / \mu_{1/2} \]
+\[ \lamhatmed = \log(2) / \mu_{1/2} \]
 
 where $\mu_{1/2}$ is the sample median.
 
@@ -4543,9 +4566,7 @@ Covariance is useful in some computations (as we will see soon), but
 it is seldom reported as a summary statistic because it is hard to
 interpret.  Among other problems, its units are the product of the
 units of $X$ and $Y$.  So the covariance of weight and height might be
-in units of kilogram-meters\footnote{You might notice that energy and
-  work can be expressed in these units, for all the good that
-  does.}.
+in units of kilogram-meters, which doesn't mean much.
 
 
 \section{Correlation}
@@ -4815,23 +4836,22 @@ determination and Spearman's correlation coefficient, $\rho$:
 See \url{wikipedia.org/wiki/Howzzat}!
 
 
-\section{Serial correlation}
+%\section{Serial correlation}
 
-Time series
+%Time series
 
-Correlation of adjacent elements
+%Correlation of adjacent elements
 
-Autocorrelation function
+%Autocorrelation function
 
 
 \section{Glossary}
 
 \begin{description}
 
-\item[correlation:] a description of
-the dependence between variables.
+\item[correlation:] a description of the dependence between variables.
 
-\item[normalize:] Transform a set of values so that their mean is 0 and
+\item[normalize:] To transform a set of values so that their mean is 0 and
 their variance is 1.
 
 \item[standard score:] A value that has been normalized.
