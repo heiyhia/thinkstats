@@ -20,6 +20,7 @@ def PartitionRecords(table):
     others = survey.Pregnancies()
 
     for p in table.records:
+        # skip non-live births
         if p.outcome != 1:
             continue
 
