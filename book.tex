@@ -248,13 +248,13 @@ I wanted to test my theory.
 
 \end{itemize}
 
-The resource I used more than any other is the Wikipedia, the bugbear
+The resource I used more than any other is Wikipedia, the bugbear
 of librarians everywhere.  In general, the articles I read on
 statistical topics were very good (although I made a few small changes
 along the way).  I include references to Wikipedia pages throughout
 the book and I encourage you to follow those links; in many cases, the
 Wikipedia page picks up where my description leaves off.  The
-vocabulary and notation in this book are generally consistent with the
+vocabulary and notation in this book are generally consistent with
 Wikipedia, unless I had a good reason to deviate.
 
 Other resources I found useful were Wolfram MathWorld and (of course)
@@ -298,6 +298,8 @@ Thanks!
 
 \item Lisa Downey and June Downey read an early draft and made many
 corrections and suggestions.
+
+\item Steven Zhang found several errors.
 
 % ENDCONTRIB
 
@@ -1038,7 +1040,7 @@ This package is included in many Python installations.  To see whether
 you have it, launch the Python interpreter and run:
 
 \begin{verbatim}
-import matplotlib.pyplot
+import matplotlib.pyplot as pyplot
 pyplot.pie([1,2,3])
 pyplot.show()
 \end{verbatim}
@@ -2408,6 +2410,34 @@ for cities and towns?
 \end{ex}
 
 
+\section{Why model?}
+
+At the beginning of this chapter I said that many real world phenomena
+can be modeled with continuous distributions.  ``So,'' you might ask,
+``what?''
+
+Like all models, continuous distributions are abstractions, which
+means that leave out details that are considered irrelevant.
+For example, an observed distribution might have measurement errors
+or quirks that are specific to the sample; continuous models smooth
+out these idiosyncrasies.
+
+Continuous models are also a form of data compression.  When a model
+fits a dataset well, a small set of parameters can summarize a
+large amount of data.
+
+It is sometimes surprising when data from a natural phenomenon fit a
+continuous distribution, but these observations can lead to insight
+into physical systems.  Often we can explain why an observed
+distribution has a particular form.  For example, Pareto distributions
+are often the result of generative processes with positive feedback
+(so-called preferential attachment processes: see
+\url{wikipedia.org/wiki/Preferential_attachment}.).
+
+Finally, continuous distributions lend themselves to analysis; we
+will see examples in Chapter~\ref{operations}.
+
+
 \section{Glossary}
 
 \begin{description}
@@ -2509,10 +2539,10 @@ assign a probability like $0.1$, which acknowledges the possibility
 that your recollection is incorrect, or that Thaksin has been
 reinstated.
 
-If you consult the Wikipedia, you will learn that Thaksin is not the
+If you consult Wikipedia, you will learn that Thaksin is not the
 PM of Thailand (at the time I am writing).  Based on this
 information, you might revise your probability estimate to $0.01$,
-reflecting the possibility that the Wikipedia is wrong.
+reflecting the possibility that Wikipedia is wrong.
 
 
 \section{Rules of probability}
@@ -3066,6 +3096,7 @@ relative likelihood of an observation conditioned on a given hypothesis.
 
 
 \chapter{Operations on distributions}
+\label{operations}
 
 \section{Skewness}
 

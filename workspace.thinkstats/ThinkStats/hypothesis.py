@@ -27,8 +27,8 @@ def RunTests(iters=1000):
     
 
 def RunTest(root, pool, actual1, actual2, 
-            iters=1000, 
-            trim=True, 
+            iters=1000,
+            trim=True,
             partition=False):
     """Computes the distributions of delta under H0 and HA.
     
