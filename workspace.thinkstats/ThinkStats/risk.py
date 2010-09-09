@@ -14,9 +14,7 @@ def ProbRange(pmf, low, high):
     
     Args:
         pmf: Pmf object
-        
         low: low value
-        
         high: high ValueError
         
     Returns:
