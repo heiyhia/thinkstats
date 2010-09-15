@@ -1,16 +1,9 @@
-"""
-
-Code example from _Computational_Modeling_
-http://greenteapress.com/compmod
+"""This file contains code for use with "Think Stats",
+by Allen B. Downey, available from greenteapress.com
 
 Copyright 2008 Allen B. Downey.
 Distributed under the GNU General Public License at gnu.org/licenses/gpl.html.
-
 """
-
-# Copyright 2010 Allen B. Downey
-#
-# License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 """Functions for building CDFs (cumulative distribution functions)."""
 
@@ -193,6 +186,7 @@ def MakeCdfFromList(seq, name=''):
         
     return MakeCdfFromDict(hist, name)
 
+
 def ProbLess(cdf1, cdf2):
     """Probability that a value from cdf1 is less than one from cdf2.
     For continuous distributions F and G, the chance that a sample
@@ -233,4 +227,3 @@ def ProbLess(cdf1, cdf2):
             break
 
     return total
-
