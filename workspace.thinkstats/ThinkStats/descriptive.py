@@ -109,15 +109,6 @@ def MakeFigures(firsts, others):
                ylabel='probability',
                axis=axis)
 
-    # TODO: move this to Chapter 3
-    #axis = [23, 46, 0, 1.0]
-    #myplot.Cdfs([others.cdf, firsts.cdf],
-    #          'nsfg_cdf',
-    #          title='CDF',
-    #          xlabel='weeks',
-    #          ylabel='probability',
-    #          styles=[':', '-'],
-    #          axis=axis)
 
 def MakeDiffFigure(firsts, others):
     weeks = range(35, 46)
@@ -165,8 +156,8 @@ def ClassSizes():
  
  
 def main():
-    #Summarize()
-    ClassSizes()
+    Summarize()
+    #ClassSizes()
 
 if __name__ == '__main__':
     main()

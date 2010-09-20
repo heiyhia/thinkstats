@@ -32,7 +32,6 @@ def TrimmedMean(t, p=0.01):
     return Mean(t)
 
 
-
 def MeanVar(t):
     mu = Mean(t)
     var = Var(t, mu)
@@ -69,18 +68,6 @@ def Trim(t, p=0.01):
     n = int(p * len(t))
     t = t[n:-n]
     return t
-
-
-def WeightedMean(t):
-    """Computes the mean of a sequence of numbers.
-
-    Args:
-        t: sequence of numbers
-
-    Returns:
-        float
-    """
-    return float(sum(t)) / len(t)
 
 
 def Var(t, mu=None):
