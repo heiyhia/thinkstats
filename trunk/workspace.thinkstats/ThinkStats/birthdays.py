@@ -63,9 +63,9 @@ def Main(script):
     cdf = Cdf.MakeCdfFromList(days, name='intervals')
     myplot.Cdfs([cdf],
                 'intervals', 
-                xlabel='', 
+                xlabel='days', 
                 ylabel='ccdf', 
-                xscale='log',
+                yscale='log',
                 complement=True)
 
 if __name__ == '__main__':
