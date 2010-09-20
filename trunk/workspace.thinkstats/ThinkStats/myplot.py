@@ -90,6 +90,20 @@ def Cdfs(cdfs,
          line_options=InfiniteList(dict()), 
          complement=False,
          **options):
+    """Makes line plots for a list of Cdfs.
+    
+    Args:
+      cdfs: sequence of Cdf objects
+
+      root: string filename root
+
+      line_options: sequence of option dictionaries
+
+      complement: boolean, whether to plot the complementary CDF
+
+      options: dictionary of options
+      
+    """
     pyplot.clf()
 
     styles = options.get('styles', None)
