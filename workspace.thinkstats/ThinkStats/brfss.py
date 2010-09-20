@@ -6,13 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import cPickle
-import continuous
-import Cdf
 import math
-import matplotlib
-import matplotlib.pyplot as pyplot
-import myplot
-import random
 import sys
 import survey
 import thinkstats
