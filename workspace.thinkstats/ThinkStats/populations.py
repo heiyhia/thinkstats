@@ -13,7 +13,7 @@ import urllib
 def Download(filename='populations.csv'):
     """Downloads files from the U.S. Census Bureau.
     
-    Concatenate the contents of these pages and store them in (filename).
+    Concatenates the contents of these pages and stores them in (filename).
     Files are numbered from 01 to 56, with a couple of gaps for future
     expansion (just kidding -- they are for U.S. territories).
     
@@ -35,10 +35,10 @@ def Download(filename='populations.csv'):
     out.close()
 
 def Process(filename='populations.csv'):
-    """Read the previously-downloaded contents of (filename), parse
+    """Reads the previously-downloaded contents of (filename), parses
     it as CSV and extract all lines that seem to contain population
     information for a city or town.  For each line that is in the
-    right format to be parsed, print the population as of 2006.
+    right format to be parsed, prints the population as of 2006.
 
     Args:
         filename: string name of file to store results
