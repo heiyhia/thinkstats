@@ -5,13 +5,11 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import erf
 import Cdf
 import cumulative
 import math
 import myplot
 import random
-import rankit
 import thinkstats
 import matplotlib.pyplot as pyplot
 
@@ -64,27 +62,37 @@ def RunTest(root, pool, actual1, actual2,
     else:
         model1 = actual1
         model2 = actual2
-        
-    ph0 = Test(root + '_deltas_cdf',
+
+    # P(E|H0)
+    peh0 = Test(root + '_deltas_cdf',
                actual1, actual2, pool, pool,
                iters, plot=True)
 
-    pha = Test(root + '_deltas_ha_cdf',
+    # P(E|Ha)
+    peha = Test(root + '_deltas_ha_cdf',
                actual1, actual2, model1, model2,
                iters)
 
     prior = 0.5
-    pe = prior*pha + (1-prior)*ph0
-    posterior = prior * pha / pe
+    pe = prior*peha + (1-prior)*peh0
+    posterior = prior*peha / pe
     print 'Posterior', posterior
 
 
 def DifferenceInMean(actual1, actual2):
+    """Computes the difference in mean between two groups.
+
+    Args:
+        actual1: sequence of float
+        actual2: sequence of float
+
+    Returns:
+        float difference in means (actual1 - actual2)
+    """
     mu1 = thinkstats.Mean(actual1)
     mu2 = thinkstats.Mean(actual2)
     delta = mu1 - mu2
     return mu1, mu2, delta
-
 
 
 def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
@@ -112,20 +120,26 @@ def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
     cdf, pvalue = PValue(model1, model2, n, m, delta, iters)
     print n, m, mu1, mu2, delta, pvalue
 
-    var_pooled = 7.3018637881954334
-    f = 1.0 / n + 1.0 / m
-    mu, var = (0, f * var_pooled)
-    sigma = math.sqrt(var)
-    print 'Expected mean var deltas', mu, var
-
     if plot:
         PlotCdf(root, cdf, delta)
-        # PlotModel(root, cdf, mu, sigma)
         
     return pvalue
     
     
 def PValue(model1, model2, n, m, delta, iters=1000, plot=False):
+    """Computes the distribution of deltas under the null hypothesis.
+
+    And the p-value of the observed delta.
+
+    Args:
+        model1: 
+        model2: sequences of values from the hypothetical distributions
+        n: sample size from model1
+        m: sample size from model2
+        delta: the observed difference in the means
+        iters: how many samples to generate
+        plot: boolean, whether to generate plots
+    """
     deltas = [Resample(model1, model2, n, m) for i in range(iters)]
     mean_var = thinkstats.MeanVar(deltas)
     print 'Actual mean var deltas', mean_var
@@ -142,24 +156,14 @@ def PValue(model1, model2, n, m, delta, iters=1000, plot=False):
     return cdf, pvalue
 
 
-def PlotModel(root, cdf, mu, sigma):
-    low, high = -3 * sigma, 3 * sigma
-    steps = 100
-    xs = [low + (high - low) * i / steps for i in range(steps)]
-    ps = [erf.NormalCdf(x, mu, sigma) for x in xs]  
-
-    pyplot.plot(xs, ps, linewidth=2, color='0.7')
-     
-    xs, ys = cdf.Render()    
-    pyplot.plot(xs, ys)
-    
-    myplot.Plot(root,
-                title='Resampled differences',
-                xlabel='difference in weeks',
-                ylabel='CDF(x)',
-                legend=False) 
-
 def PlotCdf(root, cdf, delta):
+    """Draws a Cdf with vertical lines at the observed delta.
+
+    Args:
+       root: string used to generate filenames
+       cdf: Cdf object
+       delta: float observed difference in means    
+    """
     def VertLine(x):
         xs = [x, x]
         ys = [0, 1]
@@ -180,7 +184,7 @@ def PlotCdf(root, cdf, delta):
 
     
 def Resample(t1, t2, n, m):
-    """Computes the difference in mean of two samples.
+    """Draws samples and computes the difference in mean.
     
     Args:
         t1: sequence of values
@@ -191,11 +195,7 @@ def Resample(t1, t2, n, m):
     """
     sample1 = SampleWithReplacement(t1, n)
     sample2 = SampleWithReplacement(t2, m)
-
-    mu1 = thinkstats.Mean(sample1)
-    mu2 = thinkstats.Mean(sample2)
-    
-    delta = mu1 - mu2
+    mu1, mu2, delta = DifferenceInMean(sample1, sample2)
     return delta
 
 
