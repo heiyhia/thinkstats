@@ -25,6 +25,17 @@ def Process(table, name):
 
 
 def GetWeights(table):
+    """Recodes the birth weight information in the table.
+
+    Creates instance variables:
+        weights: sequence of int total weights in ounces
+        weight_pmf: Pmf object
+        weight_cdf: Cdf object
+        oz_pmf: Pmf of just the ounce field
+
+    Args:
+        table: Table object
+    """
     ozes = []
     weights = []
     for record in table.records:
@@ -46,6 +57,7 @@ def GetWeights(table):
     table.weight_cdf = Cdf.MakeCdfFromList(weights, table.name)
 
     table.oz_pmf = Pmf.MakePmfFromList(ozes, table.name)
+
 
 def MakeTables():
     """Reads survey data and returns a tuple of Tables"""
@@ -76,6 +88,7 @@ def Resample(cdf, n=10000):
 
 
 def MakeExample():
+    """Make a simple example CDF."""
     t = [2, 1, 3, 2, 5]
     cdf = Cdf.MakeCdfFromList(t)
     myplot.Cdfs([cdf],
@@ -87,7 +100,9 @@ def MakeExample():
               legend=False)    
 
 def MakeFigures(pool, firsts, others):
+    """Creates several figures for the book."""
 
+    # plot the PMF of the ounce part of the measurement
     axis = None
     myplot.Hist(pool.oz_pmf, 
                'nsfg_oz_pmf', 
@@ -101,6 +116,7 @@ def MakeFigures(pool, firsts, others):
                     dict(linewidth=0, color='0.5')
                     ]
 
+    # plot PMFs of birth weights for first babies and others
     myplot.Hists([firsts.weight_pmf, others.weight_pmf], 
                'nsfg_birthwgt_pmf',
                bar_options=bar_options, 
@@ -114,6 +130,7 @@ def MakeFigures(pool, firsts, others):
                     dict(linewidth=0.5)
                     ]
 
+    # plot CDFs of birth weights for first babies and others
     myplot.Cdfs([firsts.weight_cdf, others.weight_cdf], 
                'nsfg_birthwgt_cdf',
                line_options=line_options, 

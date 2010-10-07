@@ -30,32 +30,47 @@ class InfiniteList(list):
         return self.val
 
 
-def Hist(hist, root, line_options=None, **options):
+def Hist(hist, root=None, bar_options={}, **options):
     """Plots a histogram.
 
     Args:
       hist: Hist or Pmf object
-
       root: string filename root
-
+      bar_options: dictionary of options passed to pylot.bar
       options: dictionary of options
     """
     pyplot.clf()
 
     xs, fs = hist.Render()
-    pyplot.bar(xs, fs, align='center')
+    pyplot.bar(xs, fs, align='center', **bar_options)
 
-    Plot(root, line_options, **options)
+    Plot(root, **options)
 
 
-def Hists(hists, root, bar_options=InfiniteList(dict()), **options):
+def Pmf(pmf, root=None, plot_options={}, **options):
+    """Plots a PMF as a line.
+
+    Args:
+      pmf: Hist or Pmf object
+      root: string filename root
+      bar_options: dictionary of options passed to pylot.plot
+      options: dictionary of options
+    """
+    pyplot.clf()
+
+    xs, fs = pmf.Render()
+    pyplot.plot(xs, fs, **plot_options)
+
+    Plot(root, **options)
+
+
+def Hists(hists, root=None, bar_options=InfiniteList(dict()), **options):
     """Plots two histograms.
 
     Args:
       hists: list of two Hist or Pmf objects
-
       root: string filename root
-
+      bar_options: sequence of option dictionaries
       options: dictionary of options
     """
     pyplot.clf()
@@ -86,7 +101,7 @@ def Shift(xs, shift):
 
 
 def Cdfs(cdfs, 
-         root, 
+         root=None, 
          line_options=InfiniteList(dict()), 
          complement=False,
          **options):
@@ -119,7 +134,8 @@ def Cdfs(cdfs,
 
     Plot(root, **options)
 
-def Plot(root, formats=None, **options):
+
+def Plot(root=None, formats=None, **options):
     """Generate plots in the given formats.
 
     Pulls options out of the option dictionary and passes them to
@@ -161,8 +177,9 @@ def Plot(root, formats=None, **options):
     if formats is None:
         formats = ['eps', 'png']
 
-    for format in formats:
-        Save(root, format)
+    if root:
+        for format in formats:
+            Save(root, format)
 
 
 def Save(root, format='eps'):

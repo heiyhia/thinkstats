@@ -17,16 +17,21 @@ class Hist(object):
     def GetDict(self):
         return self.d
 
-    def Count(self, x):
-        """Increment the counter associated with the value x.
+    def Incr(self, x, count=1):
+        """Increments the counter associated with the value x.
 
         Args:
             x: number value
+            count: how much to increment by
         """
-        self.d[x] = self.d.get(x, 0) + 1
+        self.d[x] = self.d.get(x, 0) + count
+
+    def Values(self):
+        """Gets a sorted iterator of the values."""
+        return sorted(self.d.iteritems())
 
     def Freq(self, x):
-        """Get the frequency associated with the value x.
+        """Gets the frequency associated with the value x.
 
         Args:
             x: number value
@@ -59,7 +64,53 @@ class Pmf(object):
         self.d = d
         self.name = name
         
+    def GetDict(self):
+        return self.d
+
+    def Incr(self, x, p=1):
+        """Increments the probability associated with the value x.
+
+        Args:
+            x: number value
+            p: how much to increment by
+        """
+        self.d[x] = self.d.get(x, 0) + p
+
+    def Mult(self, x, factor):
+        """Scales the probability associated with the value x.
+
+        Args:
+            x: number value
+            factor: how much to multiply by
+        """
+        self.d[x] = self.d.get(x, 0) * factor
+
+    def Values(self):
+        """Gets a sorted iterator of the values.
+
+        Note one source of confusion: the values in this PMF are stored
+        as the _keys_ of the dictionary.  The probabilities are stored
+        as values in the dictionary.
+        """
+        return sorted(self.d.iterkeys())
+
+    def Prob(self, x):
+        """Gets the probability associated with the value x.
+
+        Args:
+            x: number value
+
+        Returns:
+            float probability
+        """
+        return self.d.get(x, 0)
+
     def Copy(self, name=None):
+        """Returns a copy of this Pmf.
+
+        Args:
+            name: string name for the new Pmf
+        """
         if name is None:
             name = self.name
         return Pmf(dict(self.d), name)
@@ -79,21 +130,6 @@ class Pmf(object):
         """Returns the total of the frequencies in the map."""
         total = sum(self.d.values())
         return float(total)
-
-    def GetDict(self):
-        return self.d
-
-    def Prob(self, x):
-        """Returns the probability that corresponds to value x.
-
-        Args:
-            x: number
-
-        Returns:
-            int frequency or float probability
-        """
-        p = self.d.get(x, 0)
-        return p
 
     def Mean(self):
         """Computes the mean of a PMF.
@@ -138,7 +174,7 @@ def MakeHist(t, name=''):
         Hist object
     """
     hist = Hist(name=name)
-    [hist.Count(x) for x in t]
+    [hist.Incr(x) for x in t]
     return hist
 
 
