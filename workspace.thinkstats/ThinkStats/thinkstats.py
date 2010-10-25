@@ -33,6 +33,14 @@ def TrimmedMean(t, p=0.01):
 
 
 def MeanVar(t):
+    """Computes the mean and variance of a sequence of numbers.
+
+    Args:
+        t: sequence of numbers
+
+    Returns:
+        tuple of two floats
+    """
     mu = Mean(t)
     var = Var(t, mu)
     return mu, var
@@ -59,7 +67,6 @@ def Trim(t, p=0.01):
 
     Args:
         t: sorted sequence of numbers
-
         p: fraction of values to trim off each end
 
     Returns:

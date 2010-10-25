@@ -170,10 +170,6 @@ def Plot(root=None, formats=None, **options):
     if legend:
         pyplot.legend(loc=loc)
 
-    show = options.get('show', False)
-    if show:
-        pyplot.show()
-
     if formats is None:
         formats = ['eps', 'png']
 
@@ -181,6 +177,9 @@ def Plot(root=None, formats=None, **options):
         for format in formats:
             Save(root, format)
 
+    show = options.get('show', False)
+    if show:
+        pyplot.show()
 
 def Save(root, format='eps'):
     """Writes the current figure to a file in the given format.

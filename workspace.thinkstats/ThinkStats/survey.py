@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import sys
 import gzip
+import os
 
 class Record(object):
     """Represents a record."""
@@ -26,10 +27,11 @@ class Table(object):
     def __len__(self):
         return len(self.records)
 
-    def ReadFile(self, filename, fields, constructor, n=None):
+    def ReadFile(self, data_dir, filename, fields, constructor, n=None):
         """Reads a compressed data file builds one object per record.
 
         Args:
+            data_dir: string directory name
             filename: string name of the file to read
 
             fields: sequence of (name, start, end, cast) tuples specifying 
@@ -37,6 +39,8 @@ class Table(object):
 
             constructor: what kind of object to create
         """
+        filename = os.path.join(data_dir, filename)
+
         if filename.endswith('gz'):
             fp = gzip.open(filename)
         else:
@@ -92,8 +96,8 @@ class Table(object):
 class Respondents(Table):
     """Represents the respondent table."""
 
-    def ReadRecords(self, filename='2002FemResp.dat.gz', n=None):
-        self.ReadFile(filename, self.GetFields(), Respondent, n)
+    def ReadRecords(self, data_dir='.', filename='2002FemResp.dat.gz', n=None):
+        self.ReadFile(data_dir, filename, self.GetFields(), Respondent, n)
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
@@ -111,8 +115,8 @@ class Respondents(Table):
 class Pregnancies(Table):
     """Contains survey data about a Pregnancy."""
 
-    def ReadRecords(self, filename='2002FemPreg.dat.gz', n=None):
-        self.ReadFile(filename, self.GetFields(), Pregnancy, n)
+    def ReadRecords(self, data_dir='.', filename='2002FemPreg.dat.gz', n=None):
+        self.ReadFile(data_dir, filename, self.GetFields(), Pregnancy, n)
 
     def GetFields(self):
         """Gets information about the fields to extract from the survey data.
@@ -134,13 +138,13 @@ class Pregnancies(Table):
             ('finalwgt', 423, 440, float),
             ]
 
-def main(name):
+def main(name, data_dir='.'):
     resp = Respondents()
-    resp.ReadRecords()
+    resp.ReadRecords(data_dir)
     print 'Number of respondents', len(resp.records)
 
     preg = Pregnancies()
-    preg.ReadRecords()
+    preg.ReadRecords(data_dir)
     print 'Number of pregnancies', len(preg.records)
     
 if __name__ == '__main__':
