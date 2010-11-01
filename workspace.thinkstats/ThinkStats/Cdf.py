@@ -24,6 +24,10 @@ class Cdf(object):
         self.ps = ps
         self.name = name
 
+    def GetItems(self):
+        """Returns an iterator of sorted (value, probability) pairs."""
+        return zip(self.xs, self.ps)
+
     def Prob(self, x):
         """Returns the probability that corresponds to value x.
 

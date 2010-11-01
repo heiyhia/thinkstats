@@ -49,6 +49,14 @@ class Test(unittest.TestCase):
     def testMean(self):
         cdf = self.cdf
         self.assertAlmostEqual(cdf.Mean(), 13.0/5.0)
+
+    def testGetItems(self):
+        cdf = self.cdf
+        items = cdf.GetItems()
+        expected = [(1, 0.2), (2, 0.6), (3, 0.8), (5, 1.0)]
+        for p1, p2 in zip(items, expected):
+            for x1, x2 in zip(p1, p2):
+                self.assertEqual(x1, x2)
         
     def testRender(self):
         cdf = self.cdf
