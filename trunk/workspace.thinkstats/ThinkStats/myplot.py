@@ -181,6 +181,7 @@ def Plot(root=None, formats=None, **options):
     if show:
         pyplot.show()
 
+
 def Save(root, format='eps'):
     """Writes the current figure to a file in the given format.
 
