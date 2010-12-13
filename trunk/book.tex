@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.1}
+\newcommand{\theversion}{1.2.1}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -214,14 +214,13 @@ Version \theversion
 %A simulation can be a more compelling proof -- easier to read and check
 %correctness.  Erdos and the Monty Hall problem.
 
-When people sit down to
-write a textbook, they usually start by reading a stack of existing
-textbooks.  As a result, most books contain the same material in
-pretty much the same order.  Often there are phrases,
-and errors, that propagate from one book to the next;  Stephen Jay
-Gould pointed out an example in his
-essay, ``The Case of the Creeping Fox Terrier\footnote{A breed of dog
-  that is about twice the size of a Hyracotherium (see
+When people sit down to write a new textbook, they usually start by
+reading a stack of old textbooks.  As a result, most books
+contain the same material in pretty much the same order.  Often there
+are phrases, and errors, that propagate from one book to the next;
+Stephen Jay Gould pointed out an example in his essay, ``The Case of
+the Creeping Fox Terrier\footnote{A breed of dog that is about twice
+  the size of a Hyracotherium (see
   \url{wikipedia.org/wiki/Hyracotherium}).}.''
 
 I did not do that.  In fact, I used almost no printed material while I
@@ -300,6 +299,11 @@ Thanks!
 corrections and suggestions.
 
 \item Steven Zhang found several errors.
+
+\item Andy Pethan and Molly Farison helped debug some of the solutions,
+and Molly spotted several typos.
+
+\item Andrew Heine found an error in my error function.
 
 % ENDCONTRIB
 
@@ -861,27 +865,6 @@ the sum of the values divided by the number of values; in other words
 
 \[ \mu = \frac{1}{n} \sum_i x_i \]
 
-\begin{ex}
-For the exercises in this chapter, create two files:
-
-\begin{description}
-
-\item[{\tt thinkstats.py}]: This file will contain general-purpose
-functions we will use throughout the book.
-
-\item[{\tt descriptive.py}]: This file will contain code specific
-to the exercises in this chapter.
-
-\end{description}
-
-In {\tt thinkstats.py} write a Python function named {\tt Mean} that
-takes a sequence of numbers and returns their mean.  Hint: the result
-should be a floating-point value even if the numbers are integers.
-
-In {\tt descriptive.py} write code that tests {\tt Mean}.
-
-\end{ex}
-
 The words ``mean'' and ``average'' are sometimes used interchangeably,
 but I will maintain this distinction:
 
@@ -930,20 +913,22 @@ $\sigma^2$.  The square root of variance, $\sigma$, is called the {\bf
   standard deviation}.
 
 \begin{ex}
-In {\tt thinkstats.py} write a function named {\tt Var} that takes a
-sequence of numbers and returns their variance.
+For the exercises in this chapter you should download
+\url{thinkstats.com/thinkstats.py}, which contains general-purpose
+functions we will use throughout the book.  You can read documentation
+of these functions in \url{thinkstats.com/thinkstats.html}.
 
-In {\tt descriptive.py} write code that
-computes the variance of the pumpkin data.
+Create a file named {\tt descriptive.py}.  Write a function called
+{\tt Pumpkin} that uses functions from {\tt thinkstats.py} to compute
+the mean, variance and standard deviation of the pumpkins weights in
+the previous section.
 \end{ex}
 
 \begin{ex}
 Reusing code from {\tt survey.py} and {\tt first.py}, compute the
 standard deviation of gestation time for first babies and others.
 Does it look like the spread is the same for the two groups?
-\end{ex}
 
-\begin{ex}
 How big is the difference in the means compared to these standard
 deviations?  What does this comparison suggest about the statistical
 significance of the difference?
@@ -1319,6 +1304,7 @@ accurately.
 
 
 \section{Mean and variance of PMFs}
+\label{mean_pmf}
 
 In Section~\ref{mean} we computed the mean of a sample by adding up
 the elements and dividing by $n$.  If you are given a PMF, you can
@@ -2030,7 +2016,7 @@ parameters $x_m = 0.5$ and $\alpha = 1$.
 \label{pareto_cdf}
 \end{figure}
 
-The median of this distribution is $x_m 2^{1/alpha} = 1$, but the
+The median of this distribution is $x_m 2^{1/\alpha} = 1$, but the
 95th percentile is 10.  By contrast, the exponential distribution
 with median 1 has 95th percentile of only 1.5.
 
@@ -2097,6 +2083,7 @@ What is the value of $\alpha$, approximately?
 \end{ex}
 
 \begin{ex}
+\label{weibull}
 
 The Weibull distribution is a generalization of the exponential
 distribution that comes up in failure analysis
@@ -2133,7 +2120,7 @@ written $\erf(x)$:
 \[ CDF(x) = \frac{1}{2} \left[ 1 +
   \erf \left( \frac{x - \mu}{\sigma \sqrt{2}} \right) \right] \]
 
-\[ \erf(x) = \frac{2}{\sqrt{\pi}} \int_{-\infty}^x e^{-t^2} dt \]
+\[ \erf(x) = \frac{2}{\sqrt{\pi}} \int_{0}^x e^{-t^2} dt \]
 
 The parameters $\mu$ and $\sigma$ determine the mean and standard
 deviation of the distribution.
@@ -2188,10 +2175,9 @@ fascinating controversy that I invite you to investigate at your
 leisure.}.  Results are transformed so that the distribution of scores
 in the general population is normal with $\mu=100$ and $\sigma=15$.
 
-Use {\tt erf.NormalCdf} to investigate the frequency of rare events
-in a normal distribution.
-What fraction of the population has an IQ greater than the mean?
-What fraction is over 115?  130?  145?
+Use {\tt erf.NormalCdf} to investigate the frequency of rare events in
+a normal distribution.  What fraction of the population has an IQ
+greater than the mean?  What fraction is over 115?  130?  145?
 
 A ``six-sigma'' event is a value that exceeds the mean by 6 standard
 deviations, so a six-sigma IQ is 190.  In a world of 6 billion people,
@@ -2410,6 +2396,26 @@ for cities and towns?
 \end{ex}
 
 
+\begin{ex}
+\label{irs}
+The Internal Revenue Service of the United States (IRS) provides data
+about income taxes, and other statistics, at \url{irs.gov/taxstats}.
+
+One of their files, containing information about individual incomes
+for 2008, is available from \url{thinkstats.com/08in11si.csv}. I
+converted it to a text format called CSV for ``comma-separated values;''
+you can read it using the {\tt csv} module.
+
+Extract the distribution of incomes from this dataset.  Are any of
+the continuous distributions in this chapter a good model of
+the data?
+
+You can download a solution to this problem from \url{thinkstats.com/irs.py}.
+
+\end{ex}
+
+
+
 \section{Why model?}
 
 At the beginning of this chapter I said that many real world phenomena
@@ -2417,7 +2423,7 @@ can be modeled with continuous distributions.  ``So,'' you might ask,
 ``what?''
 
 Like all models, continuous distributions are abstractions, which
-means that leave out details that are considered irrelevant.
+means they leave out details that are considered irrelevant.
 For example, an observed distribution might have measurement errors
 or quirks that are specific to the sample; continuous models smooth
 out these idiosyncrasies.
@@ -2428,7 +2434,7 @@ large amount of data.
 
 It is sometimes surprising when data from a natural phenomenon fit a
 continuous distribution, but these observations can lead to insight
-into physical systems.  Often we can explain why an observed
+into physical systems.  And sometimes we can explain why an observed
 distribution has a particular form.  For example, Pareto distributions
 are often the result of generative processes with positive feedback
 (so-called preferential attachment processes: see
@@ -2436,6 +2442,46 @@ are often the result of generative processes with positive feedback
 
 Finally, continuous distributions lend themselves to analysis; we
 will see examples in Chapter~\ref{operations}.
+
+
+\section{Generating random numbers}
+
+Continuous CDFs are also useful for generating random numbers.
+If there is an efficient way to compute the inverse CDF, $ICDF(p)$,
+we can generate random values with the appropriate distribution
+by choosing from a uniform distribution from 0 to 1, then choosing
+
+\[ x = ICDF(p) \]
+
+For example, the CDF of the exponential distribution is
+
+\[ p = 1 - e^{-\lambda x} \]
+
+Solving for $x$ yields:
+
+\[ x = -1 / \lambda \ln (1-p) \]
+
+So in Python we can write
+
+\begin{verbatim}
+def expovariate(lamdb):
+    p = random.random()
+    x = -math.log(1-p) / lambd
+    return x
+\end{verbatim}
+
+I called the parameter \verb"lambd" because \verb"lambda" is a Python
+keyword.  Most implementations of {\tt random.random} can return 0 but
+not 1, so 1-p can be 1 but not 0, which is good, because $\ln 0$ is
+undefined.
+
+\begin{ex}
+
+Write a function named \verb"weibullvariate" that takes
+\verb"lambd" and \verb"k" and returns a random value from the Weibull
+distribution with those parameters.
+
+\end{ex}
 
 
 \section{Glossary}
@@ -2463,7 +2509,7 @@ often good models of more complex empirical distributions.
 
 \item[corpus:] A body of text used as a sample of a language.
 
-\item[hapaxlegomenon:] A word that appear only once in a corpus.
+\item[hapaxlegomenon:] A word that appears only once in a corpus.
 It appears twice in this book, so far.
 
 \end{description}
@@ -2551,14 +2597,15 @@ For frequency probabilities, we can derive rules that relate
 probabilities of different events.  Probably the best known of these
 rules is
 
-\renewcommand{\and}{\wedge}
+\renewcommand{\and}{~\mbox{and}~}
 
-\[ P(A \and B) = P(A) P(B) \]
+\[ P(A \and B) = P(A) P(B) \quad \mbox{Warning: not always true!}\]
 
 where $P(A \and B)$ is the probability that events $A$ and $B$ both
-occur.  This formula is easy to remember, but it only applies if $A$
-and $B$ are {\bf independent}, which means that if I know $A$
-occurred, that doesn't change the probability of $B$, and vice versa.
+occur.  This formula is easy to remember; the only problem is that it
+is {\em not always true}.  This formula only applies if $A$ and $B$
+are {\bf independent}, which means that if I know $A$ occurred, that
+doesn't change the probability of $B$, and vice versa.
 
 For example, if $A$ is tossing a coin and getting heads, and $B$
 is rolling a die and getting 1, $A$ and $B$ are independent, because
@@ -2577,11 +2624,21 @@ $A$ given that we know $B$ occurred:
 
 From that we can derive the general relation
 
-\[ P(A \and B) = P(A) P(B|A) = P(B) P(A|B) \]
+\[ P(A \and B) = P(A) P(B|A) \]
 
-This might not be as easy to remember, but if you read it a few times,
-it should make sense.  This relationship holds whether $A$ and $B$
-are independent or not.
+This might not be as easy to remember, but if you translate it into
+English it should make sense: ``The chance of both things happening
+is the chance that the first one happens, and then the second one
+given the first.''
+
+There is nothing special about the order of events, so we could also
+write.
+
+\[ P(A \and B) = P(B) P(A|B) \]
+
+These relationships hold whether $A$ and $B$ are independent or not.
+If they are independent, then $P(A|B) = P(A)$, which gets us back
+where we started.
 
 Because all probabilities are in the range 0 to 1, it is
 easy to show that 
@@ -2598,10 +2655,13 @@ kind of analysis.  For examples and discussion of this phenomenon, see
 
 
 \begin{ex}
-
 If I roll two dice and the total is 8, what is the chance that
 one of the dice is a 6?
+\end{ex}
 
+\begin{ex}
+If I roll 100 dice, what is the chance of getting all sixes?
+What is the chance of getting no sixes?
 \end{ex}
 
 \begin{ex}
@@ -2789,7 +2849,7 @@ As an aside, you might notice that the standard deviation for men is
 higher and wonder whether men's heights are more variable.  To compare
 variability between groups, it is useful to compute the {\bf
   coefficient of variation}, which is the standard deviation as a
-fraction of the mean, $\mu / \sigma$.  By this measure, women's
+fraction of the mean, $\sigma / \mu$.  By this measure, women's
 heights are slightly more variable.
 
 % From brfss.py
@@ -2799,6 +2859,82 @@ heights are slightly more variable.
 
 \end{ex}
 
+\section{Another rule of probability}
+
+\renewcommand{\or}{~\mbox{or}~}
+\renewcommand{\not}{~\mbox{not}~}
+
+If two events are {\bf mutually exclusive}, that means that only
+one of them can happen, so the conditional probabilities are 0:
+
+\[ P(A|B) = P(B|A) = 0 \]
+
+In this case it is easy to compute the probability of either event:
+
+\[ P(A \or B) = P(A) + P(B)   \quad \mbox{Warning: not always true.} \]
+
+But remember that this only applies if the events are mutually
+exclusive.  In general the probability of $A$ or $B$ or both is:
+
+\[ P(A \or B) = P(A) + P(B) - P(A \and B) \]
+
+The reason we have to subtract off $P(A \and B)$ is that otherwise it
+gets counted twice.  For example, if I flip two coins, chance of
+getting at least one tails is $1/2 + 1/2 - 1/4$.  I have to subtract
+$1/4$ because otherwise I am counting heads-heads twice.  The problem
+becomes even clearer if I toss three coins.
+
+\begin{ex}
+If I roll two dice, what is the chance of rolling at least one 6?
+\end{ex}
+
+\begin{ex}
+If I roll 100 dice, what is the chance of rolling at least one 6?
+Hint: for this kind of problem, it is often easier to turn it around
+and compute the complementary probability; that is, the chance of
+rolling 100 dice without getting a 6.
+\end{ex}
+
+\begin{ex}
+What is the general formula for the probability of $A$ or $B$ but not both?
+\end{ex}
+
+
+\section{Binomial distribution}
+
+In previous exercises you computed the probability of rolling 100
+dice and getting all sixes; if things went well, you got $(1/6)^{100}$.
+And the chance of getting no sixes is $(5/6)^{100}$.
+
+More generally, we might like to know the chance of getting $k$
+sixes, for all values of $k$ from 0 to 100.  The answer is the
+{\bf binomial distribution}, which has this PMF:
+
+\[ PMF(k) = \binom{n}{k} p^k (1-p)^{1-k}\]
+
+where $n$ is the number of trials and $p$ is the probability of success,
+and $k$ is the number of successes.
+
+The {\bf binomial coefficient} is pronounced ``n choose k'', and it
+can be computed directly like this:
+
+\[ \binom{n}{k} = \frac{n!}{k!(n-k!)}  \]
+
+Or recursively like this
+
+\[ \binom{n}{k} + \binom{n}{k} \]
+
+with two base cases: if $k=0$ or $k=n$, the result is 1.  If you
+download \url{thinkstats.com/thinkstats.py} you will see a function
+named {\tt Binom} that computes the binomial coefficient.
+
+\begin{ex}
+If you flip a coin 100 times, you expect about 50 heads, but what
+is the probability of getting exactly 50 heads?
+
+% 0.079589
+
+\end{ex}
 
 \section{Streaks and hot spots}
 
@@ -2808,7 +2944,7 @@ sequences that are random-looking, but actually more ordered than real
 random sequences.  Conversely, if you show them a real random
 sequence, they tend to see patterns where there are none.
 
-An example of the second phenomenon is the prevalence of belief
+An example of the second phenomenon is that many people believe
 in ``streaks'' in sports: a player that has been successful recently
 is said to have a ``hot hand;'' a player that has been unsuccessful is
 ``in a slump.''
@@ -3048,13 +3184,38 @@ This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 
 \end{ex}
 
-%\begin{ex}
+\begin{ex}
 
-%Elvis's twin
+The blue M\&M was introduced in 1995.  Before then, the color mix in
+a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
+Green, 10\% Orange, 10\% Tan).  Afterwards it was (24\% Blue , 20\%
+Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown).
 
-%Other Examples from MacKay's Chapter 3?
+A friend of mine has two bags of M\&Ms, and he tells me
+that one is from 1994 and one from 1996.  He won't tell me which is
+which, but he gives me one M\&M from each bag.  One is yellow and
+one is green.  What is the probability that the yellow M\&M came
+from the 1994 bag?
+  
+\end{ex}
 
-%\end{ex}
+\begin{ex}
+
+This exercise is adapted from MacKay, \em{Information
+  Theory, Inference, and Learning Algorithms}:
+
+Elvis Presley had a twin brother who died at birth.  According to the
+Wikipedia article on twins:
+
+\begin{quote}
+Twins are estimated to be approximately 1.9\% of the world population,
+with monozygotic twins making up 0.2\% of the total---and 8\% of all
+twins.
+\end{quote}
+
+What is the probability that Elvis was an identical twin?
+
+\end{ex}
 
 
 \section{Glossary}
@@ -3138,7 +3299,7 @@ to the effect of outliers.
 
 \begin{ex}
 
-In {\tt thinkstats.py} add a function named {\tt Skewness} that computes
+Write a function named {\tt Skewness} that computes
 $g_1$ for a sample.
 
 Compute the skewness for the distributions of pregnancy length and
@@ -3162,28 +3323,38 @@ than the average driver (see
   \url{wikipedia.org/wiki/Illusory_superiority}).
 
 If we interpret ``average'' to mean median, then this result is
-logically impossible (proof left as an exercise for the reader).
-But if ``average'' is the mean, this result is actually possible,
-although unlikely. 
+logically impossible, but if ``average'' is the mean, this result is
+possible, although unlikely.
 
-The Current Population Survey (CPS) is a joint effort between the
-Bureau of Labor Statistics and the Census Bureau.  Data from the
-survey are available from \url{www.census.gov/cps/}.
+What percentage of the population has more than the average number
+of legs?
 
-Extract the distribution of incomes from this dataset.  Are any of
-the continuous distributions in this chapter a good model of
-the data?
+\end{ex}
 
-Compute the median, mean, skewness and Pearson's skewness.  What
-fraction of the population is below the mean?
+
+\begin{ex}
+The Internal Revenue Service of the United States (IRS) provides data
+about income taxes, and other statistics, at \url{irs.gov/taxstats}.
+If you did Exercise~\ref{irs}, you have already worked with this data;
+otherwise, follow the instructions there to extract the distribution
+of incomes from this dataset.
+
+What fraction of the population reports a taxable income below the
+mean?
+
+Compute the median, mean, skewness and Pearson's skewness of the income
+data.  Because the data has been binned, you will have to make
+some approximations.
 
 The Gini coefficient is a measure of income inequality.
 Read about it at \url{wikipedia.org/wiki/Gini_coefficient} and write a
 function called {\tt Gini} that computes it for the income
-distribution.
+distribution.  Hint: use the Pdf to compute the relative mean difference
+(see \url{wikipedia.org/wiki/Mean_difference}).
+
+You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 
 \end{ex}
-
 
 \section{PDFs}
 \label{density}
@@ -3793,9 +3964,11 @@ NSFG.  We have already computed $P(E | H_0)=0.127$, so all we have to
 do is compute $P(E | H_A)$ and choose a value for the prior.
 
 To compute $P(E | H_A)$, we assume that the effect is real---that is,
-that the distributions are different for first babies and others---and
-compute the probability of seeing an effect as big or bigger than
-$\delta = 0.73$.  By generating 1000 sample pairs, one from each
+that the difference in mean duration, $\delta$, is actually what we
+observed, $0.073$.  (This way of formulating $H_A$ is a little bit
+bogus.  I will explain and fix the problem in the next section.)
+
+By generating 1000 sample pairs, one from each
 distribution, I estimated $P(E | H_A) = 0.503$.  With the prior
 $P(H_A)=0.5$, the posterior probability of $H_A$ is 0.798.
 
@@ -3914,10 +4087,11 @@ later.
   for the two groups, so we can compute the pooled probabilities:
   $p_{early}$, $p_{ontime}$ and $p_{late}$.
 
-For first babies, we have $n=4413$ samples, so under the null hypothesis
-we expect $n p_{early}$ first babies to be early, $n p_{ontime}$ to be
-on time, etc.  Likewise, we have $m=4735$ other babies, so we expect
-$m p_{early}$ other babies to be early, etc.
+For first babies, we have $n=4413$ samples, so under the null
+hypothesis we expect $n \cdot p_{early}$ first babies to be early, $n
+\cdot p_{ontime}$ to be on time, etc.  Likewise, we have $m=4735$
+other babies, so we expect $m \cdot p_{early}$ other babies to be
+early, etc.
 
 \item For each cell we compute the deviation; that is, the difference
   between the observed value, $O_i$, and the expected value, $E_i$.
@@ -4399,9 +4573,12 @@ which is the chance of drawing the sample $\boldx$ given $H_i$.
 
 where $\mathrm{expo}(\lambda, x)$ is a function that
 computes the PDF of the exponential distribution with parameter $\lambda$,
-evaluated at $x$.
+evaluated at $x$.  
 
 \[ \mathrm{expo}(\lambda, x) = \lambda e^{-lambda x}\]
+
+The symbol $\prod$ represents the product of a sequence (see
+\url{wikipedia.org/wiki/Multiplication#Capital_Pi_notation}).
 
 \item Then by Bayes's theorem the posterior distribution is
 
@@ -4416,8 +4593,9 @@ where $f$ is the normalization factor
 
 \begin{ex}
 
-Write a function that takes a prior distribution and a sample and
-returns a posterior distribution.
+Write a function that implements the steps described above.  It should
+take a prior distribution and a sample and
+return a posterior distribution.
 
 Hint: to represent distributions, you can use
 the {\tt Pmf} class we defined in Section~\ref{distributions}.
@@ -4822,6 +5000,38 @@ in a sentence or two?
 
 \end{ex}
 
+\begin{ex}
+
+The distribution of wind speeds in a given location determines the
+wind power density, which is an upper bound on the average power that
+a wind turbine at that location can generate.  According to some
+sources, empirical distributions of wind speed are well modeled by a
+Weibull distribution (see
+\url{wikipedia.org/wiki/Wind_power#Distribution_of_wind_speed}).
+
+To evaluate whether a location is a viable site for a wind turbine,
+you can set up an anemometer to measure wind speed for a period of
+time.  But it is hard to measure the tail of the wind speed distribution
+accurately because, by definition, events in the tail don't happen
+very often.
+
+One way to address this problem is to use measurements to estimate the
+parameters of a Weibull distribution, then integrate over the
+continuous PDF to compute wind power density.
+
+To estimate the parameters of a Weibull distribution, we can use the
+transformation from Exercise~\ref{weibull} and then use a linear regression
+to find the slope and intercept of the transformed data.
+
+Write a function that takes a sample from a Weibull distribution and
+estimates its parameters.
+
+Now write a function that takes the parameters of a Weibull distribution
+of wind speed and computes average wind power density (you might have
+to do some research for this part).
+
+\end{ex}
+
 
 \section{Goodness of fit}
 
@@ -4866,6 +5076,23 @@ determination and Spearman's correlation coefficient, $\rho$:
 
 See \url{wikipedia.org/wiki/Howzzat}!
 
+\begin{ex}
+
+The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
+of intelligence; scores are calibrated so that the mean and standard
+deviation in the general population are 100 and 15.
+
+Suppose that you wanted to predict someone's WAIS score based on their
+SAT scores.  According to one study, there is a Pearson correlation of
+0.72 between total SAT scores and WAIS scores.
+
+If you applied your predictor to a large sample, what would you expect to
+be the mean squared error (MSE) of your predictions?
+
+Hint: you might want to start by computing the MSE you would get if you
+ignore the SAT score and always guess 100.
+
+\end{ex}
 
 %\section{Serial correlation}
 

@@ -9,7 +9,7 @@ import matplotlib
 import matplotlib.pyplot as pyplot
 
 # customize some matplotlib attributes
-matplotlib.rc('figure', figsize=(5, 4))
+#matplotlib.rc('figure', figsize=(5, 4))
 
 #matplotlib.rc('font', size=20.0)
 #matplotlib.rc('axes', labelsize=22.0, titlesize=22.0)
@@ -31,7 +31,7 @@ class InfiniteList(list):
 
 
 def Hist(hist, root=None, bar_options={}, **options):
-    """Plots a histogram.
+    """Plots a histogram with a bar plot.
 
     Args:
       hist: Hist or Pmf object
@@ -39,33 +39,14 @@ def Hist(hist, root=None, bar_options={}, **options):
       bar_options: dictionary of options passed to pylot.bar
       options: dictionary of options
     """
-    pyplot.clf()
-
     xs, fs = hist.Render()
     pyplot.bar(xs, fs, align='center', **bar_options)
 
     Plot(root, **options)
 
 
-def Pmf(pmf, root=None, plot_options={}, **options):
-    """Plots a PMF as a line.
-
-    Args:
-      pmf: Hist or Pmf object
-      root: string filename root
-      bar_options: dictionary of options passed to pylot.plot
-      options: dictionary of options
-    """
-    pyplot.clf()
-
-    xs, fs = pmf.Render()
-    pyplot.plot(xs, fs, **plot_options)
-
-    Plot(root, **options)
-
-
 def Hists(hists, root=None, bar_options=InfiniteList(dict()), **options):
-    """Plots two histograms.
+    """Plots two histograms as interleaved bar plots.
 
     Args:
       hists: list of two Hist or Pmf objects
@@ -73,8 +54,6 @@ def Hists(hists, root=None, bar_options=InfiniteList(dict()), **options):
       bar_options: sequence of option dictionaries
       options: dictionary of options
     """
-    pyplot.clf()
-
     width = 0.4
     shifts = [-width, 0.0]
 
@@ -100,6 +79,32 @@ def Shift(xs, shift):
     return [x+shift for x in xs]
 
 
+def Pmf(pmf, root=None, plot_options={}, **options):
+    """Plots a PMF as a line.
+
+    Args:
+      pmf: Hist or Pmf object
+      root: string filename root
+      bar_options: dictionary of options passed to pylot.plot
+      options: dictionary of options
+    """
+    xs, fs = pmf.Render()
+    pyplot.plot(xs, fs, **plot_options)
+    Plot(root, **options)
+
+
+def Cdf(cdf, root=None, plot_options={}, **options):
+    """Plots a CDF as a line.
+
+    Args:
+      cdf: Cdf object
+      root: string filename root
+      bar_options: dictionary of options passed to pylot.plot
+      options: dictionary of options
+    """
+    Cdfs([cdf], root, [plot_options], **options)
+
+
 def Cdfs(cdfs, 
          root=None, 
          line_options=InfiniteList(dict()), 
@@ -114,8 +119,6 @@ def Cdfs(cdfs,
       complement: boolean, whether to plot the complementary CDF
       options: dictionary of keyword options passed along to Plot
     """
-    pyplot.clf()
-
     styles = options.get('styles', None)
     if styles is None:
         styles = InfiniteList('-')

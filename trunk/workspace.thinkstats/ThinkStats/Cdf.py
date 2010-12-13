@@ -135,7 +135,7 @@ class Cdf(object):
         return xs, ps
 
 def MakeCdf(items, name=''):
-    """Makes a cdf from an unsorted histogram.
+    """Makes a cdf from an unsorted sequence of (value, frequency) pairs.
 
     Args:
         items: unsorted sequence of (value, frequency) pairs
