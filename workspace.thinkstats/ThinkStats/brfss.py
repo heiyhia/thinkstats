@@ -18,8 +18,8 @@ class Respondent(survey.Respondent):
 class Respondents(survey.Table):
     """Represents the respondent table."""
 
-    def ReadRecords(self, filename='CDBRFS08.ASC.gz', n=None):
-        self.ReadFile(filename, self.GetFields(), Respondent, n)
+    def ReadRecords(self, data_dir='', filename='CDBRFS08.ASC.gz', n=None):
+        self.ReadFile(data_dir, filename, self.GetFields(), Respondent, n)
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
@@ -62,36 +62,9 @@ class Respondents(survey.Table):
         print 'Mean change', thinkstats.Mean(changes)
         
     
-def WritePickle(filename='brfss.pkl'):
-    """Reads the data file, builds a Table object, and writes a pickle file.
-    
-    Args:
-        filename: string filename to write
-    """
+def main(name, data_dir=''):
     resp = Respondents()
-    resp.ReadRecords()
-    print 'Number of respondents', len(resp.records)
-    print 'Writing', filename
-    fp = open(filename, 'wb')
-    cPickle.dump(resp, fp)
-    fp.close()
-
-    
-def ReadPickle(filename='brfss.pkl'):
-    """Reads the pickle file and returns a Table object.
-    
-    Args:
-        filename: string filename to read
-    """
-    fp = open(filename)
-    obj = cPickle.load(fp)
-    fp.close()
-    return obj
-
-
-def main(name):
-    resp = Respondents()
-    resp.ReadRecords()
+    resp.ReadRecords(data_dir)
     resp.SummarizeHeight()
     resp.SummarizeWeightChange()
     

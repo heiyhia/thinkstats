@@ -94,3 +94,22 @@ def Var(t, mu=None):
     var = Mean(dev2)
     return var
 
+def Binom(n, k, d={}):
+    """Compute the binomial coefficient "n choose k".
+
+    Args:
+      n: number of trials
+      k: number of successes
+      d: map from (n,k) tuples to cached results
+
+    Returns:
+      int
+    """
+    if k==0 or k==n:
+        return 1
+    try:
+        return d[n, k]
+    except KeyError:
+        res = Binom(n-1, k) + Binom(n-1, k-1)
+        d[n, k] = res
+        return res

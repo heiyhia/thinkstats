@@ -30,6 +30,14 @@ class Test(unittest.TestCase):
         self.assertAlmostEquals(mu, 100.0)
         self.assertAlmostEquals(var1, 48217.0)
         self.assertAlmostEquals(var2, 48217.0)
+
+    def testBinom(self):
+        res = thinkstats.Binom(10, 3)
+        self.assertEquals(res, 120)
+
+        res = thinkstats.Binom(100, 4)
+        self.assertEquals(res, 3921225)
+        
                 
 if __name__ == "__main__":
     unittest.main()

@@ -94,6 +94,12 @@ class Pmf(object):
         """
         return sorted(self.d.iterkeys())
 
+    def Items(self):
+        """Gets an unsorted iterator of the (val, prob) pairs.
+
+        """
+        return self.d.iteritems()
+
     def Prob(self, x):
         """Gets the probability associated with the value x.
 
