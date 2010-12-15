@@ -38,6 +38,7 @@ def MakeUniformSuite(low, high, steps):
     pmf = Pmf.MakePmfFromList(hypos)
     return pmf
 
+
 def Update(suite, evidence):
     """Updates a suite of hypotheses based on new evidence.
 
@@ -52,6 +53,7 @@ def Update(suite, evidence):
         likelihood = Likelihood(evidence, hypo)
         suite.Mult(hypo, likelihood)
     suite.Normalize()
+
 
 def Likelihood(evidence, hypo):
     """Computes the likelihood of the evidence assuming the hypothesis is true.
@@ -70,6 +72,7 @@ def Likelihood(evidence, hypo):
 
     return likelihood
 
+
 def ExpoCondPdf(x, param, low=1.0, high=20.0):
     """Evaluates the conditional exponential PDF.
 
@@ -86,8 +89,9 @@ def ExpoCondPdf(x, param, low=1.0, high=20.0):
     p = param * exp(-param * x) / factor
     return p
 
+
 def main():
-    suite = MakeUniformSuite(0.001, 1.0, 1000)
+    suite = MakeUniformSuite(0.001, 1.5, 1000)
     evidence = [1.5, 2, 3, 4, 5, 12]
 
     Update(suite, evidence)

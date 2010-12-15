@@ -30,6 +30,11 @@ class InfiniteList(list):
         return self.val
 
 
+def Underride(d, key, val):
+    """Add a key-value pair to d only if key is not in d."""
+    d.setdefault(key, val)
+
+
 def Hist(hist, root=None, bar_options={}, **options):
     """Plots a histogram with a bar plot.
 
@@ -39,6 +44,7 @@ def Hist(hist, root=None, bar_options={}, **options):
       bar_options: dictionary of options passed to pylot.bar
       options: dictionary of options
     """
+    Underride(bar_options, 'label', 'histogram')
     xs, fs = hist.Render()
     pyplot.bar(xs, fs, align='center', **bar_options)
 
@@ -88,6 +94,7 @@ def Pmf(pmf, root=None, plot_options={}, **options):
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
+    Underride(plot_options, 'label', 'pmf')
     xs, fs = pmf.Render()
     pyplot.plot(xs, fs, **plot_options)
     Plot(root, **options)
@@ -102,12 +109,13 @@ def Cdf(cdf, root=None, plot_options={}, **options):
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
+    Underride(plot_options, 'label', 'cdf')
     Cdfs([cdf], root, [plot_options], **options)
 
 
 def Cdfs(cdfs, 
          root=None, 
-         line_options=InfiniteList(dict()), 
+         plot_options=InfiniteList(dict()), 
          complement=False,
          **options):
     """Plots a sequence of CDFs.
@@ -115,7 +123,7 @@ def Cdfs(cdfs,
     Args:
       cdfs: sequence of CDF objects
       root: string root of the filename to write
-      line_options: sequence of option dictionaries
+      plot_options: sequence of option dictionaries
       complement: boolean, whether to plot the complementary CDF
       options: dictionary of keyword options passed along to Plot
     """
@@ -128,11 +136,13 @@ def Cdfs(cdfs,
         xs, ps = cdf.Render()
         if complement:
             ps = [1.0-p for p in ps]
-            
+
+        options = plot_options[i]
+
         line = pyplot.plot(xs, ps,
                            styles[i],
                            label=cdf.name,
-                           **line_options[i]
+                           **options
                            )
 
     Plot(root, **options)
