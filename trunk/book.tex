@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.2.1}
+\newcommand{\theversion}{1.2.2}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1379,6 +1379,26 @@ Note: Since the data have been grouped in bins, you can use the
 mid-point of each bin.
 \end{ex}
 
+
+\begin{ex}
+
+Suppose you want to find the distribution of class sizes at a college,
+but you can't get reliable data from the Dean.
+
+An alternative is to choose a random sample of students and ask them
+the number of students in each of their classes.  Then you could compute
+the PMF of their responses.
+
+The result would be biased, because large classes
+would be oversampled, but you could estimate the actual
+distribution of class sizes by applying an appropriate transformation
+to the observed distribution.
+
+Write a function called \verb"UnbiasPmf" that takes the PMF of the
+observed values and returns a new Pmf object that estimates the
+distribution of class sizes.
+
+\end{ex}
 
 \section{Glossary}
 
@@ -3104,10 +3124,10 @@ $P(E)$, the probability of seeing the evidence under any circumstances
 
 This way of reading Bayes's theorem is called the ``diachronic''
 interpretation because it describes how the probability of a
-hypothesis gets {\bf updated}, over time, in light of new evidence.
-In this context, $P(H)$ is called the {\bf prior} probability and
-$P(H|E)$ is called the {\bf posterior}.  The update term $P(E|H)/P(E)$
-is called the {\bf likelihood ratio}.
+hypothesis gets {\bf updated} over time, usually in light of new
+evidence.  In this context, $P(H)$ is called the {\bf prior}
+probability and $P(H|E)$ is called the {\bf posterior}.  The ratio
+$P(E|H)/P(E)$ is the update factor.
 
 A classic use of Bayes's theorem is the interpretation of clinical
 tests.  For example, routine testing for illegal drug use is
@@ -3233,7 +3253,7 @@ What is the probability that Elvis was an identical twin?
 \item[frequentism:] A strict interpretation of probability that only
 applies to a series of identical trials.
 
-\item[Bayesianism:] A more general interpretation that used
+\item[Bayesianism:] A more general interpretation that uses
 probability to represent a subjective degree of belief.
 
 \item[independent:] Two events are independent if the occurrence of
@@ -3349,12 +3369,15 @@ some approximations.
 The Gini coefficient is a measure of income inequality.
 Read about it at \url{wikipedia.org/wiki/Gini_coefficient} and write a
 function called {\tt Gini} that computes it for the income
-distribution.  Hint: use the Pdf to compute the relative mean difference
+distribution.
+
+Hint: use the Pdf to compute the relative mean difference
 (see \url{wikipedia.org/wiki/Mean_difference}).
 
 You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 
 \end{ex}
+
 
 \section{PDFs}
 \label{density}
@@ -3362,11 +3385,11 @@ You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 The derivative of a CDF is called a {\bf probability density function},
 or PDF.  For example, the PDF of an exponential distribution is
 
-\[ PDF_{expo} = \lambda e^{-\lambda x}   \]
+\[ PDF_{expo}(x) = \lambda e^{-\lambda x}   \]
 
 The PDF of a normal distribution is
 
-\[ PDF_{normal} = \frac{1}{\sigma \sqrt{2 \pi}} 
+\[ PDF_{normal}(x) = \frac{1}{\sigma \sqrt{2 \pi}} 
                  \exp \left[ -\frac{1}{2} 
                  \left( \frac{x - \mu}{\sigma} \right)^2 \right]  \]
 
@@ -3453,24 +3476,55 @@ with the operator $\convolution$.
 So the distribution of the sum is the convolution of the distributions.
 See \url{wikipedia.org/wiki/Booya}!
 
+As an example, suppose $X$ and $Y$ are drawn independently from an
+exponential distribution with parameter $\lambda$.  To find their
+distribution, let's start by finding the probability that their
+sum, $Z$, is 3.
+
+\[ PDF_Z(3) = \infint PDF_X(x)~PDF_Y(3-x) dx = 
+\infint \lambda e^{-\lambda x}~\lambda e^{\lambda (3-x)} \]
+
+Now we have to remember that $PDF_{expo}$ is 0 for all negative
+values, but we can handle that by adjusting the limits of integration:
+
+\[ PDF_Z(3) = \int_{0}^{3} \lambda e^{-\lambda x}~\lambda e^{-\lambda (3-x)} dx \]
+
+Now we can combine terms and move constants outside the integral:
+
+\[ PDF_Z(3) = \lambda^2 e^{-\lambda 3} \int_{0}^{3} dx = 
+\lambda^2 3 e^{-\lambda 3} \]
+
+I started by finding $PDF_Z(3)$ because I find the equations easier to
+read that way, but now we can generalize by replacing 3 with $z$:
+
+\[ PDF_Z(z) = \lambda^2 z e^{-\lambda z} \]
+
+This, it turns out, is the PDF of the Erlang distribution (see
+\url{wikipedia.org/wiki/Erlang_distribution}).
+
+
 \begin{ex}
-
-If $X$ and $Y$ are values drawn independently from exponential
-distributions with parameters $\lambda_X$ and $\lambda_Y$, what is the
-distribution of their sum?  What if $\lambda_X = \lambda_Y$?
-See \url{wikipedia.org/wiki/Erlang_distribution}.
-
+If $X$ is drawn from an exponential distribution with parameter
+$\lambda$, and $Y$ is drawn from an Erlang distribution with parameters
+$k$, $\lambda$, what is the distribution of the sum $Z = X+Y$?
 \end{ex}
 
 \begin{ex}
-
 Suppose I draw two values from a distribution; what is the distribution
-of the larger value?
+of the larger value?  Express your answer in terms of the PDF or CDF of
+the distribution.
 
 As the number of values increases, the distribution of the maximum
 converges on one of the extreme value distributions; see
 \url{http://en.wikipedia.org/wiki/Gumbel_distribution}.
+\end{ex}
 
+\begin{ex}
+Write a function that takes two Pmf objects that represent $PMF_X$ and
+$PMF_Y$ and returns a new Pmf that represents the distribution of
+the sum $Z = X+Y$.  Hint: enumerate all possible pairs of values.
+
+Write a similar function that computes the PMF of $Z = max(X,Y)$.
 \end{ex}
 
 
@@ -3593,11 +3647,11 @@ generally have one of the continuous distributions we have seen.
 \end{itemize}
 
 But it turns out that if we add up a large number of values from
-almost any distribution, the distribution of the sum converges on a
-normal distribution.
+almost any distribution, the distribution of the sum converges to
+normal.
 
-More specifically, if the distribution has mean and standard deviation
-$\mu$ and $\sigma$, the distribution of the sum is
+More specifically, if the distribution of the values has mean and
+standard deviation $\mu$ and $\sigma$, the distribution of the sum is
 approximately $\normal(n \mu, n \sigma^2)$.
 
 This is called the {\bf Central Limit Theorem}.  It is one of the
@@ -3640,22 +3694,54 @@ Choose a distribution (one of exponential, lognormal or Pareto) and
 choose values for the parameter(s).  Generate samples with sizes
 2, 4, 8, etc., and compute the distribution of their sums.  Use
 a normal probability plot to see if the distribution is approximately
-normal.  What sample size do you need to see convergence?
+normal.  How many terms do you have to add to see convergence?
 
 \end{ex}
 
 
 \begin{ex}
 
-Instead of the distribution of sums, compute the distribution
-of products for samples with various sizes.  What happens as
-the sample size increases?
-
+Instead of the distribution of sums, compute the distribution of
+products; what happens as the number of terms increases?
 Hint: look at the distribution of the log of the products.
-What does this result suggest about the prevalence of lognormal
-distributions in the world?
 
 \end{ex}
+
+\section{The distribution framework}
+
+At this point we have seen PMFs, CDFs and PDFs; let's take a minute
+to review.  The following diagram shows how these functions relate
+to each other:
+
+\begin{figure}
+\centerline{\includegraphics[height=2.5in]{distribution_functions.eps}}
+\caption{A framework that relates different representations of distribution
+functions.}
+\label{dist_func}
+\end{figure}
+
+We started with PMFs, which represent the probabilities for a discrete
+set of values.  To get from a PMF to a CDF, we computed a cumulative sum.
+To be more consistent, a discrete CDF should be called a cumulative mass
+function (CMF), but as far as I can tell no one uses that term.
+
+To get from a CDF to a PMF, you can compute differences in cumulative
+probability.
+
+Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
+a CDF is the integral of a PDF.  But remember that a PDF maps from
+values to probability densities; to get a probability, you have to
+integrate.
+
+To get from a discrete to a continuous distribution, you can perform
+various kinds of smoothing.  One form of smoothing is to assume that
+the data come from an analytic continuous distribution
+(like exponential or normal) and to estimate the parameters of that
+distribution.  And that's what Chapter~\ref{estimation} is about.
+
+If you divide a PDF into a set of bins, you can generate a PMF that is
+at least an approximation of the PDF.  We will also use this
+technique in Chapter~\ref{estimation} to do Bayesian estimation.
 
 
 \section{Glossary}
@@ -3689,11 +3775,12 @@ to Sir Francis Galton, an early statistician (among other things).
 
 
 \chapter{Hypothesis testing}
+\label{testing}
 
 Exploring the data from the NSFG, we saw several ``apparent effects,''
 including a number of differences between first babies and others.
 So far we have taken these effects at face value; in this chapter,
-finally, we will put them to the test.
+finally, we put them to the test.
 
 The fundamental question we want to address is whether these effects
 are real.  For example, if we see a difference in the mean pregnancy
@@ -3742,7 +3829,7 @@ significance:
 
 This process is called {\bf hypothesis testing}.  The underlying
 logic is similar to a proof by contradiction.  To prove a mathematical
-statement, A, you can assume, temporarily, that A is false.  If this
+statement, A, you assume temporarily that A is false.  If that
 assumption leads to a contradiction, you conclude that A must actually
 be true.
 
@@ -3976,13 +4063,13 @@ $P(H_A)=0.5$, the posterior probability of $H_A$ is 0.798.
 
 So if the prior probability of $H_A$ is 50\%, the updated
 probability, taking into account the evidence from this dataset,
-is almost 80\%.  It makes sense that the posterior probability
+is almost 80\%.  It makes sense that the posterior
 is higher, since the data provide some support for the hypothesis.
 But it might seem surprising that the difference is so large,
 especially since we found that the difference in means was not
 statistically significant.
 
-In fact, the method we used in this section is not quite right, and
+In fact, the method I used in this section is not quite right, and
 it tends to overstate the impact of the evidence.  In the next section
 we will correct this tendency.
 
@@ -4009,7 +4096,7 @@ false.
 
 We can address this problem with {\bf cross-validation}, which uses
 one dataset to estimate $\delta$ and a {\em different} dataset to
-evaluate $H_A$.  This first dataset is called the {\bf training set};
+evaluate $H_A$.  The first dataset is called the {\bf training set};
 the second is called the {\bf testing set}.
 
 In a study like the NSFG, which studies a different cohort in each
@@ -4035,8 +4122,8 @@ If we have a set of hypotheses and no reason to think one is more
 likely than another, it is common to assign each the same probability.
 
 Some people object to Bayesian probabilities because they depend on
-prior probabilities, and people might not be able to agree on
-the right prior.  For people who expect scientific results to be
+prior probabilities, and people might not agree on
+the right priors.  For people who expect scientific results to be
 objective and universal, this property is deeply unsettling.
 
 One response to this objection is that, in practice, strong evidence
@@ -4044,8 +4131,8 @@ tends to swamp the effect of the prior, so people who start with
 different priors will converge toward the same posterior
 probability.
 
-Another option is to report just the likelihood ratio, 
-$P(H_A | E)/P(E)$, rather than the posterior probability.  That way
+Another option is to report just the {\bf likelihood ratio}, 
+$P(E | H_A)/P(E | H_0)$, rather than the posterior probability.  That way
 readers can plug in whatever prior they like and compute their own
 posteriors (no pun intended).
 
@@ -4117,8 +4204,37 @@ the distribution of the test statistic can be computed analytically.
 
 \begin{ex}
 
+Suppose you run a casino and you suspect that a customer has
+replaced a die provided by the casino with a ``crooked die;'' that
+is, one that has been tampered with to make one of the faces more
+likely to come up than the others.  You apprehend the alleged
+cheater and confiscate the die, but now you have to prove that it
+is crooked.
+
+You roll the die 60 times and get the following results:
+
+%%%  NEED TO DEBUG THIS
+%\begin{center}
+%\begin{tabular}{|l|c|c|c|c|c|c|}
+%\hline
+%Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
+%\hline
+%\hline
+%Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
+%\hline
+%\end{tabular}
+%\end{center}
+
+What is the chi-squared statistic for these values?  What is the
+probability of seeing a chi-squared value as large by chance?
+
+\end{ex}
+
+
+\begin{ex}
+
 Use the data from the NSFG (see Section~\ref{nsfg}) to compute
-$p_{early}$, $p_{ontime}$ and $p_{late}$.  The compute the $E_i$,
+$p_{early}$, $p_{ontime}$ and $p_{late}$.  Then compute the $E_i$,
 $O_i$ and $\chi^2$.  What is the p-value of $\chi^2$ under the null
 hypothesis?
 
@@ -4182,7 +4298,7 @@ $\normal (\mu_2, \sigma_2^2)$,
 
 So as a special case:
 
-\[ X_1 - X_2 \hasdist \normal (a\mu_1 - b\mu_2, 
+\[ X_1 - X_2 \hasdist \normal (\mu_1 - \mu_2, 
                                \sigma_1^2 + \sigma_2^2) \]
 
 Putting it all together, we conclude that the sample in
@@ -4221,7 +4337,7 @@ $\alpha=0.05$ and assuming that the actual difference between the
 means is $0.073$ weeks?
 
 You can estimate power by generating random samples from distributions
-with the given difference in the mean, testing the observed distance
+with the given difference in the mean, testing the observed difference
 in the mean, and counting the number of positive tests.
 
 What is the power of the test with $\alpha=0.10$?
@@ -4405,6 +4521,8 @@ For large samples, $S^2$ is an adequate estimator, but for small
 samples it tends to be too low.  Because of this unfortunate
 property, it is called a {\bf biased} estimator.
 
+An estimator is {\bf unbiased} if the expected total (or mean) error,
+after many iterations of the estimation game, is 0.
 Fortunately, there is another simple statistic that is an unbiased
 estimator of $\sigma^2$:
 
@@ -4431,6 +4549,28 @@ Compute the mean error again and see if it converges to zero as you
 increase the number of games.
 
 \end{ex}
+
+
+\section{Understanding errors}
+
+Before we go on, let's clear up a common source of confusion.
+Properties like MSE and bias are long-term expectations based on
+many iterations of the estimation game.
+
+While you are playing the game, you don't know the errors.  That is,
+if I give you a sample and ask you to estimate a parameter, you
+can compute the value of the estimator, but you can't compute the
+error.  If you could, you wouldn't need the estimator!
+
+The reason we talk about estimation error is to describe the behavior
+of different estimators in the long run.  In this chapter we run some
+experiments to examine those behaviors; these experiments are
+artificial in the sense that we know the actual values of the
+parameters, so we can compute errors.  But when you work with
+real data, you don't, so you can't.
+
+Now let's get back to the game.
+
 
 \section{Exponential distributions}
 
@@ -4470,9 +4610,12 @@ where $\mu_{1/2}$ is the sample median.
 \begin{ex}
 
 Run an experiment to see which of $\lamhat$ and $\lamhatmed$ yields
-lower MSE.
+lower MSE.  Test whether either of them is biased.
 
-Test whether either of them is biased.
+Note: in this kind of experiment, you start with a known value for
+the parameter and generate a simulated data set, so you can compute
+errors.  But remember that in non-experimental conditions you can't
+compute MSE or check for bias.
 
 \end{ex}
 
@@ -4521,12 +4664,14 @@ chi-squared distribution with $k$ degrees of freedom, evaluated at $x$
 Write a function that computes a 90\% confidence interval for
 $\lambda$, given $\lamhat$, $n$ and $\alpha$.
 
-Write a function that takes a value for $\lambda$,
-generates a sample of six values, computes a 90\% confidence interval,
-and checks whether the interval contains the actual value of $\lambda$.
+Run an experiment that checks whether the confidence interval has the
+property we expect; that is, the interval should contain the actual
+value 90\% of the time.
 
-Run the function 1000 times and see how often the interval contains
-$\lambda$.
+To do that, write a function that takes a value for $\lambda$,
+generates a sample of six values, computes a 90\% confidence interval,
+and checks whether the interval contains the $\lambda$.  Run the
+function 1000 times and count the number of hits.
 
 \end{ex}
 
@@ -4594,11 +4739,19 @@ where $f$ is the normalization factor
 \begin{ex}
 
 Write a function that implements the steps described above.  It should
-take a prior distribution and a sample and
-return a posterior distribution.
+take a prior distribution and a sample and return a posterior distribution.
+To represent distributions, you can use
+the {\tt Pmf} class in \url{thinkstats.com/Pmf.py}.
 
-Hint: to represent distributions, you can use
-the {\tt Pmf} class we defined in Section~\ref{distributions}.
+Test your function by generating a sample of six values from an
+exponential distribution with $\lambda = 1.2$.  Compute the posterior
+distribution and confirm that it has a central tendency near $\lambda$.
+
+Test your function with larger sample sizes and confirm that the
+spread of the posterior distribution gets smaller.
+
+You can download a solution to this problem from
+\url{thinkstats.com/estimate.py}.
 
 \end{ex}
 
@@ -4612,20 +4765,21 @@ Bayesian confidence intervals are sometimes called {\bf credible
 intervals}; for a discussion of the differences, see
 \url{wikipedia.org/wiki/Credible_interval}.
 
-Compute a 90\% CI for the distribution in the previous exercise.
+Compute a 90\% CI for the posterior distribution in the previous
+exercise.
 
 \end{ex}
 
 
-\begin{ex}
+%\begin{ex}
 
-Compute the analytic version using a prior Gamma distribution with the
-same mean and variance as the actual uniform distribution, and compare
-it to the discrete approximation.
+%Compute the analytic version using a prior Gamma distribution with the
+%same mean and variance as the uniform prior, and compare
+%it to the discrete approximation.
 
-See \url{wikipedia.org/wiki/Exponential_distribution#Bayesian_inference}.
+%See \url{wikipedia.org/wiki/Exponential_distribution#Bayesian_inference}.
 
-\end{ex}
+%\end{ex}
 
 
 \section{Censored data}
@@ -4670,9 +4824,13 @@ you to keep it handy.
 
 Compute the posterior distribution of $\lambda$ for the sample
 $\boldx = \{ 1.5, 2, 3, 4, 5, 12 \}$.  For the prior distribution you
-can use a uniform distribution between 0 and 100 (not including 0).
+can use a uniform distribution between 0 and 1.5 (not including 0).
 
 \end{ex}
+
+You can download a solution to this problem from
+\url{thinkstats.com/decay.py}.
+
 
 \section{Glossary}
 
@@ -4698,8 +4856,8 @@ given probability of containing the true value of the parameter.
 
 \item[credible interval:] Another name for a Bayesian confidence interval.
 
-\item[censored data:] A dataset from which some data have been systematically
-excluded.
+\item[censored data:] A dataset sampled in a way that systematically
+excludes some data.
 
 \end{description}
 
