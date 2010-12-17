@@ -18,6 +18,7 @@ import Pmf
 import Cdf
 from math import pow
 
+
 def MakeUniformSuite(low, high, steps):
     """Makes a PMF that represents a suite of hypotheses with equal p.
     
@@ -33,6 +34,7 @@ def MakeUniformSuite(low, high, steps):
     pmf = Pmf.MakePmfFromList(hypos)
     return pmf
 
+
 def Update(suite, evidence):
     """Updates a suite of hypotheses based on new evidence.
 
@@ -47,6 +49,7 @@ def Update(suite, evidence):
         likelihood = Likelihood(evidence, hypo)
         suite.Mult(hypo, likelihood)
     suite.Normalize()
+
 
 def Likelihood(evidence, hypo):
     """Computes the likelihood of the evidence assuming the hypothesis is true.
@@ -66,6 +69,7 @@ def Likelihood(evidence, hypo):
     else:
         return 1.0 / num_trains
 
+
 def CredibleInterval(pmf, percentage):
     """Computes a credible interval for a given distribution.
 
@@ -83,18 +87,24 @@ def CredibleInterval(pmf, percentage):
     interval = [cdf.Value(p) for p in [prob, 1-prob]]
     return interval
 
+
 def main():
-    upper_bound = 1000
-    suite = MakeUniformSuite(1, upper_bound, upper_bound)
+    upper_bound = 200
+    prior = MakeUniformSuite(1, upper_bound, upper_bound)
+    prior.name = 'prior'
+
     evidence = 60
+    posterior = prior.Copy()
+    Update(posterior, evidence)
+    posterior.name = 'posterior'
 
-    Update(suite, evidence)
-    suite.name = 'posterior'
+    print CredibleInterval(posterior, 90)
 
-    print CredibleInterval(suite, 90)
+    # plot the posterior distribution
+    plot_options = dict(linewidth=2)
 
-    # plot the posterior distributions
-    myplot.Pmf(suite,
+    myplot.Pmf(posterior, 
+               plot_options=plot_options,
                root='locomotive',
                title='Locomotive problem',
                xlabel='Number of trains',

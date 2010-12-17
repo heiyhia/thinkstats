@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.2.2}
+\newcommand{\theversion}{1.2.3}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1685,6 +1685,7 @@ You can download a solution from \url{thinkstatsbook.com/Cdf.py}.
 
 
 \section{Back to the survey data}
+\label{birth_weights}
 
 Figure~\ref{nsfg_birthwgt_cdf} shows the CDFs of birth weight for
 first babies and others in the NSFG dataset.
@@ -2981,8 +2982,13 @@ there is any relationship between successive attempts.
 A related phenomenon is the clustering illusion, which is the
 tendency to see clusters in spatial patterns that are actually
 random (see \url{wikipedia.org/wiki/Clustering_illusion}).
-Monte Carlo simulations are a useful way to test whether an apparent
-cluster is likely to be meaningful.
+
+To test whether an apparent
+cluster is likely to be meaningful, we can simulate the behavior
+of a random system to see whether it is likely to produce a similar
+cluster.  This process is called {\bf Monte Carlo} simulation because
+generating random numbers is reminiscent of casino games (and Monte
+Carlo is famous for its casino).
 
 \begin{ex}
 
@@ -3126,8 +3132,9 @@ This way of reading Bayes's theorem is called the ``diachronic''
 interpretation because it describes how the probability of a
 hypothesis gets {\bf updated} over time, usually in light of new
 evidence.  In this context, $P(H)$ is called the {\bf prior}
-probability and $P(H|E)$ is called the {\bf posterior}.  The ratio
-$P(E|H)/P(E)$ is the update factor.
+probability and $P(H|E)$ is called the {\bf posterior}.
+$P(E|H)$ is the {\bf likelihood} of the evidence, and
+$P(E)$ is the {\bf normalizing constant}.
 
 A classic use of Bayes's theorem is the interpretation of clinical
 tests.  For example, routine testing for illegal drug use is
@@ -3156,12 +3163,12 @@ drug use given a positive test, $P(D|+)$.  By Bayes's theorem:
 
 The prior, $P(D)$ is the probability of drug use before we
 see the outcome of the test, which is 5\%.
-The numerator of the likelihood ratio, $P(+|D)$, is the probability
+The likelihood, $P(+|D)$, is the probability
 of a positive test assuming drug use, which is the sensitivity.
 
-The denominator, $P(+)$ is a little harder to evaluate.  We have to
-consider two possibilities, $P(+|D)$ and $P(+|N)$, where $N$ is the
-hypothesis that the subject of the test does not use drugs:
+The normalizing constant, $P(+)$ is a little harder to evaluate.  We
+have to consider two possibilities, $P(+|D)$ and $P(+|N)$, where $N$
+is the hypothesis that the subject of the test does not use drugs:
 
 \[ P(+) = P(D) P(+|D) + P(N) P(+|N) \]
 
@@ -3263,14 +3270,22 @@ one does has no effect on the probability of another.
 normalized by central tendency, for comparison between distributions
 with different means.
 
+\item[Monte Carlo simulation:] A method of computing probabilities by
+  simulating random processes (see
+  \url{wikipedia.org/wiki/Monte_Carlo_method}).
+
 \item[update:] The process of using data to revise a probability.
 
 \item[prior:] A probability before a Bayesian update.
 
 \item[posterior:] A probability computed by a Bayesian update.
 
-\item[likelihood ratio:] One of the terms in Bayes's theorem, the
-relative likelihood of an observation conditioned on a given hypothesis.
+\item[likelihood of the evidence:] One of the terms in Bayes's
+  theorem, the probability of the evidence conditioned on a
+  hypothesis.
+
+\item[normalizing constant:] The denominator of Bayes's Theorem,
+  used to normalize the result to be a probability.
 
 \end{description}
 
@@ -4121,6 +4136,8 @@ In the previous section we chose the prior probability $P(H_A) = 0.5$.
 If we have a set of hypotheses and no reason to think one is more
 likely than another, it is common to assign each the same probability.
 
+
+
 Some people object to Bayesian probabilities because they depend on
 prior probabilities, and people might not agree on
 the right priors.  For people who expect scientific results to be
@@ -4134,7 +4151,19 @@ probability.
 Another option is to report just the {\bf likelihood ratio}, 
 $P(E | H_A)/P(E | H_0)$, rather than the posterior probability.  That way
 readers can plug in whatever prior they like and compute their own
-posteriors (no pun intended).
+posteriors (no pun intended).  The likelihood ratio is sometimes
+called a Bayes factor (see \url{http://en.wikipedia.org/wiki/Bayes_factor}).
+
+\begin{ex}
+
+If your prior probability for a hypothesis, $H_A$, is 0.3 and new
+evidence becomes available that yields a likelihood ratio of 3
+relative to the null hypothesis, $H_0$, what is your posterior
+probability for $H_A$?
+
+% 0.3 * 3 / (0.3 * 3 + 0.7) = 0.6
+
+\end{ex}
 
 
 \section{Chi-square test}
@@ -4473,14 +4502,18 @@ If there are no outliers, the sample mean minimizes the {\bf mean squared
 error} (MSE).  If we play the game many times, and each time
 compute the error $\xbar - \mu$, the sample mean minimizes
 
-\[ MSE = \sum (\xbar - \mu)^2 \]
+\[ MSE = \frac{1}{m} \sum (\xbar - \mu)^2 \]
 
-That's a nice property, but it's not necessarily the best strategy.
-For example, suppose we are estimating the distribution of wind speeds
-at a building site.  If we guess too high, we might overbuild the structure,
-increasing its cost.  But if we guess too low, the building might collapse.
-Because the cost, as a function of error, is asymmetric, minimizing
-MSE is not the best strategy.
+Where $m$ is the number of times you play the estimation game (not to
+be confused with $n$, which is the size of the sample used to compute
+$\xbar$. 
+
+Minimizing MSE is a nice property, but it's not always the best
+strategy.  For example, suppose we are estimating the distribution of
+wind speeds at a building site.  If we guess too high, we might
+overbuild the structure, increasing its cost.  But if we guess too
+low, the building might collapse.  Because cost as a function of
+error is asymmetric, minimizing MSE is not the best strategy.
 
 As another example, suppose I roll three six-sided dice and ask you
 to predict the total.  If you get it exactly right, you get a prize;
@@ -4515,7 +4548,7 @@ Again, the obvious choice is to use the sample variance as an estimator.
 I will use $S^2$ to denote the sample variance, to distinguish from the
 unknown parameter $\sigma^2$.
 
-\[ S^2 = \frac{1}{N} \sum (x_i - \xbar)^2 \] 
+\[ S^2 = \frac{1}{n} \sum (x_i - \xbar)^2 \] 
 
 For large samples, $S^2$ is an adequate estimator, but for small
 samples it tends to be too low.  Because of this unfortunate
@@ -4526,15 +4559,15 @@ after many iterations of the estimation game, is 0.
 Fortunately, there is another simple statistic that is an unbiased
 estimator of $\sigma^2$:
 
-\[ S_{N-1}^2 = \frac{1}{N-1} \sum (x_i - \xbar)^2 \] 
+\[ S_{n-1}^2 = \frac{1}{n-1} \sum (x_i - \xbar)^2 \] 
 
 The biggest problem with this estimator is that its name and symbol
 are used inconsistently.  The name ``sample variance'' can refer to
-either $S^2$ or $S_{N-1}^2$, and the symbol $S^2$ is used
+either $S^2$ or $S_{n-1}^2$, and the symbol $S^2$ is used
 for either or both.
 
 For an explanation of why $S^2$ is biased, and a proof that
-$S_{N-1}^2$ is unbiased, see
+$S_{n-1}^2$ is unbiased, see
 \url{wikipedia.org/wiki/Bias_of_an_estimator}.
 
 \begin{ex}
@@ -4544,7 +4577,7 @@ $\mu=0$ and $\sigma=1$.  Use the sample variance to estimate
 $\sigma^2$ and compute the error $S^2 - \sigma^2$.  Run the function 1000
 times and compute mean error (not squared).
 
-Now modify the program to use the unbiased estimator $S_{N-1}^2$.
+Now modify the program to use the unbiased estimator $S_{n-1}^2$.
 Compute the mean error again and see if it converges to zero as you
 increase the number of games.
 
@@ -4720,18 +4753,18 @@ where $\mathrm{expo}(\lambda, x)$ is a function that
 computes the PDF of the exponential distribution with parameter $\lambda$,
 evaluated at $x$.  
 
-\[ \mathrm{expo}(\lambda, x) = \lambda e^{-lambda x}\]
+\[ \mathrm{expo}(\lambda, x) = \lambda e^{-\lambda x}\]
 
 The symbol $\prod$ represents the product of a sequence (see
 \url{wikipedia.org/wiki/Multiplication#Capital_Pi_notation}).
 
 \item Then by Bayes's theorem the posterior distribution is
 
-\[ P(H_i|\boldx) =  P(\boldx|H_i) P(H_i) / f \]
+\[ P(H_i|\boldx) =  P(H_i) P(\boldx|H_i) / f \]
 
 where $f$ is the normalization factor
 
-\[ f = \sum_i P(\boldx|H_i) P(H_i) \]
+\[ f = \sum_i P(H_i) P(\boldx|H_i) \]
 
 \end{enumerate}
 
@@ -4794,9 +4827,7 @@ extraordinary book {\em Information Theory, Inference and Learning
 
 Unstable particles are emitted from a source and decay at a distance
 $x$, a real number that has an exponential probability distribution
-with parameter\footnote{MacKay uses $\lambda$ to represent the mean or
-  ``characteristic length'' of the distribution; I am changing his
-  notation to be consistent with mine.} $\lambda$.  Decay events can
+with [parameter] $\lambda$.  Decay events can
 only be observed if they occur in a window extending from $x=1$ cm to
 $x=20$ cm.  $N$ decays are observed at locations $\{ x_1, ... , x_N
 \}$.  What is $\lambda$?
@@ -4815,7 +4846,8 @@ $\mathrm{expo}$ with a conditional distribution:
 
 for $1 < x < 20$, and 0 otherwise, with
 
-\[ Z(\lambda) = \int_1^{20} \lambda e^{-\lambda x} dx = (e^{1} - e^{20} ) \]
+\[ Z(\lambda) = \int_1^{20} \lambda e^{-\lambda x} dx = 
+e^{-\lambda} - e^{-20 \lambda} ) \]
 
 You might remember $Z(\lambda)$ from Exercise~\ref{expo_pdf}.  I told
 you to keep it handy.
@@ -4831,6 +4863,155 @@ can use a uniform distribution between 0 and 1.5 (not including 0).
 You can download a solution to this problem from
 \url{thinkstats.com/decay.py}.
 
+
+\section{The locomotive problem}
+
+The locomotive problem is a classic estimation problem; it is also
+known as the ``German tank problem.''  I will start with the version
+that appears in Mosteller, {\it Fifty Challenging Problems in
+  Probability}:
+
+\begin{quote}
+"A railroad numbers its locomotives in order 1..N.  One day you see a
+locomotive with the number 60.  Estimate how many locomotives the
+railroad has."
+\end{quote}
+
+Before you read the rest of this section, try to answer these
+questions:
+
+\newcommand{\nhat}{\hat{N}}
+
+\begin{enumerate}
+
+\item For a given estimate, $\nhat$, what is the likelihood of the
+  evidence, $P(E|\nhat)$?  What is the maximum likelihood estimator?
+
+\item If we see train $i$, it seems reasonable that we would guess
+  some multiple of $i$, so let's assume $\nhat = a i$.  What value of
+  $a$ minimizes mean squared error?
+
+\item Still assuming that $\nhat = a i$, can you find an unbiased
+  estimator?
+
+\item For what value of N is 60 the average value?
+
+\item What is the Bayesian posterior distribution assuming a prior
+distribution that is uniform from 1 to 200.
+
+\end{enumerate}
+
+For best results, you should take some time to work on these questions
+before you read the answers.
+
+For a given estimate, $\nhat$, the likelihood of seeing train $i$ is
+$1 / \nhat$ if $i \le \nhat$, and 0 otherwise.  So the MLE is $\nhat =
+i$.  In other words, if you see train 60 and you want to maximize your
+chance of getting the answer exactly right, you should guess that there
+are 60 trains.
+
+But this estimator doesn't do very well in terms of MSE.  We can do
+better by choosing $\nhat = a i$; all we have to do is find a good
+value for $a$.
+
+Suppose that there are, in fact, $N$ trains.  Each time we play
+the estimation game, we see train $i$ and guess $ai$, so the squared
+error is $(ai - N)^2$.
+
+If we play the game $N$ times and see each train once, the mean
+squared error is 
+
+\[ MSE = \frac{1}{N} \sum_{i=1}^N (ai - N)^2 \]
+
+To minimize MSE, we take the derivative with respect to $a$:
+
+\[ \frac{d MSE}{da} = \frac{1}{N} \sum_{i=1}^N 2i (ai - N) = 0 \]
+
+And solve for $a$.
+
+\[ a = \frac{3N}{2N+1} \]
+
+At first glance, that doesn't seem very useful, because $N$ appears on
+the right-hand side, which suggests that we need to know $N$ to choose
+$a$, but if we knew $N$, we wouldn't need an estimator in the first place.
+
+However, for large values of $N$, the optimal value for $a$ converges
+to $3/2$, so we could choose $\nhat = 3i / 2$.
+
+To find an unbiased estimator, we can compute the mean error (ME):
+
+\[ ME = \frac{1}{N} \sum_{i=1}^N (ai - N) \]
+
+And find the value of $a$ that yields $ME = 0$, which turns out to be
+
+\[ a = \frac{2N}{N-1}\]
+
+For large values of $N$, $a$ converges to $2$, so we could choose
+$\nhat = 2i$.
+
+So far we have generated three estimators, $i$, $3i/2$, and $2i$,
+that have the properties of maximizing likelihood, minimizing squared
+error, and being unbiased.
+
+Yet another way to generate an estimator is to choose the value
+that makes the population mean equal the sample mean.  If we see train
+$i$, the sample mean is just $i$; the train population that has the
+same mean is $\nhat = 2i - 1$.
+
+\begin{figure}
+% locomotive.py
+\centerline{\includegraphics[height=2.5in]{workspace/locomotive.eps}}
+\caption{Posterior distribution of the number of trains.}
+\label{locomotive}
+\end{figure}
+
+Finally, to compute the Bayesian posterior distribution, we compute
+
+\[ P(H_n|i) = \frac{P(i|H_n) P(H_n)}{P(i)} \]
+
+Where $H_n$ is the hypothesis that there are $n$ trains, and $i$ is
+the evidence: we saw train $i$.  As we saw above, $P(i|H_n)$
+is $1/n$ if $i \le n$, and 0 otherwise.  The normalizing constant,
+$P(i)$, is just the sum of the numerators for each hypothesis.
+
+If the prior distribution is uniform from 1 to 200, we start with 200
+hypothesis and compute the likelihood for each.  You can download an
+implementation of this method from
+\url{thinkstats.com/locomotive.py}.  Figure~\ref{locomotive} shows
+what the result looks like.
+
+The 90\% credible interval for this posterior is $[63, 189]$, which
+is still quite wide.  Seeing one train doesn't provide strong evidence
+for any of the hypotheses (although it does rule out the hypotheses
+with $n < i$).
+
+If we start with a different prior, the posterior is significantly
+different, which helps to explain why the other estimators are so
+diverse.
+
+One way to think of different estimators is that they are implicitly
+based on different priors.  If there is enough evidence to swamp
+the priors, then all estimators tend to converge; otherwise, as
+in this case, we choose different values depending on which properties
+we are looking for.
+
+\begin{ex}
+
+Generalize \verb"locomotive.py" to handle the case where you
+see more than one train.  You should only have to
+change a few lines of code.
+
+\end{ex}
+
+
+\begin{ex}
+
+See if you can answer the other questions for the case where you
+see more than one train.  You can find a discussion of the problem
+and several solutions at
+\url{wikipedia.org/wiki/German_tank_problem}.
+
+\end{ex}
 
 \section{Glossary}
 
@@ -4880,16 +5061,17 @@ There are two common solutions to these problems:
 
 \begin{enumerate}
 
-\item Transform all values to their percentile ranks.
+\item Transform all values to {\bf standard scores}.  This leads to
+the Pearson coefficient of correlation.
 
-\item Transform all values to {\bf standard scores}.
+\item Transform all values to their percentile ranks.  This
+leads to the Spearman coefficient.
 
 \end{enumerate}
 
 If $X$ is a series of values, $x_i$, we can convert to standard
 scores by subtracting the mean and dividing by the standard deviation:
-
-\[ z_i = (x_i - \mu) / \sigma \]
+$z_i = (x_i - \mu) / \sigma$.
 
 The numerator is a deviation: the distance from the mean.  Dividing by
 $\sigma$ {\bf normalizes} the deviation, so the values of $Z$ are
@@ -4917,23 +5099,29 @@ deviations from the mean are
 \[ dy_i = y_i - \mu_Y \]
 
 If $X$ and $Y$ vary together, their deviations tend to have the
-same sign; when one is high (above the mean), the other tends to be
-high, and vice versa.  
+same sign; when one is positive, the other tends to be
+positive, and vice versa.  
 
 If we multiply them together, the product is positive when the
 deviations have the same sign and negative when they have the opposite
 sign.  So adding up the products gives a measure of the tendency to
 vary together.
 
-Covariance is the mean of the products of the deviations:
+Covariance is the mean of these products:
 
 \[ Cov(X,Y) = \frac{1}{n} \sum dx_i dy_i \]
 
-Covariance is useful in some computations (as we will see soon), but
+Covariance is useful in some computations, but
 it is seldom reported as a summary statistic because it is hard to
 interpret.  Among other problems, its units are the product of the
 units of $X$ and $Y$.  So the covariance of weight and height might be
 in units of kilogram-meters, which doesn't mean much.
+
+\begin{ex}
+What is Cov(X, X)?
+
+% Var(X)
+\end{ex}
 
 
 \section{Correlation}
@@ -4943,9 +5131,9 @@ which yields normal scores, and compute the product of normal scores:
 
 \[ p_i = \frac{(x_i - \mu_X)}{\sigma_X} \frac{(y_i - \mu_Y)}{\sigma_Y} \]
 
-Adding them up, we get 
+The mean of these products is
 
-\[ \rho = \sum p_i \]
+\[ \rho = \frac{1}{n} \sum p_i \]
 
 This value is called {\bf Pearson's correlation} after Karl Pearson,
 an influential early statistician.  It is easy to compute and easy to
@@ -4964,30 +5152,20 @@ Then by the ever-useful Cauchy-Schwarz
 inequality\footnote{wikipedia.org/wiki/Cauchy-Schwarz\_inequality}, we
 can show that $\rho^2 \le 1$, so $-1 \le \rho \le 1$.
 
-When $\rho=1$, the variables are 
-
-\begin{description}
-
-\item[Perfectly correlated:] If 
-you know one, you can make a perfect prediction about the other.
-In some sense, perfect correlation means that the variables are two
-measurements of the same thing.  For example, height in centimeters and
-height in inches would be perfectly correlated.
+The magnitude of $\rho$ indicates the strength of the correlation.  If
+$\rho=1$ the variables are perfectly correlated, which means that if
+you know one, you can make a perfect prediction about the other.  The
+same is also true if $\rho=-1$; it just means that the variables
+are negatively correlated.  But for purposes of prediction, a
+negative correlation is just as good as a positive one.
 
 Most correlation in the real world is not perfect, but it
 is still useful.  For example, if you know someone's height, you might
 be able to guess their weight.  You might not get it exactly right, but
 your guess will be better than if you didn't know the height.
+Pearson's correlation is a measure of how much better.
 
-\item[Positively correlated:] Positive correlation means that when one
-  variable is high, the other tends to be high.  Negative correlation
-  means that when one is high, the other tends to be low.  Remember that
-  negative correlation is still correlation, and for purposes of
-  prediction it is just as useful as positive correlation.
-
-\end{description}
-
-So if Pearson's correlation is 0, does that mean there is no
+So if $\rho=0$, does that mean there is no
 relationship between the variables?  Unfortunately, no.  Pearson's
 correlation only measures {\em linear} relationships.  If there is a
 nonlinear relationship, $\rho$ understates the strength of the
@@ -5012,7 +5190,7 @@ of slopes, which shows that correlation is unrelated to slope
 row shows variables that are clearly related, but because the relationship
 is non-linear, the correlation coefficient is 0.
 
-The moral of this story is that you should look at a scatterplot of
+The moral of this story is that you should always look at a scatterplot of
 your data before blindly computing a correlation coefficient.
 
 \begin{ex}
@@ -5032,13 +5210,40 @@ Pearson's correlation works well if the relationship between variables
 is linear and if the variables are roughly normal.  But it is not
 robust in the presence of outliers.
 
-One alternative is {\bf Spearman's rank correlation}, which replaces
-each value with its percentile rank before computing Pearson's
-correlation.
+Anscombe's quartet demonstrates this effect; it contains four data
+sets with the same correlation.  One is a linear relation with random
+noise, one is a non-linear relation, one is a perfect relation with an
+outlier, and one has no relation except an artifact caused by an
+outlier.  You can read more about it at
+\url{wikipedia.org/wiki/Anscombe's_quartet}.
+
+{\bf Spearman's rank correlation} is an alternative that mitigates the
+effect of outliers and skewed distributions.  To compute Spearman's
+correction, we have to compute the rank of each value, which is the
+index where it appears in the sorted sample.  For example, if the
+sample contains the values $\{ 1, 2, 5, 7 \}$, the rank of the value 5
+is 3, because it appears third in the sorted list.  Then we compute
+Pearson's correlation for the ranks.
 
 Another alternative is to apply a transform that makes the data more
 nearly normal.  For example, if the data are lognormal, taking the log
 of each value yields a normal distribution.
+
+\begin{ex}
+Write a function that takes a sequence and returns a new
+sequence that contains the rank for each element.  For example,
+if the sequence is $\{ 7, 1, 2, 5 \}$, the result should be
+\{ 4, 1, 2, 3 \}.
+
+If the same value appears more than once, the best thing to do
+is assign each of them the same rank, which is the average of
+their ranks.  But if you ignore that and assign them ranks in
+arbitrary order, the error is usually small.
+
+Now write a function that takes two sequences (with the same
+length) and computes their Spearman rank coefficient.
+\end{ex}
+
 
 \begin{ex}
 
@@ -5124,9 +5329,9 @@ at hand.  But that's no longer the case, so it is worth considering
 whether squared residuals are the right thing to minimize.
 
 For example, if you are using values of $X$ to predict values of $Y$,
-guessing too high might be better (or worse) than
-guessing too low.  In that case you might want to compute some
-cost function, $\mathrm{cost}(r)$, and minimize that.
+guessing too high might be better (or worse) than guessing too low.
+In that case you might want to compute some cost function,
+$\mathrm{cost}(r)$, and minimize that.
 
 However, computing a least squares fit is quick, easy and often good
 enough, so here's how:
@@ -5142,11 +5347,11 @@ of $X$, and the covariance of $X$ and $Y$.
 
 \item And the intercept is
 
-\[ \hat{\inter} = \ybar - \hat{\slope} \xbar\]
+\[ \hat{\inter} = \ybar - \hat{\slope} \xbar \]
 
 \end{enumerate}
 
-To see how this is derived, read
+To see how this is derived, you can read
 \url{wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
 \begin{ex}
@@ -5200,35 +5405,39 @@ someone's weight, how much would it help to know their height?
 
 The quantity we are trying to guess is
 called a {\bf dependent variable} and the quantity we are using
-to make the guess is called an {\bf independent variable} or sometimes
-an {\bf explanatory variable}.
+to make the guess is called an {\bf explanatory} or
+{\bf independent variable}.
 
 To describe the predictive power of a model, we can compute the {\bf
   coefficient of determination}, more commonly known as ``R-squared'':
 
 \[ R^2 = 1 - \frac{Var(\eps)}{Var(Y)}\]
 
-The second term measures the the fraction of variability unexplained
-by the model, so $R^2$ is the fraction of variability the model
-explains.  But we have to be careful about what we mean by
-``explains.''
+To understand what $R^2$ means, suppose (again) that you are trying
+to guess someone's weight.  If you didn't know anything about them,
+your best strategy would be to guess $\ybar$; in
+that case the MSE of your guesses would be $Var(Y)$:
 
-It is more precise to think of $R^2$ in terms of prediction, rather
-than explanation.  If you had to guess someone's weight without
-knowing their height, your best strategy would be to guess $\ybar$; in
-that case the MSE of your guesses would be $Var(Y)$.  But if I told
-you their height, you would guess $\hat{\inter} + \hat{\slope} x_i$;
-in that case your MSE would be $Var(\eps)$.  So the term
-$Var(\eps)/Var(Y)$ measures the effect of the model on your prediction
-errors.
+\[ MSE = Var(Y) = \frac{1}{n} \sum (\ybar - y_i)^2\]
+
+But if I told you their height, you would guess $\hat{\inter} +
+\hat{\slope} x_i$; in that case your MSE would be $Var(\eps)$.
+
+\[ MSE = Var(\eps) = 
+\frac{1}{n} \sum (\hat{\inter} + \hat{\slope} x_i - y_i)^2 \]
+
+So the term $Var(\eps)/Var(Y)$ is the ratio of mean squared error with
+and without the explanatory variable, which is the fraction of
+variability left unexplained by the model.  The complement, $R^2$,
+is the fraction of variability explained by the model.
 
 If a model yields $R^2 = 0.64$, you could say that the model explains
-64\% of the variability, or you could say that it can reduce the MSE
-of your predictions by 64\%.
+64\% of the variability, or it might be more precise to say that it
+reduces the MSE of your predictions by 64\%.
 
 In the context of a linear least squares model, it turns out that
 there is a simple relationship between the coefficient of
-determination and Spearman's correlation coefficient, $\rho$:
+determination and Pearson's correlation coefficient, $\rho$:
 
 \[ R^2 = \rho^2 \]
 
@@ -5247,8 +5456,108 @@ SAT scores.  According to one study, there is a Pearson correlation of
 If you applied your predictor to a large sample, what would you expect to
 be the mean squared error (MSE) of your predictions?
 
-Hint: you might want to start by computing the MSE you would get if you
-ignore the SAT score and always guess 100.
+\end{ex}
+
+
+\section{Correlation and Causation}
+
+The web comic {\tt xkcd} demonstrates the difficulty of inferring
+causation:
+
+\vspace{0.1in}
+\centerline{\includegraphics{correlation.eps}}
+
+In general, a relationship between two variables does not tell you
+whether one causes the other, or the other way around, or both, or
+whether they might both be caused by something else altogether.
+
+This rule can be summarized with the phrase ``Correlation
+does not imply causation,'' which is so pithy it has its own
+Wikipedia page: \url{wikipedia.org/wiki/Correlation_does_not_imply_causation}.
+
+So what can you do to provide evidence of causation?
+
+\begin{enumerate}
+
+\item Use time.  If A comes before B, then A can cause B but not the
+  other way around (at least according to our common understanding of
+  causation).  The order of events can help us infer the direction
+  of causation, but it does not preclude the possibility that something
+  else causes both A and B.
+
+\item Use randomness.  If you divide a large population into two
+  groups at random, then for any property, X, you expect the
+  difference in the mean of X to be small.  This is a consequence
+  of the Central Limit Theorem (so it is subject to the same
+  requirements).
+
+  If the groups are nearly identical in all properties but one, you
+  can eliminate spurious relationships.
+
+  This works even if you don't know what the confounding variables
+  are, but it works even better if you do, because you can check that
+  the groups are identical.
+
+\end{enumerate}
+
+These ideas are the motivation for the {\bf randomized controlled
+trial}, in which subjects are assigned randomly to two (or more)
+groups, a {\bf treatment} group that receives some kind of intervention,
+like a new medicine, and a {\bf control group} that receives
+no intervention, or another treatment whose effects are known.
+
+A randomized controlled trial the most reliable way to demonstrate a
+causal relationship, and the foundation of science-based medicine (see
+\url{wikipedia.org/wiki/Randomized_controlled_trial}).
+
+Unfortunately, controlled trials are only possible in the laboratory
+sciences, medicine, and a few other disciplines.  In the social sciences,
+controlled experiments are rare, usually because they are impossible
+or unethical.
+
+One alternative is to look for a {\bf natural experiment}, where
+different ``treatments'' are applied to groups that are otherwise
+similar.  One danger of natural experiments is that the groups might
+differ in ways that are not apparent.  You can read more about this
+topic at \url{wikipedia.org/wiki/Natural_experiment}.
+
+In some cases it is possible to infer causal relationships using {\bf
+  regression analysis}.  A linear least squares fit
+is a simple form of regression that explains a dependent
+variable using one explanatory variable.  There are similar
+techniques that work with arbitrary numbers of independent variables.
+
+I won't cover those techniques here, but there are also simple ways to
+control for spurious relationships.  For example, in the NSFG, we saw
+that first babies tend to be lighter than others (see
+Section~\ref{birth_weights}).  But birth weight is also correlated
+with the mother's age, and mothers of first babies tend to be younger
+than mothers of other babies.
+
+So it may be that first babies are lighter because their mothers are
+younger.  To control for the effect of age, we could divide the mothers
+into age groups and compare birth weights for first babies and others
+in each age group.
+
+If the difference between first babies and others is the same in
+each age group as it was in the pooled data, we conclude
+that the difference is not related to age.  If there is no difference,
+we conclude that the effect is entirely due to age.  Or,
+if the difference is smaller, we can quantify how much of the effect
+is due to age.
+
+\begin{ex}
+
+For each live birth in the NSFG dataset, determine the age of the mother
+and make a scatter plot of birth weight versus age.  Find the slope
+and intercept of the linear least squares fit.
+
+Compute the average age for mothers of first babies and the average
+age of other mothers.  Based on the difference in ages between the
+groups, how much difference do you expect in the mean birth weights?
+
+What fraction of the actual difference in birth weights is explained
+by the difference in ages?
 
 \end{ex}
 
@@ -5287,6 +5596,14 @@ variable, also called an explanatory variable.
 
 \item[coefficient of determination:] A measure of the goodness of fit
 of a linear model.
+
+\item[randomized controlled trial:]
+
+\item[treatment:]
+
+\item[control group:]
+
+\item[natural experiment:]
 
 \end{description}
 

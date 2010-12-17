@@ -9,9 +9,9 @@ import matplotlib
 import matplotlib.pyplot as pyplot
 
 # customize some matplotlib attributes
-#matplotlib.rc('figure', figsize=(5, 4))
+#matplotlib.rc('figure', figsize=(4, 3))
 
-#matplotlib.rc('font', size=20.0)
+matplotlib.rc('font', size=18.0)
 #matplotlib.rc('axes', labelsize=22.0, titlesize=22.0)
 #matplotlib.rc('legend', fontsize=20.0)
 
@@ -31,11 +31,17 @@ class InfiniteList(list):
 
 
 def Underride(d, key, val):
-    """Add a key-value pair to d only if key is not in d."""
+    """Add a key-value pair to d only if key is not in d.
+
+    If d is None, create a new dictionary.
+    """
+    if d is None:
+        d = {}
     d.setdefault(key, val)
+    return d
 
 
-def Hist(hist, root=None, bar_options={}, **options):
+def Hist(hist, root=None, bar_options=None, **options):
     """Plots a histogram with a bar plot.
 
     Args:
@@ -44,7 +50,7 @@ def Hist(hist, root=None, bar_options={}, **options):
       bar_options: dictionary of options passed to pylot.bar
       options: dictionary of options
     """
-    Underride(bar_options, 'label', 'histogram')
+    bar_options = Underride(bar_options, 'label', hist.name)
     xs, fs = hist.Render()
     pyplot.bar(xs, fs, align='center', **bar_options)
 
@@ -85,7 +91,7 @@ def Shift(xs, shift):
     return [x+shift for x in xs]
 
 
-def Pmf(pmf, root=None, plot_options={}, **options):
+def Pmf(pmf, root=None, plot_options=None, **options):
     """Plots a PMF as a line.
 
     Args:
@@ -94,13 +100,13 @@ def Pmf(pmf, root=None, plot_options={}, **options):
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
-    Underride(plot_options, 'label', 'pmf')
+    plot_options = Underride(plot_options, 'label', pmf.name)
     xs, fs = pmf.Render()
     pyplot.plot(xs, fs, **plot_options)
     Plot(root, **options)
 
 
-def Cdf(cdf, root=None, plot_options={}, **options):
+def Cdf(cdf, root=None, plot_options=None, **options):
     """Plots a CDF as a line.
 
     Args:
@@ -109,7 +115,7 @@ def Cdf(cdf, root=None, plot_options={}, **options):
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
-    Underride(plot_options, 'label', 'cdf')
+    plot_options = Underride(plot_options, 'label', cdf.name)
     Cdfs([cdf], root, [plot_options], **options)
 
 
