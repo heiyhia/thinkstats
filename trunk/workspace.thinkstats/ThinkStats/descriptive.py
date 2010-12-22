@@ -23,7 +23,7 @@ def Process(table, name):
     table.var = thinkstats.Var(table.lengths, table.mu)
     table.trim = thinkstats.TrimmedMean(table.lengths)
 
-    table.hist = Pmf.MakeHist(table.lengths, name=name)
+    table.hist = Pmf.MakeHistFromList(table.lengths, name=name)
     table.pmf = Pmf.MakePmfFromHist(table.hist)
         
         
@@ -93,21 +93,29 @@ def Summarize():
 
 def MakeFigures(firsts, others):
 
+    bar_options = [
+        dict(color='0.9'),
+        dict(color='0.5')
+        ]
+
     axis = [23, 46, 0, 2700]
     myplot.Hists([firsts.hist, others.hist], 
-               'nsfg_hist', 
-               title='Histogram',
-               xlabel='weeks',
-               ylabel='frequency',
-               axis=axis)
+                 root='nsfg_hist', 
+                 title='Histogram',
+                 xlabel='weeks',
+                 ylabel='frequency',
+                 axis=axis,
+                 bar_options=bar_options
+                 )
 
     axis = [23, 46, 0, 0.6]
     myplot.Hists([firsts.pmf, others.pmf],
-               'nsfg_pmf',
-               title='PMF',
-               xlabel='weeks',
-               ylabel='probability',
-               axis=axis)
+                 root='nsfg_pmf',
+                 title='PMF',
+                 xlabel='weeks',
+                 ylabel='probability',
+                 bar_options=bar_options,
+                 axis=axis)
 
 
 def MakeDiffFigure(firsts, others):
@@ -128,36 +136,8 @@ def MakeDiffFigure(firsts, others):
               legend=False,
               )
 
-def ClassSizes():
-    d = {
-         7: 8, 
-         12: 8, 
-         17: 14, 
-         22: 4, 
-         27: 6, 
-         32: 12, 
-         37: 8, 
-         42: 3, 
-         47: 2, 
-    }
-    pmf = Pmf.Pmf(d, 'class sizes')
-    pmf.Normalize()
-    print 'mean', pmf.Mean()
-    print 'var', pmf.Var()
-    
-    student_pmf = pmf.Copy()
-    d = student_pmf.d
-    for x, p in d.iteritems():
-        d[x] = p * x
-        
-    student_pmf.Normalize()
-    print 'mean', student_pmf.Mean()
-    print 'var', student_pmf.Var()
- 
- 
 def main():
     Summarize()
-    #ClassSizes()
 
 if __name__ == '__main__':
     main()

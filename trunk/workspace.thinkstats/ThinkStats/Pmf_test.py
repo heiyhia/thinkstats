@@ -13,7 +13,7 @@ class Test(unittest.TestCase):
 
     def testHist(self):
         t = [1, 2, 2, 3, 5]
-        hist = Pmf.MakeHist(t)
+        hist = Pmf.MakeHistFromList(t)
 
         self.assertEquals(hist.Freq(1), 1)
         self.assertEquals(hist.Freq(2), 2)
@@ -35,7 +35,42 @@ class Test(unittest.TestCase):
         t = [1, 2, 2, 3, 5]
         pmf = Pmf.MakePmfFromList(t)
         self.checkPmf(pmf)
+
+        d = pmf.GetDict()
+        self.assertAlmostEquals(d[2], 0.4)
         
+        vals = pmf.Values()
+        self.assertEquals(sorted(vals), [1, 2, 3, 5])
+
+        items = pmf.Items()
+        d = dict(items)
+        new_pmf = Pmf.MakePmfFromDict(d)
+        self.checkPmf(new_pmf)
+
+    def testIncrAndNormalize(self):
+        pmf = Pmf.Pmf()
+        t = [1, 2, 2, 3, 5]
+        for x in t:
+            pmf.Incr(x)
+        pmf.Normalize()
+        self.checkPmf(pmf)
+        
+    def testMultAndNormalize(self):
+        t = [1, 2, 3, 5]
+        pmf = Pmf.MakePmfFromList(t)
+        pmf.Mult(2, 2)
+        pmf.Normalize()
+        self.checkPmf(pmf)
+        
+    def testRender(self):
+        t = [1, 2, 2, 3, 5]
+        pmf = Pmf.MakePmfFromList(t)
+        xs, ps = pmf.Render()
+
+        d = dict(zip(xs, ps))
+        new_pmf = Pmf.MakePmfFromDict(d)
+        self.checkPmf(new_pmf)
+
     def testMeanAndVar(self):
         t = [1, 2, 2, 3, 5]
         mu = thinkstats.Mean(t)

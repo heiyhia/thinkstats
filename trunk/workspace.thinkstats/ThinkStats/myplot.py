@@ -41,31 +41,42 @@ def Underride(d, key, val):
     return d
 
 
-def Hist(hist, root=None, bar_options=None, **options):
+def Hist(hist, clf=True, root=None, bar_options=None, **options):
     """Plots a histogram with a bar plot.
 
     Args:
       hist: Hist or Pmf object
+      clf: boolean, whether to clear the figure
       root: string filename root
       bar_options: dictionary of options passed to pylot.bar
       options: dictionary of options
     """
+    if clf:
+        pyplot.clf()
     bar_options = Underride(bar_options, 'label', hist.name)
     xs, fs = hist.Render()
     pyplot.bar(xs, fs, align='center', **bar_options)
 
-    Plot(root, **options)
+    Plot(root=root, **options)
 
 
-def Hists(hists, root=None, bar_options=InfiniteList(dict()), **options):
+def Hists(hists, 
+          clf=True,
+          root=None,
+          bar_options=InfiniteList(dict()),
+          **options):
     """Plots two histograms as interleaved bar plots.
 
     Args:
       hists: list of two Hist or Pmf objects
+      clf: boolean, whether to clear the figure
       root: string filename root
       bar_options: sequence of option dictionaries
       options: dictionary of options
     """
+    if clf:
+        pyplot.clf()
+
     width = 0.4
     shifts = [-width, 0.0]
 
@@ -74,7 +85,7 @@ def Hists(hists, root=None, bar_options=InfiniteList(dict()), **options):
         xs = Shift(xs, shifts[i])
         pyplot.bar(xs, fs, label=hist.name, width=width, **bar_options[i])
 
-    Plot(root, **options)
+    Plot(root=root, **options)
 
 
 def Shift(xs, shift):
@@ -100,39 +111,45 @@ def Pmf(pmf, root=None, plot_options=None, **options):
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
+    if clf:
+        pyplot.clf()
     plot_options = Underride(plot_options, 'label', pmf.name)
     xs, fs = pmf.Render()
     pyplot.plot(xs, fs, **plot_options)
-    Plot(root, **options)
+    Plot(root=root, **options)
 
 
-def Cdf(cdf, root=None, plot_options=None, **options):
+def Cdf(cdf, clf=True, root=None, plot_options=[{}], **options):
     """Plots a CDF as a line.
 
     Args:
       cdf: Cdf object
+      clf: boolean, whether to clear the figure
       root: string filename root
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
-    plot_options = Underride(plot_options, 'label', cdf.name)
-    Cdfs([cdf], root, [plot_options], **options)
+    Cdfs([cdf], root=root, plot_options=plot_options, **options)
 
 
-def Cdfs(cdfs, 
+def Cdfs(cdfs,
+         clf=True,
          root=None, 
-         plot_options=InfiniteList(dict()), 
+         plot_options=InfiniteList({}), 
          complement=False,
          **options):
     """Plots a sequence of CDFs.
     
     Args:
       cdfs: sequence of CDF objects
+      clf: boolean, whether to clear the figure
       root: string root of the filename to write
       plot_options: sequence of option dictionaries
       complement: boolean, whether to plot the complementary CDF
       options: dictionary of keyword options passed along to Plot
     """
+    if clf:
+        pyplot.clf()
     styles = options.get('styles', None)
     if styles is None:
         styles = InfiniteList('-')
@@ -143,12 +160,10 @@ def Cdfs(cdfs,
         if complement:
             ps = [1.0-p for p in ps]
 
-        options = plot_options[i]
-
         line = pyplot.plot(xs, ps,
                            styles[i],
                            label=cdf.name,
-                           **options
+                           **plot_options[i]
                            )
 
     Plot(root, **options)

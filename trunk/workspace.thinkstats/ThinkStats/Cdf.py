@@ -10,6 +10,8 @@ Distributed under the GNU General Public License at gnu.org/licenses/gpl.html.
 import bisect
 import math
 import random
+import Pmf
+
 
 class Cdf(object):
     """Represents a cumulative distribution function.
@@ -24,17 +26,19 @@ class Cdf(object):
         self.ps = ps
         self.name = name
 
-    def GetItems(self):
-        """Returns an iterator of sorted (value, probability) pairs."""
+    def Items(self):
+        """Returns a sequence of sorted (value, probability) pairs.
+
+        Note: in Python3, returns an iterator.
+        """
         return zip(self.xs, self.ps)
 
     def Prob(self, x):
-        """Returns the probability that corresponds to value x.
-
-        Computes CDF(x)
+        """Returns CDF(x), the probability that corresponds to value x.
 
         Args:
             x: number
+
         Returns:
             float probability
         """
@@ -44,9 +48,7 @@ class Cdf(object):
         return p
 
     def Value(self, p):
-        """Returns the value that corresponds to probability p.
-
-        Computes InverseCDF(p)
+        """Returns InverseCDF(p), the value that corresponds to probability p.
 
         Args:
             p: number in the range [0, 1]
@@ -65,6 +67,17 @@ class Cdf(object):
         else:
             return self.xs[index]
 
+    def Percentile(self, p):
+        """Returns the value that corresponds to percentile p.
+
+        Args:
+            p: number in the range [0, 100]
+
+        Returns:
+            number value
+        """
+        return self.Value(p / 100.0)
+
     def Random(self):
         """Chooses a random value from this distribution."""
         return self.Value(random.random())
@@ -76,17 +89,6 @@ class Cdf(object):
             n: int length of the sample
         """
         return [self.Random() for i in range(n)]
-
-    def Percentile(self, p):
-        """Returns the value that corresponds to percentile p.
-
-        Args:
-            p: number in the range [0, 100]
-
-        Returns:
-            number value
-        """
-        return self.Value(p / 100.0)
 
     def Mean(self):
         """Computes the mean of a CDF.
@@ -134,7 +136,8 @@ class Cdf(object):
                 pass
         return xs, ps
 
-def MakeCdf(items, name=''):
+
+def MakeCdfFromItems(items, name=''):
     """Makes a cdf from an unsorted sequence of (value, frequency) pairs.
 
     Args:
@@ -165,30 +168,39 @@ def MakeCdfFromDict(d, name=''):
 
     Args:
        d: dictionary that maps values to frequencies.
-
        name: string name for the data.
 
     Returns:
         Cdf object
     """
-    return MakeCdf(d.iteritems(), name)
+    return MakeCdfFromItems(d.iteritems(), name)
+
+
+def MakeCdfFromHist(hist, name=''):
+    """Makes a CDF from a Hist object.
+
+    Args:
+       d: dictionary that maps values to frequencies.
+       name: string name for the data.
+
+    Returns:
+        Cdf object
+    """
+    return MakeCdfFromItems(hist.Items(), name)
 
 
 def MakeCdfFromList(seq, name=''):
     """Creates a CDF from an unsorted sequence.
+
     Args:
         seq: unsorted sequence of sortable values
-
         name: string name for the cdf
 
     Returns:
        Cdf object
     """
-    hist = {}
-    for x in seq:
-        hist[x] = hist.get(x, 0) + 1
-        
-    return MakeCdfFromDict(hist, name)
+    hist = Pmf.MakeHistFromList(seq)
+    return MakeCdfFromHist(hist, name)
 
 
 def ProbLess(cdf1, cdf2):

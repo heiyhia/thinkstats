@@ -135,6 +135,7 @@ class Pregnancies(Table):
             ('prglength', 275, 276, int),
             ('outcome', 277, 277, int),
             ('birthord', 278, 279, int),
+            ('agepreg', 338, 341, int),
             ('finalwgt', 423, 440, float),
             ]
 
