@@ -21,17 +21,17 @@ class _DictWrapper(object):
         return self.d
 
     def Values(self):
-        """Gets an iterator of the values.
+        """Gets an unsorted sequence of  values.
 
         Note: one source of confusion is that the keys in this
         dictionaries are the values of the Hist/Pmf, and the
         values are frequencies/probabilities.
         """
-        return self.d.iterkeys()
+        return self.d.keys()
 
     def Items(self):
-        """Gets an iterator of the items (value, freq/prob) pairs."""
-        return self.d.iteritems()
+        """Gets an unsorted sequence of (value, freq/prob) pairs."""
+        return self.d.items()
 
     def Render(self):
         """Generates a sequence of points suitable for plotting.
@@ -41,16 +41,55 @@ class _DictWrapper(object):
         """
         return zip(*sorted(self.Items()))
 
-
-class Hist(_DictWrapper):
-    def Incr(self, x, count=1):
-        """Increments the counter associated with the value x.
+    def Incr(self, x, term=1):
+        """Increments the freq/prob associated with the value x.
 
         Args:
             x: number value
-            count: how much to increment by
+            term: how much to increment by
         """
-        self.d[x] = self.d.get(x, 0) + count
+        self.d[x] = self.d.get(x, 0) + term
+
+    def Mult(self, x, factor):
+        """Scales the freq/prob associated with the value x.
+
+        Args:
+            x: number value
+            factor: how much to multiply by
+        """
+        self.d[x] = self.d.get(x, 0) * factor
+
+    def Remove(self, x):
+        """Removes a value.
+
+        Throws an exception if the value is not there.
+
+        Args:
+            x: value to remove
+        """
+        del self.d[x]
+
+    def Total(self):
+        """Returns the total of the frequencies in the map."""
+        total = sum(self.d.values())
+        return float(total)
+
+
+class Hist(_DictWrapper):
+    """Represents a histogram, which is a map from values to frequencies.
+
+    Values can be any hashable type; frequencies are integer counters.
+    """
+
+    def Copy(self, name=None):
+        """Returns a copy of this Hist.
+
+        Args:
+            name: string name for the new Hist
+        """
+        if name is None:
+            name = self.name
+        return Hist(dict(self.d), name)
 
     def Freq(self, x):
         """Gets the frequency associated with the value x.
@@ -63,40 +102,23 @@ class Hist(_DictWrapper):
         """
         return self.d.get(x, 0)
 
-    def Render(self):
-        """Generates a sequence of points suitable for plotting.
-
-        Returns:
-            sequence of (value, prob) pairs.
-        """
-        items = self.d.items()
-        items.sort()
-        return zip(*items)
-    
 
 class Pmf(_DictWrapper):
     """Represents a probability mass function.
-
-    Attributes:
-        map: dictionary that maps from values to probabilities
+    
+    Values can be any hashable type; probabilities are floating-point.
+    Pmfs are not necessarily normalized.
     """
-    def Incr(self, x, p=1):
-        """Increments the probability associated with the value x.
+
+    def Copy(self, name=None):
+        """Returns a copy of this Pmf.
 
         Args:
-            x: number value
-            p: how much to increment by
+            name: string name for the new Pmf
         """
-        self.d[x] = self.d.get(x, 0) + p
-
-    def Mult(self, x, factor):
-        """Scales the probability associated with the value x.
-
-        Args:
-            x: number value
-            factor: how much to multiply by
-        """
-        self.d[x] = self.d.get(x, 0) * factor
+        if name is None:
+            name = self.name
+        return Pmf(dict(self.d), name)
 
     def Prob(self, x):
         """Gets the probability associated with the value x.
@@ -109,16 +131,6 @@ class Pmf(_DictWrapper):
         """
         return self.d.get(x, 0)
 
-    def Copy(self, name=None):
-        """Returns a copy of this Pmf.
-
-        Args:
-            name: string name for the new Pmf
-        """
-        if name is None:
-            name = self.name
-        return Pmf(dict(self.d), name)
-
     def Normalize(self, denom=None):
         """Normalizes this PMF so the sum of all probs is 1.
 
@@ -130,11 +142,6 @@ class Pmf(_DictWrapper):
         for x, p in self.d.iteritems():
             self.d[x] = p / denom
     
-    def Total(self):
-        """Returns the total of the frequencies in the map."""
-        total = sum(self.d.values())
-        return float(total)
-
     def Mean(self):
         """Computes the mean of a PMF.
 
@@ -147,6 +154,15 @@ class Pmf(_DictWrapper):
         return mu
 
     def Var(self, mu=None):
+        """Computes the variance of a PMF.
+
+        Args:
+            mu: the point around which the variance is computed;
+                if omitted, uses the mean
+
+        Returns:
+            float variance
+        """
         if mu is None:
             mu = self.Mean()
             
@@ -201,6 +217,8 @@ def MakePmfFromList(t, name=''):
 def MakePmfFromDict(d, name=''):
     """Makes a PMF from a map from values to probabilities.
 
+    Result is not necessarily normalized.
+
     Args:
         d: dictionary that maps values to probabilities
         name: string name for this PMF
@@ -212,7 +230,7 @@ def MakePmfFromDict(d, name=''):
 
 
 def MakePmfFromHist(hist, name=None):
-    """Makes a PMF from a Hist object.
+    """Makes a normalized PMF from a Hist object.
 
     Args:
         hist: Hist object
@@ -232,7 +250,7 @@ def MakePmfFromHist(hist, name=None):
 
 
 def MakePmfFromCdf(cdf, name=None):
-    """Makes a PMF from a Cdf object.
+    """Makes a normalized PMF from a Cdf object.
 
     Args:
         cdf: Cdf object
