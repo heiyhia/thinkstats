@@ -27,7 +27,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.2.3}
+\newcommand{\theversion}{1.2.4}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -749,6 +749,7 @@ several questions we still want to ask:
 
 We will address these questions in the next few chapters.
 
+
 \section{Glossary}
 
 \begin{description}
@@ -918,7 +919,7 @@ For the exercises in this chapter you should download
 functions we will use throughout the book.  You can read documentation
 of these functions in \url{thinkstats.com/thinkstats.html}.
 
-Create a file named {\tt descriptive.py}.  Write a function called
+Write a function called
 {\tt Pumpkin} that uses functions from {\tt thinkstats.py} to compute
 the mean, variance and standard deviation of the pumpkins weights in
 the previous section.
@@ -987,31 +988,82 @@ another.  In Python, we {\em usually} represent mathematical functions
 with function objects, but in this case we are using a dictionary
 (or ``map,'' if that helps).
 
+\section{Representing histograms}
+
+I wrote a Python module called {\tt Pmf.py} that contains class
+definitions for Hist objects, which represent histograms, and Pmf
+objects, which represent PMFs.  You can read the documentation at {\tt
+  thinkstats.com/Pmf.html} and download the code from {\tt
+  thinkstats.com/Pmf.py}.
+
+The function {\tt MakeHistFromList} takes a list of values and
+returns a new Hist object.  You can test it in Python's interactive
+mode:
+
+\begin{verbatim}
+>>> import Pmf
+>>> hist = Pmf.MakeHistFromList([1, 2, 2, 3, 5])
+>>> print hist
+<Pmf.Hist object at 0xb76cf68c>
+\end{verbatim}
+
+{\tt Pmf.Hist} means that this object is a member of the Hist class,
+which is defined in the Pmf module.  In general, I use upper case
+letters for the names of classes and functions, and lower case letters
+for variables.
+
+Hist objects provide methods to look up values and their
+probabilities.  {\tt Freq} takes a value and returns its frequency:
+
+\begin{verbatim}
+>>> hist.Freq(2)
+2
+\end{verbatim}
+
+If you look up a value that has never appeared, the frequency is 0.
+
+\begin{verbatim}
+>>> hist.Freq(4)
+0
+\end{verbatim}
+
+{\tt Values} returns an unsorted list of the values in the Hist:
+
+\begin{verbatim}
+>>> hist.Values()
+[1, 5, 3, 2]
+\end{verbatim}
+
+To loop through the values in order, you can use the built-in function
+{\tt sorted}:
+
+\begin{verbatim}
+for val in sorted(hist.Values()):
+    print val, hist.Freq(val)
+\end{verbatim}
+
+But if you are planning to look up all of the frequencies, it is more
+efficient to use {\tt Items}, which returns a list of value-frequency
+pairs:
+
+\begin{verbatim}
+for val, freq in hist.Items():
+     print val, freq
+\end{verbatim}
+
 \begin{ex}
-Create a file named {\tt Pmf.py} and write a definition for a class
-named {\tt Hist} that represents a histogram with a dictionary
-that maps from values to frequencies.
 
-Write a function named {\tt MakeHist} that takes a sequence of
-values and returns a Hist object.
+The mode of a distribution is the most frequent value (see
+\url{wikipedia.org/wiki/Mode_(statistics)}).  Write a function called
+    {\tt Mode} that takes a Hist object and returns the most frequent
+    value.
 
-Write a method named {\tt Freq} that takes a value and returns
-the corresponding frequency, or 0
-if the value hasn't appeared.  Write tests for your code.
-\end{ex}
+As a more challenging version, write a function called {\tt AllModes}
+that takes a Hist object and returns a list of value-frequency
+pairs in descending order of frequency.  Hint: the {\tt operator}
+module provides a function called {\tt itemgetter} which you can
+pass as a key to {\tt sorted}.
 
-
-\begin{ex}
-In {\tt Pmf.py}, write a definition for a class named {\tt Pmf} that
-represents a probability mass function with a dictionary that maps
-from values to probabilities.
-
-Write a function called {\tt MakePmf} that takes a sequence of
-values and returns their PMF.
-
-Write a method called {\tt Prob} that
-takes a value and returns the corresponding probability, or 0
-if the value has frequency 0.  Write tests for your code.
 \end{ex}
 
 
@@ -1034,7 +1086,23 @@ If you have {\tt matplotlib} you should see a simple pie chart;
 otherwise you will have to install it.
 
 Histograms and PMFs are most often plotted as bar charts.  The
-{\tt pyplot} function to draw a bar chart is {\tt bar}.
+{\tt pyplot} function to draw a bar chart is {\tt bar}.  Hist
+objects provide a method called {\tt Render} that returns a sorted
+list of values and a list of the corresponding frequencies, which
+is the format {\tt bar} expects:
+
+\begin{verbatim}
+>>> vals, freqs = hist.Render()
+>>> rectangles = pyplot.bar(vals, freqs)
+>>> pyplot.show()
+\end{verbatim}
+
+I wrote a module called {\tt myplot.py} that provides functions
+for plotting histograms, PDFs and other objects we will see soon.
+You can read the documentation at {\tt
+  thinkstats.com/myplot.html} and download the code from {\tt
+  thinkstats.com/myplot.py}.  Or you might find it simpler to use
+{\tt pyplot} directly.
 
 Figure~\ref{nsfg_hist} shows histograms of the pregnancy lengths for
 first babies and others.
@@ -1074,14 +1142,128 @@ apparent:
 Although histograms make some features apparent, they are usually not
 useful for comparing two distributions.  In this example, there are
 fewer ``first babies'' than ``others,'' so some of the apparent
-differences in the histograms are due to sample sizes.
+differences in the histograms are due to sample sizes.  We can
+address this problem using PMFs.
+
+
+\section{Representing PMFs}
+
+To create a Pmf object, use {\tt MakePmfFromList}, which takes a list
+of values:
+
+\begin{verbatim}
+>>> import Pmf
+>>> pmf = Pmf.MakePmfFromList([1, 2, 2, 3, 5])
+>>> print pmf
+<Pmf.Pmf object at 0xb76cf68c>
+\end{verbatim}
+
+Pmf and Hist objects are similar in many ways.  The methods {\tt
+  Values} and {\tt Items} work the same way for both types.  The
+biggest difference is that a Hist maps from values to integer
+counters; a Pmf maps from values to floating-point probabilities.
+
+To look up the probability associated with a value, use {\tt Prob}:
+
+\begin{verbatim}
+>>> pmf.Prob(2)
+0.4
+\end{verbatim}
+
+You can modify an existing Pmf by incrementing the probability
+associated with a value:
+
+\begin{verbatim}
+>>> pmf.Incr(2, 0.2)
+>>> pmf.Prob(2)
+0.6
+\end{verbatim}
+
+Or you can multiple a probability by a factor:
+
+\begin{verbatim}
+>>> pmf.Mult(2, 0.5)
+>>> pmf.Prob(2)
+0.3
+\end{verbatim}
+
+If you modify a Pmf, the result may not be
+normalized; that is, the probabilities may no longer add up to 1.
+To check, you can call {\tt Total}, which returns the sum of the
+probabilities:
+
+\begin{verbatim}
+>>> pmf.Total()
+0.9
+\end{verbatim}
+
+To renormalize, call {\tt Normalize}:
+
+\begin{verbatim}
+>>> pmf.Normalize()
+>>> pmf.Total()
+1.0
+\end{verbatim}
+
+Pmf objects provide a {\tt Copy} method so you can
+use {\tt Incr} and {\tt Mult} without modifying the original object.
+
+\begin{ex}
+
+According to Wikipedia, ``Survival analysis is a branch of statistics
+which deals with death in biological organisms and failure in
+mechanical systems;'' see \url{wikipedia.org/wiki/Survival_analysis}.
+
+As part of survival analysis, it is often useful to compute the
+remaining lifetime of, for example, a mechanical component.  If we
+know the distribution of lifetimes and the age of the component,
+we can compute the distribution of remaining lifetimes.
+
+Write a function called {\tt RemainingLifetime} that takes a
+Pmf of lifetimes and an age, and returns a new Pmf that represents
+the distribution of remaining lifetimes.
+
+\end{ex}
+
+
+\begin{ex}
+
+In Section~\ref{mean} we computed the mean of a sample by adding up
+the elements and dividing by $n$.  If you are given a PMF, you can
+still compute the mean, but the process is slightly different:
+
+\[ \mu = \sum_i p_i x_i \]
+
+where the $x_i$ are the unique values in the PMF and $p_i = PMF(x_i)$.
+Similarly, you can compute variance like this:
+
+\[ \sigma^2 = \sum_i p_i (x_i - mu)^2\]
+
+Write functions called {\tt PmfMean} and {\tt PmfVar} that take a Pmf
+object and compute the mean and variance.
+
+To test these methods, check that they are consistent with the
+methods {\tt Mean} and {\tt Var} in {\tt Pmf.py}.
+\end{ex}
+
+
 
 
 \section{Plotting PMFs}
 
-We can solve that problem by normalizing the distributions---that
-is, dividing through by the sample sizes---to generate the PMFs.
-Figure~\ref{nsfg_pmf} shows the result.
+There are two common ways to plot Pmfs:
+
+\begin{itemize}
+
+\item To plot a Pmf as a bar graph, you can use {\tt pyplot.bar}
+or {\tt myplot.Hist}.  Bar graphs are most useful if the number
+of values in the Pmf is small.
+
+\item To plot a Pmf as a line, you can use {\tt pyplot.plot}
+or {\tt myplot.Pmf}.  Line plots are most useful if there are
+a large number of values and the Pmf is smooth.
+
+\end{itemize}
 
 \begin{figure}
 % descriptive.py
@@ -1090,23 +1272,25 @@ Figure~\ref{nsfg_pmf} shows the result.
 \label{nsfg_pmf}
 \end{figure}
 
-Using the PMF, we can see more clearly where the distributions
-differ.  First babies seem to be less likely to arrive on time
-(week 39) and more likely to be a little late (weeks 41 and 42).
+Figure~\ref{nsfg_pmf} shows the PMF of pregnancy lengths as a bar
+graph.  Using the PMF, we can see more clearly where the distributions
+differ.  First babies seem to be less likely to arrive on time (week
+39) and more likely to be a late (weeks 41 and 42).
 
 \begin{ex}
 
-Create a file named {\tt plot.py} and write a function called {\tt
-  Hist} that takes a Hist object and generates a bar chart using {\tt
-  pyplot.bar}.  This function should also work for Pmf objects.
+The code that generates the figures in this chapters is available from
+\url{thinkstats.com/descriptive.py}.  To run it, you will need the
+modules it imports and the data from the NSFG (see
+Section~\ref{nsfg}).
 
-Write another function called {\tt Hists} that takes two Hists (or
-Pmfs) and generates side-by-side histograms like the figures in this
-section.  You will have to read the {\tt pyplot} documentation to
-adjust the width and position of the bars.
+Modify {\tt descriptive.py} to plot Pmfs using lines instead of
+bars.  What are the pros and cons of this format?
 
-Use the data from the NSFG to generate plots like the ones in this
-section.
+Note: {\tt pyplot} provides a function called {\tt hist} that
+takes a sequence of values, computes the histogram and plots it.
+Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
+
 \end{ex}
 
 
@@ -1155,12 +1339,10 @@ weeks  count
 50     2
 \end{verbatim}
 
-Again, there are some values here that are almost certainly errors, but
-it is hard to know for sure.
-
-Trimmed mean and variance.
-
-Don't get carried away.
+Again, there are some values here that are almost certainly errors,
+but it is hard to know for sure.  One option is to {\bf trim} the data
+by discarding some fraction of the highest and lowest values (see
+\url{wikipedia.org/wiki/Truncated_mean}).
 
 
 \section{Other visualizations}
@@ -1249,17 +1431,23 @@ conditional PMF.
 
 \end{enumerate}
 
+This algorithm is conceptually clear, but not very efficient.
+A simple alternative is to remove from the distribution the values
+less than 39 and then renormalize.
+
 \begin{ex}
-Create a file named {\tt conditional.py}.
-Write a program that implements this algorithm and computes the
+
+Write a function that implements this algorithm and computes the
 probability that a baby will be born during Week 39, given that
 it was not born prior to Week 39.
 
-Generalize this program to compute the
+Generalize the function to compute the
 probability that a baby will be born during Week $x$, given that
 it was not born prior to Week $x$, for all $x$.
-
 Plot this value as a function of $x$ for first babies and others.
+
+You can download a solution to this problem from
+\url{thinkstats.com/conditional.py}.
 
 \end{ex}
 
@@ -1303,28 +1491,61 @@ accurately.
 \end{ex}
 
 
-\section{Mean and variance of PMFs}
-\label{mean_pmf}
 
-In Section~\ref{mean} we computed the mean of a sample by adding up
-the elements and dividing by $n$.  If you are given a PMF, you can
-still compute the mean, but the process is slightly different:
+\section{Glossary}
 
-\[ \mu = \sum_i p_i x_i \]
+\begin{description}
 
-where the $x_i$ are the unique values in the PMF and $p_i = PMF(x_i)$.
-Similarly, you can compute variance like this:
+\item[central tendency:] A characteristic of a sample or population;
+intuitively, it is the most average value. 
 
-\[ \sigma^2 = \sum_i p_i (x_i - mu)^2\]
+\item[spread:] A characteristic of a sample or population;
+intuitively, it describes how much variability there is.
 
-\begin{ex}
-In {\tt Pmf.py}, add methods named {\tt Mean} and {\tt Var} that compute
-the mean and variance of a PMF.
+\item[variance:] A summary statistic often used to quantify spread.
 
-To test these methods, check that they are consistent with the
-functions {\tt Mean} and {\tt Var} you wrote in {\tt thinkstats.py}.
-\end{ex}
+\item[standard deviation:] The square root of variance, also used
+as a measure of spread.
 
+\item[frequency:] The number of times a value appears in a sample.
+
+\item[histogram:] A mapping from values to frequencies, or a graph
+that shows this mapping.
+
+\item[probability:] A frequency expressed as a fraction of the sample
+size.
+
+\item[normalization:] The process of dividing a frequency by a sample
+size to get a probability.
+
+\item[distribution:] A summary of the values that appear in a sample
+and the frequency, or probability, of each.
+
+\item[PMF:] Probability mass function: a representation of a distribution
+as a function that maps from values to probabilities.
+
+\item[mode:] The most frequent value in a sample.
+
+\item[outlier:] A value far from the central tendency.
+
+\item[trim:] To remove outliers from a dataset.
+
+\item[bin:] A range used to group nearby values.
+
+\item[relative risk:] A ratio of two probabilities, often used to measure
+a difference between distributions.
+
+\item[conditional probability:] A probability computed under the assumption
+that some condition holds.
+
+\item[clinically significant:] A result, like a difference between groups,
+that is relevant in practice.
+
+\end{description}
+
+
+\chapter{Cumulative distribution functions}
+\label{cumulative}
 
 \section{The class size paradox}
 
@@ -1398,60 +1619,59 @@ Write a function called \verb"UnbiasPmf" that takes the PMF of the
 observed values and returns a new Pmf object that estimates the
 distribution of class sizes.
 
+You can download a solution to this problem from
+\url{thinkstats.py/class\_size.py}.
+
 \end{ex}
 
-\section{Glossary}
 
-\begin{description}
+\begin{ex}
 
-\item[central tendency:] A characteristic of a sample or population;
-intuitively, it is the most average value. 
+In most foot races, everyone starts at the same time.  If you are a
+fast runner, you usually pass a lot of people at the beginning of the
+race, but after a few miles everyone around you is going at the same
+speed.
 
-\item[spread:] A characteristic of a sample or population;
-intuitively, it describes how much variability there is.
+When I ran a long-distance (209 miles) relay race for the first
+time, I noticed an odd phenomenon: when I overtook another runner, I
+was usually much faster, and when another runner overtook me, he was
+usually much faster.
 
-\item[variance:] A summary statistic often used to quantify spread.
+At first I thought that the distribution of speeds might be bimodal;
+that is, there were many slow runners and many fast runners, but few
+at my speed.
 
-\item[standard deviation:] The square root of variance, also used
-as a measure of spread.
+Then I realized that I was the victim of selection bias.  The race
+was unusual in two ways: it used a staggered start, so teams started
+at different times; also, many teams included runners at different
+levels of ability.
 
-\item[frequency:] The number of times a value appears in a sample.
+As a result, runners were spread out along the course with little
+relationship between speed and location.  When I started running my
+leg, the runners near me were (pretty much) a random sample of the
+runners in the race.
 
-\item[histogram:] A mapping from values to frequencies, or a graph
-that shows this mapping.
+So where does the bias come from?  During my time on the course, the
+chance of overtaking a runner, or being overtaken, is proportional to
+the difference in our speeds.  To see why, think about the extremes.
+If another runner is going at the same speed as me, neither of us will
+overtake the other.  If someone is going so fast that they cover the
+entire course while I am running, they are certain to overtake me.
 
-\item[probability:] A frequency expressed as a fraction of the sample
-size.
+Write a function called {\tt BiasPmf} that takes a Pmf representing
+the actual distribution of runners' speeds, and the speed of a running
+observer, and returns a new Pmf representing the distribution of
+runners' speeds as seen by the observer.
 
-\item[normalization:] The process of dividing a frequency by a sample
-size to get a probability.
-
-\item[distribution:] A summary of the values that appear in a sample
-and the frequency, or probability, of each.
-
-\item[PMF:] Probability mass function: a representation of a distribution
-as a function that maps from values to probabilities.
-
-\item[mode:] The most frequent value in a sample.
-
-\item[outlier:] A value far from the central tendency.
-
-\item[bin:] A range used to group nearby values.
-
-\item[relative risk:] A ratio of two probabilities, often used to measure
-a difference between distributions.
-
-\item[conditional probability:] A probability computed under the assumption
-that some condition holds.
-
-\item[clinically significant:] A result, like a difference between groups,
-that is relevant in (often medical) practice.
-
-\end{description}
+To test your function, let's get the distribution of speeds from
+a normal road race (not a relay).
+I recently ran the James Joyce Ramble 10K
+in Dedham MA.  The results are available from
+\url{coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
 
 
-\chapter{Cumulative distribution functions}
-\label{cumulative}
+\end{ex}
+
 
 \section{The limits of PMFs}
 
@@ -1747,16 +1967,6 @@ some range).
 \item Find the rank percentile of your weight in that distribution.
 
 \end{enumerate}
-
-
-\begin{ex}
-Find out how tall (long, actually) you were at birth.  If you don't
-know, call your mother again.  Find the CDF of birth weight for
-people who were the same height, and compute your percentile rank
-in that CDF.
-
-Now find the rank percentile of your height conditioned on your weight.
-\end{ex}
 
 
 \section{Age group ranking}
@@ -2171,7 +2381,7 @@ a normal distribution with the same mean and variance.
 \begin{figure}
 % cumulative.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_model.eps}}
-\caption{CDF of birth weights.}
+\caption{CDF of birth weights with a normal model.}
 \label{nsfg_birthwgt_model}
 \end{figure}
 
@@ -2264,12 +2474,12 @@ quick-and-dirty method that is even easier to implement:
 
 \begin{description}
 
-\item Sort the values in the dataset.
-
 \item From a normal distribution with $\mu = 0$ and $\sigma = 1$,
 generate a sample with the same size as your dataset and sort it.
 
-\item Plot the values from your dataset versus the random values.
+\item Sort the values in the dataset.
+
+\item Plot the sorted values from your dataset versus the random values.
 
 \end{description}
 
@@ -2480,7 +2690,7 @@ For example, the CDF of the exponential distribution is
 
 Solving for $x$ yields:
 
-\[ x = -1 / \lambda \ln (1-p) \]
+\[ x = -\ln (1-p) / \lambda \]
 
 So in Python we can write
 
@@ -2943,11 +3153,12 @@ can be computed directly like this:
 
 Or recursively like this
 
-\[ \binom{n}{k} + \binom{n}{k} \]
+\[ \binom{n}{k} = \binom{n-1}{k} + \binom{n-1}{k-1} \]
 
 with two base cases: if $k=0$ or $k=n$, the result is 1.  If you
 download \url{thinkstats.com/thinkstats.py} you will see a function
-named {\tt Binom} that computes the binomial coefficient.
+named {\tt Binom} that computes the binomial coefficient with reasonable
+efficiency.
 
 \begin{ex}
 If you flip a coin 100 times, you expect about 50 heads, but what
@@ -3215,7 +3426,7 @@ This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 
 The blue M\&M was introduced in 1995.  Before then, the color mix in
 a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
-Green, 10\% Orange, 10\% Tan).  Afterwards it was (24\% Blue , 20\%
+Green, 10\% Orange, 10\% Tan).  Afterward it was (24\% Blue , 20\%
 Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown).
 
 A friend of mine has two bags of M\&Ms, and he tells me
@@ -3228,7 +3439,7 @@ from the 1994 bag?
 
 \begin{ex}
 
-This exercise is adapted from MacKay, \em{Information
+This exercise is adapted from MacKay, {\em Information
   Theory, Inference, and Learning Algorithms}:
 
 Elvis Presley had a twin brother who died at birth.  According to the
@@ -3307,7 +3518,7 @@ is:
 \[ m_3 = \frac{1}{n} \sum_i (x_i - \mu)^3 \]
 
 You might recognize $m_2$ as the mean squared deviation (also known as
-variance); similarly, $m_3$ is the mean cubed deviation.
+variance); $m_3$ is the mean cubed deviation.
 
 Negative skewness indicates that a distribution 
 ``skews left;'' that is, it extends
@@ -3386,7 +3597,7 @@ Read about it at \url{wikipedia.org/wiki/Gini_coefficient} and write a
 function called {\tt Gini} that computes it for the income
 distribution.
 
-Hint: use the Pdf to compute the relative mean difference
+Hint: use the PMF to compute the relative mean difference
 (see \url{wikipedia.org/wiki/Mean_difference}).
 
 You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
@@ -3420,13 +3631,13 @@ In order to get a probability mass\footnote{To take the analogy one
 step farther, the mean of a distribution is its center of mass, and
 the variance is its moment of inertia.}, you have to integrate over $x$.
 For example, the probability that a value from a normal distribution
-falls between 0 and 1 is
+falls between -0.5 and 0.5 is
 
-\[ P[0 \le X \le 1] = \int_0^1 PDF_{normal}(x) dx \]
+\[ P[-0.5 \le X \le 0.5] = \int_{-0.5}^{0.5} PDF_{normal}(x) dx \]
 
 Since $CDF_{normal}$ is the integral of $PDF_{normal}$, we can write
 
-\[ P[0 \le X \le 1] = CDF_{normal}(1) - CDF_{normal}(0) \]
+\[ P[-0.5 \le X \le 0.5] = CDF_{normal}(0.5) - CDF_{normal}(-0.5) \]
 
 
 \begin{ex}
@@ -3545,6 +3756,7 @@ Write a similar function that computes the PMF of $Z = max(X,Y)$.
 
 
 \section{Why normal?}
+\label{why_normal}
 
 I said earlier that normal distributions are amenable to analysis,
 but I didn't say why.  One reason is that they are
@@ -3705,6 +3917,21 @@ distribution tends to be normal.
 
 \begin{ex}
 
+If I draw a sample, $x_1 .. x_n$, independently from a
+distribution with finite mean $\mu$ and variance $\sigma^2$, what is
+the distribution of the sample mean:
+
+\newcommand{\xbar}{\bar{x}}
+
+\[ \xbar = \frac{1}{n} \sum x_i \]
+
+As $n$ increases, what happens to the variance of the sample mean?
+Hint: review Section~\ref{why_normal}.
+
+\end{ex}
+
+\begin{ex}
+
 Choose a distribution (one of exponential, lognormal or Pareto) and
 choose values for the parameter(s).  Generate samples with sizes
 2, 4, 8, etc., and compute the distribution of their sums.  Use
@@ -3758,6 +3985,14 @@ If you divide a PDF into a set of bins, you can generate a PMF that is
 at least an approximation of the PDF.  We will also use this
 technique in Chapter~\ref{estimation} to do Bayesian estimation.
 
+\begin{ex}
+
+Write a function called {\tt MakePmfFromCdf} that takes a Cdf object
+and returns the corresponding Pmf object.
+
+You can find a solution to this exercise in {\tt thinkstats.com/Pmf.py}.
+
+\end{ex}
 
 \section{Glossary}
 
@@ -5597,38 +5832,22 @@ variable, also called an explanatory variable.
 \item[coefficient of determination:] A measure of the goodness of fit
 of a linear model.
 
-\item[randomized controlled trial:]
+\item[randomized controlled trial:] An experimental design in which subject
+are divided into groups at random, and different groups are given different
+treatments.
 
-\item[treatment:]
+\item[treatment:] An change or intervention applied to one group in a
+controlled trial.
 
-\item[control group:]
+\item[control group:] A group in a controlled trial that receives no
+treatment, or a treatment whose effect is known.
 
-\item[natural experiment:]
+\item[natural experiment:] An experimental design that takes advantage of
+a natural division of subjects into groups in ways that are at least
+approximately random.
 
 \end{description}
 
-
-
-
-% Reminders
-
-%least squares fit
-
-%Examples:
-
-%    weight gain vs. current weight, explanation of lognormal distribution
-
-%Goodness of fit for evaluating distribution models
-
-%Show CLT rate of convergence to normal for different distributions 
-%(test linearity on a normal prob graph)
-
-
-% moments
-
-% modes
-
-%   multimodal distributions (artifact examples: heights, gestation)
 
 % Gelman's paradox
 % \url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
