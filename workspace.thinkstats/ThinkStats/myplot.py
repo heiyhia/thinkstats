@@ -30,14 +30,17 @@ class InfiniteList(list):
         return self.val
 
 
-def Underride(d, key, val):
-    """Add a key-value pair to d only if key is not in d.
+def Underride(d, **options):
+    """Add key-value pairs to d only if key is not in d.
 
     If d is None, create a new dictionary.
     """
     if d is None:
         d = {}
-    d.setdefault(key, val)
+
+    for key, val in options.iteritems():
+        d.setdefault(key, val)
+
     return d
 
 
@@ -53,9 +56,9 @@ def Hist(hist, clf=True, root=None, bar_options=None, **options):
     """
     if clf:
         pyplot.clf()
-    bar_options = Underride(bar_options, 'label', hist.name)
+    bar_options = Underride(bar_options, label=hist.name, align='center')
     xs, fs = hist.Render()
-    pyplot.bar(xs, fs, align='center', **bar_options)
+    pyplot.bar(xs, fs, **bar_options)
 
     Plot(root=root, **options)
 
@@ -102,20 +105,43 @@ def Shift(xs, shift):
     return [x+shift for x in xs]
 
 
-def Pmf(pmf, root=None, plot_options=None, **options):
+def Diff(t):
+    """Compute the differences between adjacent elements in a sequence.
+
+    Args:
+        t: sequence of number
+
+    Returns:
+        sequence of differences (length one less than t)
+    """
+    diffs = [t[i+1] - t[i] for i in range(len(t)-1)]
+    return diffs
+
+
+def Pmf(pmf, clf=True, root=None, plot_options=None, **options):
     """Plots a PMF as a line.
 
     Args:
       pmf: Hist or Pmf object
+      clf: boolean, whether to clear the figure      
       root: string filename root
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
     if clf:
         pyplot.clf()
-    plot_options = Underride(plot_options, 'label', pmf.name)
+
     xs, fs = pmf.Render()
-    pyplot.plot(xs, fs, **plot_options)
+
+    # find the minimum distance between adjacent values
+    width = min(Diff(xs))
+
+    plot_options = Underride(plot_options, 
+                             label=pmf.name, 
+                             align='center',
+                             width=width)
+
+    pyplot.bar(xs, fs, **plot_options)
     Plot(root=root, **options)
 
 

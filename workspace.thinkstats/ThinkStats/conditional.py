@@ -23,12 +23,11 @@ def ConditionPmf(pmf, filter_func):
         new Pmf object
     """
     cond_pmf = pmf.Copy('conditional')
-    d = cond_pmf.d
-    keys = [key for key in d if filter_func(key)]
-    for key in keys:
-        del d[key]
+
+    vals = [val for val in pmf.Values() if filter_func(val)]
+    for val in vals:
+        cond_pmf.Remove(val)
     
-    cond_pmf = Pmf.Pmf(d)
     cond_pmf.Normalize()
     return cond_pmf
 
@@ -51,9 +50,6 @@ def ConditionOnWeeks(pmf, week=39):
     return cond
 
 
-def main():
-    MakeFigure()
-    
 def MakeFigure():
     pool, firsts, others = descriptive.MakeTables()
 
@@ -82,6 +78,11 @@ def MakeFigure():
               title='Conditional Probability',
               show=True,
               )
+
+
+def main():
+    MakeFigure()
+    
 
 if __name__ == "__main__":
     main()
