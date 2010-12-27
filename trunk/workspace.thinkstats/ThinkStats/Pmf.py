@@ -70,9 +70,9 @@ class _DictWrapper(object):
         del self.d[x]
 
     def Total(self):
-        """Returns the total of the frequencies in the map."""
+        """Returns the total of the frequencies/probabilities in the map."""
         total = sum(self.d.values())
-        return float(total)
+        return total
 
 
 class Hist(_DictWrapper):
@@ -137,7 +137,7 @@ class Pmf(_DictWrapper):
         Args:
             denom: float divisor; if None, computes the total of all probs
         """
-        denom = denom or self.Total()
+        denom = denom or float(self.Total())
         
         for x, p in self.d.iteritems():
             self.d[x] = p / denom
