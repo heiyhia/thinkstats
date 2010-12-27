@@ -121,7 +121,7 @@ class Pregnancies(Table):
     def GetFields(self):
         """Gets information about the fields to extract from the survey data.
 
-        Documentation of the fields is at
+        Documentation of the fields for Cycle 6 is at
         http://nsfg.icpsr.umich.edu/cocoon/WebDocs/NSFG/public/index.htm
 
         Returns:
@@ -130,6 +130,7 @@ class Pregnancies(Table):
         return [
             ('caseid', 1, 12, int),
             ('nbrnaliv', 22, 22, int),
+            ('babysex', 56, 56, int),
             ('birthwgt_lb', 57, 58, int),
             ('birthwgt_oz', 59, 60, int),
             ('prglength', 275, 276, int),

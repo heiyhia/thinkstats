@@ -118,7 +118,7 @@ def Diff(t):
     return diffs
 
 
-def Pmf(pmf, clf=True, root=None, plot_options=None, **options):
+def Pmf(pmf, clf=True, root=None, bar_options=None, **options):
     """Plots a PMF as a line.
 
     Args:
@@ -136,12 +136,13 @@ def Pmf(pmf, clf=True, root=None, plot_options=None, **options):
     # find the minimum distance between adjacent values
     width = min(Diff(xs))
 
-    plot_options = Underride(plot_options, 
-                             label=pmf.name, 
-                             align='center',
-                             width=width)
+    bar_options = Underride(bar_options, 
+                            label=pmf.name,
+                            align='center',
+                            edgecolor='blue',
+                            width=width)
 
-    pyplot.bar(xs, fs, **plot_options)
+    pyplot.bar(xs, fs, **bar_options)
     Plot(root=root, **options)
 
 
