@@ -96,8 +96,12 @@ class Table(object):
 class Respondents(Table):
     """Represents the respondent table."""
 
-    def ReadRecords(self, data_dir='.', filename='2002FemResp.dat.gz', n=None):
+    def ReadRecords(self, data_dir='.', n=None):
+        filename = self.GetFilename()
         self.ReadFile(data_dir, filename, self.GetFields(), Respondent, n)
+
+    def GetFilename(self):
+        return '2002FemResp.dat.gz'
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
@@ -115,8 +119,12 @@ class Respondents(Table):
 class Pregnancies(Table):
     """Contains survey data about a Pregnancy."""
 
-    def ReadRecords(self, data_dir='.', filename='2002FemPreg.dat.gz', n=None):
+    def ReadRecords(self, data_dir='.', n=None):
+        filename = self.GetFilename()
         self.ReadFile(data_dir, filename, self.GetFields(), Pregnancy, n)
+
+    def GetFilename(self):
+        return '2002FemPreg.dat.gz'
 
     def GetFields(self):
         """Gets information about the fields to extract from the survey data.
@@ -139,6 +147,9 @@ class Pregnancies(Table):
             ('agepreg', 338, 341, int),
             ('finalwgt', 423, 440, float),
             ]
+
+    def GetLiveBirthCodes(self):
+        return [1]
 
 def main(name, data_dir='.'):
     resp = Respondents()

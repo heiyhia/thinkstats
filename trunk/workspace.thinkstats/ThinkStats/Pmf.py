@@ -41,6 +41,10 @@ class _DictWrapper(object):
         """
         return zip(*sorted(self.Items()))
 
+    def Print(self):
+        for val, prob in sorted(self.Items()):
+            print val, prob
+
     def Incr(self, x, term=1):
         """Increments the freq/prob associated with the value x.
 

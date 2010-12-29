@@ -7,12 +7,30 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import math
 import random
+import matplotlib.pyplot as pyplot
 
 import Cdf
 import myplot
 import Pmf
 import survey
 import thinkstats
+
+
+def MakeUniformSuite(low, high, steps):
+    """Makes a PMF that represents a suite of hypotheses with equal p.
+    
+    Args:
+        low: low end of range
+        high: high end of range
+        steps: number of values
+
+    Returns:
+        Pmf object
+    """
+    hypos = [low + (high-low) * i / (steps-1.0) for i in range(steps)]
+    pmf = Pmf.MakePmfFromList(hypos)
+    return pmf
+
 
 def MakeTable():
     """Reads survey data and returns table.
@@ -63,14 +81,22 @@ def PrintGrid(hist):
     print hist.Freq('GB'), hist.Freq('GG')
 
 
-def ProbSequence(sequence, p=0.508):
+def LogProbSequence(sequence, p):
     """Computes the probability of a sequence under the simple model.
 
     Assumes that the probability of a boy for all births is p.
     """
     d = dict(B=math.log(p), G=math.log(1-p))
     t = [d[x] for x in sequence]
-    prob = math.exp(sum(t))
+    return sum(t)
+    
+
+def ProbSequence(sequence, p=0.508):
+    """Computes the probability of a sequence under the simple model.
+
+    Assumes that the probability of a boy for all births is p.
+    """
+    prob = math.exp(LogProbSequence(sequence, p))
     return prob
     
 
@@ -81,12 +107,33 @@ def ProbSequenceSigma(sequence, probs):
     distribution.
     """
     total = 0.0
-    for val, prob in probs.Items():
-        total += prob * ProbSequence(sequence, val)
+    for mp, prob in probs.Items():
+        total += prob * ProbSequence(sequence, mp)
     return total
     
 
-def LikelihoodSequences(hist, sigma):
+def LogLikelihood(hist, sigma):
+    """Computes the likelihood of a list of sequences given sigma.
+
+    Args:
+        hist: Histogram that maps sequences to their frequencies
+        sigma: float std of proclivities
+
+    Returns:
+        float log likelihood
+    """
+    probs = ComputeProbs(sigma=sigma)
+    #print 'probs'
+    #probs.Print()
+
+    total = 0.0
+    for sequence, freq in hist.Items():
+        prob = ProbSequenceSigma(sequence, probs)
+        total += math.log(prob) * freq
+    return total
+
+
+def Likelihood(hist, sigma):
     """Computes the likelihood of a list of sequences given sigma.
 
     Args:
@@ -96,17 +143,12 @@ def LikelihoodSequences(hist, sigma):
     Returns:
         float likelihood
     """
-    probs = ComputeProbs(sigma=sigma)
-
-    total = 1.0
-    for sequence, freq in hist.Items():
-        prob = ProbSequenceSigma(sequence, probs)
-        print sequence, prob
-        total *= prob
-    return total
+    logprob = LogLikelihood(hist, sigma)
+    prob = math.exp(logprob)
+    return prob
 
 
-def ComputeProbs(p=0.508, sigma=0.5, n=101):
+def ComputeProbs(p=0.508, sigma=0.5, n=101, bound=2.5):
     """Make a Pmf of probabilities with the given parameter.
 
     The probabilities are the logistic tranform of the normal values.
@@ -120,14 +162,14 @@ def ComputeProbs(p=0.508, sigma=0.5, n=101):
         Pmf object
     """
     bias = p - 0.5
-    low = -3.0
-    high = 3.0
-    vs = [low + i * (high-low) / (n-1) for i in range(n)]
+    low = -bound
+    high = bound
+    xs = [low + i * (high-low) / (n-1) for i in range(n)]
 
     pmf = Pmf.Pmf(name='proclivities')
-    for v in vs:
-        p = 1 / (1 + math.exp(-v * sigma)) + bias
-        prob = NormalPdf(v)
+    for x in xs:
+        p = 1 / (1 + math.exp(-x * sigma)) + bias
+        prob = NormalPdf(x)
         pmf.Incr(p, prob)
 
     pmf.Normalize()
@@ -181,7 +223,7 @@ def SimulateDiags(num=1000):
         diag = DiagDiff(pairs)
         diags.append(diag)
 
-    print thinkstats.Mean(diags)
+    # print thinkstats.Mean(diags)
 
     cdf = Cdf.MakeCdfFromList(diags, 'diagonal bias')
     myplot.Cdf(cdf, show=True)
@@ -189,17 +231,113 @@ def SimulateDiags(num=1000):
     return diags, cdf
 
 
+def LogUpdate(prior, evidence):
+    """Updates a prior distribution based on new evidence.
+
+    Prior and result are expressed in log likelihoods.
+
+    Args:
+        prior: Pmf object
+        evidence: whatever kind of object Likelihood expects
+    """
+    posterior = prior.Copy()
+    
+    for hypo in prior.Values():
+        loglikelihood = LogLikelihood(evidence, hypo)
+        posterior.Incr(hypo, loglikelihood)
+
+    ShiftPmf(posterior)
+    return posterior
+
+
+def ShiftPmf(pmf):
+    items = pmf.Items()
+    vals, probs = zip(*items)
+    shift = -max(probs)
+
+    for val, prob in items:
+        pmf.Incr(val, shift)
+
+def LogPmf(pmf):
+    """Applies a log transform to the probs in a PMF."""
+    return _MapPmf(pmf, math.log)
+
+def ExpPmf(pmf):
+    """Applies an exp transform to the probs in a PMF."""
+    return _MapPmf(pmf, math.exp)
+
+def _MapPmf(pmf, func):
+    new = Pmf.Pmf()
+    for val, prob in pmf.Items():
+        new.Incr(val, func(prob))
+    return new
+
+
+def CredibleInterval(pmf, percentage):
+    """Computes a credible interval for a given distribution.
+
+    If percentage=90, computes the 90% CI.
+
+    Args:
+        pmf: Pmf object representing a posterior distribution
+        percentage: float between 0 and 100
+
+    Returns:
+        sequence of two floats, low and high
+    """
+    cdf = Cdf.MakeCdfFromDict(pmf.GetDict())
+    prob = (1 - percentage/100.0) / 2
+    interval = [cdf.Value(p) for p in [prob, 1-prob]]
+    return interval
+
+
+def PlotCredibleInterval(pmf, ci):
+    for x in ci:
+        p = pmf.Prob(x)
+        xs = [x, x]
+        ps = [0, p]
+        pyplot.plot(xs, ps, linewidth=2, color='red')
+
 def main():
+    posterior = EstimateSigma()
+    PlotPosteriorSigma(posterior)
 
+def EstimateSigma():
+
+    # read the first-two-baby sequences
     table, sequences = MakeTable()
-    #myplot.Pmf(probs, show=True)
-
     pairs = SummarizeSequences(sequences)
     
-    likelihood = LikelihoodSequences(pairs, sigma=0.1)
-    print likelihood
-    return
+    # make the prior
+    prior = MakeUniformSuite(0.0, 1.0, 1001)
+    prior = LogPmf(prior)
 
+    # make the posterior
+    posterior = LogUpdate(prior, pairs)
+    posterior.name='sigma'
+    posterior = ExpPmf(posterior)
+    posterior.Normalize()
+
+    return posterior
+
+def PlotPosteriorSigma(posterior):
+
+    ci = CredibleInterval(posterior, 90)
+    print 'CI:', ci
+
+    pyplot.clf()
+    PlotCredibleInterval(posterior, ci)
+
+    myplot.Pmf(posterior,
+               root='sigma',
+               clf=False,
+               title='Posterior PMF',
+               xlabel='sigma',
+               ylabel='probability',
+               show=True)
+
+
+def Summarize(sequences):
     # get the sex ratio (boys per hundred girls)
     genders = Pmf.Hist()
     for t in sequences:
