@@ -5,8 +5,11 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import math
 import unittest
 import proclivity
+
+import Pmf
 
 class Test(unittest.TestCase):
 
@@ -23,19 +26,34 @@ class Test(unittest.TestCase):
 
         probs = proclivity.ComputeProbs(sigma=0.5)
         p = proclivity.ProbSequenceSigma('BB', probs)
-        self.assertAlmostEquals(p, 0.27177189186277162)
+        self.assertAlmostEquals(p, 0.2710908)
 
         p = proclivity.ProbSequenceSigma('BG', probs)
-        self.assertAlmostEquals(p, 0.23622810813722883)
+        self.assertAlmostEquals(p, 0.23690915)
 
-    def testLikelihoodSequences(self):
+    def testLikelihood(self):
         sequences = ['BB']
-        likelihood = proclivity.LikelihoodSequences(sequences, sigma=0.5)
-        self.assertAlmostEquals(likelihood, 0.27177189186277162)
+        hist = Pmf.MakeHistFromList(sequences)
+        likelihood = proclivity.Likelihood(hist, sigma=0.5)
+        self.assertAlmostEquals(likelihood, 0.2710908)
 
         sequences = ['BB', 'BG', 'GB', 'GG']
-        likelihood = proclivity.LikelihoodSequences(sequences, sigma=0.5)
-        self.assertAlmostEquals(likelihood, 0.0038790064091085911)
+        hist = Pmf.MakeHistFromList(sequences)
+        likelihood = proclivity.Likelihood(hist, sigma=0.5)
+        self.assertAlmostEquals(likelihood, 0.003881266018)
+
+        loglikelihood = proclivity.LogLikelihood(hist, sigma=0.5)
+        self.assertAlmostEquals(loglikelihood, -5.5515938852)
+        likelihood = math.exp(loglikelihood)
+        self.assertAlmostEquals(likelihood, 0.003881266018)
+
+    def testLogExpPmf(self):
+        pmf = Pmf.MakePmfFromList([1, 3])
+        new = proclivity.LogPmf(pmf)
+        self.assertAlmostEquals(new.Prob(1), -0.69314718056)
+
+        old = proclivity.ExpPmf(new)
+        self.assertAlmostEquals(old.Prob(1), 0.5)
 
 if __name__ == "__main__":
     unittest.main()

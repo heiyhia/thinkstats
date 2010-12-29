@@ -44,8 +44,32 @@ def Underride(d, **options):
     return d
 
 
+def Pmf(pmf, clf=True, root=None, line_options=None, **options):
+    """Plots a Pmf or Hist as a line.
+
+    Args:
+      pmf: Hist or Pmf object
+      clf: boolean, whether to clear the figure      
+      root: string filename root
+      line_options: dictionary of options passed to pylot.plot
+      options: dictionary of options
+    """
+    if clf:
+        pyplot.clf()
+
+    xs, ps = pmf.Render()
+
+    line_options = Underride(line_options, 
+                             label=pmf.name,
+                             color='blue',
+                             linewidth=2)
+
+    pyplot.plot(xs, ps, **line_options)
+    Plot(root=root, **options)
+
+
 def Hist(hist, clf=True, root=None, bar_options=None, **options):
-    """Plots a histogram with a bar plot.
+    """Plots a Pmf or Hist with a bar plot.
 
     Args:
       hist: Hist or Pmf object
@@ -56,10 +80,18 @@ def Hist(hist, clf=True, root=None, bar_options=None, **options):
     """
     if clf:
         pyplot.clf()
-    bar_options = Underride(bar_options, label=hist.name, align='center')
-    xs, fs = hist.Render()
-    pyplot.bar(xs, fs, **bar_options)
 
+    # find the minimum distance between adjacent values
+    xs, fs = hist.Render()
+    width = min(Diff(xs))
+
+    bar_options = Underride(bar_options, 
+                            label=hist.name,
+                            align='center',
+                            edgecolor='blue',
+                            width=width)
+
+    pyplot.bar(xs, fs, **bar_options)
     Plot(root=root, **options)
 
 
@@ -116,34 +148,6 @@ def Diff(t):
     """
     diffs = [t[i+1] - t[i] for i in range(len(t)-1)]
     return diffs
-
-
-def Pmf(pmf, clf=True, root=None, bar_options=None, **options):
-    """Plots a PMF as a line.
-
-    Args:
-      pmf: Hist or Pmf object
-      clf: boolean, whether to clear the figure      
-      root: string filename root
-      bar_options: dictionary of options passed to pylot.plot
-      options: dictionary of options
-    """
-    if clf:
-        pyplot.clf()
-
-    xs, fs = pmf.Render()
-
-    # find the minimum distance between adjacent values
-    width = min(Diff(xs))
-
-    bar_options = Underride(bar_options, 
-                            label=pmf.name,
-                            align='center',
-                            edgecolor='blue',
-                            width=width)
-
-    pyplot.bar(xs, fs, **bar_options)
-    Plot(root=root, **options)
 
 
 def Cdf(cdf, clf=True, root=None, plot_options=[{}], **options):
