@@ -18,6 +18,7 @@
 \usepackage{url}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
+\usepackage{subfig}
 \usepackage{amsmath, amsthm, amssymb}
 \usepackage{exercise}                        % texlive-latex-extra
 \usepackage{makeidx}
@@ -27,7 +28,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.2.4}
+\newcommand{\theversion}{1.2.5}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1620,7 +1621,7 @@ observed values and returns a new Pmf object that estimates the
 distribution of class sizes.
 
 You can download a solution to this problem from
-\url{thinkstats.py/class\_size.py}.
+\url{thinkstats.py/class_size.py}.
 
 \end{ex}
 
@@ -1663,12 +1664,16 @@ the actual distribution of runners' speeds, and the speed of a running
 observer, and returns a new Pmf representing the distribution of
 runners' speeds as seen by the observer.
 
-To test your function, let's get the distribution of speeds from
-a normal road race (not a relay).
-I recently ran the James Joyce Ramble 10K
-in Dedham MA.  The results are available from
-\url{coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
+To test your function, get the distribution of speeds from a
+normal road race (not a relay).  I wrote a program that reads the
+results from the James Joyce Ramble 10K in Dedham MA and converts the
+pace of each runner to MPH.  Download it from
+\url{thinkstats.com/relay_bias.py}.  Run it and look at the PMF of
+speeds.
 
+Now compute the distribution of speeds you would observe if you
+ran a relay race at 7.5 MPH with this group of runners.  You can download
+a solution from \url{thinkstats.com/relay_bias_soln.py}
 
 \end{ex}
 
@@ -2828,11 +2833,11 @@ For frequency probabilities, we can derive rules that relate
 probabilities of different events.  Probably the best known of these
 rules is
 
-\renewcommand{\and}{~\mbox{and}~}
+\newcommand{\AND}{~\mbox{and}~}
 
-\[ P(A \and B) = P(A) P(B) \quad \mbox{Warning: not always true!}\]
+\[ P(A \AND B) = P(A) P(B) \quad \mbox{Warning: not always true!}\]
 
-where $P(A \and B)$ is the probability that events $A$ and $B$ both
+where $P(A \AND B)$ is the probability that events $A$ and $B$ both
 occur.  This formula is easy to remember; the only problem is that it
 is {\em not always true}.  This formula only applies if $A$ and $B$
 are {\bf independent}, which means that if I know $A$ occurred, that
@@ -2851,11 +2856,11 @@ When $A$ and $B$ are not independent, it is often useful to compute
 the conditional probability, $P(A|B)$, which is the probability of
 $A$ given that we know $B$ occurred:
 
-\[ P(A|B) = \frac{P(A \and B)}{P(B)} \]
+\[ P(A|B) = \frac{P(A \AND B)}{P(B)} \]
 
 From that we can derive the general relation
 
-\[ P(A \and B) = P(A) P(B|A) \]
+\[ P(A \AND B) = P(A) P(B|A) \]
 
 This might not be as easy to remember, but if you translate it into
 English it should make sense: ``The chance of both things happening
@@ -2865,7 +2870,7 @@ given the first.''
 There is nothing special about the order of events, so we could also
 write.
 
-\[ P(A \and B) = P(B) P(A|B) \]
+\[ P(A \AND B) = P(B) P(A|B) \]
 
 These relationships hold whether $A$ and $B$ are independent or not.
 If they are independent, then $P(A|B) = P(A)$, which gets us back
@@ -2874,7 +2879,7 @@ where we started.
 Because all probabilities are in the range 0 to 1, it is
 easy to show that 
 
-\[ P(A \and B) \le P(A) \]
+\[ P(A \AND B) \le P(A) \]
 
 To picture this, imagine a club that only admits people who satisfy
 some requirement, $A$.  Now suppose they add a new requirement for
@@ -3066,6 +3071,7 @@ the distribution big enough to convince the bread police?
 
 
 \begin{ex}
+\label{coef_var}
 
 If you go to a dance where partners are paired up randomly, what
 percentage of opposite sex couples will you see where the woman is
@@ -3092,8 +3098,8 @@ heights are slightly more variable.
 
 \section{Another rule of probability}
 
-\renewcommand{\or}{~\mbox{or}~}
-\renewcommand{\not}{~\mbox{not}~}
+\newcommand{\OR}{~\mbox{or}~}
+\newcommand{\NOT}{~\mbox{not}~}
 
 If two events are {\bf mutually exclusive}, that means that only
 one of them can happen, so the conditional probabilities are 0:
@@ -3102,14 +3108,14 @@ one of them can happen, so the conditional probabilities are 0:
 
 In this case it is easy to compute the probability of either event:
 
-\[ P(A \or B) = P(A) + P(B)   \quad \mbox{Warning: not always true.} \]
+\[ P(A \OR B) = P(A) + P(B)   \quad \mbox{Warning: not always true.} \]
 
 But remember that this only applies if the events are mutually
 exclusive.  In general the probability of $A$ or $B$ or both is:
 
-\[ P(A \or B) = P(A) + P(B) - P(A \and B) \]
+\[ P(A \OR B) = P(A) + P(B) - P(A \AND B) \]
 
-The reason we have to subtract off $P(A \and B)$ is that otherwise it
+The reason we have to subtract off $P(A \AND B)$ is that otherwise it
 gets counted twice.  For example, if I flip two coins, chance of
 getting at least one tails is $1/2 + 1/2 - 1/4$.  I have to subtract
 $1/4$ because otherwise I am counting heads-heads twice.  The problem
@@ -3310,14 +3316,14 @@ Event B has occurred.  Bayes's theorem states:
 
 \[ P(A|B) = \frac{P(B|A)P(A)}{P(B)} \]
 
-To see that this is true, it helps to write $P(A \and B)$, which
+To see that this is true, it helps to write $P(A \AND B)$, which
 is the probability that A and B occur
 
-\[ P(A \and B) = P(A) P(B|A) \]
+\[ P(A \AND B) = P(A) P(B|A) \]
 
 But it is also true that 
  
-\[ P(A \and B) = P(B) P(A|B) \]
+\[ P(A \AND B) = P(B) P(A|B) \]
 
 So
 
@@ -4477,17 +4483,16 @@ is crooked.
 
 You roll the die 60 times and get the following results:
 
-%%%  NEED TO DEBUG THIS
-%\begin{center}
-%\begin{tabular}{|l|c|c|c|c|c|c|}
-%\hline
-%Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
-%\hline
-%\hline
-%Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
-%\hline
-%\end{tabular}
-%\end{center}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
+\hline
+\hline
+Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
+\hline
+\end{tabular}
+\end{center}
 
 What is the chi-squared statistic for these values?  What is the
 probability of seeing a chi-squared value as large by chance?
@@ -5353,9 +5358,15 @@ units of $X$ and $Y$.  So the covariance of weight and height might be
 in units of kilogram-meters, which doesn't mean much.
 
 \begin{ex}
-What is Cov(X, X)?
 
-% Var(X)
+Write a function called {\tt Cov} that takes two lists
+and computes their covariance.  To test your function, compute
+the covariance of a list with itself and confirm that
+$Cov(X, X) = Var(X)$.
+
+You can download a solution from
+\url{thinkstats.com/correlation.py}.
+
 \end{ex}
 
 
@@ -5383,9 +5394,9 @@ Expressed in terms of deviations, we have
 
 \[ \rho = \frac{\sum dx_i dy_x}{\sum dx_i \sum dy_i} \]
 
-Then by the ever-useful Cauchy-Schwarz
-inequality\footnote{wikipedia.org/wiki/Cauchy-Schwarz\_inequality}, we
-can show that $\rho^2 \le 1$, so $-1 \le \rho \le 1$.
+Then by the ever-useful Cauchy-Schwarz inequality\footnote{See
+  \url{wikipedia.org/wiki/Cauchy-Schwarz_inequality}.}, we can show
+that $\rho^2 \le 1$, so $-1 \le \rho \le 1$.
 
 The magnitude of $\rho$ indicates the strength of the correlation.  If
 $\rho=1$ the variables are perfectly correlated, which means that if
@@ -5430,13 +5441,102 @@ your data before blindly computing a correlation coefficient.
 
 \begin{ex}
 
-Using data from the NSFG, transform length and weight at birth to
-standard scores and make a scatterplot of the z-values.  Is there
-a relationship?  Does it appear to be linear?  Comparing your scatterplot
-to Figure~\ref{corr_examples}, what value do you expect for Pearson's
-correlation?  What value do you get?
+Write a function called {\tt Corr} that takes two lists and
+computes their correlation.  Hint: use {\tt thinkstats.Variance} and
+the {\tt Cov} function you wrote in the previous exercise.
+
+To test your function, compute the covariance of a list with itself
+and confirm that $Corr(X, X)$ is 1.0.
+
+You can download a solution from \url{thinkstats.com/correlation.py}.
 
 \end{ex}
+
+
+\section{Making scatterplots in pyplot}
+
+\begin{figure}
+% brfss_corr.py
+\centering
+\begin{tabular}{cc}
+a\includegraphics[height=2.0in]{workspace/scatter1.eps} &
+b\includegraphics[height=2.0in]{workspace/scatter2.eps} \\
+c\includegraphics[height=2.0in]{workspace/scatter3.eps} &
+d\includegraphics[height=2.0in]{workspace/scatter4.eps} \\ 
+\end{tabular}
+\caption{Scatterplots of weight versus height for the respondents
+in the BRFSS.}
+\label{scatterplots}
+\end{figure}
+
+The simplest way to check for a relationship between two variables
+is a scatterplot, but making a good scatterplot is not always easy.
+As an example, I'll plot weight versus height for the respondents
+in the BRFSS (see Section~\ref{lognormal}).  {\tt pyplot} provides
+a function named {\tt scatter} that makes scatterplots:
+
+\begin{verbatim}
+pyplot.scatter(heights, weights)
+\end{verbatim}
+
+Figure~\ref{scatterplots}a shows the result.  Not surprisingly, it
+looks like there is a positive correlation: taller people tend to be
+heavier.  But this is not the best representation of the data, because
+the data are packed into columns.  The problem is that the height data
+was rounded off to the nearest inch, converted to centimeters, and
+then rounded off again.  Some information is lost in translation.
+
+We can't get that information back, but we can minimize the effect on
+the scatterplot by {\bf jittering} the data, which means adding random
+noise to reverse the effect of rounding off.  Since these measurements
+were rounded to the nearest inch, they can be off by up to 0.5 inches or
+1.3 cm.  So I added uniform noise in the range -1.3 to 1.3:
+
+\begin{verbatim}
+jitter = 1.3
+heights = [h + random.uniform(-jitter, jitter) for h in heights]
+\end{verbatim}
+
+Figure~\ref{scatterplots}b shows the result.  Jittering the data makes
+the shape of the relationship clearer.  In general you should only jitter
+data for purposes of visualization; you should not use jittered data
+for analysis.
+
+Even with jittering, this is not the best way to represent the data.
+There are many overlapping data points, which hides data
+in the dense parts of the figure and gives disproportionate emphasis
+to outliers.
+
+We can solve that with the {\tt alpha} parameter, which makes
+the data points partly transparent:
+%
+\begin{verbatim}
+pyplot.scatter(heights, weights, alpha=0.2)
+\end{verbatim}
+%
+Figure~\ref{scatterplots}c shows the result.  Overlapping data points
+look darker, so darkness is proportional to density.
+
+Using transparency works well for moderate-sized datasets, but this
+figure only shows the first 1000 records in the BRFSS, out of a total
+of 414509.
+
+To handle larger datasets, one option is a hexbin plot, which divides
+the graph into hexagonal bins and colors each bin according to how many
+data points fall in it.  {\tt pyplot} provides a function called 
+{\tt hexbin}:
+%
+\begin{verbatim}
+pyplot.scatter(heights, weights, cmap=matplotlib.cm.gray_r)
+\end{verbatim}
+%
+Figure~\ref{scatterplots}d shows the result with a grayscale colormap.
+An advantage of a hexbin is that it shows the shape of the relationship
+well, and it is efficient for large datasets.  A drawback is that
+it makes the outliers invisible.
+
+You can download the code for these figures from
+\url{thinkstats.com/brfss_scatter.py}.
 
 
 \section{Spearman's rank correlation}
@@ -5456,7 +5556,7 @@ outlier.  You can read more about it at
 effect of outliers and skewed distributions.  To compute Spearman's
 correction, we have to compute the rank of each value, which is the
 index where it appears in the sorted sample.  For example, if the
-sample contains the values $\{ 1, 2, 5, 7 \}$, the rank of the value 5
+sample contains the values $\{ 7, 1, 2, 5 \}$, the rank of the value 5
 is 3, because it appears third in the sorted list.  Then we compute
 Pearson's correlation for the ranks.
 
@@ -5465,33 +5565,46 @@ nearly normal.  For example, if the data are lognormal, taking the log
 of each value yields a normal distribution.
 
 \begin{ex}
+
 Write a function that takes a sequence and returns a new
 sequence that contains the rank for each element.  For example,
 if the sequence is $\{ 7, 1, 2, 5 \}$, the result should be
 \{ 4, 1, 2, 3 \}.
 
 If the same value appears more than once, the best thing to do
-is assign each of them the same rank, which is the average of
+is assign each of them the average of
 their ranks.  But if you ignore that and assign them ranks in
 arbitrary order, the error is usually small.
 
 Now write a function that takes two sequences (with the same
 length) and computes their Spearman rank coefficient.
+
+You can download a solution from
+\url{thinkstats.com/correlation.py}.
+
 \end{ex}
 
 
 \begin{ex}
 
-Repeat your analysis with adult height and weight from the BRFSS.
-Because the distribution of adult weight is lognormal, the relationship
-may be nonlinear.  Make a scatterplot and see what it looks like.
+Download \url{thinkstats.com/brfss.py} and
+\url{thinkstats.com/brfss_scatter.py}.  Run them and confirm that you
+can read the BFRSS data and generate scatterplots.
 
-Now try plotting $\log \mathrm{weight}$ versus height, and compute
-Pearson's correlation for the transformed variable.
+Comparing the scatterplots to Figure~\ref{corr_examples}, what value
+do you expect for Pearson's correlation?  What value do you get?
+
+Because the distribution of adult weight is lognormal, there are
+outliers that affect the correlation.  Try plotting $\log
+\mathrm{weight}$ versus height, and compute Pearson's correlation for
+the transformed variable.
+
 Finally, compute Spearman's rank correlation for weight and height.
-
-Which of these correlation coefficients do you think is the best
+Which coefficient do you think is the best
 measure of the strength of the relationship?
+
+You can download a solution from
+\url{thinkstats.com/brfss_corr.py}.
 
 \end{ex}
 
@@ -5502,9 +5615,8 @@ measure of the strength of the relationship?
 \newcommand{\inter}{\alpha}
 
 Correlation coefficients measure the strength and sign of a
-relationship, but not the slope.  If we think there is a linear
-relationship between two variables, there are several ways to estimate
-the slope.  The most common is a {\bf linear least squares fit}.  A
+relationship, but not the slope.  There are several ways to estimate
+the slope; the most common is a {\bf linear least squares fit}.  A
 ``linear fit'' is a line intended to model the relationship between
 variables.  A ``least squares'' fit is one that minimizes the mean
 squared error (MSE) between the line and the data\footnote{See
@@ -5512,7 +5624,7 @@ squared error (MSE) between the line and the data\footnote{See
 
 Suppose we have a sequence of points $Y$ that we want to express
 as a function of another sequence $X$.  If we think that there is
-a linear relationship between $X$ and $Y$, with intercept $\inter$
+a linear relationship between $X$ and $Y$ with intercept $\inter$
 and slope $\slope$, we expect each $y_i$ to be roughly $\inter + \slope x_i$.
 
 But unless the correlation is perfect, this prediction is only
@@ -5535,7 +5647,7 @@ As usual, we could choose to minimize the absolute value of the
 residuals, or their squares, or their cubes, etc.  The most common
 choice is to minimize the sum of squared residuals
 
-\[ \sum \eps_i^2 \]
+\[ \min_{\inter, \slope} \sum \eps_i^2 \]
 
 Why?  Well, there are three good reasons and one bad one:
 
@@ -5560,7 +5672,7 @@ so much weight that the largest residual always dominates.
 
 That last reason made sense when computational efficiency was more
 important than choosing the method most appropriate to the problem
-at hand.  But that's no longer the case, so it is worth considering
+at hand.  That's no longer the case, so it is worth considering
 whether squared residuals are the right thing to minimize.
 
 For example, if you are using values of $X$ to predict values of $Y$,
@@ -5589,14 +5701,27 @@ of $X$, and the covariance of $X$ and $Y$.
 To see how this is derived, you can read
 \url{wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
+
 \begin{ex}
 
-Compute a linear least-squares fit for length and weight at birth
-in the NSFG.  What are the units of the estimated parameters
-$\hat{\inter}$ and $\hat{\slope}$?  How would you summarize these results
-in a sentence or two?
+Write a function named {\tt LeastSquares} that takes $X$ and $Y$ and
+computes $\inter$ and $\slope$.
+
+You can download a solution from
+\url{thinkstats.com/correlation.py}.
 
 \end{ex}
+
+\begin{ex}
+
+Using the data from the BRFSS again, compute the linear least squares
+fit for $\log \mathrm{weight}$ versus height.
+
+You can download a solution from
+\url{thinkstats.com/brfss_corr.py}.
+
+\end{ex}
+
 
 \begin{ex}
 
@@ -5618,7 +5743,7 @@ parameters of a Weibull distribution, then integrate over the
 continuous PDF to compute wind power density.
 
 To estimate the parameters of a Weibull distribution, we can use the
-transformation from Exercise~\ref{weibull} and then use a linear regression
+transformation from Exercise~\ref{weibull} and then use a linear fit
 to find the slope and intercept of the transformed data.
 
 Write a function that takes a sample from a Weibull distribution and
@@ -5694,6 +5819,27 @@ be the mean squared error (MSE) of your predictions?
 \end{ex}
 
 
+\begin{ex}
+
+Write a function named {\tt Residuals} that takes $X$, $Y$, $inter$
+and $slope$ and returns a list of $\eps_i$.
+
+Write a function named {\tt CoefDetermination} that takes the
+$\eps_i$ and $Y$ and returns $R^2$.
+
+To test your functions, confirm that \[ R^2 = \rho^2 \].
+
+\end{ex}
+
+\begin{ex}
+
+Using the height and weight data from the BRFSS (one more time),
+compute $inter$, $slope$ and $R^2$.  If you were trying to guess
+someone's weight, how much would it help to know their height?
+
+\end{ex}
+
+
 \section{Correlation and Causation}
 
 The web comic {\tt xkcd} demonstrates the difficulty of inferring
@@ -5721,15 +5867,15 @@ So what can you do to provide evidence of causation?
   else causes both A and B.
 
 \item Use randomness.  If you divide a large population into two
-  groups at random, then for any property, X, you expect the
-  difference in the mean of X to be small.  This is a consequence
+  groups at random, then for any property, $P$, you expect the
+  difference in the mean of $P$ to be small.  This is a consequence
   of the Central Limit Theorem (so it is subject to the same
   requirements).
 
   If the groups are nearly identical in all properties but one, you
   can eliminate spurious relationships.
 
-  This works even if you don't know what the confounding variables
+  This works even if you don't know what the properties
   are, but it works even better if you do, because you can check that
   the groups are identical.
 
@@ -5737,13 +5883,13 @@ So what can you do to provide evidence of causation?
 
 These ideas are the motivation for the {\bf randomized controlled
 trial}, in which subjects are assigned randomly to two (or more)
-groups, a {\bf treatment} group that receives some kind of intervention,
+groups: a {\bf treatment} group that receives some kind of intervention,
 like a new medicine, and a {\bf control group} that receives
 no intervention, or another treatment whose effects are known.
 
-A randomized controlled trial the most reliable way to demonstrate a
-causal relationship, and the foundation of science-based medicine (see
-\url{wikipedia.org/wiki/Randomized_controlled_trial}).
+A randomized controlled trial is the most reliable way to demonstrate
+a causal relationship, and the foundation of science-based medicine
+(see \url{wikipedia.org/wiki/Randomized_controlled_trial}).
 
 Unfortunately, controlled trials are only possible in the laboratory
 sciences, medicine, and a few other disciplines.  In the social sciences,
@@ -5783,9 +5929,14 @@ is due to age.
 
 \begin{ex}
 
-For each live birth in the NSFG dataset, determine the age of the mother
-and make a scatter plot of birth weight versus age.  Find the slope
-and intercept of the linear least squares fit.
+The NSFG data includes a variable named {\tt agepreg} that records
+the age of the mother at the time of birth.
+Make a scatterplot of mother's age and baby's weight for each live
+birth.  Can you see a relationship?
+
+Compute a linear least-squares fit for these variables.  What are the
+units of the estimated parameters $\hat{\inter}$ and $\hat{\slope}$?
+How would you summarize these results in a sentence or two?
 
 Compute the average age for mothers of first babies and the average
 age of other mothers.  Based on the difference in ages between the
@@ -5793,6 +5944,9 @@ groups, how much difference do you expect in the mean birth weights?
 
 What fraction of the actual difference in birth weights is explained
 by the difference in ages?
+
+You can download a solution to this problem from
+\url{thinkstats.com/ages.py}.
 
 \end{ex}
 

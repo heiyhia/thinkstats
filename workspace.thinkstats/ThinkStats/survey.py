@@ -171,8 +171,9 @@ class Pregnancies(Table):
             else:
                 rec.totalwgt_oz = 'NA'
 
-            if rec.totalwgt_oz < 32:
-                print rec.birthwgt_lb, rec.birthwgt_oz
+            # note: there are some very low and very high birthweights
+            # that are almost certainly errors, but for now I am not
+            # filtering
 
 
 def main(name, data_dir='.'):

@@ -28,40 +28,10 @@ def Process(table, name):
     """
     descriptive.Process(table, name)
 
-    table.weights, ozes = RecodeWeights(table)
+    table.weights = [p.totalwgt_oz for p in table.records
+                     if p.totalwgt_oz != 'NA']
     table.weight_pmf = Pmf.MakePmfFromList(table.weights, table.name)
     table.weight_cdf = Cdf.MakeCdfFromList(table.weights, table.name)
-    table.oz_pmf = Pmf.MakePmfFromList(ozes, 'ounces')
-
-
-def RecodeWeights(table):
-    """Recodes the birth weight information in the table.
-
-    Args:
-        table: Table object
-
-    Returns:
-        list of weights in total ounces
-    """
-    weights = []
-    ozes = []
-    for record in table.records:
-        record.birthwgt = float('NaN')
-
-        lbs = record.birthwgt_lb
-        oz = record.birthwgt_oz
-
-        if lbs > 20 or oz > 15:
-            continue
-
-        if lbs == 'NA' or oz == 'NA':
-            continue
-
-        weight_oz = lbs * 16 + oz
-        weights.append(weight_oz)
-        ozes.append(oz)
-
-    return weights, ozes
 
 
 def MakeTables():
@@ -76,20 +46,14 @@ def MakeTables():
     return pool, firsts, others
 
 
-def Summarize():
-    pool, firsts, others = MakeTables()
-    Resample(pool.weight_cdf)
-    MakeFigures(pool, firsts, others)
-
-
 def Resample(cdf, n=10000):
     sample = cdf.Sample(n)
     new_cdf = Cdf.MakeCdfFromList(sample, 'resampled')
     myplot.Cdfs([cdf, new_cdf],
-              root='resample_cdf',
-              title='CDF',
-              xlabel='weight in oz',
-              ylabel='CDF(x)') 
+                root='resample_cdf',
+                title='CDF',
+                xlabel='weight in oz',
+                ylabel='CDF(x)') 
 
 
 def MakeExample():
@@ -107,16 +71,6 @@ def MakeExample():
 
 def MakeFigures(pool, firsts, others):
     """Creates several figures for the book."""
-
-    # plot the PMF of the ounce part of the measurement
-    axis = None
-    myplot.Hist(pool.oz_pmf, 
-                root='nsfg_oz_pmf', 
-                title='Birth ounces PMF',
-                xlabel='ounces',
-                ylabel='probability',
-                axis=[-1, 16, 0, 0.13],
-                legend=False)
 
     bar_options = [
         dict(linewidth=0, color='0.7'),
@@ -148,7 +102,9 @@ def MakeFigures(pool, firsts, others):
 
 def main():
     MakeExample()
-    Summarize()
+
+    pool, firsts, others = MakeTables()
+    MakeFigures(pool, firsts, others)
     
 
 if __name__ == '__main__':
