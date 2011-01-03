@@ -52,7 +52,7 @@ class Table(object):
             record = self.MakeRecord(line, fields, constructor)
             self.AddRecord(record)
         fp.close()
-    
+
     def MakeRecord(self, line, fields, constructor):
         """Scans a line and returns an object with the appropriate fields.
 
@@ -70,8 +70,11 @@ class Table(object):
         obj = constructor()
         for (field, start, end, cast) in fields:
             try:
-                val = cast(line[start-1:end])
+                s = line[start-1:end]
+                val = cast(s)
             except ValueError:
+                #print line
+                #print field, start, end, s
                 val = 'NA'
             setattr(obj, field, val)
         return obj
@@ -92,6 +95,10 @@ class Table(object):
         """
         self.records.extend(records)
 
+    def Recode(self):
+        """Child classes can override this to recode values."""
+        pass
+
 
 class Respondents(Table):
     """Represents the respondent table."""
@@ -99,6 +106,7 @@ class Respondents(Table):
     def ReadRecords(self, data_dir='.', n=None):
         filename = self.GetFilename()
         self.ReadFile(data_dir, filename, self.GetFields(), Respondent, n)
+        self.Recode()
 
     def GetFilename(self):
         return '2002FemResp.dat.gz'
@@ -122,6 +130,7 @@ class Pregnancies(Table):
     def ReadRecords(self, data_dir='.', n=None):
         filename = self.GetFilename()
         self.ReadFile(data_dir, filename, self.GetFields(), Pregnancy, n)
+        self.Recode()
 
     def GetFilename(self):
         return '2002FemPreg.dat.gz'
@@ -144,12 +153,27 @@ class Pregnancies(Table):
             ('prglength', 275, 276, int),
             ('outcome', 277, 277, int),
             ('birthord', 278, 279, int),
-            ('agepreg', 338, 341, int),
+            ('agepreg', 284, 287, int),
             ('finalwgt', 423, 440, float),
             ]
 
-    def GetLiveBirthCodes(self):
-        return [1]
+    def Recode(self):
+        for rec in self.records:
+
+            # divide mother's age by 100
+            if rec.agepreg != 'NA':
+                rec.agepreg /= 100.0
+
+            # add up the total weight at birth
+            if (rec.birthwgt_lb != 'NA' and rec.birthwgt_lb < 20 and
+                rec.birthwgt_lb != 'NA' and rec.birthwgt_lb < 20):
+                rec.totalwgt_oz = rec.birthwgt_lb * 16 + rec.birthwgt_oz
+            else:
+                rec.totalwgt_oz = 'NA'
+
+            if rec.totalwgt_oz < 32:
+                print rec.birthwgt_lb, rec.birthwgt_oz
+
 
 def main(name, data_dir='.'):
     resp = Respondents()

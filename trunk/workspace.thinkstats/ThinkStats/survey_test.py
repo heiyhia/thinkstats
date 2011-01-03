@@ -35,6 +35,19 @@ class Test(unittest.TestCase):
         hist = MakeHist(preg, 'birthord')
         self.assertEquals(hist.Freq(1), 4413)
 
+        hist = MakeHist(preg, 'birthwgt_lb')
+        self.assertEquals(hist.Freq(6), 2223)
+
+        hist = MakeHist(preg, 'birthwgt_oz')
+        self.assertEquals(hist.Freq(6), 709)
+
+        hist = MakeHist(preg, 'agepreg')
+        self.assertEquals(hist.Freq('NA'), 352)
+        self.assertEquals(hist.Freq(25.0), 58)
+
+        hist = MakeHist(preg, 'totalwgt_oz')
+        self.assertEquals(hist.Freq('NA'), 4509)
+
         hist = MakeHist(preg, 'finalwgt')
         t = hist.Values()
         low, high = min(t), max(t)

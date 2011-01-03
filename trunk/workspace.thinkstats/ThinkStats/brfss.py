@@ -5,21 +5,26 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import cPickle
 import math
 import sys
 import survey
 import thinkstats
 
-class Respondent(survey.Respondent): 
-    """Represents a respondent."""
-    
 
 class Respondents(survey.Table):
     """Represents the respondent table."""
 
-    def ReadRecords(self, data_dir='', filename='CDBRFS08.ASC.gz', n=None):
-        self.ReadFile(data_dir, filename, self.GetFields(), Respondent, n)
+    def ReadRecords(self, data_dir='.', n=None):
+        filename = self.GetFilename()
+        self.ReadFile(data_dir,
+                      filename,
+                      self.GetFields(), 
+                      survey.Respondent,
+                      n)
+        self.Recode()
+
+    def GetFilename(self):
+        return 'CDBRFS08.ASC.gz'
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
@@ -41,21 +46,53 @@ class Respondents(survey.Table):
             ('sex', 143, 143, int),
             ]
 
+    def Recode(self):
+        """Recode variables that need cleaning."""
+
+        def CleanWeight(weight):
+            if weight in [7777, 9999]:
+                return 'NA'
+            elif weight < 1000:
+                return weight / 2.2
+            elif 9000 < weight < 9999:
+                return weight - 9000
+            else:
+                return weight
+
+        for rec in self.records:
+            # recode wtkg2
+            if rec.wtkg2 in ['NA', 99999]:
+                rec.wtkg2 = 'NA'
+            else:
+                rec.wtkg2 /= 100.0
+
+            # record wtyrago
+            rec.weight2 = CleanWeight(rec.weight2)
+            rec.wtyrago = CleanWeight(rec.wtyrago)
+
+            # recode htm3
+            if rec.htm3 == 999:
+                rec.htm3 = 'NA'
+
+
     def SummarizeHeight(self):
+        """Print summary statistics for male and female height."""
+
+        # make a dictionary that maps from gender code to list of heights
         d = {1:[], 2:[]}
-        [d[r.sex].append(r.htm3) for r in self.records
-                                     if r.htm3 != 999]
+        [d[r.sex].append(r.htm3) for r in self.records if r.htm3 != 'NA']
         
         for key, t in d.iteritems():
             mu, var = thinkstats.TrimmedMeanVar(t)
             sigma = math.sqrt(var)
             cv = sigma / mu
-            print key, mu, var, sigma, cv
+            print key, len(t), mu, var, sigma, cv
         
     def SummarizeWeightChange(self):
+        """Print the mean reported change in weight in kg."""
         
         data = [(r.weight2, r.wtyrago) for r in self.records
-                    if r.weight2 <= 999 and r.wtyrago <= 999]
+                if r.weight2 != 'NA' and r.wtyrago != 'NA']
         
         changes = [(curr - prev) for curr, prev in data]
             
