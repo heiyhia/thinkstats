@@ -13,48 +13,6 @@ import risk
 import thinkstats
 
 
-def main():
-    Test()
-
-
-def Test():
-    pool, firsts, others = descriptive.MakeTables()
-
-    funcs = [risk.ProbEarly, risk.ProbOnTime, risk.ProbLate]
-    
-    print 'observed'
-    observed = ComputeRows(firsts, others, funcs, probs=None)
-    print observed
-
-    tables = [firsts, others]
-    probs = [func(pool.pmf) for func in funcs]
-    print 'expected'
-    expected = ComputeRows(firsts, others, funcs, probs=probs)
-    print expected
-    
-    print 'chi-squared'
-    threshold = ChiSquared(expected, observed)
-    print threshold
-
-    print 'simulated'
-    num_trials = 10000
-    chi2s = []
-    count = 0
-    for _ in range(num_trials):
-        simulated = ComputeRows(firsts, others, funcs, probs=probs, 
-                            row_func=SimulateRow)
-        chi2 = ChiSquared(expected, simulated)
-        chi2s.append(chi2)
-        if chi2 >= threshold:
-            count += 1
-            
-    print 'max chi2'
-    print max(chi2s)
-    
-    print 'p-value'
-    print 1.0 * count / num_trials
-    
-
 def ComputeRow(n, probs):
     """Multiplies out a row of a table.
     
@@ -135,6 +93,55 @@ def ChiSquared(expected, observed):
              itertools.chain(*observed))
     t = [(obs - exp)**2 / exp for exp, obs in it]
     return sum(t)
+
+
+def Test(pool, firsts, others, num_trials=1000):
+    # collect the functions from risk.py that take Pmfs and compute
+    # various probabilities
+    funcs = [risk.ProbEarly, risk.ProbOnTime, risk.ProbLate]
+    
+    # get the observed frequency in each bin
+    print 'observed'
+    observed = ComputeRows(firsts, others, funcs, probs=None)
+    print observed
+
+    # compute the expected frequency in each bin
+    tables = [firsts, others]
+    probs = [func(pool.pmf) for func in funcs]
+    print 'expected'
+    expected = ComputeRows(firsts, others, funcs, probs=probs)
+    print expected
+
+    # compute the chi-squared stat
+    print 'chi-squared'
+    threshold = ChiSquared(expected, observed)
+    print threshold
+
+    print 'simulated'
+    chi2s = []
+    count = 0
+    for _ in range(num_trials):
+        simulated = ComputeRows(firsts, others, funcs, probs=probs, 
+                            row_func=SimulateRow)
+        chi2 = ChiSquared(expected, simulated)
+        chi2s.append(chi2)
+        if chi2 >= threshold:
+            count += 1
+            
+    print 'max chi2'
+    print max(chi2s)
+    
+    pvalue = 1.0 * count / num_trials
+    print 'p-value'
+    print pvalue
+
+    return pvalue
+
+
+def main():
+    # get the data
+    pool, firsts, others = descriptive.MakeTables()
+    Test(pool, firsts, others, num_trials=1000)
 
 
 if __name__ == "__main__":

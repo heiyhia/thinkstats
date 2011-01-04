@@ -41,7 +41,7 @@ class Respondents(brfss.Respondents):
         return heights, weights
 
     def ScatterPlot(self, root, heights, weights, alpha=1.0):
-        pyplot.scatter(heights, weights, alpha=alpha)
+        pyplot.scatter(heights, weights, alpha=alpha, edgecolors='none')
         myplot.Plot(root=root,
                     xlabel='Height (cm)',
                     ylabel='Weight (kg)',
@@ -54,8 +54,7 @@ class Respondents(brfss.Respondents):
                     xlabel='Height (cm)',
                     ylabel='Weight (kg)',
                     axis=[140, 210, 20, 200],
-                    legend=False
-                    )
+                    legend=False)
 
 
 def MakeFigures():
@@ -71,8 +70,8 @@ def MakeFigures():
     resp.ScatterPlot('scatter2', heights, weights)
 
     # after remaking scatter3, you have to convert the png version to eps
-    #pyplot.clf()
-    #resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
+    pyplot.clf()
+    resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
 
     # read all respondents
     resp = Respondents()
