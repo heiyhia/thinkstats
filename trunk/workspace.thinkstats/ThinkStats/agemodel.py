@@ -5,18 +5,20 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import first
-import descriptive
-import cumulative
-import correlation
-
 import math
+import matplotlib
+import matplotlib.pyplot as pyplot
+
+import correlation
+import cumulative
+import descriptive
+import first
+import myplot
 import survey
 import thinkstats
 
-import matplotlib
-import matplotlib.pyplot as pyplot
-import myplot
+import Cdf
+import Pmf
 
 """
 * Results:
