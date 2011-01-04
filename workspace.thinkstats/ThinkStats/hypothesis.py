@@ -14,35 +14,22 @@ import thinkstats
 import matplotlib.pyplot as pyplot
 
 
-def RunTests(iters=1000):
-    pool, firsts, others = cumulative.MakeTables()
-    mean_var = thinkstats.MeanVar(pool.lengths)
-    print 'Pooled mean var', mean_var
-    
-    RunTest('length', pool.lengths, firsts.lengths, others.lengths, 
-            iters,
-            partition=False)
-    
-
-def RunTest(root, pool, actual1, actual2, 
+def RunTest(root,
+            pool,
+            actual1,
+            actual2, 
             iters=1000,
-            trim=True,
+            trim=False,
             partition=False):
     """Computes the distributions of delta under H0 and HA.
     
     Args:
-        root: string filename root for the plots
-        
+        root: string filename root for the plots        
         pool: sequence of values from the pooled distribution
-        
         actual1: sequence of values in group 1
-        
         actual2: sequence of values in group 2
-        
         iters: how many resamples
-        
         trim: whether to trim the sequences
-        
         partition: whether to cross-validate by partitioning the data
     """
     if trim:
@@ -65,8 +52,8 @@ def RunTest(root, pool, actual1, actual2,
 
     # P(E|H0)
     peh0 = Test(root + '_deltas_cdf',
-               actual1, actual2, pool, pool,
-               iters, plot=True)
+                actual1, actual2, pool, pool,
+                iters, plot=True)
 
     # P(E|Ha)
     peha = Test(root + '_deltas_ha_cdf',
@@ -79,36 +66,16 @@ def RunTest(root, pool, actual1, actual2,
     print 'Posterior', posterior
 
 
-def DifferenceInMean(actual1, actual2):
-    """Computes the difference in mean between two groups.
-
-    Args:
-        actual1: sequence of float
-        actual2: sequence of float
-
-    Returns:
-        float difference in means (actual1 - actual2)
-    """
-    mu1 = thinkstats.Mean(actual1)
-    mu2 = thinkstats.Mean(actual2)
-    delta = mu1 - mu2
-    return mu1, mu2, delta
-
-
 def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
     """Estimates p-values based on differences in the mean.
     
     Args:
-        root: string filename base for plots
-        
+        root: string filename base for plots        
         actual1:
         actual2: sequences of observed values for groups 1 and 2
-        
         model1: 
         model2: sequences of values from the hypothetical distributions
-        
         iters: how many resamples
-        
         plot: whether to plot the distribution of differences in the mean
     """
     n = len(actual1)
@@ -118,7 +85,12 @@ def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
     delta = abs(delta)
 
     cdf, pvalue = PValue(model1, model2, n, m, delta, iters)
-    print n, m, mu1, mu2, delta, pvalue
+    print 'n:', n
+    print 'm:', m
+    print 'mu1', mu1
+    print 'mu2', mu2
+    print 'delta', delta
+    print 'p-value', pvalue
 
     if plot:
         PlotCdf(root, cdf, delta)
@@ -126,8 +98,24 @@ def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
     return pvalue
     
     
+def DifferenceInMean(actual1, actual2):
+    """Computes the difference in mean between two groups.
+
+    Args:
+        actual1: sequence of float
+        actual2: sequence of float
+
+    Returns:
+        tuple of (mu1, mu2, mu1-mu2)
+    """
+    mu1 = thinkstats.Mean(actual1)
+    mu2 = thinkstats.Mean(actual2)
+    delta = mu1 - mu2
+    return mu1, mu2, delta
+
+
 def PValue(model1, model2, n, m, delta, iters=1000, plot=False):
-    """Computes the distribution of deltas under the null hypothesis.
+    """Computes the distribution of deltas with the model distributions.
 
     And the p-value of the observed delta.
 
@@ -142,16 +130,16 @@ def PValue(model1, model2, n, m, delta, iters=1000, plot=False):
     """
     deltas = [Resample(model1, model2, n, m) for i in range(iters)]
     mean_var = thinkstats.MeanVar(deltas)
-    print 'Actual mean var deltas', mean_var
+    print '(Mean, Var) of resampled deltas', mean_var
 
     cdf = Cdf.MakeCdfFromList(deltas)
 
+    # compute the two tail probabilities
     left = cdf.Prob(-delta)
     right = 1.0 - cdf.Prob(delta)
     
     pvalue = left + right
-    print 'Tails', left, right
-    print 'Pvalue', pvalue
+    print 'Tails (left, right, total):', left, right, left+right
 
     return cdf, pvalue
 
@@ -165,6 +153,7 @@ def PlotCdf(root, cdf, delta):
        delta: float observed difference in means    
     """
     def VertLine(x):
+        """Draws a vertical line at x."""
         xs = [x, x]
         ys = [0, 1]
         pyplot.plot(xs, ys, linewidth=2, color='0.7')
@@ -177,12 +166,11 @@ def PlotCdf(root, cdf, delta):
     
     myplot.Plot(root,
                 title='Resampled differences',
-                xlabel='difference in weeks',
+                xlabel='difference in means (weeks)',
                 ylabel='CDF(x)',
                 legend=False) 
     
 
-    
 def Resample(t1, t2, n, m):
     """Draws samples and computes the difference in mean.
     
@@ -200,13 +188,12 @@ def Resample(t1, t2, n, m):
 
 
 def Partition(t, n):
-    """Splits a sequences into two random partitions.
+    """Splits a sequence into two random partitions.
     
     Side effect: shuffles t
     
     Args:
         t: sequence of values
-        
         n: size of the first partition
 
     Returns:
@@ -221,7 +208,6 @@ def SampleWithReplacement(t, n):
     
     Args:
         t: sequence of values
-        
         n: size of the sample
         
     Returns:
@@ -245,7 +231,21 @@ def SampleWithoutReplacement(t, n):
  
  
 def main():
-    RunTests(1000)
+
+    # get the data
+    pool, firsts, others = cumulative.MakeTables()
+    mean_var = thinkstats.MeanVar(pool.lengths)
+    print '(Mean, Var) of pooled data', mean_var
     
+    # run the test
+    RunTest('length', 
+            pool.lengths,
+            firsts.lengths, 
+            others.lengths, 
+            iters=1000,
+            trim=False,
+            partition=False)
+
+
 if __name__ == "__main__":
     main()
