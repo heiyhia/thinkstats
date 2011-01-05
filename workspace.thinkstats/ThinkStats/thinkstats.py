@@ -17,21 +17,6 @@ def Mean(t):
     return float(sum(t)) / len(t)
 
 
-def TrimmedMean(t, p=0.01):
-    """Computes the trimmed mean of a sequence of numbers.
-
-    Args:
-        t: sorted sequence of numbers
-
-        p: fraction of values to trim off each end
-
-    Returns:
-        float
-    """
-    t = Trim(t, p)
-    return Mean(t)
-
-
 def MeanVar(t):
     """Computes the mean and variance of a sequence of numbers.
 
@@ -46,12 +31,45 @@ def MeanVar(t):
     return mu, var
 
 
+def Trim(t, p=0.01):
+    """Trims the largest and smallest elements of t.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        sequence of values
+    """
+    t.sort()
+    n = int(p * len(t))
+    t = t[n:-n]
+    return t
+
+
+def TrimmedMean(t, p=0.01):
+    """Computes the trimmed mean of a sequence of numbers.
+
+    Side effect: sorts the list.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        float
+    """
+    t = Trim(t, p)
+    return Mean(t)
+
+
 def TrimmedMeanVar(t, p=0.01):
     """Computes the trimmed mean of a sequence of numbers.
 
-    Args:
-        t: sorted sequence of numbers
+    Side effect: sorts the list.
 
+    Args:
+        t: sequence of numbers
         p: fraction of values to trim off each end
 
     Returns:
@@ -60,21 +78,6 @@ def TrimmedMeanVar(t, p=0.01):
     t = Trim(t, p)
     mu, var = MeanVar(t)
     return mu, var
-
-
-def Trim(t, p=0.01):
-    """Trims the largest and smallest elements of t.
-
-    Args:
-        t: sorted sequence of numbers
-        p: fraction of values to trim off each end
-
-    Returns:
-        sequence of values
-    """
-    n = int(p * len(t))
-    t = t[n:-n]
-    return t
 
 
 def Var(t, mu=None):
@@ -93,6 +96,7 @@ def Var(t, mu=None):
     dev2 = [(x - mu)**2 for x in t]
     var = Mean(dev2)
     return var
+
 
 def Binom(n, k, d={}):
     """Compute the binomial coefficient "n choose k".

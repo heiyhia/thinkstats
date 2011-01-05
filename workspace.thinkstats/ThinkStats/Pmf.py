@@ -5,12 +5,21 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-"""Functions for building PMFs (probability mass functions)."""
+"""This file contains class definitions for:
+
+Hist: represents a histogram (map from values to integer frequencies).
+
+Pmf: represents a probability mass function (map from values to probs).
+
+_DictWrapper: private parent class for Hist and Pmf.
+
+"""
 
 class _DictWrapper(object):
     """An object that contains a dictionary."""
 
     def __init__(self, d=None, name=''):
+        # if d is provided, use it; otherwise make a new dict
         if d == None:
             d = {}
         self.d = d
@@ -42,8 +51,18 @@ class _DictWrapper(object):
         return zip(*sorted(self.Items()))
 
     def Print(self):
-        for val, prob in sorted(self.Items()):
+        """Prints the values and freqs/probs in ascending order."""
+        for val, prob in sorted(self.d.iteritems()):
             print val, prob
+
+    def Set(self, x, y=0):
+        """Sets the freq/prob associated with the value x.
+
+        Args:
+            x: number value
+            y: number freq or prob
+        """
+        self.d[x] = y
 
     def Incr(self, x, term=1):
         """Increments the freq/prob associated with the value x.
@@ -162,7 +181,7 @@ class Pmf(_DictWrapper):
 
         Args:
             mu: the point around which the variance is computed;
-                if omitted, uses the mean
+                if omitted, computes the mean
 
         Returns:
             float variance

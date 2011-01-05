@@ -24,6 +24,13 @@ class Respondents(survey.Table):
         self.Recode()
 
     def GetFilename(self):
+        """Get the name of the data file.
+
+        This function can be overridden by child classes.
+
+        The BRFSS data is available from thinkstats.com/CDBRFS08.ASC.gz
+
+        """
         return 'CDBRFS08.ASC.gz'
 
     def GetFields(self):
@@ -87,7 +94,8 @@ class Respondents(survey.Table):
             sigma = math.sqrt(var)
             cv = sigma / mu
             print key, len(t), mu, var, sigma, cv
-        
+
+
     def SummarizeWeightChange(self):
         """Print the mean reported change in weight in kg."""
         

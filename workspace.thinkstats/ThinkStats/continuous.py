@@ -16,17 +16,21 @@ import thinkstats
 import matplotlib.pyplot as pyplot
 
 def ExpoCdf(x, lam):
+    """Evaluates CDF of the exponential distribution with parameter lam."""
     return 1 - math.exp(-lam * x)
 
 def ParetoCdf(x, alpha, xmin):
+    """Evaluates CDF of the Pareto distribution with parameters alpha, xmin."""
     if x < xmin:
         return 0
     return 1 - pow(x / xmin, -alpha)
 
 def ParetoMedian(xmin, alpha):
+    """Computes the median of a Pareto distribution."""
     return xmin * pow(2, 1/alpha)
 
 def MakeExpoCdf():
+    """Generates a plot of the exponential CDF."""
     n = 40
     max = 2.5
     xs = [max*i/n for i in range(n)]
@@ -40,12 +44,13 @@ def MakeExpoCdf():
     pyplot.clf()
     pyplot.plot(xs, ps)
     myplot.Plot('expo_cdf',
-              title = 'Exponential CDF',
-              xlabel = 'x',
-              ylabel = 'CDF',
-              legend=False)
+                title = 'Exponential CDF',
+                xlabel = 'x',
+                ylabel = 'CDF',
+                legend=False)
     
 def MakeParetoCdf():
+    """Generates a plot of the Pareto CDF."""
     n = 50
     max = 10.0
     xs = [max*i/n for i in range(n)]
@@ -58,12 +63,13 @@ def MakeParetoCdf():
     pyplot.clf()
     pyplot.plot(xs, ps)
     myplot.Plot('pareto_cdf',
-              title = 'Pareto CDF',
-              xlabel = 'x',
-              ylabel = 'CDF',
-              legend=False)
+                title = 'Pareto CDF',
+                xlabel = 'x',
+                ylabel = 'CDF',
+                legend=False)
     
 def MakeParetoCdf2():
+    """Generates a plot of the exponential CDF."""
     n = 50
     max = 1000.0
     xs = [max*i/n for i in range(n)]
@@ -76,20 +82,22 @@ def MakeParetoCdf2():
     pyplot.clf()
     pyplot.plot(xs, ps)
     myplot.Plot('pareto_height',
-              title = 'Pareto CDF',
-              xlabel = 'height (cm)',
-              ylabel = 'CDF',
-              legend=False)
+                title = 'Pareto CDF',
+                xlabel = 'height (cm)',
+                ylabel = 'CDF',
+                legend=False)
     
 
 
 def RenderNormalCdf(mu, sigma, max, n=50):
+    """Generates sequences of xs and ps for a normal CDF."""
     xs = [max * i / n for i in range(n)]    
     ps = [erf.NormalCdf(x, mu, sigma) for x in xs]
     return xs, ps
 
 
 def MakeNormalCdf():
+    """Generates a plot of the normal CDF."""
     xs, ps = RenderNormalCdf(2.0, 0.5, 4.0)
     
     pyplot.clf()
@@ -101,43 +109,52 @@ def MakeNormalCdf():
               legend=False)
     
     
-def MakeNormalModel():
-    pool, _, _ = cumulative.MakeTables()
+def MakeNormalModel(weights):
+    """Plot the CDF of birthweights with a normal model."""
     
-    t = pool.weights[:]
-    t.sort()
-    rankit.MakeNormalPlot(t, 'nsfg_birthwgt_normal',
-                          ylabel='Birth weights (oz)',)
-    
-    mu, var = thinkstats.TrimmedMeanVar(t)
+    # estimate parameters: trimming outliers yields a better fit
+    mu, var = thinkstats.TrimmedMeanVar(weights, p=0.01)
     print 'Mean, Var', mu, var
     
-    pyplot.clf()
-
+    # plot the model
     sigma = math.sqrt(var)
     print 'Sigma', sigma
     xs, ps = RenderNormalCdf(mu, sigma, 200)
+
+    pyplot.clf()
     pyplot.plot(xs, ps, label='model', linewidth=3, color='0.7')
 
-    xs, ps = pool.weight_cdf.Render()
+    # plot the data
+    cdf = Cdf.MakeCdfFromList(weights)
+    xs, ps = cdf.Render()
     pyplot.plot(xs, ps, label='data', color='0.0')
  
     myplot.Plot('nsfg_birthwgt_model',
-              title = 'Birth weights',
-              xlabel = 'birth weight (oz)',
-              ylabel = 'CDF')
-    
+                title = 'Birth weights',
+                xlabel = 'birth weight (oz)',
+                ylabel = 'CDF')
 
 
- 
+def MakeNormalPlot(weights):
+    """Generates a normal probability plot of birth weights."""
+    rankit.MakeNormalPlot(weights, 
+                          root='nsfg_birthwgt_normal',
+                          ylabel='Birth weights (oz)',)
+
 def main():
-    MakeNormalModel()
-    return
-
+    # make the continuous CDFs
     MakeExpoCdf()
     MakeParetoCdf()
     MakeParetoCdf2()
     MakeNormalCdf()
+
+    # test the distribution of birth weights for normality
+    pool, _, _ = cumulative.MakeTables()
+    
+    t = pool.weights
+    MakeNormalModel(t)
+    MakeNormalPlot(t)
+
     
 if __name__ == "__main__":
     main()
