@@ -189,6 +189,19 @@ def MakeCdfFromHist(hist, name=''):
     return MakeCdfFromItems(hist.Items(), name)
 
 
+def MakeCdfFromPmf(pmf, name=''):
+    """Makes a CDF from a Pmf object.
+
+    Args:
+       d: dictionary that maps values to frequencies.
+       name: string name for the data.
+
+    Returns:
+        Cdf object
+    """
+    return MakeCdfFromItems(pmf.Items(), name)
+
+
 def MakeCdfFromList(seq, name=''):
     """Creates a CDF from an unsorted sequence.
 

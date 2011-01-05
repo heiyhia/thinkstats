@@ -9,6 +9,7 @@ import relay_bias
 import Pmf
 import myplot
 
+
 def BiasPmf(pmf, speed, name=None):
     """Returns a new PDF representing speeds observed at a given speed.
 
@@ -35,15 +36,17 @@ def main():
     results = relay_bias.ReadResults()
     speeds = relay_bias.GetSpeeds(results)
 
+    # plot the distribution of actual speeds
     pmf = Pmf.MakePmfFromList(speeds, 'actual speeds')
-    myplot.Pmf(pmf,
+    myplot.Hist(pmf,
                root='actual_speeds',
                title='PMF of running speed',
                xlabel='speed (mph)',
                ylabel='probability')
 
+    # plot the biased distribution seen by the observer
     biased = BiasPmf(pmf, 7.5, name='observed speeds')
-    myplot.Pmf(biased, 
+    myplot.Hist(biased, 
                root='observed_speeds',
                title='PMF of running speed',
                xlabel='speed (mph)',

@@ -14,18 +14,16 @@ import matplotlib
 import matplotlib.pyplot as pyplot
 import myplot
 import random
+import rankit
 import sys
 import survey
 import thinkstats
 
-class Respondent(brfss.Respondent): 
-    """Represents a respondent."""
-    
 
 class Respondents(brfss.Respondents):
     """Represents the respondent table."""
 
-    def MakeFigure(self, weights, root,
+    def MakeNormalModel(self, weights, root,
                    xmax=175, 
                    xlabel='adult weight (kg)',
                    axis=None):
@@ -54,55 +52,32 @@ class Respondents(brfss.Respondents):
                   axis=axis or [0, xmax, 0, 1])
     
     def MakeFigures(self):
-        weights = [record.wtkg2/100.0 for record in self.records
-                   if record.wtkg2 != 99999]
-        self.MakeFigure(weights, 'brfss_weight_model')
+        """Generates CDFs and normal prob plots for weights and log weights."""
+        weights = [record.wtkg2 for record in self.records
+                   if record.wtkg2 != 'NA']
+        self.MakeNormalModel(weights, root='brfss_weight_model')
+        rankit.MakeNormalPlot(weights,
+                              root='brfss_weight_normal',
+                              title='Adult weight',
+                              ylabel='Weight (kg)')
         
-        log_weight = [math.log(weight) for weight in weights]
+        log_weights = [math.log(weight) for weight in weights]
         xmax = math.log(175.0)
         axis = [3.5, 5.2, 0, 1]
-        self.MakeFigure(log_weight, 'brfss_weight_log',
-                        xmax=xmax,
-                        xlabel='adult weight (log kg)',
-                        axis=axis)
-        
-    def ScatterWeight(self):
-        
-        weights = []
-        changes = []
-        for r in self.records:
-            if r.weight2 > 999 or r.wtyrago > 999:
-                continue
-            
-            if r.weight2 == r.wtyrago:
-                continue
-            
-            jitter = 3
-            fudge = random.uniform(-jitter, jitter)
-            change = (r.wtyrago - r.weight2) + jitter
-            
-            weights.append(r.weight2)
-            changes.append(change)
-            
-        print 'Mean change', thinkstats.Mean(changes)
-        
-        
-        # pyplot.scatter(weights, changes, s=1)
-        pyplot.hexbin(weights, changes, cmap=matplotlib.cm.gray_r)
-        myplot.Plot('brfss_scatter',
-                  title = 'Weight change vs. weight',
-                  xlabel = 'Current weight (pounds)',
-                  ylabel = 'Weight change (pounds)',
-                  axis = [50, 350, -50, 50],
-                  legend=False,
-                  show=True,
-                  )
-
+        self.MakeNormalModel(log_weights, 
+                             root='brfss_weight_log',
+                             xmax=xmax,
+                             xlabel='adult weight (log kg)',
+                             axis=axis)
+        rankit.MakeNormalPlot(log_weights, 
+                              root='brfss_weight_lognormal',
+                              title='Adult weight',
+                              ylabel='Weight (log kg)')
 
 
 def main(name):
     resp = Respondents()
-    resp.ReadRecords(n=100000)
+    resp.ReadRecords()
     resp.MakeFigures()
 
     

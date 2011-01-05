@@ -56,8 +56,8 @@ def MakeTables():
     return pool, firsts, others
 
 
-def Summarize():
-    pool, firsts, others = MakeTables()
+def Summarize(pool, firsts, others):
+    """Print various summary statistics."""
     
     print
     print 'Variance'
@@ -87,17 +87,17 @@ def Summarize():
     for weeks, count in live_lengths[-10:]:
         print weeks, count
     
-    MakeFigures(firsts, others)
-    MakeDiffFigure(firsts, others)
-
 
 def MakeFigures(firsts, others):
+    """Plot Hists and Pmfs for the pregnancy length."""
 
+    # bar options is a list of option dictionaries to be passed to myplot.bar
     bar_options = [
         dict(color='0.9'),
         dict(color='0.5')
         ]
 
+    # make the histogram
     axis = [23, 46, 0, 2700]
     myplot.Hists([firsts.hist, others.hist], 
                  root='nsfg_hist', 
@@ -108,6 +108,7 @@ def MakeFigures(firsts, others):
                  bar_options=bar_options
                  )
 
+    # make the PMF
     axis = [23, 46, 0, 0.6]
     myplot.Hists([firsts.pmf, others.pmf],
                  root='nsfg_pmf',
@@ -119,6 +120,8 @@ def MakeFigures(firsts, others):
 
 
 def MakeDiffFigure(firsts, others):
+    """Plot the difference between the PMFs."""
+
     weeks = range(35, 46)
     diffs = []
     for week in weeks:
@@ -133,11 +136,15 @@ def MakeDiffFigure(firsts, others):
               title='Difference in PMFs',
               xlabel='weeks',
               ylabel='100 (PMF$_{first}$ - PMF$_{other}$)',
-              legend=False,
-              )
+              legend=False)
+
 
 def main():
-    Summarize()
+    pool, firsts, others = MakeTables()
+    Summarize(pool, firsts, others)
+    MakeFigures(firsts, others)
+    MakeDiffFigure(firsts, others)
+
 
 if __name__ == '__main__':
     main()

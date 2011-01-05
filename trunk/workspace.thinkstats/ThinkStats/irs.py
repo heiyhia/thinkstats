@@ -5,6 +5,14 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+"""
+
+Results: on a log-log scale the tail of the CCDF is a straight line,
+which suggests that the Pareto distribution is a good model for this data,
+at least for people with taxable income above the median.
+
+"""
+
 import csv
 import sys
 
@@ -38,8 +46,8 @@ def ReadIncomeFile(filename='08in11si.csv'):
     return t
 
 
-def MakeIncomePdf(data):
-    """Converts the strings from the IRS file to a PMF.
+def MakeIncomeDist(data):
+    """Converts the strings from the IRS file to a Hist, Pmf and Cdf.
 
     Args:
       data: list of (dollar range, number of returns) string pairs
@@ -90,10 +98,16 @@ def MakeIncomePdf(data):
 
 def main(script, *args):
     data = ReadIncomeFile()
-    hist, pmf, cdf = MakeIncomePdf(data)
+    hist, pmf, cdf = MakeIncomeDist(data)
+
+    # plot the CDF on a log-x scale
+    myplot.Cdf(cdf,
+               root='income_logx',
+               xscale='log')
 
     # plot the complementary CDF on a log-log scale
     myplot.Cdf(cdf, 
+               root='income_loglog',
                complement=True,
                xscale='log',
                yscale='log',

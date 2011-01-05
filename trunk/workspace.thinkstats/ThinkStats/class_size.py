@@ -70,13 +70,13 @@ def ClassSizes():
     }
 
     # form the pmf
-    pmf = Pmf.Pmf(d, 'actual sizes')
+    pmf = Pmf.MakePmfFromDict(d, 'actual')
     pmf.Normalize()
     print 'mean', pmf.Mean()
     print 'var', pmf.Var()
     
     # compute the biased pmf
-    biased_pmf = BiasPmf(pmf, 'observed sizes')
+    biased_pmf = BiasPmf(pmf, 'observed')
     print 'mean', biased_pmf.Mean()
     print 'var', biased_pmf.Var()
 
@@ -84,9 +84,18 @@ def ClassSizes():
     unbiased_pmf = UnbiasPmf(biased_pmf, 'unbiased')
     print 'mean', unbiased_pmf.Mean()
     print 'var', unbiased_pmf.Var()
- 
+
+    # plot the actual pmf
     myplot.Pmf(pmf)
-    myplot.Pmf(biased_pmf, show=True)
+
+    # plot the biased pmf
+    line_options = dict(color='red')
+    myplot.Pmf(biased_pmf,
+               xlabel='Class size',
+               ylabel='PMF',
+               line_options=line_options,
+               clf=False,
+               show=True)
 
  
 def main():

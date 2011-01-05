@@ -67,16 +67,13 @@ def Process(filename='populations.csv'):
     return pops
 
 
-def Main(script, command=None):
-    if command == 'download':
-        Download()
-    elif command == 'process':
-        pops = Process()
-        for pop in pops:
-            print pop
-    else:
-        print 'Usage: populations.py [download|process]'
-    
+def main(script, *args):
+    Download()
+    pops = Process()
+
+    for pop in pops:
+        print pop
+
 
 if __name__ == '__main__':
-    Main(*sys.argv)
+    main(*sys.argv)

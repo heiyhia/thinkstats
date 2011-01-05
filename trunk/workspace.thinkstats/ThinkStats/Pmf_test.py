@@ -22,6 +22,8 @@ class Test(unittest.TestCase):
         self.assertEquals(hist.Freq(5), 1)
         
         pmf = Pmf.MakePmfFromHist(hist)
+
+        pmf.Print()
         self.checkPmf(pmf)
 
     def checkPmf(self, pmf):
@@ -47,6 +49,15 @@ class Test(unittest.TestCase):
         new_pmf = Pmf.MakePmfFromDict(d)
         self.checkPmf(new_pmf)
 
+    def testSetAndNormalize(self):
+        pmf = Pmf.Pmf()
+        t = [1, 2, 2, 3, 5]
+        for x in t:
+            pmf.Set(x, 1)
+        pmf.Incr(2)
+        pmf.Normalize()
+        self.checkPmf(pmf)
+        
     def testIncrAndNormalize(self):
         pmf = Pmf.Pmf()
         t = [1, 2, 2, 3, 5]
