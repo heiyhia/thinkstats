@@ -13,6 +13,34 @@ import sys
 import Cdf
 import myplot
 import Pmf
+import thinkstats
+
+
+def ReadScale(filename='sat_scale.csv'):
+    """Reads a CSV file of SAT scales (maps from raw score to standard score.
+
+    Args:
+      filename: string filename
+
+    Returns:
+      list of (raw score, standardize score) pairs
+    """
+    fp = open(filename)
+    reader = csv.reader(fp)
+    raws = []
+    scores = []
+
+    for t in reader:
+        if t[0] == 'Raw':
+            continue
+
+        raws.append(int(t[0]))
+        scores.append(int(t[-1]))
+
+    raws.sort()
+    scores.sort()
+    return thinkstats.Interpolator(raws, scores)
+
 
 def ReadScores(filename='SATPercentileRanks2009.csv'):
     """Reads a CSV file of SAT scores.
@@ -64,6 +92,13 @@ def Logistic(z):
     return 1 / (1 + math.exp(-z))
 
 def main(script):
+
+    scale = ReadScale()
+    print scale.xs
+    print scale.ys
+    print scale.Lookup(53)
+    print scale.Reverse(760)
+    return
 
     # read 'em and sort 'em
     scores = ReadScores()
