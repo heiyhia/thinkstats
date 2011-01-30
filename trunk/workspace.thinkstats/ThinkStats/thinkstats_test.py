@@ -37,7 +37,38 @@ class Test(unittest.TestCase):
 
         res = thinkstats.Binom(100, 4)
         self.assertEquals(res, 3921225)
-        
-                
+
+    def testInterp(self):
+        xs = [1, 2, 3]
+        ys = [4, 5, 6]
+        interp = thinkstats.Interpolator(xs, ys)
+
+        y = interp.Lookup(1)
+        self.assertAlmostEquals(y, 4)
+
+        y = interp.Lookup(2)
+        self.assertAlmostEquals(y, 5)
+
+        y = interp.Lookup(3)
+        self.assertAlmostEquals(y, 6)
+
+        y = interp.Lookup(1.5)
+        self.assertAlmostEquals(y, 4.5)
+
+        y = interp.Lookup(2.75)
+        self.assertAlmostEquals(y, 5.75)
+
+        x = interp.Reverse(4)
+        self.assertAlmostEquals(x, 1)
+
+        x = interp.Reverse(6)
+        self.assertAlmostEquals(x, 3)
+
+        x = interp.Reverse(4.5)
+        self.assertAlmostEquals(x, 1.5)
+
+        x = interp.Reverse(5.75)
+        self.assertAlmostEquals(x, 2.75)
+
 if __name__ == "__main__":
     unittest.main()

@@ -5,6 +5,8 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import bisect
+
 def Mean(t):
     """Computes the mean of a sequence of numbers.
 
@@ -117,3 +119,37 @@ def Binom(n, k, d={}):
         res = Binom(n-1, k) + Binom(n-1, k-1)
         d[n, k] = res
         return res
+
+
+class Interpolator(object):
+    """Represents a mapping between sorted sequences; performs linear interp.
+
+    Attributes:
+        xs: sorted list
+        ys: sorted list
+    """
+    def __init__(self, xs, ys):
+        self.xs = xs
+        self.ys = ys
+
+    def Lookup(self, x):
+        """Looks up x and returns the corresponding value of y."""
+        return self._Bisect(x, self.xs, self.ys)
+
+    def Reverse(self, y):
+        """Looks up y and returns the corresponding value of x."""
+        return self._Bisect(y, self.ys, self.xs)
+
+    def _Bisect(self, x, xs, ys):
+        """Helper function."""
+        if x <= xs[0]:
+            return ys[0]
+        if x >= xs[-1]:
+            return ys[-1]
+        i = bisect.bisect(xs, x)
+        print i
+        frac = 1.0 * (x - xs[i-1]) / (xs[i] - xs[i-1])
+        y = ys[i-1] + frac * 1.0 * (ys[i] - ys[i-1])
+        return y
+
+
