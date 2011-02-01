@@ -147,7 +147,6 @@ class Interpolator(object):
         if x >= xs[-1]:
             return ys[-1]
         i = bisect.bisect(xs, x)
-        print i
         frac = 1.0 * (x - xs[i-1]) / (xs[i] - xs[i-1])
         y = ys[i-1] + frac * 1.0 * (ys[i] - ys[i-1])
         return y
