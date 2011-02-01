@@ -42,6 +42,29 @@ def ReadScale(filename='sat_scale.csv'):
     return thinkstats.Interpolator(raws, scores)
 
 
+def ReadRanks(filename='sat_ranks.csv'):
+    """Reads a CSV file of SAT scores.
+
+    Args:
+      filename: string filename
+
+    Returns:
+      list of (score, number) pairs
+    """
+    fp = open(filename)
+    reader = csv.reader(fp)
+    res = []
+
+    for t in reader:
+        try:
+            score = int(t[0])
+            number = int(t[1])
+            res.append((score, number))
+        except ValueError:
+            pass
+
+    return res
+
 def ReadScores(filename='SATPercentileRanks2009.csv'):
     """Reads a CSV file of SAT scores.
 
@@ -91,6 +114,13 @@ def StandardScore(val, mu, sigma):
 def Logistic(z):
     return 1 / (1 + math.exp(-z))
 
+def ReverseScale(pmf, scale):
+    new = Pmf.Pmf()
+    for val, prob in pmf.Items():
+        raw = scale.Reverse(val)
+        new.Incr(raw, prob)
+    return new
+
 def main(script):
 
     scale = ReadScale()
@@ -98,13 +128,29 @@ def main(script):
     print scale.ys
     print scale.Lookup(53)
     print scale.Reverse(760)
-    return
 
     # read 'em and sort 'em
-    scores = ReadScores()
+    scores = ReadRanks()
     pmf = Pmf.MakePmfFromDict(dict(scores))
     pmf.Normalize()
 
+    raw = ReverseScale(pmf, scale)
+
+    cdf1 = Cdf.MakeCdfFromPmf(pmf, 'scaled')
+    myplot.Cdfs([cdf1],
+               xlabel='score', 
+               ylabel='CDF', 
+               show=False)
+
+    cdf2 = Cdf.MakeCdfFromPmf(raw, 'raw')
+    myplot.Cdfs([cdf2],
+               xlabel='score', 
+               ylabel='CDF', 
+               show=True)
+
+
+
+def InferLogit(pmf):
     admitted = ApplyLogistic(pmf)
 
     cdf1 = Cdf.MakeCdfFromPmf(pmf)
