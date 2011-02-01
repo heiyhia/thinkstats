@@ -10,9 +10,11 @@ import datetime
 import math
 import sys
 
+import correlation
 import Cdf
 import myplot
 import Pmf
+import rankit
 import thinkstats
 
 def ParseRange(s):
@@ -121,12 +123,55 @@ def StandardScore(val, mu, sigma):
 def Logistic(z):
     return 1 / (1 + math.exp(-z))
 
+def Logit(p):
+    return math.log10(p) - math.log10(1-p)
+
+def ApplyLogit(pmf, denom):
+    new = Pmf.Pmf()
+    for val, prob in pmf.Items():
+        if val > 0 and val < denom:
+            x = Logit(val/denom)
+            new.Incr(x, prob)
+    return new
+
 def ReverseScale(pmf, scale):
     new = Pmf.Pmf()
     for val, prob in pmf.Items():
         raw = scale.Reverse(val)
         new.Incr(raw, prob)
     return new
+
+def SamplePmf(pmf, total, fraction=0.001):
+    t = []
+    for val, prob in pmf.Items():
+        n = int(prob * total * fraction)
+        t.extend([val] * n)
+    return t
+
+def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
+    """Makes a normal probability plot.
+    
+    Args:
+        ys: sequence of values
+        lineoptions: dictionary of options for pyplot.plot        
+        options: dictionary of options for myplot.Plot
+    """
+    n = len(ys)
+    ys.sort()
+    xs = [random.normalvariate(0.0, 1.0) for i in range(n)]
+    xs.sort()
+
+    inter, slope = correlation.LeastSquares(xs, ys)
+    print 'inter, slope', inter, slope
+
+    pyplot.clf()
+    pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=2, **lineoptions)
+ 
+    myplot.Plot(root,
+                xlabel = 'Standard normal values',
+                legend=False,
+                **options)
+
 
 def main(script):
 
@@ -136,12 +181,22 @@ def main(script):
     print scale.Lookup(53)
     print scale.Reverse(760)
 
-    # read 'em and sort 'em
     scores = ReadRanks()
-    pmf = Pmf.MakePmfFromDict(dict(scores))
-    pmf.Normalize()
+    hist = Pmf.MakeHistFromDict(dict(scores))
+    total = hist.Total()
+
+    pmf = Pmf.MakePmfFromHist(hist)
 
     raw = ReverseScale(pmf, scale)
+    raw_sample = SamplePmf(raw, total, fraction=0.01)
+    MakeNormalPlot(raw_sample, 
+                   show=True,
+                   ylabel='Raw Scores',)
+
+    print 'raw mean, var', raw.Mean(), raw.Var()
+    return
+
+    log = ApplyLogit(raw, denom=54)
 
     cdf1 = Cdf.MakeCdfFromPmf(pmf, 'scaled')
     myplot.Cdfs([cdf1],
@@ -151,6 +206,12 @@ def main(script):
 
     cdf2 = Cdf.MakeCdfFromPmf(raw, 'raw')
     myplot.Cdfs([cdf2],
+               xlabel='score', 
+               ylabel='CDF', 
+               show=False)
+
+    cdf3 = Cdf.MakeCdfFromPmf(log, 'logit')
+    myplot.Cdfs([cdf3],
                xlabel='score', 
                ylabel='CDF', 
                show=True)
