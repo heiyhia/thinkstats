@@ -15,12 +15,16 @@ import myplot
 import Pmf
 import thinkstats
 
+def ParseRange(s):
+    t = [int(x) for x in s.split('-')]
+    return 1.0 * sum(t) / len(t)
 
-def ReadScale(filename='sat_scale.csv'):
+def ReadScale(filename='sat_scale.csv', col=2):
     """Reads a CSV file of SAT scales (maps from raw score to standard score.
 
     Args:
       filename: string filename
+      col: which column to start with (0=Reading, 2=Math, 4=Writing)
 
     Returns:
       list of (raw score, standardize score) pairs
@@ -31,11 +35,14 @@ def ReadScale(filename='sat_scale.csv'):
     scores = []
 
     for t in reader:
-        if t[0] == 'Raw':
-            continue
-
-        raws.append(int(t[0]))
-        scores.append(int(t[-1]))
+        try:
+            raw = int(t[col])
+            raws.append(raw)
+            score = ParseRange(t[col+1])
+            scores.append(score)
+            print raw, score
+        except:
+            pass
 
     raws.sort()
     scores.sort()
@@ -158,7 +165,6 @@ def InferLogit(pmf):
 
     quartiles = cdf2.Percentile(25), cdf2.Percentile(50), cdf2.Percentile(75)
     print 'quartiles', quartiles
-    return
 
     myplot.Cdfs([cdf1, cdf2],
                xlabel='score', 
