@@ -8,7 +8,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import csv
 import datetime
 import math
+import random
 import sys
+
+import matplotlib.pyplot as pyplot
 
 import correlation
 import Cdf
@@ -22,7 +25,7 @@ def ParseRange(s):
     return 1.0 * sum(t) / len(t)
 
 def ReadScale(filename='sat_scale.csv', col=2):
-    """Reads a CSV file of SAT scales (maps from raw score to standard score.
+    """Reads a CSV file of SAT scales (maps from raw score to standard score).
 
     Args:
       filename: string filename
@@ -123,6 +126,17 @@ def StandardScore(val, mu, sigma):
 def Logistic(z):
     return 1 / (1 + math.exp(-z))
 
+def SummarizeR(r, sigma):
+    r2 = r**2
+    var = sigma**2
+
+    rmse_without = sigma
+    rmse_with = math.sqrt(var * (1 - r2))
+
+    reduction = 1.0 - (rmse_with / rmse_without)
+    print 'r, R^2', r, r2
+    print 'RMSE (reduction)', rmse_with, reduction
+
 def Logit(p):
     return math.log10(p) - math.log10(1-p)
 
@@ -174,6 +188,8 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
 
 
 def main(script):
+
+    SummarizeR(r=0.53, sigma=0.71)
 
     scale = ReadScale()
     print scale.xs

@@ -13,7 +13,7 @@ def BiasPmf(pmf, name, invert=False):
     """Returns the Pmf with oversampling proportional to value.
 
     If pmf is the distribution of true values, the result is the
-    distribution that would be seen if values are oversamples in
+    distribution that would be seen if values are oversampled in
     proportion to their values; for example, if you ask students
     how big their classes are, large classes are oversampled in
     proportion to their size.
