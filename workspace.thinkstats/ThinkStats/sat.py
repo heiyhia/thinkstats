@@ -13,6 +13,7 @@ import sys
 
 import matplotlib.pyplot as pyplot
 
+import bayes
 import correlation
 import Cdf
 import myplot
@@ -177,8 +178,11 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
 
     inter, slope = correlation.LeastSquares(xs, ys)
     print 'inter, slope', inter, slope
+    x_fit = [-4, 4]
+    y_fit = [inter + slope*x for x in x_fit]
 
     pyplot.clf()
+    pyplot.plot(x_fit, y_fit, 'r-')
     pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=2, **lineoptions)
  
     myplot.Plot(root,
@@ -186,6 +190,40 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
                 legend=False,
                 **options)
 
+
+def ShiftValues(pmf, shift):
+    new = Pmf.Pmf()
+    for val, prob in pmf.Items():
+        if val >= shift:
+            x = val - shift
+            new.Incr(x, prob)
+    return new
+
+def DivideValues(pmf, denom):
+    new = Pmf.Pmf()
+    for val, prob in pmf.Items():
+        if val >= 0:
+            x = 1.0 * val / denom
+            new.Incr(x, prob)
+    return new
+
+
+def Update(prior, score, shift, max_score, scale):
+    raw = scale.Reverse(score) - shift
+    evidence = raw, max_score-raw
+
+    updater = bayes.BinomialBayes()
+    posterior = updater.Update(prior, evidence)
+
+    return posterior
+
+def ProbBigger(pmf1, pmf2):
+    total = 0.0
+    for v1, p1 in pmf1.Items():
+        for v2, p2 in pmf2.Items():
+            if v1 > v2:
+                total += p1 * p2
+    return total
 
 def main(script):
 
@@ -195,7 +233,7 @@ def main(script):
     print scale.xs
     print scale.ys
     print scale.Lookup(53)
-    print scale.Reverse(760)
+    print scale.Reverse(800)
 
     scores = ReadRanks()
     hist = Pmf.MakeHistFromDict(dict(scores))
@@ -206,13 +244,27 @@ def main(script):
     raw = ReverseScale(pmf, scale)
     raw_sample = SamplePmf(raw, total, fraction=0.01)
     MakeNormalPlot(raw_sample, 
-                   show=True,
-                   ylabel='Raw Scores',)
+                   root='sat_normal',
+                   ylabel='Raw scores (math)',)
 
     print 'raw mean, var', raw.Mean(), raw.Var()
-    return
 
-    log = ApplyLogit(raw, denom=54)
+    shift = 0
+    raw = ShiftValues(raw, shift=shift)
+
+    max_score = max(raw.Values())
+
+    log = ApplyLogit(raw, denom=max_score)
+
+    prior = DivideValues(raw, denom=max_score)
+
+    low = 720
+    high = low+50
+    posterior_low = Update(prior, low, shift, max_score, scale)
+    posterior_high = Update(prior, high, shift, max_score, scale)
+
+    prob_bigger = ProbBigger(posterior_high, posterior_low)
+    print "prob_bigger:", prob_bigger
 
     cdf1 = Cdf.MakeCdfFromPmf(pmf, 'scaled')
     myplot.Cdfs([cdf1],
@@ -226,11 +278,16 @@ def main(script):
                ylabel='CDF', 
                show=False)
 
-    cdf3 = Cdf.MakeCdfFromPmf(log, 'logit')
-    myplot.Cdfs([cdf3],
-               xlabel='score', 
-               ylabel='CDF', 
-               show=True)
+    cdf3 = Cdf.MakeCdfFromPmf(prior, 'prior')
+
+    cdf4 = Cdf.MakeCdfFromPmf(posterior_low, 'posterior %d' % low)
+    cdf5 = Cdf.MakeCdfFromPmf(posterior_high, 'posterior %d' % high)
+
+    myplot.Cdfs([cdf4, cdf5],
+                xlabel='P', 
+                ylabel='CDF', 
+                axis=[0.5, 1.0, 0.0, 1.0],
+                show=True)
 
 
 
