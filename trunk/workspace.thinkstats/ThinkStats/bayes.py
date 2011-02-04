@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from math import pow
 
+import Cdf
 
 class Bayes(object):
 
@@ -58,8 +59,25 @@ class BinomialBayes(Bayes):
         """
         heads, tails = evidence
         p = hypo
-        print p, heads, tails
         return pow(p, heads) * pow(1-p, tails)
+
+
+def CredibleInterval(pmf, percentage):
+    """Computes a credible interval for a given distribution.
+
+    If percentage=90, computes the 90% CI.
+
+    Args:
+        pmf: Pmf object representing a posterior distribution
+        percentage: float between 0 and 100
+
+    Returns:
+        sequence of two floats, low and high
+    """
+    cdf = Cdf.MakeCdfFromDict(pmf.GetDict())
+    prob = (1 - percentage/100.0) / 2
+    interval = [cdf.Value(p) for p in [prob, 1-prob]]
+    return interval
 
 
 def main():

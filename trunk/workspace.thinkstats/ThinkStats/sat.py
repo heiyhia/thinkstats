@@ -21,9 +21,6 @@ import Pmf
 import rankit
 import thinkstats
 
-def ParseRange(s):
-    t = [int(x) for x in s.split('-')]
-    return 1.0 * sum(t) / len(t)
 
 def ReadScale(filename='sat_scale.csv', col=2):
     """Reads a CSV file of SAT scales (maps from raw score to standard score).
@@ -35,6 +32,10 @@ def ReadScale(filename='sat_scale.csv', col=2):
     Returns:
       list of (raw score, standardize score) pairs
     """
+    def ParseRange(s):
+        t = [int(x) for x in s.split('-')]
+        return 1.0 * sum(t) / len(t)
+
     fp = open(filename)
     reader = csv.reader(fp)
     raws = []
@@ -46,7 +47,6 @@ def ReadScale(filename='sat_scale.csv', col=2):
             raws.append(raw)
             score = ParseRange(t[col+1])
             scores.append(score)
-            print raw, score
         except:
             pass
 
@@ -78,33 +78,13 @@ def ReadRanks(filename='sat_ranks.csv'):
 
     return res
 
-def ReadScores(filename='SATPercentileRanks2009.csv'):
-    """Reads a CSV file of SAT scores.
-
-    Args:
-      filename: string filename
-
-    Returns:
-      list of (score, number) pairs
-    """
-    fp = open(filename)
-    reader = csv.reader(fp)
-    res = []
-
-    for t in reader:
-        try:
-            score, number = [int(x) for x in t]
-            res.append((score, number))
-        except ValueError:
-            pass
-
-    return res
 
 def Summarize(pmf):
     mu, var = pmf.Mean(), pmf.Var()
     sigma = math.sqrt(var)
     print 'mu, sigma', mu, sigma
     return mu, sigma
+
 
 def ApplyLogistic(pmf, inter=-2.5, slope=10):
     mu, sigma = Summarize(pmf)
@@ -121,13 +101,18 @@ def ApplyLogistic(pmf, inter=-2.5, slope=10):
     mu, sigma = Summarize(new)
     return new
 
+
 def StandardScore(val, mu, sigma):
     return (val-mu) / sigma
+
 
 def Logistic(z):
     return 1 / (1 + math.exp(-z))
 
+
 def SummarizeR(r, sigma):
+    """Prints summary statistics about a correlation."""
+
     r2 = r**2
     var = sigma**2
 
@@ -138,8 +123,10 @@ def SummarizeR(r, sigma):
     print 'r, R^2', r, r2
     print 'RMSE (reduction)', rmse_with, reduction
 
+
 def Logit(p):
     return math.log10(p) - math.log10(1-p)
+
 
 def ApplyLogit(pmf, denom):
     new = Pmf.Pmf()
@@ -149,19 +136,32 @@ def ApplyLogit(pmf, denom):
             new.Incr(x, prob)
     return new
 
+
 def ReverseScale(pmf, scale):
+    """Applies the reverse scale to the values of a PMF.
+
+    Args:
+        pmf: Pmf object
+        scale: Interpolator object
+
+    Returns:
+        new Pmf
+    """
     new = Pmf.Pmf()
     for val, prob in pmf.Items():
         raw = scale.Reverse(val)
         new.Incr(raw, prob)
     return new
 
+
 def SamplePmf(pmf, total, fraction=0.001):
+    """Generates a sample from a PMF by making copies of each value."""
     t = []
     for val, prob in pmf.Items():
         n = int(prob * total * fraction)
         t.extend([val] * n)
     return t
+
 
 def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
     """Makes a normal probability plot.
@@ -192,6 +192,7 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
 
 
 def ShiftValues(pmf, shift):
+    """Shifts the values in a PMF by shift.  Returns a new PMF."""
     new = Pmf.Pmf()
     for val, prob in pmf.Items():
         if val >= shift:
@@ -199,7 +200,9 @@ def ShiftValues(pmf, shift):
             new.Incr(x, prob)
     return new
 
+
 def DivideValues(pmf, denom):
+    """Divides the values in a PMF by denom.  Returns a new PMF."""
     new = Pmf.Pmf()
     for val, prob in pmf.Items():
         if val >= 0:
@@ -208,16 +211,8 @@ def DivideValues(pmf, denom):
     return new
 
 
-def Update(prior, score, shift, max_score, scale):
-    raw = scale.Reverse(score) - shift
-    evidence = raw, max_score-raw
-
-    updater = bayes.BinomialBayes()
-    posterior = updater.Update(prior, evidence)
-
-    return posterior
-
 def ProbBigger(pmf1, pmf2):
+    """Returns the probability that a value from one pmf exceeds another."""
     total = 0.0
     for v1, p1 in pmf1.Items():
         for v2, p2 in pmf2.Items():
@@ -225,70 +220,111 @@ def ProbBigger(pmf1, pmf2):
                 total += p1 * p2
     return total
 
+
+class Exam:
+    """Encapsulates information about an exam.
+
+    Contains the distribution of scaled scores and an
+    Interpolator that maps between scaled and raw scores.
+    """
+    def __init__(self):
+        self.scale = ReadScale()
+        self.scores = ReadRanks()
+        self.hist = Pmf.MakeHistFromDict(dict(self.scores))
+
+        self.scaled = Pmf.MakePmfFromHist(self.hist)
+
+        self.raw = ReverseScale(self.scaled, self.scale)
+        self.shift = 0
+
+        self.max_score = max(self.raw.Values())
+        self.log = ApplyLogit(self.raw, denom=self.max_score)
+        
+        self.prior = DivideValues(self.raw, denom=self.max_score)
+
+    def NormalPlot(self):
+        """Makes a normal probability plot for the raw scores."""
+        total = self.hist.Total()
+        raw_sample = SamplePmf(self.raw, total, fraction=0.01)
+        MakeNormalPlot(raw_sample, 
+                       root='sat_normal',
+                       ylabel='Raw scores (math)',)
+
+    def Shift(self, shift):
+        """Shifts the values in the raw distribution."""
+        self.shift = 0
+        self.raw = ShiftValues(self.raw, shift=shift)
+
+    def Update(self, score):
+        """Computes the posterior distribution based on score."""
+        raw = self.scale.Reverse(score) - self.shift
+        evidence = raw, self.max_score-raw
+
+        updater = bayes.BinomialBayes()
+        posterior = updater.Update(self.prior, evidence)
+
+        return posterior
+
+    def ScaledCredibleInterval(self, score):
+        """Computes the credible interval for someone with the given score."""
+        posterior = self.Update(score)
+        low, high = bayes.CredibleInterval(posterior, 90)
+        scale_low = self.scale.Lookup(low * self.max_score)
+        scale_high = self.scale.Lookup(high * self.max_score)
+        return scale_low, scale_high
+        
+    def PlotPosteriors(self, low, high):
+        """Computes posteriors for the given scores and plots them."""
+        posterior_low = self.Update(low)
+        posterior_high = self.Update(high)
+
+        prob_bigger = ProbBigger(posterior_high, posterior_low)
+        print "prob_bigger:", prob_bigger
+
+        cdf1 = Cdf.MakeCdfFromPmf(posterior_low, 'posterior %d' % low)
+        cdf2 = Cdf.MakeCdfFromPmf(posterior_high, 'posterior %d' % high)
+
+        myplot.Cdfs([cdf1, cdf2],
+                    xlabel='P', 
+                    ylabel='CDF', 
+                    axis=[0.6, 1.0, 0.0, 1.0],
+                    root='sat_posteriors')
+
+
 def main(script):
 
     SummarizeR(r=0.53, sigma=0.71)
 
-    scale = ReadScale()
-    print scale.xs
-    print scale.ys
-    print scale.Lookup(53)
-    print scale.Reverse(800)
+    exam = Exam()
 
-    scores = ReadRanks()
-    hist = Pmf.MakeHistFromDict(dict(scores))
-    total = hist.Total()
+    exam.NormalPlot()
 
-    pmf = Pmf.MakePmfFromHist(hist)
+    low = 700
+    high = low+70
 
-    raw = ReverseScale(pmf, scale)
-    raw_sample = SamplePmf(raw, total, fraction=0.01)
-    MakeNormalPlot(raw_sample, 
-                   root='sat_normal',
-                   ylabel='Raw scores (math)',)
+    low_range = exam.ScaledCredibleInterval(low)
+    print low, low_range, (low_range[1] - low_range[0]) / 2.0
 
-    print 'raw mean, var', raw.Mean(), raw.Var()
+    high_range = exam.ScaledCredibleInterval(high)
+    print high, high_range, (high_range[1] - high_range[0]) / 2.0
 
-    shift = 0
-    raw = ShiftValues(raw, shift=shift)
+    exam.PlotPosteriors(low, high)
 
-    max_score = max(raw.Values())
 
-    log = ApplyLogit(raw, denom=max_score)
-
-    prior = DivideValues(raw, denom=max_score)
-
-    low = 720
-    high = low+50
-    posterior_low = Update(prior, low, shift, max_score, scale)
-    posterior_high = Update(prior, high, shift, max_score, scale)
-
-    prob_bigger = ProbBigger(posterior_high, posterior_low)
-    print "prob_bigger:", prob_bigger
-
+def PlotScaledDist():
     cdf1 = Cdf.MakeCdfFromPmf(pmf, 'scaled')
     myplot.Cdfs([cdf1],
                xlabel='score', 
                ylabel='CDF', 
                show=False)
 
+
+def PlotRawDist():
     cdf2 = Cdf.MakeCdfFromPmf(raw, 'raw')
     myplot.Cdfs([cdf2],
                xlabel='score', 
                ylabel='CDF', 
                show=False)
-
-    cdf3 = Cdf.MakeCdfFromPmf(prior, 'prior')
-
-    cdf4 = Cdf.MakeCdfFromPmf(posterior_low, 'posterior %d' % low)
-    cdf5 = Cdf.MakeCdfFromPmf(posterior_high, 'posterior %d' % high)
-
-    myplot.Cdfs([cdf4, cdf5],
-                xlabel='P', 
-                ylabel='CDF', 
-                axis=[0.5, 1.0, 0.0, 1.0],
-                show=True)
-
 
 
 def InferLogit(pmf):
