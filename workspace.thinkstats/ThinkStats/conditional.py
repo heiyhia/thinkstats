@@ -7,10 +7,13 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import descriptive
 import Pmf
-import matplotlib.pyplot as pyplot
 import myplot
+import risk
 
-def ConditionPmf(pmf, filter_func):
+import matplotlib.pyplot as pyplot
+
+
+def ConditionPmf(pmf, filter_func, name='conditional'):
     """Computes a conditional PMF based on a filter function.
     
     Args:
@@ -22,7 +25,7 @@ def ConditionPmf(pmf, filter_func):
     Returns:
         new Pmf object
     """
-    cond_pmf = pmf.Copy('conditional')
+    cond_pmf = pmf.Copy(name)
 
     vals = [val for val in pmf.Values() if filter_func(val)]
     for val in vals:
@@ -32,7 +35,7 @@ def ConditionPmf(pmf, filter_func):
     return cond_pmf
 
 
-def ConditionOnWeeks(pmf, week=39):
+def ConditionOnWeeks(pmf, week=39, name='conditional'):
     """Computes a PMF conditioned on the given number of weeks.
     
     Args:
@@ -46,14 +49,13 @@ def ConditionOnWeeks(pmf, week=39):
     def filter_func(x):
         return x < week
 
-    cond = ConditionPmf(pmf, filter_func)
+    cond = ConditionPmf(pmf, filter_func, name)
     return cond
 
 
-def MakeFigure():
-    pool, firsts, others = descriptive.MakeTables()
+def MakeFigure(firsts, others):
 
-    weeks= range(35, 46)
+    weeks = range(35, 46)
     
     # probs is a map from table name to list of conditional probabilities
     probs = {}
@@ -73,15 +75,34 @@ def MakeFigure():
         print name, ps
         
     myplot.Plot('conditional',
-              xlabel='weeks',
-              ylabel=r'Prob{x $=$ weeks | x $\geq$ weeks}',
-              title='Conditional Probability',
-              show=True,
-              )
+                xlabel='weeks',
+                ylabel=r'Prob{x $=$ weeks | x $\geq$ weeks}',
+                title='Conditional Probability',
+                show=True,
+                )
 
+def RelativeRisk(first, others, week=38):
+    first_cond = ConditionOnWeeks(first.pmf, week, 'first babies')
+    other_cond = ConditionOnWeeks(others.pmf, week, 'others')
+
+    risk.ComputeRelativeRisk(first_cond, other_cond)
+
+    return
+
+    myplot.Pmfs([first_cond, other_cond],
+                xlabel='weeks',
+                ylabel=r'Prob{x $=$ weeks | x $\geq$ weeks}',
+                title='Conditional Probability',
+                show=True,
+                )
+
+    
 
 def main():
-    MakeFigure()
+    pool, firsts, others = descriptive.MakeTables()
+    RelativeRisk(firsts, others)
+    return
+    MakeFigure(firsts, others)
     
 
 if __name__ == "__main__":

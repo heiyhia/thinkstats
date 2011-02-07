@@ -68,6 +68,40 @@ def Pmf(pmf, clf=True, root=None, line_options=None, **options):
     Plot(root=root, **options)
 
 
+def Pmfs(pmfs,
+         clf=True,
+         root=None, 
+         plot_options=InfiniteList({}), 
+         **options):
+    """Plots a sequence of PMFs.
+    
+    Args:
+      pmfs: sequence of PMF objects
+      clf: boolean, whether to clear the figure
+      root: string root of the filename to write
+      plot_options: sequence of option dictionaries
+      options: dictionary of keyword options passed along to Plot
+    """
+    if clf:
+        pyplot.clf()
+
+    styles = options.get('styles', None)
+    if styles is None:
+        styles = InfiniteList('-')
+
+    for i, pmf in enumerate(pmfs):
+        
+        xs, ps = pmf.Render()
+
+        line = pyplot.plot(xs, ps,
+                           styles[i],
+                           label=pmf.name,
+                           **plot_options[i]
+                           )
+
+    Plot(root, **options)
+
+
 def Hist(hist, clf=True, root=None, bar_options=None, **options):
     """Plots a Pmf or Hist with a bar plot.
 
