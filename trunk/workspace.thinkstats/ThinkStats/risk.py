@@ -62,29 +62,33 @@ def ProbLate(pmf):
     return ProbRange(pmf, 41, 50)
 
 
-def main():
-    Summarize()
-    
-
-def Summarize():
-    pool, firsts, others = descriptive.MakeTables()
+def ComputeRelativeRisk(first_pmf, other_pmf):
 
     print 'Risks:'
     funcs = [ProbEarly, ProbOnTime, ProbLate]
     risks = {}
     for func in funcs:
-        for table in [pool, firsts, others]:
-            prob = func(table.pmf)
-            risks[func.__name__, table.pmf.name] = prob
-            print func.__name__, table.pmf.name, prob
+        for pmf in [first_pmf, other_pmf]:
+            prob = func(pmf)
+            risks[func.__name__, pmf.name] = prob
+            print func.__name__, pmf.name, prob
 
     print
     print 'Risk ratios (first babies / others):'
     for func in funcs:
-        ratio = (risks[func.__name__, 'first babies'] / 
-                 risks[func.__name__, 'others'])
-        print func.__name__, ratio
+        try:
+            ratio = (risks[func.__name__, 'first babies'] / 
+                     risks[func.__name__, 'others'])
+            print func.__name__, ratio
+        except ZeroDivisionError:
+            pass
 
 
+def main():
+    pool, firsts, others = descriptive.MakeTables()
+
+    ComputeRelativeRisk(firsts.pmf, others.pmf)
+
+    
 if __name__ == "__main__":
     main()
