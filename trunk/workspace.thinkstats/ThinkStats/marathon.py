@@ -11,8 +11,6 @@ import Cdf
 import myplot
 import Pmf
 
-results = 'Oct17_BaySta_set1.shtml'
-
 """
 Sample line.
 
@@ -82,7 +80,11 @@ def ConvertTimeToMinutes(time):
     return mins
 
 
-def CleanLine(line, times):
+def PredictMarathonTime(half_time):
+    return half_time * 2 ** 1.06
+
+
+def CleanLine(line, times, half=False):
     """Converts a line from coolrunning results to a tuple of values."""
     t = line.split()
     if len(t) < 6:
@@ -113,12 +115,14 @@ def CleanLine(line, times):
         return None
 
     qual_time = LookupQualifyingTime(gender, age, times)
-
-    net = ConvertTimeToMinutes(net)
     qual_time = ConvertTimeToMinutes(qual_time)
 
+    net = ConvertTimeToMinutes(net)
+    if half:
+        net = PredictMarathonTime(net)
+
     if net <= qual_time:
-        if not qual:
+        if not qual and not half:
             print place, age, gender, net, qual_time
     elif qual:
         print '*', place, age, gender, net, qual_time
@@ -126,11 +130,11 @@ def CleanLine(line, times):
     return place, gender, age, gun, net, qual_time, pace
 
 
-def ReadResults(times, filename=results):
+def ReadResults(times, filename='Oct17_BaySta_set1.shtml', half=False):
     """Read results from coolrunning and return a list of tuples."""
     results = []
     for line in open(filename):
-        t = CleanLine(line, times)
+        t = CleanLine(line, times, half)
         if t:
             results.append(t)
     return results
@@ -149,24 +153,38 @@ def GetSpeeds(results, column=-1):
 def main():
     times = QualifyingTimes()
 
-    results = ReadResults(times)
+    half = ReadResults(times, filename='Oct17_BaySta_set3.shtml', half=True)
+    print len(half)
+
+    half_diffs = ComputeDiffs(half)
+
+    results = ReadResults(times, filename='Oct17_BaySta_set1.shtml')
     print len(results)
 
-    PlotDiffs(results)
+    diffs = ComputeDiffs(results)
+    PlotDiffs(half_diffs, diffs)
 
-def PlotDiffs(results):
+
+def ComputeDiffs(results):
     diffs = []
     for place, gender, age, gun, net, qual_time, pace in results:
         diff = net - qual_time
         if abs(diff) < 60:
             diffs.append(diff)
+    return diffs
 
-    cdf = Cdf.MakeCdfFromList(diffs, 'diffs')
-    myplot.Cdf(cdf, 
-               xlabel='time - qualifying time (min)',
-               ylabel='CDF',
-               plot_options=dict(linewidth=2),
-               root='marathon_cdf')
+
+def PlotDiffs(half_diffs, diffs):
+    half_cdf = Cdf.MakeCdfFromList(half_diffs, 'half')
+    cdf = Cdf.MakeCdfFromList(diffs, 'full')
+
+    options = dict(linewidth=2)
+
+    myplot.Cdfs([half_cdf, cdf], 
+                xlabel='time - qualifying time (min)',
+                ylabel='CDF',
+                plot_options=[options, options],
+                root='marathon_cdf')
         
     diffs = [int(x) for x in diffs]
 
