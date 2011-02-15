@@ -187,12 +187,15 @@ def PlotDiffs(half_diffs, diffs):
                 root='marathon_cdf')
         
     diffs = [int(x) for x in diffs]
+    half_diffs = [int(x) for x in half_diffs]
 
-    pmf = Pmf.MakePmfFromList(diffs, 'diffs')
-    myplot.Pmf(pmf, 
+    pmf = Pmf.MakePmfFromList(diffs, 'full')
+    half_pmf = Pmf.MakePmfFromList(half_diffs, 'half')
+
+    myplot.Pmfs([half_pmf, pmf], 
                xlabel='time - qualifying time (min)',
                ylabel='PMF',
-               plot_options=dict(linewidth=2),
+               plot_options=[options, options],
                root='marathon_pmf')
         
 
