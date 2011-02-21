@@ -40,7 +40,8 @@ class Standard(object):
     80-99	5:00	5:30
     """
 
-    def __init__(self):
+    def __init__(self, offset=0):
+        self.offset = offset
         self.times = []
         lines = self.time_table.split('\n')
         for line in lines:
@@ -64,12 +65,10 @@ class Standard(object):
         for ages, male, female in self.times:
             if ages[0] <= age <= ages[1]:
                 if gender == 'M':
-                    return male
+                    return male, self.offset
                 else:
-                    return female
-        return None
-
-standard = Standard()
+                    return female, self.offset
+        return None, self.offset
 
 
 def ConvertPaceToSpeed(pace):
@@ -114,8 +113,8 @@ def CleanLine(line, half=False):
     if gender not in ['M', 'F']:
         return None
 
-    qual_time = standard.LookupQualifyingTime(gender, age)
-    qual_time = ConvertTimeToMinutes(qual_time)
+    qual_time, offset = standard.LookupQualifyingTime(gender, age)
+    qual_time = ConvertTimeToMinutes(qual_time) + offset
 
     net = ConvertTimeToMinutes(net)
 
@@ -159,52 +158,68 @@ def FractionQualified(res, qual_time):
     return count, len(res)
 
 
+def dappend(d, key, val):
+    d.setdefault(key, []).append(val)
+
+
 def ComputeFractions(groups):
+    """
+    Args:
+        groups: map from string group to list of result tuples
+    """
+    # map from gender to list of qualifier counts
+    qualifiers = {}
+
     for group, res in sorted(groups.iteritems()):
-        qual_time = res[0][4]
+
+        # get stats from the first person in the list
+        sample = res[0]
+        gender = sample[0]
+        qual_time = sample[4]
+
         qual, total = FractionQualified(res, qual_time)
-        print group, qual_time, qual, total
+        dappend(qualifiers, gender, qual)
+        #print group, qual_time, qual, total
+
+    return qualifiers
+
+def GenderRatio(qualifiers):
+    men = sum(qualifiers['M'])
+    women = sum(qualifiers['F'])
+    ratio = float(women) / (men + women)
+    return men, women, ratio
+
+def ComputeField(men, women, field=20000):
+    factor = float(field) / (men + women)
+    return men*factor, women*factor
 
 
-def main():
-    filenames = glob.glob('result-*-all.php')
-
-    diff_list = []
-    all_res = []
-    for filename in sorted(filenames):
-        year = filename.split('-')[1]
-        res, diffs = Process(filename)
-        diff_list.append((year, diffs))
-        all_res.extend(res)
-
-    groups = PartitionResults(all_res)
-    ComputeFractions(groups)
-    return
-
-    PlotDiffs(diff_list)
-
-def Process(filename):
-    res = ReadResults(filename=filename)
-    diffs = ComputeDiffs(res)
-
-    print len(res), len(diffs)
-
-    return res, diffs
+def PartitionGenders(res):
+    d = {}
+    for t in res:
+        gender = t[0]
+        dappend(d, gender, t)
+    return d
 
 
-def ComputeDiffs(results):
+def ComputeDiffs(results, limit=60):
     diffs = []
     for gender, age, gun, net, qual_time, pace in results:
         diff = net - qual_time
-        if abs(diff) < 60:
+        if diff < limit:
             diffs.append(diff)
     return diffs
 
 
-def PlotDiffs(diff_list):
+def PlotDiffs(genders):
+    diff_list = []
+    for gender, res in genders.iteritems():
+        diffs = ComputeDiffs(res, limit=5)
+        diff_list.append((gender, diffs))
+
     cdfs = []
-    for year, diffs in diff_list:
-        cdf = Cdf.MakeCdfFromList(diffs, name=year)
+    for name, diffs in diff_list:
+        cdf = Cdf.MakeCdfFromList(diffs, name=name)
         cdfs.append(cdf)
 
     options = [dict(linewidth=2) for cdf in cdfs]
@@ -224,6 +239,62 @@ def PlotPmf(results):
                xlabel='speed (mph)',
                ylabel='probability',
                show=True)
+
+
+def SummarizeChange(s, old, new):
+    print s, old, new, new-old, float(new-old) / old
+
+def SummarizeImpact(men, new_men, women, new_women):
+    old_field = ComputeField(men, women)
+    new_field = ComputeField(new_men, new_women)
+    #print 'old field', old_field
+    #print 'new field', new_field
+    print 'replaced', new_field[0] - old_field[0]
+
+def RunAnalysis(offset=0):
+    global standard
+    standard = Standard(offset=offset)
+
+    filenames = glob.glob('result-*-all.php')
+
+    diff_list = []
+    all_res = []
+    for filename in sorted(filenames):
+        year = filename.split('-')[1]
+
+        res = ReadResults(filename=filename)
+        all_res.extend(res)
+
+    if offset == 0:
+        genders = PartitionGenders(all_res)
+        PlotDiffs(genders)
+
+    #print len(all_res)
+    groups = PartitionResults(all_res)
+    qualifiers = ComputeFractions(groups)
+    men, women, ratio = GenderRatio(qualifiers)
+    return men, women, ratio
+
+
+def main():
+    res = []
+    offsets = [0, -1, -6, -11]
+    for offset in offsets:
+        t = RunAnalysis(offset=offset)
+        print t
+        res.append(t)
+
+    men, women, ratio = res[0]
+    for offset, t in zip(offsets, res):
+        print
+        print 'offset', offset
+
+        new_men, new_women, new_ratio = t
+        SummarizeChange('M', men, new_men)
+        SummarizeChange('F', women, new_women)
+        SummarizeImpact(men, new_men, women, new_women)
+
+    
 
 
 if __name__ == '__main__':
