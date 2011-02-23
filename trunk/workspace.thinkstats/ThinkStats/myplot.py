@@ -5,6 +5,7 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import math
 import matplotlib
 import matplotlib.pyplot as pyplot
 
@@ -202,6 +203,7 @@ def Cdfs(cdfs,
          root=None, 
          plot_options=InfiniteList({}), 
          complement=False,
+         transform=None,
          **options):
     """Plots a sequence of CDFs.
     
@@ -215,6 +217,7 @@ def Cdfs(cdfs,
     """
     if clf:
         pyplot.clf()
+
     styles = options.get('styles', None)
     if styles is None:
         styles = InfiniteList('-')
@@ -222,6 +225,18 @@ def Cdfs(cdfs,
     for i, cdf in enumerate(cdfs):
         
         xs, ps = cdf.Render()
+
+        if transform == 'exponential':
+            complement = True
+            options['yscale'] = 'log'
+
+        if transform == 'weibull':
+            xs.pop()
+            ps.pop()
+            ps = [-math.log(1.0-p) for p in ps]
+            options['xscale'] = 'log'
+            options['yscale'] = 'log'
+
         if complement:
             ps = [1.0-p for p in ps]
 

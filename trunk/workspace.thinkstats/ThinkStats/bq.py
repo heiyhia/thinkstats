@@ -131,7 +131,21 @@ def ReadResults(filename='result-10-all.php', half=False):
     return results
 
 
-def ReadChicago(filename='Chicago2009.csv', half=False):
+def ReadAllChicago():
+    filenames = ['Chicago2008.csv',
+                 'Chicago2009.csv',
+                 'Chicago2010.csv',
+                 ]
+
+    all_res = []
+    for filename in filenames:
+        res = ReadChicago(filename)
+        all_res.extend(res)
+
+    return all_res
+
+
+def ReadChicago(filename='Chicago2010.csv'):
     """Read results from coolrunning and return a list of tuples."""
     results = []
     for line in open(filename):
@@ -139,6 +153,8 @@ def ReadChicago(filename='Chicago2009.csv', half=False):
             age, gender, net = line.split()
         except ValueError:
             continue
+
+        gender = gender.upper()
 
         age = int(age)
         if age < 10 or age > 34:
@@ -209,13 +225,15 @@ def ComputeFractions(groups):
 
     return qualifiers
 
+
 def GenderRatio(qualifiers):
     men = sum(qualifiers['M'])
     women = sum(qualifiers['F'])
     ratio = float(women) / (men + women)
     return men, women, ratio
 
-def ComputeField(men, women, field=20000):
+
+def ComputeField(men, women, field=9602):
     factor = float(field) / (men + women)
     return men*factor, women*factor
 
@@ -228,20 +246,21 @@ def PartitionGenders(res):
     return d
 
 
-def ComputeDiffs(results, limit=60):
+def ComputeDiffs(results, low, high):
     diffs = []
     for gender, age, gun, net, qual_time, pace in results:
         diff = net - qual_time
-        if diff < limit:
+        if low <= diff <= high:
             diffs.append(diff)
     return diffs
 
 
-def PlotDiffs(genders):
+def PlotDiffs(groups, low, high, root):
     diff_list = []
-    for gender, res in genders.iteritems():
-        diffs = ComputeDiffs(res, limit=5)
+    for gender, res in groups.iteritems():
+        diffs = ComputeDiffs(res, low=low, high=high)
         diff_list.append((gender, diffs))
+        print 'PlotDiffs', gender, len(diffs)
 
     cdfs = []
     for name, diffs in diff_list:
@@ -252,9 +271,9 @@ def PlotDiffs(genders):
 
     myplot.Cdfs(cdfs, 
                 xlabel='time - qualifying time (min)',
-                ylabel='CDF',
+                ylabel='P(difference < x)',
                 plot_options=options,
-                root='bq_cdf')
+                root=root)
 
 
 def PlotPmf(results):
@@ -268,14 +287,16 @@ def PlotPmf(results):
 
 
 def SummarizeChange(s, old, new):
-    print s, old, new, new-old, float(new-old) / old
+    print 'Change', s, old, new, new-old, float(new-old) / old
+
 
 def SummarizeImpact(men, new_men, women, new_women):
     old_field = ComputeField(men, women)
     new_field = ComputeField(new_men, new_women)
     #print 'old field', old_field
     #print 'new field', new_field
-    print 'change in number of men', new_field[0] - old_field[0]
+    print 'Impact (change in number of men)', new_field[0] - old_field[0]
+
 
 def ReadCapeCod():
     all_res = []
@@ -288,18 +309,49 @@ def ReadCapeCod():
         all_res.extend(res)
     return all_res
 
+
+def GetContenders(res, gender, cutoff, spread):
+    contenders = []
+    count = 0
+    low, high = cutoff-spread, cutoff+spread
+    for t in res:
+        g, age, gun, net, qual_time, pace = t
+        if g == gender and low <= net <= high:
+            contenders.append(t)
+            if net <= cutoff:
+                count += 1
+
+    fraction = float(count) / len(contenders)
+    return contenders, count, fraction
+
+
+def FindFairStandard(res):
+    spread = ConvertTimeToMinutes('00:30:00')
+
+    male_cutoff = ConvertTimeToMinutes('3:05:00')
+    males, count, fraction = GetContenders(res, 'M', male_cutoff, spread)
+    print len(males), count, fraction
+
+    offsets = [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10]
+    for offset in offsets:
+        cutoff = ConvertTimeToMinutes('3:35:00') + offset
+        females, count, fraction = GetContenders(res, 'F', cutoff, spread)
+        print offset, len(females), count, fraction
+
+
 def RunAnalysis(offset=0):
     global standard
     standard = Standard(offset=offset)
 
-    res = ReadChicago()
+    res = ReadAllChicago()
+    groups = PartitionResults(res)
 
     if offset == 0:
-        genders = PartitionGenders(res)
-        PlotDiffs(genders)
+        for group, res in groups.iteritems():
+            print 'Participants', group, len(res)
+        PlotDiffs(groups, low=-190, high=30, root='bq_cdf1')
+        PlotDiffs(groups, low=-190, high=-30, root='bq_cdf2')
 
-    #print len(res)
-    groups = PartitionResults(res)
     qualifiers = ComputeFractions(groups)
     men, women, ratio = GenderRatio(qualifiers)
     return men, women, ratio
@@ -310,7 +362,7 @@ def main():
     offsets = [0, -1, -6, -11, -21]
     for offset in offsets:
         t = RunAnalysis(offset=offset)
-        print t
+        print 'Qualifiers', t
         res.append(t)
 
     men, women, ratio = res[0]
