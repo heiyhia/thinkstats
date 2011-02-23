@@ -13,4 +13,4 @@ def ParseResults(filename='Chicago2010.html'):
         t = [col.contents[0].strip() for col in cols]
         print ' '.join(t) 
 
-ParseResults('Chicago2009.html')
+ParseResults('Chicago2008.html')
