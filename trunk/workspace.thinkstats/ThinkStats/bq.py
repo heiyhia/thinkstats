@@ -6,7 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import glob
-import urllib
+import sys
 
 import Cdf
 import myplot
@@ -131,6 +131,32 @@ def ReadResults(filename='result-10-all.php', half=False):
     return results
 
 
+def ReadChicago(filename='Chicago2009.csv', half=False):
+    """Read results from coolrunning and return a list of tuples."""
+    results = []
+    for line in open(filename):
+        try:
+            age, gender, net = line.split()
+        except ValueError:
+            continue
+
+        age = int(age)
+        if age < 10 or age > 34:
+            continue
+
+        gun = None
+        pace = None
+
+        qual_time, offset = standard.LookupQualifyingTime(gender, age)
+        qual_time = ConvertTimeToMinutes(qual_time) + offset
+
+        net = ConvertTimeToMinutes(net)
+
+        t = gender, age, gun, net, qual_time, pace
+        results.append(t)
+    return results
+
+
 def GetSpeeds(results, column=-1):
     """Extract the pace column and return a list of speeds in MPH."""
     speeds = []
@@ -249,28 +275,31 @@ def SummarizeImpact(men, new_men, women, new_women):
     new_field = ComputeField(new_men, new_women)
     #print 'old field', old_field
     #print 'new field', new_field
-    print 'replaced', new_field[0] - old_field[0]
+    print 'change in number of men', new_field[0] - old_field[0]
 
-def RunAnalysis(offset=0):
-    global standard
-    standard = Standard(offset=offset)
-
+def ReadCapeCod():
+    all_res = []
     filenames = glob.glob('result-*-all.php')
 
-    diff_list = []
-    all_res = []
     for filename in sorted(filenames):
         year = filename.split('-')[1]
 
         res = ReadResults(filename=filename)
         all_res.extend(res)
+    return all_res
+
+def RunAnalysis(offset=0):
+    global standard
+    standard = Standard(offset=offset)
+
+    res = ReadChicago()
 
     if offset == 0:
-        genders = PartitionGenders(all_res)
+        genders = PartitionGenders(res)
         PlotDiffs(genders)
 
-    #print len(all_res)
-    groups = PartitionResults(all_res)
+    #print len(res)
+    groups = PartitionResults(res)
     qualifiers = ComputeFractions(groups)
     men, women, ratio = GenderRatio(qualifiers)
     return men, women, ratio
@@ -278,7 +307,7 @@ def RunAnalysis(offset=0):
 
 def main():
     res = []
-    offsets = [0, -1, -6, -11]
+    offsets = [0, -1, -6, -11, -21]
     for offset in offsets:
         t = RunAnalysis(offset=offset)
         print t
