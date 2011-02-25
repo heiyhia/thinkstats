@@ -398,6 +398,7 @@ def RunAnalysis(offset=0):
 
 
 def MakeGraphs():
+    """Generate figures showing the distribution of diffs."""
     groups = ReadGroups()
     
     PlotDiffs(groups, low=-190, high=30, root='bq_cdf1')
@@ -405,6 +406,7 @@ def MakeGraphs():
 
 
 def EvaluateBurfoot():
+    """Evaluate the impact of the Burfoot-proposed standard."""
     groups = ReadGroups()
 
     qual_times = dict(M1034=ConvertTimeToMinutes('3:10:00'),
@@ -473,7 +475,7 @@ def SummarizeImpact(women, new_women, men, new_men):
     print 'new field', new_field
 
     swing = new_field[0] - old_field[0]
-    print 'Impact (change in number of men)', swing
+    print 'Change in number of men', swing
 
     # apply that swing to the baseline numbers from Boston
     base_men, base_women = 4651, 4951
@@ -489,12 +491,8 @@ def Fraction(x, y):
     return x, y, 100.0 * x / (x + y)
 
 
-def main():
-    #EvaluateBurfoot()
-
-    MakeGraphs()
-    return
-
+def EvaluateImpact():
+    """Evaluate the impact of the proposed changes to the standard."""
     res = []
     offsets = [0, -1, -6, -11, -16]
     for offset in offsets:
@@ -513,6 +511,14 @@ def main():
         SummarizeImpact(women, new_women, men, new_men)
 
     
+def main():
+    #EvaluateBurfoot()
+
+    # MakeGraphs()
+
+    EvaluateImpact()
+
+
 
 
 if __name__ == '__main__':

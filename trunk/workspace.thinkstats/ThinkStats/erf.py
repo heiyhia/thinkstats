@@ -59,5 +59,5 @@ def NormalCdf(x, mu, sigma):
     Returns:
         float
     """
-    y = (erf((x - mu) / sigma / math.sqrt(2.0)) + 1.0) / 2.0
+    y = (erf((x - mu) / float(sigma) / math.sqrt(2.0)) + 1.0) / 2.0
     return y
