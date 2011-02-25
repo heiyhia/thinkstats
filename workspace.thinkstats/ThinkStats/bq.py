@@ -192,9 +192,10 @@ def PartitionResults(res):
     return groups
 
 
-def FractionQualified(res, qual_time):
+def NumberQualified(res, qual_time):
     count = 0
-    for gender, age, gun, net, qual_time, pace in res:
+    for t in res:
+        net = t[3]
         if net <= qual_time:
             count += 1
     return count, len(res)
@@ -219,9 +220,30 @@ def ComputeFractions(groups):
         gender = sample[0]
         qual_time = sample[4]
 
-        qual, total = FractionQualified(res, qual_time)
+        qual, total = NumberQualified(res, qual_time)
         dappend(qualifiers, gender, qual)
         #print group, qual_time, qual, total
+
+    return qualifiers
+
+
+def FindQualifiers(groups, qual_times):
+    """
+    Args:
+        groups: map from string group to list of result tuples
+        qual_times: map from group to qualifying time in minutes
+
+    Returns:
+        Histogram that maps from group to number of qualifiers
+    """
+    # map from gender to list of qualifier counts
+    qualifiers = Pmf.Hist()
+
+    for group, res in groups.iteritems():
+
+        qual_time = qual_times[group]
+        qual, total = NumberQualified(res, qual_time)
+        qualifiers.Incr(group, qual)
 
     return qualifiers
 
@@ -290,12 +312,26 @@ def SummarizeChange(s, old, new):
     print 'Change', s, old, new, new-old, float(new-old) / old
 
 
-def SummarizeImpact(men, new_men, women, new_women):
+def SummarizeImpact(women, new_women, men, new_men):
+    # compute the swing in a field the size of Boston
     old_field = ComputeField(men, women)
     new_field = ComputeField(new_men, new_women)
-    #print 'old field', old_field
-    #print 'new field', new_field
-    print 'Impact (change in number of men)', new_field[0] - old_field[0]
+    print 'old field', old_field
+    print 'new field', new_field
+
+    swing = new_field[0] - old_field[0]
+    print 'Impact (change in number of men)', swing
+
+    # apply that swing to the baseline numbers from Boston
+    base_men, base_women = 4651, 4951
+    print 'before', Fraction(base_men, base_women)
+
+    new_men = base_men + swing
+    new_women = base_women - swing 
+    print 'after', Fraction(new_men, new_women)
+   
+def Fraction(x, y):
+    return x, y, float(x) / (x + y)
 
 
 def ReadCapeCod():
@@ -357,9 +393,53 @@ def RunAnalysis(offset=0):
     return men, women, ratio
 
 
+def EvaluateBurfoot():
+    global standard
+    standard = Standard(offset=0)
+
+    res = ReadAllChicago()
+    groups = PartitionResults(res)
+
+    qual_times = dict(M1034=ConvertTimeToMinutes('3:10:00'),
+                      F1034=ConvertTimeToMinutes('3:40:00'))
+    before = FindQualifiers(groups, qual_times)
+    #SummarizeQualifiers(before)
+
+    qual_times = dict(M1034=ConvertTimeToMinutes('3:12:00'),
+                      F1034=ConvertTimeToMinutes('3:30:00'))
+    after = FindQualifiers(groups, qual_times)
+    #SummarizeQualifiers(after)
+
+    SummarizeDifference(before, after)
+
+
+
+def SummarizeQualifiers(qualifiers):
+    print qualifiers.Items()
+
+    pmf = Pmf.MakePmfFromHist(qualifiers)
+    print pmf.Items()
+
+
+def SummarizeDifference(before, after):
+    for group in before.Values():
+        diff = after.Freq(group) - before.Freq(group)
+        print group, before.Freq(group), after.Freq(group), 
+        print diff, 100.0 * diff / before.Freq(group)
+
+    t = []
+    for group in sorted(before.Values()):
+        for pmf in [before, after]:
+            t.append(pmf.Freq(group))
+
+    SummarizeImpact(*t)
+
 def main():
+    EvaluateBurfoot()
+    return
+
     res = []
-    offsets = [0, -1, -6, -11, -21]
+    offsets = [0, -1, -6, -11, -16]
     for offset in offsets:
         t = RunAnalysis(offset=offset)
         print 'Qualifiers', t
@@ -373,7 +453,7 @@ def main():
         new_men, new_women, new_ratio = t
         SummarizeChange('M', men, new_men)
         SummarizeChange('F', women, new_women)
-        SummarizeImpact(men, new_men, women, new_women)
+        SummarizeImpact(women, new_women, men, new_men)
 
     
 
