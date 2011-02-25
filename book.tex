@@ -3168,7 +3168,7 @@ Those cases are easy, but more generally, we might like to know the
 chance of getting $k$ sixes, for all values of $k$ from 0 to 100.  The
 answer is the {\bf binomial distribution}, which has this PMF:
 %
-\[ PMF(k) = \binom{n}{k} p^k (1-p)^{1-k}\]
+\[ PMF(k) = \binom{n}{k} p^k (1-p)^{n-k}\]
 %
 where $n$ is the number of trials, $p$ is the probability of success,
 and $k$ is the number of successes.

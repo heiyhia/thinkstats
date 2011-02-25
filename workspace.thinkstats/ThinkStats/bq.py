@@ -26,6 +26,8 @@ RI         2:24:41 2:24:38.2  5:32 *
 
 
 class Standard(object):
+    """Represents a qualifying standard"""
+
     time_table = """
     10-34	3:10	3:40
     35-39	3:15	3:45
@@ -41,6 +43,12 @@ class Standard(object):
     """
 
     def __init__(self, offset=0):
+        """Initializes the standard.
+
+        offset: how much to add to all qualifying times
+
+        self.times is a list of (agerange, male qualtime, female qualtime)
+        """
         self.offset = offset
         self.times = []
         lines = self.time_table.split('\n')
@@ -55,6 +63,7 @@ class Standard(object):
             self.times.append((ages, male, female))
 
     def LookupAgeGroup(self, gender, age):
+        """Returns the age group string for a given gender and age."""
         for ages, male, female in self.times:
             low, high = ages
             if low <= age <= high:
@@ -62,6 +71,7 @@ class Standard(object):
         return None
 
     def LookupQualifyingTime(self, gender, age):
+        """Returns (qualtime, offset) for a given gender and age."""
         for ages, male, female in self.times:
             if ages[0] <= age <= ages[1]:
                 if gender == 'M':
@@ -69,14 +79,6 @@ class Standard(object):
                 else:
                     return female, self.offset
         return None, self.offset
-
-
-def ConvertPaceToSpeed(pace):
-    """Converts pace in MM:SS format to MPH."""
-    m, s = [int(x) for x in pace.split(':')]
-    secs = m*60 + s
-    mph  = 1.0 / secs * 60 * 60 
-    return mph
 
 
 def ConvertTimeToMinutes(time):
@@ -122,7 +124,7 @@ def CleanLine(line, half=False):
 
 
 def ReadResults(filename='result-10-all.php', half=False):
-    """Read results from coolrunning and return a list of tuples."""
+    """Reads results from coolrunning and returns a list of tuples."""
     results = []
     for line in open(filename):
         t = CleanLine(line, half)
@@ -131,7 +133,25 @@ def ReadResults(filename='result-10-all.php', half=False):
     return results
 
 
+def ReadAllCapeCod():
+    """Reads data from the Cape Cod Marathon."""
+    all_res = []
+    filenames = glob.glob('result-*-all.php')
+
+    for filename in sorted(filenames):
+        year = filename.split('-')[1]
+
+        res = ReadResults(filename=filename)
+        all_res.extend(res)
+    return all_res
+
+
 def ReadAllChicago():
+    """Reads all data from Chicago.
+
+    Returns:
+        list of res
+    """
     filenames = ['Chicago2008.csv',
                  'Chicago2009.csv',
                  'Chicago2010.csv',
@@ -173,17 +193,8 @@ def ReadChicago(filename='Chicago2010.csv'):
     return results
 
 
-def GetSpeeds(results, column=-1):
-    """Extract the pace column and return a list of speeds in MPH."""
-    speeds = []
-    for t in results:
-        pace = t[column]
-        speed = ConvertPaceToSpeed(pace)
-        speeds.append(speed)
-    return speeds
-
-
 def PartitionResults(res):
+    """Returns map from group string to list of res tuples."""
     groups = {}
     for t in res:
         gender, age, gun, net, qual_time, pace = t
@@ -193,6 +204,7 @@ def PartitionResults(res):
 
 
 def NumberQualified(res, qual_time):
+    """Returns (number of qualifiers, number of res)."""
     count = 0
     for t in res:
         net = t[3]
@@ -202,6 +214,7 @@ def NumberQualified(res, qual_time):
 
 
 def dappend(d, key, val):
+    """Appends a value to the list of values in a map."""
     d.setdefault(key, []).append(val)
 
 
@@ -228,7 +241,8 @@ def ComputeFractions(groups):
 
 
 def FindQualifiers(groups, qual_times):
-    """
+    """Makes a histogram of the number of qualifiers in each group.
+
     Args:
         groups: map from string group to list of result tuples
         qual_times: map from group to qualifying time in minutes
@@ -236,7 +250,6 @@ def FindQualifiers(groups, qual_times):
     Returns:
         Histogram that maps from group to number of qualifiers
     """
-    # map from gender to list of qualifier counts
     qualifiers = Pmf.Hist()
 
     for group, res in groups.iteritems():
@@ -256,6 +269,11 @@ def GenderRatio(qualifiers):
 
 
 def ComputeField(men, women, field=9602):
+    """Returns the (men, women) in a field with the given size.
+
+    Args:
+        # of men and women in the population from which the field is formed.
+    """
     factor = float(field) / (men + women)
     return men*factor, women*factor
 
@@ -268,9 +286,15 @@ def PartitionGenders(res):
     return d
 
 
-def ComputeDiffs(results, low, high):
+def ComputeDiffs(res, low, high):
+    """Returns the difference between times and qualifying times.
+
+    Args:
+        res: list of results
+        low, high: range of diffs to include
+    """
     diffs = []
-    for gender, age, gun, net, qual_time, pace in results:
+    for gender, age, gun, net, qual_time, pace in res:
         diff = net - qual_time
         if low <= diff <= high:
             diffs.append(diff)
@@ -278,6 +302,12 @@ def ComputeDiffs(results, low, high):
 
 
 def PlotDiffs(groups, low, high, root):
+    """Plots the CDF of diffs for each group.
+
+    Args:
+        low, high: range of diffs to include
+        root: string filename root
+    """
     diff_list = []
     for gender, res in groups.iteritems():
         diffs = ComputeDiffs(res, low=low, high=high)
@@ -298,21 +328,144 @@ def PlotDiffs(groups, low, high, root):
                 root=root)
 
 
-def PlotPmf(results):
-    speeds = GetSpeeds(results)
-    pmf = Pmf.MakePmfFromList(speeds, 'speeds')
-    myplot.Pmf(pmf, 
-               title='PMF of running speed',
-               xlabel='speed (mph)',
-               ylabel='probability',
-               show=True)
-
-
 def SummarizeChange(s, old, new):
-    print 'Change', s, old, new, new-old, float(new-old) / old
+    """Prints old, new, diff, percent diff."""
+    print 'Change', s, old, new, new-old, 100.0 * (new-old) / old
+
+
+def GetContenders(res, gender, cutoff, spread):
+    """Returns a list of contenders.
+
+    Args:
+        res: list of results
+        gender: string M or F
+        cutoff: qual time in minutes
+        spread: minutes +- to collect results
+
+    Returns:
+        tuple of (list of results, number of results, fraction qualified)
+    """
+    contenders = []
+    count = 0
+    low, high = cutoff-spread, cutoff+spread
+    for t in res:
+        g, age, gun, net, qual_time, pace = t
+        if g == gender and low <= net <= high:
+            contenders.append(t)
+            if net <= cutoff:
+                count += 1
+
+    return contenders, count, Fraction(count, len(contenders))
+                                       
+
+def FindFairStandard(res):
+    """Finds the standard that qualifies the same fraction of contenders.
+    """
+    spread = ConvertTimeToMinutes('00:30:00')
+
+    male_cutoff = ConvertTimeToMinutes('3:05:00')
+    males, count, fraction = GetContenders(res, 'M', male_cutoff, spread)
+    print len(males), count, fraction
+
+    # try out a range of offsets for the female qualifying time
+    offsets = [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10]
+    for offset in offsets:
+        cutoff = ConvertTimeToMinutes('3:35:00') + offset
+        females, count, fraction = GetContenders(res, 'F', cutoff, spread)
+        print offset, len(females), count, fraction
+
+
+def ReadGroups(offset=0):
+    """Reads Chigaco results and partitions into groups."""
+    global standard
+    standard = Standard(offset=offset)
+
+    res = ReadAllChicago()
+    groups = PartitionResults(res)
+    return groups
+
+
+def RunAnalysis(offset=0):
+    """Computes the field for a given gender gap.
+
+    Args:
+        offset: minutes added to the current standard.
+    """
+    groups = ReadGroups(offset)
+    qualifiers = ComputeFractions(groups)
+    men, women, ratio = GenderRatio(qualifiers)
+    return men, women, ratio
+
+
+def MakeGraphs():
+    groups = ReadGroups()
+    
+    PlotDiffs(groups, low=-190, high=30, root='bq_cdf1')
+    PlotDiffs(groups, low=-190, high=-30, root='bq_cdf2')
+
+
+def EvaluateBurfoot():
+    groups = ReadGroups()
+
+    qual_times = dict(M1034=ConvertTimeToMinutes('3:10:00'),
+                      F1034=ConvertTimeToMinutes('3:40:00'))
+    before = FindQualifiers(groups, qual_times)
+
+    print 'before'
+    SummarizeQualifiers(before)
+    print
+
+    qual_times = dict(M1034=ConvertTimeToMinutes('3:12:00'),
+                      F1034=ConvertTimeToMinutes('3:30:00'))
+    after = FindQualifiers(groups, qual_times)
+
+    print 'after'
+    SummarizeQualifiers(after)
+    print
+
+    print 'difference'
+    SummarizeDifference(before, after)
+    print
+
+
+def SummarizeQualifiers(qualifiers):
+    """Prints a summary of qualifiers.
+
+    qualifiers: histogram that maps groups to number of qualifiers
+    """
+    print qualifiers.Items()
+
+    pmf = Pmf.MakePmfFromHist(qualifiers)
+    print pmf.Items()
+
+
+def SummarizeDifference(before, after):
+    """Summarize the difference between two fields.
+
+    before, after: histograms that map groups to number of qualifiers
+    """
+    for group in before.Values():
+        diff = after.Freq(group) - before.Freq(group)
+        print group, before.Freq(group), after.Freq(group), 
+        print diff, 100.0 * diff / before.Freq(group)
+
+    t = []
+    for group in sorted(before.Values()):
+        for pmf in [before, after]:
+            t.append(pmf.Freq(group))
+
+    SummarizeImpact(*t)
 
 
 def SummarizeImpact(women, new_women, men, new_men):
+    """Prints a summary of the impact of a change.
+
+    women, new_women: number of women in the sample before and after
+    men, new_men: number of men in the sample before and after
+    """
+    print
+    print 'impact'
+
     # compute the swing in a field the size of Boston
     old_field = ComputeField(men, women)
     new_field = ComputeField(new_men, new_women)
@@ -329,113 +482,17 @@ def SummarizeImpact(women, new_women, men, new_men):
     new_men = base_men + swing
     new_women = base_women - swing 
     print 'after', Fraction(new_men, new_women)
-   
+
+
 def Fraction(x, y):
-    return x, y, float(x) / (x + y)
+    """Returns x, y, percent of x in (x+y)."""
+    return x, y, 100.0 * x / (x + y)
 
-
-def ReadCapeCod():
-    all_res = []
-    filenames = glob.glob('result-*-all.php')
-
-    for filename in sorted(filenames):
-        year = filename.split('-')[1]
-
-        res = ReadResults(filename=filename)
-        all_res.extend(res)
-    return all_res
-
-
-def GetContenders(res, gender, cutoff, spread):
-    contenders = []
-    count = 0
-    low, high = cutoff-spread, cutoff+spread
-    for t in res:
-        g, age, gun, net, qual_time, pace = t
-        if g == gender and low <= net <= high:
-            contenders.append(t)
-            if net <= cutoff:
-                count += 1
-
-    fraction = float(count) / len(contenders)
-    return contenders, count, fraction
-
-
-def FindFairStandard(res):
-    spread = ConvertTimeToMinutes('00:30:00')
-
-    male_cutoff = ConvertTimeToMinutes('3:05:00')
-    males, count, fraction = GetContenders(res, 'M', male_cutoff, spread)
-    print len(males), count, fraction
-
-    offsets = [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10]
-    for offset in offsets:
-        cutoff = ConvertTimeToMinutes('3:35:00') + offset
-        females, count, fraction = GetContenders(res, 'F', cutoff, spread)
-        print offset, len(females), count, fraction
-
-
-def RunAnalysis(offset=0):
-    global standard
-    standard = Standard(offset=offset)
-
-    res = ReadAllChicago()
-    groups = PartitionResults(res)
-
-    if offset == 0:
-        for group, res in groups.iteritems():
-            print 'Participants', group, len(res)
-        PlotDiffs(groups, low=-190, high=30, root='bq_cdf1')
-        PlotDiffs(groups, low=-190, high=-30, root='bq_cdf2')
-
-    qualifiers = ComputeFractions(groups)
-    men, women, ratio = GenderRatio(qualifiers)
-    return men, women, ratio
-
-
-def EvaluateBurfoot():
-    global standard
-    standard = Standard(offset=0)
-
-    res = ReadAllChicago()
-    groups = PartitionResults(res)
-
-    qual_times = dict(M1034=ConvertTimeToMinutes('3:10:00'),
-                      F1034=ConvertTimeToMinutes('3:40:00'))
-    before = FindQualifiers(groups, qual_times)
-    #SummarizeQualifiers(before)
-
-    qual_times = dict(M1034=ConvertTimeToMinutes('3:12:00'),
-                      F1034=ConvertTimeToMinutes('3:30:00'))
-    after = FindQualifiers(groups, qual_times)
-    #SummarizeQualifiers(after)
-
-    SummarizeDifference(before, after)
-
-
-
-def SummarizeQualifiers(qualifiers):
-    print qualifiers.Items()
-
-    pmf = Pmf.MakePmfFromHist(qualifiers)
-    print pmf.Items()
-
-
-def SummarizeDifference(before, after):
-    for group in before.Values():
-        diff = after.Freq(group) - before.Freq(group)
-        print group, before.Freq(group), after.Freq(group), 
-        print diff, 100.0 * diff / before.Freq(group)
-
-    t = []
-    for group in sorted(before.Values()):
-        for pmf in [before, after]:
-            t.append(pmf.Freq(group))
-
-    SummarizeImpact(*t)
 
 def main():
-    EvaluateBurfoot()
+    #EvaluateBurfoot()
+
+    MakeGraphs()
     return
 
     res = []
