@@ -9,6 +9,7 @@ import glob
 import sys
 
 import Cdf
+import matplotlib.pyplot as pyplot
 import myplot
 import Pmf
 
@@ -218,8 +219,9 @@ def dappend(d, key, val):
     d.setdefault(key, []).append(val)
 
 
-def ComputeFractions(groups):
-    """
+def CollectQualifiers(groups):
+    """Returns a map from gender to list of qualifier counts.
+
     Args:
         groups: map from string group to list of result tuples
     """
@@ -240,6 +242,18 @@ def ComputeFractions(groups):
     return qualifiers
 
 
+def GenderRatio(qualifiers):
+    """Returns (number of men, number of women, fraction female).
+
+    Args:
+        qualifiers: map from gender to list of qualifier counts
+    """
+    men = sum(qualifiers['M'])
+    women = sum(qualifiers['F'])
+    ratio = 1.0 * women / (men + women)
+    return men, women, ratio
+
+
 def FindQualifiers(groups, qual_times):
     """Makes a histogram of the number of qualifiers in each group.
 
@@ -253,19 +267,11 @@ def FindQualifiers(groups, qual_times):
     qualifiers = Pmf.Hist()
 
     for group, res in groups.iteritems():
-
         qual_time = qual_times[group]
         qual, total = NumberQualified(res, qual_time)
         qualifiers.Incr(group, qual)
 
     return qualifiers
-
-
-def GenderRatio(qualifiers):
-    men = sum(qualifiers['M'])
-    women = sum(qualifiers['F'])
-    ratio = float(women) / (men + women)
-    return men, women, ratio
 
 
 def ComputeField(men, women, field=9602):
@@ -276,14 +282,6 @@ def ComputeField(men, women, field=9602):
     """
     factor = float(field) / (men + women)
     return men*factor, women*factor
-
-
-def PartitionGenders(res):
-    d = {}
-    for t in res:
-        gender = t[0]
-        dappend(d, gender, t)
-    return d
 
 
 def ComputeDiffs(res, low, high):
@@ -343,7 +341,7 @@ def GetContenders(res, gender, cutoff, spread):
         spread: minutes +- to collect results
 
     Returns:
-        tuple of (list of results, number of results, fraction qualified)
+        tuple of (list of results, number of qualifiers, fraction qualified)
     """
     contenders = []
     count = 0
@@ -358,21 +356,66 @@ def GetContenders(res, gender, cutoff, spread):
     return contenders, count, Fraction(count, len(contenders))
                                        
 
-def FindFairStandard(res):
+def FindFairStandard(res,
+                     offsets,
+                     spread,
+                     male_time,
+                     female_time):
     """Finds the standard that qualifies the same fraction of contenders.
     """
-    spread = ConvertTimeToMinutes('00:30:00')
+    spread = ConvertTimeToMinutes(spread)
 
-    male_cutoff = ConvertTimeToMinutes('3:05:00')
-    males, count, fraction = GetContenders(res, 'M', male_cutoff, spread)
-    print len(males), count, fraction
+    male_cutoff = ConvertTimeToMinutes(male_time)
+    males, count, mfraction = GetContenders(res, 'M', male_cutoff, spread)
+    #print len(males), count, mfraction[2]
 
     # try out a range of offsets for the female qualifying time
-    offsets = [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10]
+    fractions = []
     for offset in offsets:
-        cutoff = ConvertTimeToMinutes('3:35:00') + offset
+        cutoff = ConvertTimeToMinutes(female_time) + offset
         females, count, fraction = GetContenders(res, 'F', cutoff, spread)
-        print offset, len(females), count, fraction
+        #print offset, len(females), count, fraction
+        fractions.append(fraction[2] - mfraction[2])
+
+    return mfraction[2], fractions
+
+
+def RunFairStandard(root,
+                    male_time='3:10:00',
+                    female_time='3:40:00'):
+    global standard
+    standard = Standard()
+
+    res = ReadAllChicago()
+
+    pyplot.clf()
+    spreads = ['00:20:00', '00:25:00', '00:30:00', '00:35:00', '00:40:00']
+
+    offsets = [-4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16]
+
+    gap = ConvertTimeToMinutes(female_time) - ConvertTimeToMinutes(male_time)
+    gaps = [gap + offset for offset in offsets]
+    zero = [0 for offset in offsets]
+
+    pyplot.plot(gaps, zero)
+
+    for spread in spreads:
+        mfraction, fractions = FindFairStandard(res, 
+                                                offsets,
+                                                spread=spread,
+                                                male_time=male_time,
+                                                female_time=female_time)
+        print spread, mfraction
+
+        line_options = dict(label=spread,
+                            linewidth=2)
+
+        pyplot.plot(gaps, fractions, **line_options)
+
+    myplot.Plot(root=root,
+                title='',
+                xlabel='Gender gap',
+                ylabel='Diff in % contenders qualified')
 
 
 def ReadGroups(offset=0):
@@ -392,7 +435,7 @@ def RunAnalysis(offset=0):
         offset: minutes added to the current standard.
     """
     groups = ReadGroups(offset)
-    qualifiers = ComputeFractions(groups)
+    qualifiers = CollectQualifiers(groups)
     men, women, ratio = GenderRatio(qualifiers)
     return men, women, ratio
 
@@ -516,8 +559,10 @@ def main():
 
     # MakeGraphs()
 
-    EvaluateImpact()
-
+    # EvaluateImpact()
+    
+    RunFairStandard('bq_gap1', '03:10:00', '03:40:00')
+    RunFairStandard('bq_gap2', '03:05:00', '03:35:00')
 
 
 
