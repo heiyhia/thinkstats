@@ -288,7 +288,7 @@ def MakePmfFromCdf(cdf, name=None):
 
     prev = 0.0
     for val, prob in cdf.Items():
-        pmf.Incr(val, prov-prev)
+        pmf.Incr(val, prob-prev)
         prev = prob
 
     return pmf

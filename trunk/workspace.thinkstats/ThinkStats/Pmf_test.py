@@ -8,6 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import unittest
 import thinkstats
 import Pmf
+import Cdf
 
 class Test(unittest.TestCase):
 
@@ -95,6 +96,15 @@ class Test(unittest.TestCase):
         self.assertAlmostEquals(mu, mu2)
         self.assertAlmostEquals(var, var2)
         self.assertAlmostEquals(var, var3)
+
+    def testMakePmfFromCdf(self):
+        t = [1, 2, 2, 3, 5]
+        pmf = Pmf.MakePmfFromList(t)
+        self.checkPmf(pmf)
+
+        cdf = Cdf.MakeCdfFromPmf(pmf)
+        pmf2 = Pmf.MakePmfFromCdf(cdf)
+        self.checkPmf(pmf2)
 
 if __name__ == "__main__":
     unittest.main()
