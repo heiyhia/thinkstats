@@ -111,8 +111,11 @@ def Binom(n, k, d={}):
     Returns:
       int
     """
-    if k==0 or k==n:
+    if k == 0:
         return 1
+    if n == 0:
+        return 0
+
     try:
         return d[n, k]
     except KeyError:

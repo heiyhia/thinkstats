@@ -22,8 +22,8 @@ class Cdf(object):
         name: string used as a graph label.
     """
     def __init__(self, xs=None, ps=None, name=''):
-        self.xs = xs
-        self.ps = ps
+        self.xs = xs or []
+        self.ps = ps or []
         self.name = name
 
     def Items(self):
@@ -32,6 +32,16 @@ class Cdf(object):
         Note: in Python3, returns an iterator.
         """
         return zip(self.xs, self.ps)
+
+    def Append(self, x, p):
+        """Add an (x, p) pair to the end of this CDF.
+
+        Note: this us normally used to build a CDF from scratch, not
+        to modify existing CDFs.  It is up to the caller to make sure
+        that the result is a legal CDF.
+        """
+        self.xs.append(x)
+        self.ps.append(p)
 
     def Prob(self, x):
         """Returns CDF(x), the probability that corresponds to value x.

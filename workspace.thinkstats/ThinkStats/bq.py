@@ -88,7 +88,13 @@ def ConvertTimeToMinutes(time):
     if len(t) == 2:
         time, fraction = time.split('.')
     
-    h, m, s = [int(x) for x in time.split(':')]
+    t = [int(x) for x in time.split(':')]
+    if len(t) == 2:
+        h = 0
+        m, s = t
+    else:
+        h, m, s = t
+
     mins = h * 60 + m + s / 60.0
     return mins
 
@@ -389,7 +395,7 @@ def RunFairStandard(root,
     res = ReadAllChicago()
 
     pyplot.clf()
-    spreads = ['00:20:00', '00:25:00', '00:30:00', '00:35:00', '00:40:00']
+    spreads = ['20:00', '25:00', '30:00', '35:00', '40:00']
 
     offsets = [-4, -2, 0, 2, 4, 6, 8, 10, 12, 14, 16]
 
@@ -414,7 +420,7 @@ def RunFairStandard(root,
 
     myplot.Plot(root=root,
                 title='',
-                xlabel='Gender gap',
+                xlabel='Gender gap (minutes)',
                 ylabel='Diff in % contenders qualified')
 
 
