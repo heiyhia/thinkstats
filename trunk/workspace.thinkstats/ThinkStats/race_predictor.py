@@ -4,6 +4,10 @@ import random
 import shelve
 import time
 
+import correlation
+import matplotlib.pyplot as pyplot
+import myplot
+
 def ParseTable(table):
     """Pulls the data out of the table and puts it in a record.
 
@@ -142,6 +146,7 @@ def ReadShelf(shelf):
 
     print 'runners:', len(shelf)
 
+    pairs = []
     for key, t in shelf.iteritems():
         if t is None:
             unchecked += 1
@@ -158,13 +163,36 @@ def ReadShelf(shelf):
             continue
 
         good += 1
-        print key, age, record['age'], net, record['net']
+
+        half = ConvertTimeToMinutes(net)
+        full = ConvertTimeToMinutes(record['net'])
+        pairs.append((half, full))
+
+        print key, age, record['age'], net, record['net'], half, full
 
     print 'unchecked', unchecked
     print 'no record', no_record
     print 'wrong person', bad_age
     print 'good', good
 
+    return pairs
+
+
+def ScatterPlot(root, xs, ys, fit, alpha=1.0):
+    inter, slope, R2 = fit
+    fxs = [min(xs), max(xs)]
+    fys = [inter + slope * x for x in fxs]
+    fys = [200.0 for x in fxs]
+    print fxs, fys
+    pyplot.plot(fxs, fys)
+
+    pyplot.scatter(xs, ys, alpha=alpha, edgecolors='none')
+    myplot.Plot(root=root,
+                xlabel='Half marathon (min)',
+                ylabel='Marathon (min)',
+                legend=False,
+                show=True)
+        
 
 def LookupResults(shelf):
     # read New Bedford results
@@ -198,12 +226,46 @@ def LookupResults(shelf):
         time.sleep(delay)
 
 
+def Fit(halfs, fulls):
+    inter, slope = correlation.LeastSquares(halfs, fulls)
+    print '(inter, slope):', inter, slope
+
+    res = correlation.Residuals(halfs, fulls, inter, slope)
+    R2 = correlation.CoefDetermination(fulls, res)
+
+    print 'inter', inter
+    print 'slope', slope
+    print 'R^2', R2
+    print
+
+    print 'prediction', inter + slope * ConvertTimeToMinutes('1:34:05')
+
+    return inter, slope, R2
+
+
+def FilterPairs(pairs, low, high, factor):
+    return [(x, y) for x, y in pairs if low <= x <= high and y <= x*factor]
+
+
+def CountQualifiers(pairs):
+    qual = [y for x, y in pairs if y <= 200.0]
+    return len(qual), len(pairs)
+
 def main():
     shelf = shelve.open('race_predictor.db')
 
     try:
         # LookupResults(shelf)
-        ReadShelf(shelf)
+        pairs = ReadShelf(shelf)
+        time = ConvertTimeToMinutes('1:34:05')
+        spread = 2.0
+        pairs = FilterPairs(pairs, low=time-spread, high=time+spread, 
+                            factor=100)
+        print 'qualifiers', CountQualifiers(pairs)
+        halfs, fulls = zip(*pairs)
+        fit = Fit(halfs, fulls)
+        ScatterPlot('race_predictor', halfs, fulls, fit, alpha=1.0)
+
     finally:
         shelf.close()
 
