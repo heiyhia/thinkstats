@@ -526,7 +526,8 @@ the United States aged 15-44.
 
 \index{population}
 
-The people who participate in a survey are called {\bf respondents}.
+The people who participate in a survey are called {\bf respondents};
+a group of respondents is called a {\bf cohort}.
 In general, cross-sectional studies are meant to be {\bf
   representative}, which means that every member of the target
 population has an equal chance of participating.  Of course that ideal
@@ -904,11 +905,12 @@ time, collecting data from the same group repeatedly.
 \index{study!longitudinal}
 
 \item[respondent:] A person who responds to a survey.
-
 \index{respondent}
 
-\item[sample:] The subset of a population used to collect data.
+\item[cohort:] A group of respondents
+\index{cohort}
 
+\item[sample:] The subset of a population used to collect data.
 \index{sample}
 
 \item[representative:] A sample is representative if every member
@@ -1321,7 +1323,7 @@ address this problem using PMFs.
 \section{Representing PMFs}
 
 \index{Pmf object}
-\index{{\tt Pmf.py}
+\index{{\tt Pmf.py}}
 
 {\tt Pmf.py} provides a class called {\tt Pmf} that represents PMFs.
 The notation can be confusing, but here it is: {\tt Pmf} is the
@@ -1630,6 +1632,8 @@ during Weeks 0--38.
 Here's one way to do it:
 
 \begin{enumerate}
+
+\index{cohort}
 
 \item Given a PMF, generate a fake cohort of 1000 pregnancies.
 For each number of weeks, $x$, the number of pregnancies with
@@ -2250,6 +2254,8 @@ how you could make that claim more precise.
 
 \begin{enumerate}
 
+\index{cohort}
+
 \item Select a cohort of people who are the same height as you (within
 some range).
 
@@ -2754,6 +2760,9 @@ used because it describes so many phenomena, at least approximately.
 It turns out that there is a good reason for its ubiquity, which we
 will get to in Section~\ref{CLT}.
 
+\index{error function}
+\index{CDF}
+
 The normal distribution has many properties that make it amenable for
 analysis, but the CDF is not one of them.  Unlike the
 other distributions we have looked at, there is no closed-form
@@ -2768,6 +2777,8 @@ written $\erf(x)$:
 %
 The parameters $\mu$ and $\sigma$ determine the mean and standard
 deviation of the distribution.
+
+\index{{\tt erf.py}}
 
 If these formulas make your eyes hurt, don't worry; they are easy to
 implement in Python\footnote{As of Python 3.2, it is even easier; 
@@ -2809,6 +2820,9 @@ because we can summarize the entire distribution with just two
 numbers, $\mu=116.5$ and $\sigma=19.9$, and the resulting error
 (difference between the model and the data) is small.
 
+\index{model}
+\index{percentile}
+
 Below the 10th percentile there is a discrepancy between the data
 and the model; there are more light babies than we would expect in
 a normal distribution.  If we are interested in studying preterm
@@ -2839,6 +2853,9 @@ how many do we expect to have an IQ of 190 or more\footnote{On this
   topic, you might be interested to read
   \url{wikipedia.org/wiki/Christopher_Langan}.}?
 
+\index{Langan, Christopher}
+\index{six-sigma event}
+
 \end{ex}
 
 
@@ -2859,6 +2876,8 @@ with two statistics, what statistics would you choose?
 
 
 \section{Normal probability plot}
+\index{normal probablity plot}
+\index{plot!normal probability}
 
 \index{exponential distribution}
 \index{distribution!exponential}
@@ -2871,6 +2890,7 @@ For the exponential, Pareto and Weibull distributions, there are
 simple transformations we can use to test whether a continuous
 distribution is a good model of a dataset.
 
+\index{model}
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
@@ -2881,6 +2901,8 @@ is an alternative called a {\bf normal probability plot}.  It is based
 on {\bf rankits}: if you generate $n$ values from a normal
 distribution and sort them, the $k$th rankit is the mean of the
 distribution for the $k$th value.
+
+\index{rankit}
 
 \begin{ex}
 
@@ -2949,6 +2971,8 @@ The curvature in this plot suggests that there are
 deviations from a normal distribution; nevertheless, it is a
 good (enough) model for many purposes.
 
+\index{model}
+
 \begin{ex}
 
 \index{normal distribution}
@@ -2960,6 +2984,9 @@ Write a function called {\tt NormalPlot} that takes a sequence of
 values and generates a normal probability plot.  You can download
 a solution from \url{thinkstats.com/rankit.py}.
 
+\index{relay race}
+\index{race!relay}
+
 Use the running speeds from {\tt relay.py} to generate a normal
 probability plot.  Is the normal distribution a good model for this
 data?  You can download a solution from
@@ -2970,6 +2997,9 @@ data?  You can download a solution from
 
 \section{The lognormal distribution}
 \label{lognormal}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{CDF}
 
 If the logarithms of a set of values have a normal distribution, the
 values have a {\bf lognormal} distribution.  The CDF of the lognormal
@@ -3026,6 +3056,9 @@ Figure~\ref{brfss_weight_log} shows the distribution
 of $\log w$, where $w$ is weight in kilograms, along with a normal
 model.
 
+\index{respondent}
+\index{model}
+
 The normal model is a good fit for the data, although the highest
 weights exceed what we expect from the normal model even after the log
 transform.  Since the distribution of $\log w$ fits a normal distribution, we
@@ -3035,6 +3068,8 @@ conclude that $w$ fits a lognormal distribution.
 \index{distribution!normal}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
+\index{lognormal distribution}
+\index{distribution!lognormal}
 
 
 %Figure~\ref{brfss_weight_model} shows the
@@ -3091,6 +3126,9 @@ with a Pareto distribution.
 
 \index{Pareto distribution}
 \index{distribution!Pareto}
+\index{U.S.~Census Bureau}
+\index{population}
+\index{city size}
 
 The U.S.~Census Bureau publishes data on the population of every
 incorporated city and town in the United States.  I have written a
@@ -3130,6 +3168,11 @@ for cities and towns?  You can download a solution from
 
 \label{irs}
 
+\index{Internal Revenue Service}
+\index{IRS}
+\index{income}
+\index{taxes}
+
 The Internal Revenue Service of the United States (IRS) provides data
 about income taxes at \url{irs.gov/taxstats}.
 
@@ -3149,9 +3192,13 @@ the data?  You can download a solution from \url{thinkstats.com/irs.py}.
 
 \section{Why model?}
 
+\index{model}
+
 At the beginning of this chapter I said that many real world phenomena
 can be modeled with continuous distributions.  ``So,'' you might ask,
 ``what?''
+
+\index{abstraction}
 
 Like all models, continuous distributions are abstractions, which
 means they leave out details that are considered irrelevant.
@@ -3159,9 +3206,13 @@ For example, an observed distribution might have measurement errors
 or quirks that are specific to the sample; continuous models smooth
 out these idiosyncrasies.
 
+\index{smoothing}
+
 Continuous models are also a form of data compression.  When a model
 fits a dataset well, a small set of parameters can summarize a
 large amount of data.
+
+\index{compression}
 
 It is sometimes surprising when data from a natural phenomenon fit a
 continuous distribution, but these observations can lead to insight
@@ -3171,8 +3222,13 @@ are often the result of generative processes with positive feedback
 (so-called preferential attachment processes: see
 \url{wikipedia.org/wiki/Preferential_attachment}.).
 
+\index{preferential attachment}
+\index{generative process}
+
 \index{Pareto distribution}
 \index{distribution!Pareto}
+
+\index{analysis}
 
 Continuous distributions lend themselves to mathematical analysis, as
 we will see in Chapter~\ref{operations}.
@@ -3182,6 +3238,9 @@ we will see in Chapter~\ref{operations}.
 
 \index{exponential distribution}
 \index{distribution!exponential}
+\index{random number}
+\index{CDF}
+\index{inverse CDF algorithm}
 
 Continuous CDFs are also useful for generating random numbers.
 If there is an efficient way to compute the inverse CDF, $ICDF(p)$,
@@ -3212,6 +3271,8 @@ keyword.  Most implementations of {\tt random.random} can return 0 but
 not 1, so 1-p can be 1 but not 0, which is good, because $\ln 0$ is
 undefined.
 
+\index{random module}
+
 \begin{ex}
 
 \index{Weibull distribution}
@@ -3229,34 +3290,49 @@ distribution with those parameters.
 \begin{description}
 
 \item[empirical distribution:] The distribution of values in a sample.
+\index{empirical distribution}
+\index{distribution!empirical}
 
 \item[continuous distribution:] A distribution described by a continuous
 function.
+\index{continuous distribution}
+\index{distribution!continuous}
 
 \item[interarrival time:] The elapsed time between two events.
+\index{interarrival time}
 
 \item[error function:] A special mathematical function, so-named
   because it comes up in the study of measurement errors.
+\index{error function}
 
 \item[normal probability plot:] A plot of the sorted values in a sample
 versus the expected value for each if their distribution is normal.
+\index{normal probablity plot}
+\index{plot!normal probability}
 
 \item[rankit:] The expected value of an element in a sorted list of
 values from a normal distribution.
+\index{rankit}
 
 \item[model:] A useful simplification.  Continuous distributions are
 often good models of more complex empirical distributions.
+\index{model}
 
 \item[corpus:] A body of text used as a sample of a language.
+\index{corpus}
 
 \item[hapaxlegomenon:] A word that appears only once in a corpus.
 It appears twice in this book, so far.
+\index{hapaxlegomenon}
 
 \end{description}
 
 
 \chapter{Probability}
 \label{probability}
+\index{probability}
+\index{frequency}
+\index{sample size}
 
 In Chapter~\ref{descriptive}, I said that a probability is a frequency
 expressed as a fraction of the sample size.  That's one definition of
@@ -3268,10 +3344,17 @@ is general agreement that a probability is a real value between 0 and
 1 that is intended to be a quantitative measure corresponding to the
 qualitative notion that some things are more likely than others.
 
+\index{event}
+\index{trial}
+
 The ``things'' we assign probabilities to are called {\bf events}.  If
 $E$ represents an event, then $P(E)$ represents the probability that
 $E$ will occur.  A situation where $E$ might or might not happen is
 called a {\bf trial}.
+
+\index{success}
+\index{failure}
+\index{dice}
 
 As an example, suppose you have a standard six-sided
 die\footnote{``Die'' is the singular of ``dice''.} and want to know
@@ -3286,15 +3369,23 @@ infinite, defining probabilities is a little trickier, but most people
 are willing to accept probabilistic claims about a hypothetical series
 of identical trials, like tossing a coin or rolling a die.
 
+\index{identical trials}
+\index{unique events}
+
 We start to run into trouble when we talk about probabilities of
 unique events.  For example, we might like to know the probability
 that a candidate will win an election.  But every election is unique,
 so there is no series of identical trials to consider.
 
+\index{election}
+
 In cases like this some people would say that the notion of
 probability does not apply.  This position is sometimes called {\bf
   frequentism} because it defines probability in terms of frequencies.
 If there is no set of identical trials, there is no probability.
+
+\index{frequentism}
+\index{Bayesianism}
 
 Frequentism is philosophically safe, but
 frustrating because it limits the scope of probability to physical
@@ -3310,6 +3401,12 @@ a person's state of knowledge; people with different information
 might have different degrees of belief about the same event.  For
 this reason, many people think that Bayesian probabilities are
 more subjective than frequency probabilities.
+
+\index{subjective belief}
+\index{belief}
+\index{Thaksin Shinawatra}
+\index{Thailand}
+\index{Prime Minister}
 
 As an example, what is the probability that Thaksin Shinawatra is the
 Prime Minister of Thailand?  A frequentist would say that there is no
@@ -3332,6 +3429,7 @@ reflecting the possibility that Wikipedia is wrong.
 
 
 \section{Rules of probability}
+\index{probability!rules of}
 
 \newcommand{\AND}{~\mbox{and}~}
 
@@ -3347,14 +3445,22 @@ is {\em not always true}.  This formula only applies if $A$ and $B$
 are {\bf independent}, which means that if I know $A$ occurred, that
 doesn't change the probability of $B$, and vice versa.
 
+\index{independent}
+\index{event!independent}
+
 For example, if $A$ is tossing a coin and getting heads, and $B$
 is rolling a die and getting 1, $A$ and $B$ are independent, because
 the coin toss doesn't tell me anything about the die roll.
+
+\index{dice}
 
 But if I roll two dice, and $A$ is getting at least one six, and
 $B$ is getting two sixes, $A$ and $B$ are not independent, because
 if I know that $A$ occurred, the probability of $B$ is higher, and
 if I know $B$ occurred, the probability of $A$ is 1.
+
+\index{conditional probability}
+\index{probability!conditional}
 
 When $A$ and $B$ are not independent, it is often useful to compute
 the conditional probability, $P(A|B)$, which is the probability of
@@ -3393,8 +3499,12 @@ there are some scenarios where people are surprisingly bad at this
 kind of analysis.  For examples and discussion of this phenomenon, see
 \url{wikipedia.org/wiki/Conjunction_fallacy}.
 
+\index{conjuction fallacy}
+\index{fallacy!conjunction}
 
 \begin{ex}
+\index{dice}
+
 If I roll two dice and the total is 8, what is the chance that
 one of the dice is a 6?
 \end{ex}
@@ -3405,6 +3515,10 @@ What is the chance of getting no sixes?
 \end{ex}
 
 \begin{ex}
+
+\index{Mlodinow, Leonard}
+\index{Florida, girl named}
+\index{girl named Florida}
 
 The following questions are adapted from Mlodinow, {\em The Drunkard's
   Walk}.
@@ -3435,6 +3549,8 @@ Florida is small.
 
 
 \section{Monty Hall}
+
+\index{Monty Hall problem}
 
 The Monty Hall problem might be the most contentious question in
 the history of probability.  The scenario is simple, but the correct
@@ -3473,6 +3589,10 @@ games on the show.  If you are on the show, here's what happens:
 The question is, should you ``stick'' or ``switch'' or does it
 make no difference?
 
+\index{stick}
+\index{switch}
+\index{intuition}
+
 Most people have the strong intuition that it makes no difference.
 There are two doors left, they reason, so the chance that the car
 is behind Door A is 50\%.
@@ -3492,6 +3612,8 @@ If your strategy is to switch, you will win in either Scenario
 B or Scenario C, so the total probability of winning is 2/3.
 
 \newcommand{\Erdos}{Erd\H{o}s}
+
+\index{\Erdos, Paul}
 
 If you are not completely convinced by this argument, you are
 in good company.  When a friend presented this solution to
@@ -3519,6 +3641,9 @@ and why?
 
 \begin{ex}
 
+\index{Monty Hall! confused}
+\index{confused Monty problem}
+
 To understand the Monty Hall problem, it is important to realize
 that by deciding which door to open, Monty is giving you information.
 To see why this matters, imagine the case where Monty doesn't
@@ -3536,10 +3661,13 @@ Otherwise, are you better off switching or sticking?
 \newcommand{\Poincare}{Poincar\'{e}}
 
 \section{\Poincare}
+\index{\Poincare, Henry}
 
 Henri \Poincare~was a French mathematician who taught at the Sorbonne
 around 1900.  The following anecdote about him is probably fabricated,
 but it makes an interesting probability problem.
+
+\index{bread police}
 
 Supposedly \Poincare~suspected that his local bakery was selling
 loaves of bread that were lighter than the advertised weight of 1 kg,
@@ -3558,6 +3686,8 @@ For the next year, \Poincare~continued the practice of weighing his
 bread every day.  At the end of the year, he found that the average
 weight was 1000 g, just as it should be, but again he complained to
 the bread police, and this time they fined the baker.
+
+\index{symmetric}
 
 Why?  Because the shape of the distribution was asymmetric.  Unlike
 the normal distribution, it was skewed to the right, which is
@@ -3582,6 +3712,9 @@ the distribution big enough to convince the bread police?
 \begin{ex}
 \label{coef_var}
 
+\index{dance}
+\index{height}
+
 If you go to a dance where partners are paired up randomly, what
 percentage of opposite sex couples will you see where the woman is
 taller than the man?
@@ -3594,12 +3727,19 @@ heights is roughly normal with parameters $\mu=178$ cm and
 $\sigma=59.4$ cm for men, and $\mu=163$ cm and $\sigma=52.8$ cm for
 women.
 
+\index{lognormal distribution}
+\index{distribution!lognormal}
+
+
 As an aside, you might notice that the standard deviation for men is
 higher and wonder whether men's heights are more variable.  To compare
 variability between groups, it is useful to compute the {\bf
   coefficient of variation}, which is the standard deviation as a
 fraction of the mean, $\sigma / \mu$.  By this measure, women's
 heights are slightly more variable.
+
+\index{coefficient of variation}
+\index{coefficient!variation}
 
 % From brfss.py
 %    mean          var           std           cv
@@ -3609,6 +3749,8 @@ heights are slightly more variable.
 \end{ex}
 
 \section{Another rule of probability}
+\index{probability!rules of}
+\index{mutually exclusive}
 
 \newcommand{\OR}{~\mbox{or}~}
 \newcommand{\NOT}{~\mbox{not}~}
@@ -3633,7 +3775,12 @@ getting at least one tails is $1/2 + 1/2 - 1/4$.  I have to subtract
 $1/4$ because otherwise I am counting heads-heads twice.  The problem
 becomes even clearer if I toss three coins.
 
+\index{coin}
+
 \begin{ex}
+
+\index{dice}
+
 If I roll two dice, what is the chance of rolling at least one 6?
 
 % 1/6 + 1/6 - 1/36
@@ -3649,6 +3796,8 @@ What is the general formula for the probability of $A$ or $B$ but not both?
 
 
 \section{Binomial distribution}
+\index{binomial distribution}
+\index{distribution!binomial}
 
 If I roll 100 dice, the chance of getting all sixes is
 $(1/6)^{100}$.  And the chance of getting no sixes is $(5/6)^{100}$.
@@ -3661,6 +3810,9 @@ answer is the {\bf binomial distribution}, which has this PMF:
 %
 where $n$ is the number of trials, $p$ is the probability of success,
 and $k$ is the number of successes.
+
+\index{binomial coefficient}
+\index{coefficient!binomial}
 
 The {\bf binomial coefficient} is pronounced ``n choose k'', and it
 can be computed directly like this:
@@ -3677,6 +3829,8 @@ named {\tt Binom} that computes the binomial coefficient with reasonable
 efficiency.
 
 \begin{ex}
+\index{coin}
+
 If you flip a coin 100 times, you expect about 50 heads, but what
 is the probability of getting exactly 50 heads?
 
@@ -3686,6 +3840,9 @@ is the probability of getting exactly 50 heads?
 
 
 \section{Streaks and hot spots}
+\index{streak}
+\index{hot spot}
+\index{random}
 
 People do not have very good intuition for random processes.  If you
 ask people to generate ``random'' numbers, they tend to generate
@@ -3698,6 +3855,10 @@ in ``streaks'' in sports: a player that has been successful recently
 is said to have a ``hot hand;'' a player that has been unsuccessful is
 ``in a slump.''
 
+\index{hot hand}
+\index{slump}
+\index{sport}
+
 Statisticians have tested these hypotheses in a number of sports, and
 the consistent result is that there is no such thing as a
 streak\footnote{For example, see Gilovich, Vallone and Tversky, ``The
@@ -3707,9 +3868,15 @@ attempts, you will see occasional long strings of successes or
 failures.  These apparent streaks are not sufficient evidence that
 there is any relationship between successive attempts.
 
+\index{clustering illusion}
+\index{spatial pattern}
+
 A related phenomenon is the clustering illusion, which is the
 tendency to see clusters in spatial patterns that are actually
 random (see \url{wikipedia.org/wiki/Clustering_illusion}).
+
+\index{simulation!Monte Carlo}
+\index{Monte Carlo}
 
 To test whether an apparent
 cluster is likely to be meaningful, we can simulate the behavior
@@ -3719,6 +3886,8 @@ generating random numbers is reminiscent of casino games (and Monte
 Carlo is famous for its casino).
 
 \begin{ex}
+
+\index{basketball}
 
 If there are 10 players in a basketball game and each one takes
 15 shots during the course of the game, and each shot has a
@@ -3740,11 +3909,18 @@ save a lot of computing.
 
 \begin{ex}
 
+\index{baseball}
+\index{DiMaggio, Joe}
+\index{hitting streak}
+
 In 1941 Joe DiMaggio got at least one hit
 in 56 consecutive games\footnote{See
   \url{wikipedia.org/wiki/Hitting_streak}.}.  Many baseball fans
 consider this streak the greatest achievement in any sport in history,
 because it was so unlikely.
+
+\index{simulation!Monte Carlo}
+\index{Monte Carlo}
 
 Use a Monte Carlo simulation to estimate the probability that
 any player in major league baseball will have a hitting streak
@@ -3755,10 +3931,15 @@ of 57 or more games in the next century.
 
 \begin{ex}
 
+\index{cluster}
+\index{cancer cluster}
+
 A cancer cluster is defined by the Centers for Disease Control (CDC)
 as ``greater-than-expected number of cancer cases that occurs within a
 group of people in a geographic area over a period of
 time.\footnote{From \url{cdc.gov/nceh/clusters/about.htm}.}''
+
+\index{Gawande, Atul}
 
 Many people interpret a cancer cluster as evidence of an environmental
 hazard, but many scientists and statisticians think that investigating
@@ -3767,6 +3948,9 @@ cancer clusters is a waste of time\footnote{See Gawande, ``The Cancer
 (among several) is that identifying cancer clusters is a classic case
 of the Sharpshooter Fallacy (see
 \url{wikipedia.org/wiki/Texas_sharpshooter_fallacy}).
+
+\index{sharpshooter fallacy}
+\index{fallacy!sharpshooter}
 
 Nevertheless, when someone reports a cancer cluster, the CDC is
 obligated to investigate.  According to their web page:
@@ -3782,6 +3966,8 @@ obligated to investigate.  According to their web page:
 \end{quote}
 
 \begin{enumerate}
+
+\index{cohort}
 
 \item Suppose that a particular cancer has an incidence of 1 case per
   thousand people per year.  If you follow a particular cohort of 100
@@ -3819,6 +4005,8 @@ a 10 year period and estimates the distribution of total cases.
 
 
 \section{Bayes's theorem}
+\index{Bayes's theorem}
+\index{conditional probability}
 
 Bayes's theorem is a relationship between the conditional probabilities
 of two events.  A conditional probability, often written $P(A|B)$ is
@@ -3843,6 +4031,9 @@ So
 Dividing through by $P(B)$ yields Bayes's theorem\footnote{See
 \url{wikipedia.org/wiki/Q.E.D.}!}.
 
+\index{Q.E.D.}
+\index{evidence}
+\index{hypothesis}
 
 Bayes's theorem is often interpreted as a statement about 
 how a body of evidence, $E$, affects the probability of a 
@@ -3857,6 +4048,8 @@ probability of seeing the evidence assuming that $H$ is true, and
 $P(E)$, the probability of seeing the evidence under any circumstances
 ($H$ true or not).
 
+\index{diachronic}
+
 This way of reading Bayes's theorem is called the ``diachronic''
 interpretation because it describes how the probability of a
 hypothesis gets {\bf updated} over time, usually in light of new
@@ -3864,6 +4057,12 @@ evidence.  In this context, $P(H)$ is called the {\bf prior}
 probability and $P(H|E)$ is called the {\bf posterior}.
 $P(E|H)$ is the {\bf likelihood} of the evidence, and
 $P(E)$ is the {\bf normalizing constant}.
+
+\index{update}
+\index{prior}
+\index{posterion}
+\index{likelihood}
+\index{normalizing constant}
 
 A classic use of Bayes's theorem is the interpretation of clinical
 tests.  For example, routine testing for illegal drug use is
@@ -3873,6 +4072,10 @@ perform these tests maintain that the tests are sensitive, which means
 that they are likely to produce a positive result if there are drugs
 (or metabolites) in a sample, and specific, which means that they are
 likely to yield a negative result if there are no drugs.
+
+\index{drug testing}
+\index{Journal of the American Medical Association}
+\index{JAMA}
 
 Studies from the Journal of the American Medical
 Association\footnote{I got these numbers from Gleason and Barnum,
@@ -3904,6 +4107,8 @@ is the hypothesis that the subject of the test does not use drugs:
 The probability of a false positive, $P(E|N)$, is the complement
 of the specificity, or 1\%.
 
+\index{false positive}
+
 Putting it together, we have
 %
 \[ P(D|E) = \frac{P(D) P(E|D)}{P(D) P(E|D) + P(N) P(E|N)}\]
@@ -3926,6 +4131,8 @@ who tests positive is actually a drug user?
 
 \begin{ex}
 
+\index{cookie}
+
 This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 
 \begin{quote}
@@ -3941,6 +4148,8 @@ This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 \end{ex}
 
 \begin{ex}
+
+\index{M\&M}
 
 The blue M\&M was introduced in 1995.  Before then, the color mix in
 a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
@@ -3983,42 +4192,59 @@ What is the probability that Elvis was an identical twin?
 \begin{description}
 
 \item[event:] Something that may or may not occur, with some probability.
+\index{event}
 
 \item[trial:] One in a series of occasions when an event might occur.
+\index{trial}
 
 \item[success:] A trial in which an event occurs.
+\index{success}
 
 \item[failure:] A trail in which no event occurs.
+\index{failure}
 
 \item[frequentism:] A strict interpretation of probability that only
 applies to a series of identical trials.
+\index{frequentism}
 
 \item[Bayesianism:] A more general interpretation that uses
 probability to represent a subjective degree of belief.
+\index{subjective belief}
+\index{Bayesianism}
 
 \item[independent:] Two events are independent if the occurrence of
 one does has no effect on the probability of another.
+\index{independent}
 
 \item[coefficient of variation:] A statistic that measures spread,
 normalized by central tendency, for comparison between distributions
 with different means.
+\index{coefficient of variation}
 
 \item[Monte Carlo simulation:] A method of computing probabilities by
   simulating random processes (see
   \url{wikipedia.org/wiki/Monte_Carlo_method}).
+\index{simulation!Monte Carlo}
+\index{Monte Carlo}
 
 \item[update:] The process of using data to revise a probability.
+\index{update}
 
 \item[prior:] A probability before a Bayesian update.
+\index{prior}
 
 \item[posterior:] A probability computed by a Bayesian update.
+\index{posterior}
 
 \item[likelihood of the evidence:] One of the terms in Bayes's
   theorem, the probability of the evidence conditioned on a
   hypothesis.
+\index{likelihood}
+\index{evidence}
 
 \item[normalizing constant:] The denominator of Bayes's Theorem,
   used to normalize the result to be a probability.
+\index{normalizing constant}
 
 \end{description}
 
@@ -4026,8 +4252,11 @@ with different means.
 
 \chapter{Operations on distributions}
 \label{operations}
+\index{operations on distributions}
+\index{distributions!operations}
 
 \section{Skewness}
+\index{skewness}
 
 {\bf Skewness} is a statistic that measures the asymmetry of a
 distribution.  Given a sequence of values, $x_i$, the sample skewness
@@ -4042,6 +4271,9 @@ is:
 You might recognize $m_2$ as the mean squared deviation (also known as
 variance); $m_3$ is the mean cubed deviation.
 
+\index{deviation}
+\index{variance}
+
 Negative skewness indicates that a distribution 
 ``skews left;'' that is, it extends
 farther to the left than the right.  Positive skewness indicates
@@ -4051,10 +4283,16 @@ In practice, computing the skewness of a sample is usually not
 a good idea.  If there are any outliers, they
 have a disproportionate effect on $g_1$.
 
+\index{outlier}
+
 Another way to evaluate the asymmetry of a distribution is to look
 at the relationship between the mean and median.
 Extreme values have more effect on the mean than the median, so
 in a distribution that skews left, the mean is less than the median.
+
+\index{symmetry}
+\index{Pearson's median skewness coefficient}
+\index{coefficient!skewness}
 
 {\bf Pearson's median skewness coefficient} is an alternative measure
 of skewness that explicitly captures the relationship between the
@@ -4064,6 +4302,8 @@ mean, $\mu$, and the median, $\mu_{1/2}$:
 %
 This statistic is {\bf robust}, which means that it is less vulnerable
 to the effect of outliers.
+
+\index{robust}
 
 \begin{ex}
 
@@ -4096,6 +4336,11 @@ surveys, more than 80\% of respondents believe that they are better
 than the average driver (see
   \url{wikipedia.org/wiki/Illusory_superiority}).
 
+\index{average}
+\index{Lake Wobegon effect}
+\index{illusory superiority}
+\index{fallacy!illusory superiority}
+
 If we interpret ``average'' to mean median, then this result is
 logically impossible, but if ``average'' is the mean, this result is
 possible, although unlikely.
@@ -4107,6 +4352,12 @@ of legs?
 
 
 \begin{ex}
+
+\index{Internal Revenue Service}
+\index{IRS}
+\index{income}
+\index{taxes}
+
 The Internal Revenue Service of the United States (IRS) provides data
 about income taxes, and other statistics, at \url{irs.gov/taxstats}.
 If you did Exercise~\ref{irs}, you have already worked with this data;
@@ -4120,13 +4371,20 @@ Compute the median, mean, skewness and Pearson's skewness of the income
 data.  Because the data has been binned, you will have to make
 some approximations.
 
+\index{Gini coefficient}
+\index{coefficient!Gini}
+
 The Gini coefficient is a measure of income inequality.
 Read about it at \url{wikipedia.org/wiki/Gini_coefficient} and write a
 function called {\tt Gini} that computes it for the income
 distribution.
 
+\index{relative mean difference}
+
 Hint: use the PMF to compute the relative mean difference
 (see \url{wikipedia.org/wiki/Mean_difference}).
+
+\index{{\tt gini.py}}
 
 You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 
@@ -4136,6 +4394,9 @@ You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 \section{PDFs}
 \label{density}
 
+\index{PDF}
+\index{probability density function}
+
 \index{exponential distribution}
 \index{distribution!exponential}
 \index{normal distribution}
@@ -4143,6 +4404,8 @@ You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
+\index{CDF}
+\index{derivative}
 
 The derivative of a CDF is called a {\bf probability density function},
 or PDF.  For example, the PDF of an exponential distribution is
@@ -4158,9 +4421,15 @@ The PDF of a normal distribution is
 Evaluating a PDF for a particular value of $x$ is usually not useful.
 The result is not a probability; it is a probability {\em density}.
 
+\index{density}
+\index{mass}
+
 In physics, density is mass per unit of
 volume; in order to get a mass, you have to multiply by volume or,
 if the density is not constant, you have to integrate over volume.
+
+\index{inertia}
+\index{moment of intertia}
 
 Similarly, probability density measures probability per unit of $x$.
 In order to get a probability mass\footnote{To take the analogy one
@@ -4191,11 +4460,15 @@ we will use it in Section~\ref{censored}.
 
 
 \section{Convolution}
+\index{convolution}
+\index{PDF}
 
 PDFs are useful for computing operations on distributions.  For
 example, suppose we have two values, $X$ and $Y$, drawn independently
 from distributions $CDF_X$ and $CDF_Y$.  What is the distribution of
 the sum $Z = X + Y$?
+
+\index{sum}
 
 One way to get to the answer it to imagine that the particular value
 of $X$ is $x$.  Then for any value of $z$ we can compute:
@@ -4237,8 +4510,11 @@ with the operator $\convolution$.
 So the distribution of the sum is the convolution of the distributions.
 See \url{wiktionary.org/wiki/booyah}!
 
+\index{booyah}
 \index{exponential distribution}
 \index{distribution!exponential}
+
+\index{independent}
 
 As an example, suppose $X$ and $Y$ are drawn independently from an
 exponential distribution with parameter $\lambda$.  To find their
@@ -4275,6 +4551,8 @@ $k$, $\lambda$, what is the distribution of the sum $Z = X+Y$?
 
 \begin{ex}
 
+\index{max}
+
 Suppose I draw two values from a distribution; what is the distribution
 of the larger value?  Express your answer in terms of the PDF or CDF of
 the distribution.
@@ -4283,9 +4561,14 @@ As the number of values increases, the distribution of the maximum
 converges on one of the extreme value distributions; see
 \url{http://en.wikipedia.org/wiki/Gumbel_distribution}.
 
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
+
 \end{ex}
 
 \begin{ex}
+
+\index{PMF object}
 
 Write a function that takes two Pmf objects that represent $PMF_X$ and
 $PMF_Y$ and returns a new Pmf that represents the distribution of
@@ -4313,6 +4596,8 @@ but I didn't say why.  One reason is that they are
 closed under linear transformation and convolution.  To explain what
 that means, it will help to introduce some notation.
 
+\index{analysis}
+
 If the distribution of a variable, $X$, is
 normal with parameters $\mu$ and $\sigma$, you can write
 %
@@ -4325,6 +4610,8 @@ $\normal$ stands for ``normal.''
 %written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
 %\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
 %\sigma^2)$.
+
+\index{linear transformation}
 
 A linear transformation of $X$ is something like $X' = aX + b$, where $a$
 and $b$ are real numbers.  A family of distributions is closed under
@@ -4344,6 +4631,8 @@ $Y \hasdist \normal (\mu_Y, \sigma_Y^2)$ then
 The other distributions we have looked at do not have these
 properties.
 
+\index{convolution}
+
 \begin{ex}
 
 If 
@@ -4359,11 +4648,15 @@ of $Z = aX + bY$?
 \index{distribution!exponential}
 \index{Pareto distribution}
 \index{distribution!Pareto}
+\index{lognormal distribution}
+\index{distribution!lognormal}
 
 Let's see what happens when we add values from
 other distributions.  Choose a pair of distributions (any two of
 exponential, normal, lognormal, and Pareto) and choose parameters
 that make their mean and variance similar.
+
+\index{sum}
 
 Generate random numbers from these distributions and compute the
 distribution of their sums.  Use the tests from
@@ -4412,6 +4705,7 @@ continuous distribution.
 
 \section{Central limit theorem}
 \label{CLT}
+\index{Central Limit Theorem}
 
 So far we have seen:
 
@@ -4420,6 +4714,7 @@ So far we have seen:
 \item If we add values drawn from normal distributions, the distribution
 of the sum is normal.
 
+\index{sum}
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
@@ -4446,12 +4741,19 @@ caveats:
 
 \item The values have to be drawn independently.
 
+\index{independent}
+
 \item The values have to come from the same distribution (although
   this requirement can be relaxed).
+
+\index{identical}
 
 \item The values have to be drawn
   from a distribution with finite mean and variance, so most Pareto
   distributions are out.
+
+\index{mean}
+\index{variance}
 
 \index{Pareto distribution}
 \index{distribution!Pareto}
@@ -4462,6 +4764,9 @@ caveats:
   on the skewness of the distribution.  Sums from an exponential
   distribution converge for small sample sizes.  Sums from a
   lognormal distribution do not.
+
+\index{lognormal distribution}
+\index{distribution!lognormal}
 
 \end{itemize}
 
@@ -4503,12 +4808,16 @@ Hint: review Section~\ref{why_normal}.
 \index{distribution!exponential}
 \index{Pareto distribution}
 \index{distribution!Pareto}
+\index{lognormal distribution}
+\index{distribution!lognormal}
 
 Choose a distribution (one of exponential, lognormal or Pareto) and
 choose values for the parameter(s).  Generate samples with sizes
 2, 4, 8, etc., and compute the distribution of their sums.  Use
 a normal probability plot to see if the distribution is approximately
 normal.  How many terms do you have to add to see convergence?
+
+\index{convergence}
 
 \end{ex}
 
@@ -4519,9 +4828,14 @@ Instead of the distribution of sums, compute the distribution of
 products; what happens as the number of terms increases?
 Hint: look at the distribution of the log of the products.
 
+\index{logarithm}
+\index{product}
+
 \end{ex}
 
 \section{The distribution framework}
+\index{distribution framework}
+\index{framework, distributions}
 
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{distribution_functions.eps}}
@@ -4534,18 +4848,27 @@ At this point we have seen PMFs, CDFs and PDFs; let's take a minute
 to review.  Figure~\ref{dist_framework} shows how these functions relate
 to each other.
 
+\index{PMF}
+
 We started with PMFs, which represent the probabilities for a discrete
 set of values.  To get from a PMF to a CDF, we computed a cumulative sum.
 To be more consistent, a discrete CDF should be called a cumulative mass
 function (CMF), but as far as I can tell no one uses that term.
 
+\index{CDF}
+
 To get from a CDF to a PMF, you can compute differences in cumulative
 probabilities.
+
+\index{PDF}
 
 Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
 a CDF is the integral of a PDF.  But remember that a PDF maps from
 values to probability densities; to get a probability, you have to
 integrate.
+
+\index{discrete}
+\index{continuous}
 
 To get from a discrete to a continuous distribution, you can perform
 various kinds of smoothing.  One form of smoothing is to assume that
@@ -4560,6 +4883,7 @@ distribution.  And that's what Chapter~\ref{estimation} is about.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
+\index{bin}
 
 If you divide a PDF into a set of bins, you can generate a PMF that is
 at least an approximation of the PDF.  We use this
@@ -4572,6 +4896,8 @@ and returns the corresponding Pmf object.
 
 You can find a solution to this exercise in {\tt thinkstats.com/Pmf.py}.
 
+\index{{\tt Pmf.py}}
+
 \end{ex}
 
 \section{Glossary}
@@ -4580,17 +4906,24 @@ You can find a solution to this exercise in {\tt thinkstats.com/Pmf.py}.
 
 \item[skewness:] A characteristic of a distribution; intuitively, it
 is a measure of how asymmetric the distribution is.
+\index{skewness}
 
 \item[robust:] A statistic is robust if it is relatively immune to the
   effect of outliers.
+\index{robust}
 
 \item[illusory superiority:] The tendency of people to imagine that
 they are better than average.
+\index{illusory superiority}
+\index{fallacy!illusory superiority}
 
 \item[PDF:] Probability density function, the derivative of a continuous CDF.
+\index{PDF}
+\index{probability density function}
 
 \item[convolution:] An operation that computes the distribution of the
 sum of values from two distributions. 
+\index{convolution}
 
 %\item[Chi-squared distribution:] The distribution of the sum of squared
 %values from a normal distribution.
@@ -4600,12 +4933,17 @@ sum of values from two distributions.
 
 \item[Central Limit Theorem:] ``The supreme law of Unreason,'' according
 to Sir Francis Galton, an early statistician.
+\index{Central Limit Theorem}
+\index{Galton, Francis}
+\index{unreason, supreme law}
 
 \end{description}
 
 
 \chapter{Hypothesis testing}
 \label{testing}
+\index{hypothesis testing}
+\index{apparent effect}
 
 Exploring the data from the NSFG, we saw several ``apparent effects,''
 including a number of differences between first babies and others.
@@ -4628,10 +4966,14 @@ proceed in two steps.  First we will test whether the effect is {\bf
   significant}, then we will try to interpret the result
   as an answer to the original question.
 
+\index{significant}
+
 In the context of statistics, ``significant'' has a technical
 definition that is different from its use in common language.
-As we defined earlier, an apparent effect is statistically
+As defined earlier, an apparent effect is statistically
 significant if it is unlikely to have occurred by chance.
+
+\index{chance}
 
 To make this more precise, we have to answer three questions:
 
@@ -4655,8 +4997,12 @@ significance:
   system based on the assumption that the apparent effect was actually
   due to chance.
 
+\index{null hypothesis}
+
 \item[p-value:] The {\bf p-value} is the probability of the apparent
   effect under the null hypothesis.
+
+\index{p-value}
 
 \item[Interpretation:] Based on the p-value, we conclude that the
   effect is either statistically significant, or not.
@@ -4669,6 +5015,8 @@ statement, A, you assume temporarily that A is false.  If that
 assumption leads to a contradiction, you conclude that A must actually
 be true.
 
+\index{contradiction, proof by}
+
 Similarly, to test a hypothesis like, ``This effect is real,'' we
 assume, temporarily, that is is not.  That's the null hypothesis.
 Based on that assumption, we compute the probability of the apparent
@@ -4677,6 +5025,7 @@ conclude that the null hypothesis is unlikely to be true.
 
 
 \section{Testing a difference in means}
+\index{mean, difference in}
 
 One of the easiest hypotheses to test is an apparent difference in mean
 between two groups.  In the NSFG data, we saw that the mean pregnancy
@@ -4693,10 +5042,14 @@ For these examples, the null hypothesis is that the distributions
 for the two groups are the same, and that the apparent difference is
 due to chance.
 
+\index{null hypothesis}
+
 To compute p-values, we find the pooled distribution for all live
 births (first babies and others), generate random samples that are
 the same size as the observed samples, and compute the difference
 in means under the null hypothesis.
+
+\index{p-value}
 
 If we generate a large number of samples, we can count how often the
 difference in means (due to chance) is as big or bigger than the
@@ -4707,7 +5060,9 @@ others, and the difference in mean was $\delta=0.078$ weeks.  To estimate
 the p-value of this effect, I pooled the distributions, generated
 samples with sizes $n$ and $m$ and computed the difference in mean.
 
-This process is called {\bf resampling} because we are drawing a
+\index{resampling}
+
+This is another example of resampling, because we are drawing a
 random sample from a dataset that is, itself, a sample of the general
 population.  I computed differences for 1000 sample pairs;
 Figure~\ref{length_deltas_cdf} shows their distribution.
@@ -4725,7 +5080,7 @@ $x=-\delta$ or $x=\delta$.
 Of 1000 sample pairs, there were 166 where the difference in mean
 (positive or negative) was as big or bigger than $\delta$, so the
 p-value is approximately 0.166.  In other words, we expect to see an
-effect as big as $\delta$ 16.6\% of the time, even if the actual
+effect as big as $\delta$ about 17\% of the time, even if the actual
 distribution for the two groups is the same.
 
 So the apparent effect is not very likely, but is it unlikely enough?
@@ -4743,16 +5098,27 @@ Hint: for this kind of resampling it is important to sample
 with replacement, so you should use {\tt random.choice} rather
 than {\tt random.sample} (see Section~\ref{random}).
 
+\index{resampling}
+\index{random module}
+
 You can start with the code I used to generate the results in this
 section, which you can download from \url{thinkstats.com/hypothesis.py}.
+
+\index{{\tt hypothesis.py}}
 
 \end{ex}
 
 
 \section{Choosing a threshold}
 \label{threshold}
+\index{threshold}
 
 In hypothesis testing we have to worry about two kinds of errors.
+
+\index{false positive}
+\index{false negative}
+\index{error, Type I}
+\index{error, Type II}
 
 \begin{itemize}
 
@@ -4772,6 +5138,8 @@ $\alpha$, for the p-value and to accept as significant any effect with
 a p-value less than $\alpha$.  A common choice for $\alpha$ is 5\%.
 By this criterion, the apparent difference in pregnancy length for
 first babies is not significant, but the difference in weight is.
+
+\index{signficance criterion}
 
 \index{pregnancy length}
 \index{length!pregnancy}
@@ -4801,6 +5169,8 @@ In general there is a tradeoff between Type I and Type II errors.
 The only way to decrease both at the same time is to increase the
 sample size (or, in some cases, decrease measurement error).
 
+\index{sample size}
+
 \begin{ex}
 
 To investigate the effect of sample size on p-value, see what happens
@@ -4818,6 +5188,8 @@ larger does the sample size have to be with $\alpha=1$\%?
 You can start with the code I used to generate the results in this
 section, which you can download from \url{thinkstats.com/hypothesis.py}.
 
+\index{{\tt hypothesis.py}}
+
 \end{ex}
 
 
@@ -4828,6 +5200,9 @@ When something unusual happens, people often say something like,
 sense because we have an intuitive sense that some things are more
 likely than others.  But this intuition doesn't always hold up to
 scrutiny.
+
+\index{chance}
+\index{coin}
 
 For example, suppose I toss a coin 10 times, and after each toss I
 write down H for heads and T for tails.  If the result was a sequence
@@ -4853,6 +5228,11 @@ sides (positive and negative) in the distribution from
 Figure~\ref{length_deltas_cdf}.  By using a two-sided test we are
 testing the hypothesis that there is a significant difference between
 the distributions, without specifying the sign of the difference.
+
+\index{one-sided test}
+\index{two-sided test}
+\index{test!one-sided}
+\index{test!two-sided}
 
 The alternative is to use a {\bf one-sided} test, which asks whether
 the mean for first babies is significantly {\em higher} than
@@ -4888,6 +5268,8 @@ interpret the result of a hypothesis test:
   The lower the p-value, the higher their confidence in this
   conclusion.
 
+\index{Bayesian probability}
+
 \item[Bayesian:] What we really want to know is $P(H_A | E)$, where
   $H_A$ is the hypothesis that the effect is real.  By Bayes's theorem
   %
@@ -4906,6 +5288,8 @@ As an example, I'll compute $P(H_A | E)$ for pregnancy lengths in the
 NSFG.  We have already computed $P(E | H_0)=0.166$, so all we have to
 do is compute $P(E | H_A)$ and choose a value for the prior.
 
+\index{prior probability}
+
 \index{National Survey of Family Growth}
 \index{NSFG}
 \index{pregnancy length}
@@ -4919,6 +5303,9 @@ bogus.  I will explain and fix the problem in the next section.)
 By generating 1000 sample pairs, one from each
 distribution, I estimated $P(E | H_A) = 0.494$.  With the prior
 $P(H_A)=0.5$, the posterior probability of $H_A$ is 0.748.
+
+\index{posterior probability}
+\index{update}
 
 So if the prior probability of $H_A$ is 50\%, the updated
 probability, taking into account the evidence from this dataset,
@@ -4950,6 +5337,7 @@ section, which you can download from \url{thinkstats.com/hypothesis.py}.
 
 
 \section{Cross-validation}
+\index{cross-validation}
 
 In the previous example, we used the dataset to formulate the
 hypothesis $H_A$, and then we used the same dataset to test it.
@@ -4965,6 +5353,11 @@ We can address this problem with {\bf cross-validation}, which uses
 one dataset to estimate $\delta$ and a {\em different} dataset to
 evaluate $H_A$.  The first dataset is called the {\bf training set};
 the second is called the {\bf testing set}.
+
+\index{training set}
+\index{test set}
+\index{cohort}
+\index{cycle}
 
 In a study like the NSFG, which studies a different cohort in each
 cycle, we can use one cycle for training and another for testing.
@@ -4986,6 +5379,7 @@ no longer using the same data for training and testing.
 
 
 \section{Reporting Bayesian probabilities}
+\index{Bayesian probability}
 
 In the previous section we chose the prior probability $P(H_A) = 0.5$.
 If we have a set of hypotheses and no reason to think one is more
@@ -4996,10 +5390,17 @@ prior probabilities, and people might not agree on
 the right priors.  For people who expect scientific results to be
 objective and universal, this property is deeply unsettling.
 
+\index{subjective belief}
+\index{swamp}
+\index{convergence}
+
 One response to this objection is that, in practice, strong evidence
 tends to swamp the effect of the prior, so people who start with
 different priors will converge toward the same posterior
 probability.
+
+\index{likelihood ratio}
+\index{Bayes factor}
 
 Another option is to report just the {\bf likelihood ratio}, 
 $P(E | H_A)/P(E | H_0)$, rather than the posterior probability.  That way
@@ -5008,6 +5409,8 @@ posteriors (no pun intended).  The likelihood ratio is sometimes
 called a Bayes factor (see \url{http://en.wikipedia.org/wiki/Bayes_factor}).
 
 \begin{ex}
+
+\index{null hypothesis}
 
 If your prior probability for a hypothesis, $H_A$, is 0.3 and new
 evidence becomes available that yields a likelihood ratio of 3
@@ -5020,6 +5423,8 @@ probability for $H_A$?
 
 
 \begin{ex}
+
+\index{MacKay, David}
 
 This exercise is adapted from MacKay, {\em Information
   Theory, Inference, and Learning Algorithms}:
@@ -5040,16 +5445,21 @@ Hint: Compute the likelihood ratio for this evidence; if it is greater
 than 1, then the evidence is in favor of the proposition.
 For a solution and discussion, see page 55 of MacKay's book.
 
+\index{likelihood}
+
 \end{ex}
 
 
 \section{Chi-square test}
+\index{Chi-square test}
 
 In Section~\ref{threshold} we concluded that the apparent difference
 in mean pregnancy length for first babies and others was not
 significant.  But in Section~\ref{relative.risk}, when we computed
 relative risk, we saw that first babies are more likely to be early,
 less likely to be on time, and more likely to be late.
+
+\index{relative risk}
 
 \index{pregnancy length}
 \index{length!pregnancy}
@@ -5058,6 +5468,10 @@ So maybe the distributions have the same mean and different variance.
 We could test the significance of the difference in variance, but
 variances are less robust than means, and hypothesis tests for
 variance often behave badly.
+
+\index{mean}
+\index{variance}
+\index{hypothesis}
 
 An alternative is to test a hypothesis that more directly reflects the
 effect as it appears; that is, the hypothesis that first babies are
@@ -5072,6 +5486,8 @@ We proceed in five easy steps:
   baby might fall into.  In this example, there are six cells because
   there are two groups (first babies and others) and three bins
   (early, on time or late).
+
+\index{cell}
 
 I'll use the definitions from Section~\ref{relative.risk}: a baby is
 early if it is born during Week 37 or earlier, on time if it is born
@@ -5092,6 +5508,9 @@ early, etc.
 \item For each cell we compute the deviation; that is, the difference
   between the observed value, $O_i$, and the expected value, $E_i$.
 
+\index{test statistic}
+\index{chi-square statistic}
+
 \item We compute some measure of the total deviation; this quantity
 is called the {\bf test statistic}.  The most common
 choice is the chi-square statistic:
@@ -5105,11 +5524,17 @@ choice is the chi-square statistic:
   which is the probability of seeing a chi-square statistic as high
   as the observed value under the null hypothesis.
 
+\index{simulation!Monte Carlo}
+\index{Monte Carlo}
+
 \end{enumerate}
 
 When the chi-square statistic is used, this process is called a 
 {\bf chi-square test}.  One feature of the chi-square test is that
 the distribution of the test statistic can be computed analytically.
+
+\index{chi-square test}
+\index{analysis}
 
 Using the data from the NSFG I computed $\chi^2 = 91.64$, which would
 occur by chance about one time in 10,000.  I conclude that this result
@@ -5123,10 +5548,16 @@ to confirm this result with another dataset.
 You can download the code I used in this section from
 \url{thinkstats.com/chi.py}.
 
+\index{{\em chi.py}}
+
 % See \url{en.wiktionary.org/wiki/voila}!
 
 
 \begin{ex}
+
+\index{casino}
+\index{dice}
+\index{crooked die}
 
 Suppose you run a casino and you suspect that a customer has
 replaced a die provided by the casino with a ``crooked die;'' that
@@ -5157,11 +5588,14 @@ probability of seeing a chi-squared value as large by chance?
 
 
 \section{Efficient resampling}
+\index{resampling}
 
 Anyone reading this book who has prior training in statistics probably
 laughed when they saw Figure~\ref{length_deltas_cdf}, because I used a
 lot of computer power to simulate something I could have figured out
 analytically.
+
+\index{analysis}
 
 \index{pregnancy length}
 \index{length!pregnancy}
@@ -5173,13 +5607,17 @@ to demonstrate that they are correct.  So as long as the simulations
 don't take too long to run, I don't feel guilty for skipping the
 analysis.
 
-However, there are many times when a little analysis can save a lot of
+However, there are times when a little analysis can save a lot of
 computing, and Figure~\ref{length_deltas_cdf} is one of those times.
+
+\index{mean, difference in}
 
 Remember that we were testing the observed difference in the mean between
 pregnancy lengths for $n=4413$ first babies and $m=4735$ others.  We formed
 the pooled distribution for all babies, drew samples with sizes $n$ and
 $m$, and computed the difference in sample means.
+
+\index{sample mean}
 
 Instead, we could directly compute the distribution of the difference
 in sample means.  To get started, let's think about what a sample mean
@@ -5224,6 +5662,8 @@ $\normal (0, f \sigma^2)$, where $f = 1/n + 1/m$.  Plugging in
 $n=4413$ and $m=4735$, we expect the difference of sample means to be
 $\normal (0, 0.0032)$.
 
+\index{p-value}
+
 We can use {\tt erf.NormalCdf} to compute the p-value of the observed 
 difference in the means:
 
@@ -5239,8 +5679,11 @@ pretty close to what we estimated by resampling, 0.166.
 You can download the code I used in this section from
 \url{thinkstats.com/hypothesis_analytic.py}
 
+\index{{\tt hypothesis\_analytic.py}}
+
 
 \section{Power}
+\index{power}
 
 When the result of a hypothesis test is negative (that is, the effect is
 not statistically significant), can we conclude that the effect is not
@@ -5298,23 +5741,25 @@ as X, this test would reject the null hypothesis with probability P.''
 
 \item[significant:] An effect is statistically significant if it is unlikely
 to occur by chance.
+\index{significant}
 
 \item[null hypothesis:] A model of a system based on the assumption that
 an apparent effect is due to chance.
+\index{null hypothesis}
 
 \item[p-value:] The probability that an effect could occur by chance.
+\index{p-value}
 
 \item[hypothesis testing:] The process of determining whether an apparent
 effect is statistically significant.
-
-\item[resampling:] A process for estimating the distribution of a summary
-statistic by drawing random samples from a population that is, itself, a
-sample.
+\index{hypothesis testing}
 
 \item[false positive:] The conclusion that an effect is real when it is not.
+\index{false positive}
 
 \item[false negative:] The conclusion that an effect is due to chance when it
 is not.
+\index{false negative}
 
 \item[two-sided test:] A test that asks, ``What is the chance of an effect
 as big as the observed effect, positive or negative?''
@@ -5322,28 +5767,41 @@ as big as the observed effect, positive or negative?''
 \item[one-sided test:] A test that asks, ``What is the chance of an effect
 as big as the observed effect, and with the same sign?''
 
+\index{one-sided test}
+\index{two-sided test}
+\index{test!one-sided}
+\index{test!two-sided}
+
 \item[cross-validation:] A process of hypothesis testing that uses one
 dataset for exploratory data analysis and another dataset for testing.
+\index{cross-validation}
 
 \item[training set:] A dataset used to formulate a hypothesis for testing.
+\index{training set}
 
 \item[testing set:] A dataset used for testing.
+\index{testing set}
 
 \item[test statistic:] A statistic used to measure the deviation of an
 apparent effect from what is expected by chance.
+\index{test statistic}
 
 \item[chi-square test:] A test that uses the chi-square statistic as
 the test statistic.
+\index{ch-square test}
 
 \item[likelihood ratio:] The ratio of $P(E|A)$ to $P(E|B)$ for two
 hypotheses $A$ and $B$, which is a way to report
 results from a Bayesian analysis without depending on priors.
+\index{likelihood ratio}
 
 \item[cell:] In a chi-square test, the categories the observations are
 divided into.
+\index{cell}
 
 \item[power:] The probability that a test will reject the null hypothesis
 if it is false.
+\index{power}
 
 \end{description}
 
@@ -6016,6 +6474,10 @@ There are two common solutions to these problems:
 \item Transform all values to {\bf standard scores}.  This leads to
 the Pearson coefficient of correlation.
 
+\index{Pearson coefficient of correlation}
+\index{Spearman coefficient of correlation}
+\index{coefficient!correlation}
+
 \item Transform all values to their percentile ranks.  This
 leads to the Spearman coefficient.
 
@@ -6144,6 +6606,9 @@ Figure~\ref{corr_examples} is from the Wikipedia page
 \url{wikipedia.org/wiki/Correlation_and_dependence}.  It shows
 scatterplots and correlation coefficients for several
 carefully-constructed datasets.
+
+\index{coefficient of correlation}
+\index{coefficient!correlation}
 
 \index{scatter plot}
 \index{plot!scatter}
@@ -6295,6 +6760,9 @@ transformed data.  For example, if the data are approximately
 lognormal, you could take the log of each value and compute the
 correlation of the logs.
 
+\index{lognormal distribution}
+\index{distribution!lognormal}
+
 \begin{ex}
 
 Write a function that takes a sequence and returns a list that
@@ -6309,6 +6777,9 @@ usually small.
 Write a function that takes two sequences (with the same length) and
 computes their Spearman rank coefficient.  You can download a solution
 from \url{thinkstats.com/correlation.py}.
+
+\index{Spearman coefficient of correlation}
+\index{coefficient!correlation}
 
 \end{ex}
 
@@ -6327,6 +6798,8 @@ do you expect for Pearson's correlation?  What value do you get?
 
 \index{weight!adult}
 \index{adult weight}
+\index{lognormal distribution}
+\index{distribution!lognormal}
 
 Because the distribution of adult weight is lognormal, there are
 outliers that affect the correlation.  Try plotting
@@ -6345,6 +6818,9 @@ the relationship?  You can download a solution from
 
 \newcommand{\slope}{\beta}
 \newcommand{\inter}{\alpha}
+
+\index{coefficient of correlation}
+\index{coefficient!correlation}
 
 Correlation coefficients measure the strength and sign of a
 relationship, but not the slope.  There are several ways to estimate
@@ -6501,6 +6977,9 @@ called a {\bf dependent variable} and the quantity we are using to
 make the guess is called an {\bf explanatory} or {\bf independent
   variable}.
 
+\index{coefficient of determination}
+\index{coefficient!determination}
+
 To measure the predictive power of a model, we can compute the {\bf
   coefficient of determination}, more commonly known as ``R-squared'':
 %
@@ -6536,6 +7015,7 @@ determination and Pearson's correlation coefficient, $\rho$:
 \[ R^2 = \rho^2 \]
 %
 See \url{wikipedia.org/wiki/Howzzat}!
+\index{howzzat}
 
 \begin{ex}
 
@@ -6730,6 +7210,7 @@ variable, also called an explanatory variable.
 
 \item[coefficient of determination:] A measure of the goodness of fit
 of a linear model.
+\index{coefficient of determination}
 
 \item[randomized controlled trial:] An experimental design in which subject
 are divided into groups at random, and different groups are given different
