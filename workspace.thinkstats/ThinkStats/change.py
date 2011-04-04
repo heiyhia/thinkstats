@@ -8,6 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import sys
 sys.path.insert(1, '/home/downey/swampy/code/python2')
 from Gui import *
+from Tkinter import RIDGE, E, W, BOTH, HORIZONTAL
 
 from math import *
 from random import *
@@ -36,6 +37,7 @@ class Slider:
         self.S2 = []
 
     def update(self, x):
+        """Adds a new data point and updates summary stats."""
         self.n += 1
         try:
             self.S1.append(self.S1[-1] + x)
@@ -62,7 +64,6 @@ class Slider:
         Precondition: likelihood has run since the last update.
         """
         return self.like[i-self.index]
-    
     
     def pcpp(self, i):
         """return p(i+|jc), where jc means there have been 0-1
@@ -102,12 +103,14 @@ class Slider:
 
                 if mu_known:
                     like0 = ll(m0[0], m0[1], m0[2],
-                                           s2=s2, mu0=known_mu)
+                               s2=s2, mu0=known_mu)
                 else:
-                    like0 = ll(m0[0], m0[1], m0[2], s2=s2)
+                    like0 = ll(m0[0], m0[1], m0[2],
+                               s2=s2)
 
             elif mu_known:
-                like0 = ll(m0[0], m0[1], m0[2], mu0=known_mu)
+                like0 = ll(m0[0], m0[1], m0[2],
+                           mu0=known_mu)
                 
             elif pooled:
                 # use the pooled variance
@@ -115,7 +118,7 @@ class Slider:
                 like0 = ll(m0[0], m0[1], m0[2], s2=sp2)
 
             else:
-                # both parameters unknown -- drawn them from
+                # both parameters unknown -- draw them from
                 # posterior distributions based on estimates
                 like0 = ll(*m0)
 
@@ -123,17 +126,12 @@ class Slider:
             m1 = self.moments(i)
             m2 = sub_moments(m0, m1)
 
-            if f and self.n==68 and i==66 and False:
-                flag = True
-            else:
-                flag = False
-
             if sigma_known:
                 s2 = known_sigma**2
 
                 if mu_known:
                     like1 = ll(m1[0], m1[1], m1[2],
-                                        s2=s2, mu0=known_mu)
+                               s2=s2, mu0=known_mu)
                     
                 else:
                     like1 = ll(m1[0], m1[1], m1[2], s2=s2)
@@ -146,28 +144,21 @@ class Slider:
                 
             elif pooled:
                 # use the pooled variance
-                sp2 = spooled(*m1 + m2)
+                sp2 = spooled(*m1+m2)
 
                 # uncomment these lines to choose from the posterior
                 # distribution of sigma^2
                 #n = m0[0]
                 #sp2 = scaled_inverse_chi2variate(n-1.0, sp2)
 
-                #like1 = ll(m1[0], m1[1], m1[2], s2=sp2)
-                #like2 = ll(m2[0], m2[1], m2[2], s2=sp2)
                 like1 = ll(m1[0], m1[1], m1[2], s2=sp2)
                 like2 = ll(m1[0], m1[1], m1[2], s2=sp2)
 
             else:
                 # both parameters unknown -- drawn them from
                 # posterior distributions based on estimates
-                
                 like1 = ll(*m1)
                 like2 = ll(*m2)
-                if f and print_flag:
-                    print 'like1', i, like1
-                    print 'like2', i, like2
-                    print 'sum', i, like1 + like2
 
             self.like[i] = like1+like2
 
@@ -199,7 +190,7 @@ class Slider:
         # the following factor compensates for the lumping
         # of probability when n is small, but I'm not sure
         # it's not a kludge
-        # factor = (n-3.0) / (n-1.0)
+        #factor = (n-3.0) / (n-1.0)
         factor = 1.0
         
         self.normalize(factor)
@@ -240,6 +231,13 @@ def spooled2(m0, m1, m2, n0, n1, n2):
 
 
 def loglike(n, m1, m2, mu0=None, s2=None):
+    """Computes the log likelihood of these summary statistics.
+
+    Args:
+      n: sample size
+      m1: first moment
+      m2: second moment
+    """
     mu = m1 / n
     var = m2 / n - mu**2
     #like = -n*log(var)/2 - n/2.0
@@ -248,9 +246,13 @@ def loglike(n, m1, m2, mu0=None, s2=None):
 
 
 def loglike2(n, m1, m2, flag=False, s2=None, mu0=None):
-    """compute the log likelihood of the given moments about the origin
+    """Computes the log likelihood of these summary statistics.
+
+    Args:
+      n: sample size
+      m1: first moment
+      m2: second moment
     """
-    
     # compute the sample mean
     ybar = m1 / n
 
@@ -358,7 +360,6 @@ class Series:
 
     def __init__(self, f=0.02):
         self.f = f * fudge
-        print self.f
         self.data = []
         self.sliders = {}
         self.estimates = {}
@@ -526,8 +527,8 @@ def read_data(filename):
     t = []
     for line in file(filename):
         try:
-            x = float(line)
-            t.append(x)
+            xs = [float(x) for x in line.strip().split()]
+            t.append(xs)
         except ValueError:
             pass
     return t
@@ -1076,25 +1077,24 @@ def trimmed_average(t, percent=0.05):
     except ZeroDivisionError:
         return None
 
-numin = None
-calc_gk = None
-mu_known = False
-sigma_known = False
-known_sigma = None
-known_mu = None
-simple = False
-pooled = False
-fudge = None
+numin = None           # parameter in calc_gk_glr
+calc_gk = None         # which calc_gk function to use
+mu_known = False       # treat mu0 as known?
+sigma_known = False    # treat sigma as known
+known_sigma = None     # if signma is known, what is it?
+known_mu = None        # if mu is known, what is it?
+simple = False         # use the simplified version of log_like
+pooled = False         # whether to use pooled variance
+fudge = None           # increase the prior probability of a changepoint
+                       # to crank up sensitivity
+
 
 def main(script, *args):
-    #decay_problem()
-    #test_dirichlet()
-    #test_chi2()
     global calc_gk, numin, mu_known, sigma_known, numin, iters
     global known_mu, known_sigma, fprior, simple, pooled, fudge
 
     longopts = ['numin=', 'alg=', 'runs=', 'simple', 'trial', 'matsig', 'f=',
-                'example', 'nile', 'pooled', 'fudge=', 'var', 'rseed=',
+                'example', 'nile', 'heri', 'pooled', 'fudge=', 'var', 'rseed=',
                 'mu=', 'sigma=', 'iters=']
     
     (opts, args) = getopt.getopt(args, 'dms', longopts)
@@ -1158,7 +1158,7 @@ def main(script, *args):
     try:
         alg = optdict['--alg']
     except KeyError:
-        alg = 'glr'
+        alg = 'ipp'
 
     name = 'calc_gk_' + alg
     calc_gk = eval(name)
@@ -1188,15 +1188,25 @@ def main(script, *args):
         
     elif '--nile' in optdict:
         t = read_data('nile.dat')
+        ys = [y[0]/10 for y in t]
         xs = range(1871, 1971)
-        t = [x/10 for x in t]
-        dump_lists(xs, t, 'nile.', 0)
+        dump_lists(xs, ys, 'nile.', 0)
 
         if '-d' in optdict:        
-            t = [x/100 for x in t]
+            ys = [y/100 for y in ys]
             display_series(t)
         else:
-            test_series(t, xs=xs, indices=[33, 66, 99], prefix='p.nile.')
+            test_series(ys, xs, indices=[33, 66, 99], prefix='p.nile.')
+
+    elif '--heri' in optdict:
+        t = read_data('heri_deltas.dat')
+        xs, ys = zip(*t)
+        dump_lists(xs, ys, 'heri.', 0)
+
+        if '-d' in optdict:        
+            display_series(ys)
+        else:
+            test_series(ys, xs=xs, indices=[10, 20, 31], prefix='p.heri.')
 
     elif '--example' in optdict:
         mus = [-0.5, 0.5, 0.0]
