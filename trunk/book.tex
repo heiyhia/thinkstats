@@ -28,7 +28,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.4.1}
+\newcommand{\theversion}{1.4.2}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -345,15 +345,21 @@ I will present three related pieces:
   training, but we will talk about how to make quantitative claims
   about those degrees.
 
+\index{probability}
+
 \item[Statistics] is the discipline of using data samples to support
   claims about populations.  Most statistical analysis is based on
   probability, which is why these pieces are usually presented
   together.
 
+\index{statistics}
+
 \item[Computation] is a tool that is well-suited to quantitative
   analysis, and computers are commonly used to process statistics.
   Also, computational experiments
   are useful for exploring concepts in probability and statistics.
+
+\index{computation}
 
 \end{description}
 
@@ -367,6 +373,8 @@ easy to approach computationally.
 The rest of this chapter presents a case study motivated by a question
 I heard when my wife and I were expecting our first child: do first
 babies tend to arrive late?
+
+\index{first babies}
 
 \section{Do first babies arrive late?}
 
@@ -396,6 +404,8 @@ are based on data that is unpublished and usually personal.  In casual
 conversation, there is nothing wrong with anecdotes, so I don't mean
 to pick on the people I quoted.
 
+\index{anecdotal evidence}
+
 But we might want evidence that is more persuasive and
 an answer that is more reliable.  By those standards, anecdotal
 evidence usually fails, because:
@@ -407,13 +417,21 @@ evidence usually fails, because:
   natural variation.  In that case, we might have to compare a large
   number of pregnancies to be sure that a difference exists.
 
+\index{sample size}
+
 \item[Selection bias:] People who join a discussion of this question
   might be interested because their first babies were late.  In that
   case the process of selecting data would bias the results.
 
+\index{selection bias}
+\index{bias!selection}
+
 \item[Confirmation bias:] People who believe the claim might be more
   likely to contribute examples that confirm it.  People who doubt the
   claim are more likely to cite counterexamples.
+
+\index{confirmation bias}
+\index{bias!confirmation}
 
 \item[Inaccuracy:] Anecdotes are often personal stories, and often
   misremembered, misrepresented, repeated
@@ -434,21 +452,31 @@ of statistics, which include:
   that was designed explicitly with the goal of generating
   statistically valid inferences about the U.S. population.
 
+\index{data collection}
+
 \item[Descriptive statistics:] We will generate statistics that
   summarize the data concisely, and evaluate different ways to
   visualize data.
+
+\index{descriptive statistics}
 
 \item[Exploratory data analysis:] We will look for
   patterns, differences, and other features that address the questions
   we are interested in.  At the same time we will check for
   inconsistencies and identify limitations.
 
+\index{exploratory data analysis}
+
 \item[Hypothesis testing:] Where we see apparent effects, like a
   difference between two groups, we will evaluate whether the effect
   is real, or whether it might have happened by chance.
 
+\index{hypothesis testing}
+
 \item[Estimation:] We will use data from a sample to estimate
   characteristics of the general population.
+
+\index{estimation}
 
 \end{description}
 
@@ -469,6 +497,9 @@ health education programs, and to do statistical studies of families,
 fertility, and health.''\footnote{See
   \url{cdc.gov/nchs/nsfg.htm}.}
 
+\index{National Survey of Family Growth}
+\index{NSFG}
+
 We will use data collected by this survey to investigate whether first
 babies tend to come late, and other questions.  In order to use this
 data effectively, we have to understand the design of the study.
@@ -478,13 +509,22 @@ captures a snapshot of a group at a point in time.  The most
 common alternative is a {\bf longitudinal} study, which observes a
 group repeatedly over a period of time.
 
+\index{cross-sectional study}
+\index{study!cross-sectional}
+\index{longitudinal study}
+\index{study!longitudinal}
+
 The NSFG has been conducted seven times; each deployment is called
 a {\bf cycle}.  We will be using data from Cycle 6, which was
 conducted from January 2002 to March 2003.
 
+\index{cycle}
+
 The goal of the survey is to draw conclusions about a
 {\bf population}; the target population of the NSFG is people in
 the United States aged 15-44.
+
+\index{population}
 
 The people who participate in a survey are called {\bf respondents}.
 In general, cross-sectional studies are meant to be {\bf
@@ -493,6 +533,9 @@ population has an equal chance of participating.  Of course that ideal
 is hard to achieve in practice, but people who conduct surveys come as
 close as they can.
 
+\index{respondent}
+\index{representative}
+
 The NSFG is not representative; instead it is deliberately {\bf
   oversampled}.  The designers of the study recruited three
 groups---Hispanics, African-Americans and teenagers---at rates higher
@@ -500,6 +543,8 @@ than their representation in the U.S. population.
 The reason for oversampling is to make sure that the number of
 respondents in each of these groups is large enough to draw valid
 statistical inferences.
+
+\index{oversampling}
 
 Of course, the drawback of oversampling is that it is not as easy
 to draw conclusions about the general population based on statistics
@@ -520,6 +565,9 @@ to make sure you understand why not.
 
 In this exercise, you will download data from the NSFG; we will use
 this data throughout the book.
+
+\index{National Survey of Family Growth}
+\index{NSFG}
 
 \begin{enumerate}
 
@@ -542,6 +590,8 @@ use for this data and click ``I accept these terms'' (assuming that you do).
   files from the NSFG.  Download \url{thinkstats.com/survey.py}
   and run it in the same directory you put the data files in.  It
   should read the data files and print the number of lines in each:
+
+\index{{\tt "survey.py}}
 
 \begin{verbatim}
 Number of respondents 7643
@@ -568,10 +618,17 @@ Like the French, database programmers speak a slightly
 different language, and since we're working with a database we need
 to learn some vocabulary.
 
+\index{database}
+\index{record}
+\index{field}
+\index{table}
+
 Each line in the respondents file contains information about one
 respondent.  This information is called a {\bf record}.  The
 variables that make up a record are called {\bf fields}.  A
 collection of records is called a {\bf table}.
+
+\index{{\tt "survey.py}}
 
 If you read {\tt survey.py} you will see class definitions for {\tt
   Record}, which is an object that represents a record, and {\tt
@@ -657,12 +714,17 @@ It is a floating-point value that indicates the number of people in
 the U.S. population this respondent represents.  Members of oversampled
 groups have lower weights.
 
+\index{weight!sample}
+
 \end{description}
 
 If you read the casebook carefully, you will see that most of these
 variables are {\bf recodes}, which means that they are not part
 of the {\bf raw data} collected by the survey, but they are
 calculated using the raw data.
+
+\index{recode}
+\index{raw data}
 
 For example, {\tt prglength} for live births is equal to the raw
 variable {\tt wksgest} (weeks of gestation) if it is available;
@@ -683,6 +745,8 @@ In this exercise you will write a program to explore the data
 in the Pregnancies table.
 
 \begin{enumerate}
+
+\index{{\tt "survey.py}}
 
 \item In the directory where you put {\tt survey.py} and the
 data files, create a file named \verb"first.py" and
@@ -716,10 +780,15 @@ of the way the fields are encoded.
 babies and others.  Is there a difference between the groups?  How
 big is it?
 
+\index{pregnancy length}
+\index{length!pregnancy}
+
 \end{enumerate}
 
 You can download a solution to this exercise from
 \url{thinkstats.com/first.py}.
+
+\index{{\tt first.py}}
 
 \end{ex}
 
@@ -729,6 +798,8 @@ You can download a solution to this exercise from
 In the previous exercise, you compared the gestation period for first
 babies and others; if things worked out, you found that first
 babies are born about 13 hours later, on average.
+
+\index{apparent effect}
 
 A difference like that is called an {\bf apparent effect}; that is,
 there might be something going on, but we are not yet sure.  There are
@@ -740,15 +811,23 @@ several questions we still want to ask:
   summary statistics}, like median and variance?  Can we be more
   precise about how the groups differ?
 
+\index{summary statistic}
+
 \item Is it possible that the difference we saw could occur by chance,
   even if the groups we compared were actually the same?  If so,
   we would conclude that the effect was not {\bf statistically
     significant}.
 
+\index{statistically significant}
+\index{significance}
+
+
 \item Is it possible that the apparent effect is due to sample bias or
   some other error in the experimental setup?  If so, then we might
   conclude that the effect is an {\bf artifact}; that is, something we
   created (by accident) rather than found. 
+
+\index{artifact}
 
 \end{itemize}
 
@@ -803,54 +882,81 @@ the data, or agree to certain terms of use.  Be persistent!
 \item[anecdotal evidence:] Evidence, often personal, that is collected
   casually rather than by a well-designed study.
 
+\index{anecdotal evidence}
+
 \item[population:] A group we are interested in studying, often a
   group of people, but the term is also used for animals, vegetables
   and minerals\footnote{If you don't recognize this phrase, see
     \url{wikipedia.org/wiki/Twenty_Questions}.}.
 
+\index{population}
+
 \item[cross-sectional study:] A study that collects data about a
 population at a particular point in time.
+
+\index{cross-sectional study}
+\index{study!cross-sectional}
 
 \item[longitudinal study:] A study that follows a population over
 time, collecting data from the same group repeatedly.
 
+\index{longitudinal study}
+\index{study!longitudinal}
+
 \item[respondent:] A person who responds to a survey.
+
+\index{respondent}
 
 \item[sample:] The subset of a population used to collect data.
 
+\index{sample}
+
 \item[representative:] A sample is representative if every member
 of the population has the same chance of being in the sample.
+
+\index{representative}
 
 \item[oversampling:] The technique of increasing the representation
 of a sub-population in order to avoid errors due to small sample
 sizes.
 
+\index{oversampling}
+
 \item[record:] In a database, a collection of information about
 a single person or other object of study.
+\index{record}
 
 \item[field:] In a database, one of the named variables that makes
 up a record.
+\index{field}
 
 \item[table:] In a database, a collection of records.
+\index{table}
 
 \item[raw data:] Values collected and recorded with little or no
 checking, calculation or interpretation.
+\index{raw data}
 
 \item[recode:] A value that is generated by calculation and other
 logic applied to raw data.
+\index{recode}
 
 \item[summary statistic:] The result of a computation that reduces
 a dataset to a single number (or at least a smaller set of numbers)
 that captures some characteristic of the data.
+\index{summary statistic}
 
 \item[apparent effect:] A measurement or summary statistic that
 suggests that something interesting is happening.
+\index{apparent effect}
 
 \item[statistically significant:] An apparent effect is statistically
   significant if it is unlikely to occur by chance.
+\index{statistically significant}
 
 \item[artifact:] An apparent effect that is caused by bias,
   measurement error, or some other kind of error.
+\index{artifact}
 
 \end{description}
 
@@ -860,13 +966,18 @@ suggests that something interesting is happening.
 
 \chapter{Descriptive statistics}
 \label{descriptive}
+\index{descriptive statistics}
 
 \section{Means and averages}
 \label{mean}
+\index{mean}
+\index{average}
 
 In the previous chapter, I mentioned three summary statistics---mean,
 variance and median---without explaining what they are.  So before
 we go any farther, let's take care of that.
+
+\index{summary statistics}
 
 If you have a sample of $n$ values, $x_i$, the mean, $\mu$, is
 the sum of the values divided by the number of values; in other words
@@ -885,6 +996,8 @@ but I will maintain this distinction:
   choose to describe the typical value or the
   {\bf central tendency} of a sample.
 
+\index{central tendency}
+
 \end{itemize}
 
 Sometimes the mean is a good description of a set of values.  For
@@ -892,6 +1005,8 @@ example, apples are all pretty much the same size (at least the ones
 sold in supermarkets).  So if I buy 6 apples and the total weight is 3
 pounds, it would be a reasonable summary to say they are about a half
 pound each.
+
+\index{weight!pumpkin}
 
 But pumpkins are more diverse.  Suppose I grow several varieties in my
 garden, and one day I harvest three decorative pumpkins that are 1
@@ -901,10 +1016,13 @@ this sample is 100 pounds, but if I told you ``The average pumpkin
 in my garden is 100 pounds,'' that would be wrong, or at least
 misleading.
 
+\index{pumpkin}
+
 In this example, there is no meaningful average because
 there is no typical pumpkin.
 
 \section{Variance}
+\index{variance}
 
 If there is no single number that summarizes pumpkin weights,
 we can do a little better with two numbers: mean and {\bf variance}.
@@ -920,11 +1038,16 @@ variance is the mean squared deviation, which is why it is denoted
 $\sigma^2$.  The square root of variance, $\sigma$, is called the {\bf
   standard deviation}.
 
+\index{deviation}
+\index{standard deviation}
+
 \begin{ex}
 For the exercises in this chapter you should download
 \url{thinkstats.com/thinkstats.py}, which contains general-purpose
 functions we will use throughout the book.  You can read documentation
 of these functions in \url{thinkstats.com/thinkstats.html}.
+
+\index{{\tt "thinkstats.py}}
 
 Write a function called
 {\tt Pumpkin} that uses functions from {\tt thinkstats.py} to compute
@@ -936,6 +1059,9 @@ the previous section.
 Reusing code from {\tt survey.py} and {\tt first.py}, compute the
 standard deviation of gestation time for first babies and others.
 Does it look like the spread is the same for the two groups?
+
+\index{{\tt "survey.py}}
+\index{{\tt "first.py}}
 
 How big is the difference in the means compared to these standard
 deviations?  What does this comparison suggest about the statistical
@@ -951,6 +1077,7 @@ come back to this in Chapter~\ref{estimation}.
 
 \section{Distributions}
 \label{distributions}
+\index{distribution}
 
 Summary statistics are concise, but dangerous, because they obscure
 the data.  An alternative is to look at the {\bf distribution} of the
@@ -958,12 +1085,18 @@ data, which describes how often each value appears.
 
 The most common representation of a distribution is a {\bf histogram},
 which is a graph that shows the frequency or probability
-of each value.  
+of each value.
+
+\index{histogram}
 
 In this context, {\bf frequency} means the number of times a value
 appears in a dataset---it has nothing to do with the pitch of a sound
 or tuning of a radio signal.  A {\bf probability} is a frequency expressed
 as a fraction of the sample size, $n$.
+
+\index{frequency}
+\index{probability}
+\index{dictionary}
 
 In Python, an efficient way to compute frequencies is with a dictionary.
 Given a sequence of values, $t$:
@@ -978,12 +1111,17 @@ The result is a dictionary that maps from values to frequencies.
 To get from frequencies to probabilities, we divide through by $n$,
 which is called {\bf normalization}:
 
+\index{normalization}
+
 \begin{verbatim}
 n = float(len(t))
 pmf = {}
 for x, freq in hist.items():
     pmf[x] = hist[x] / n
 \end{verbatim}
+
+\index{PMF}
+\index{probability mass function}
 
 The normalized histogram is called a {\bf PMF}, which stands for
 ``probability mass function''; that is, it's a function that maps from
@@ -996,8 +1134,13 @@ another.  In Python, we {\em usually} represent mathematical functions
 with function objects, but in this case we are using a dictionary
 (dictionaries are also called ``maps,'' if that helps).
 
+\index{map}
+
 
 \section{Representing histograms}
+\index{histogram}
+\index{Hist object}
+\index{{\tt Pmf.py}}
 
 I wrote a Python module called {\tt Pmf.py} that contains class
 definitions for Hist objects, which represent histograms, and Pmf
@@ -1067,6 +1210,8 @@ The mode of a distribution is the most frequent value (see
     {\tt Mode} that takes a Hist object and returns the most frequent
     value.
 
+\index{mode}
+
 As a more challenging version, write a function called {\tt AllModes}
 that takes a Hist object and returns a list of value-frequency
 pairs in descending order of frequency.  Hint: the {\tt operator}
@@ -1077,6 +1222,9 @@ pass as a key to {\tt sorted}.
 
 
 \section{Plotting histograms}
+
+\index{plotting}
+\index{{\tt pyplot}}
 
 There are a number of Python packages for making figures and graphs.
 The one I will demonstrate is {\tt pyplot}, which is part of
@@ -1093,6 +1241,10 @@ pyplot.show()
 
 If you have {\tt matplotlib} you should see a simple pie chart;
 otherwise you will have to install it.
+
+\index{matplotlib}
+\index{bar plot}
+\index{plot!bar}
 
 Histograms and PMFs are most often plotted as bar charts.  The
 {\tt pyplot} function to draw a bar chart is {\tt bar}.  Hist
@@ -1114,8 +1266,13 @@ You can read the documentation at {\tt
 {\tt pyplot} directly, if you prefer.  Either way, you can find
 the documentation for {\tt pyplot} on the web.
 
+\index{{\tt myplot.py}}
+
 Figure~\ref{nsfg_hist} shows histograms of pregnancy lengths for
 first babies and others.
+
+\index{pregnancy length}
+\index{length!pregnancy}
 
 \begin{figure}
 % descriptive.py
@@ -1134,6 +1291,8 @@ apparent:
   weeks.  In this case, the mode is the summary statistic that does
   the best job of describing the typical value.
 
+\index{mode}
+
 \item[Shape:] Around the mode, the distribution is asymmetric; it
   drops off quickly to the right and more slowly to the left.  From a
   medical point of view, this makes sense.  Babies are often born
@@ -1141,10 +1300,14 @@ apparent:
   distribution is truncated because doctors often intervene after 42
   weeks.
 
+\index{shape}
+
 \item[Outliers:] Values far from the mode are called {\bf outliers}.
   Some of these are just unusual cases, like babies born at 30 weeks.
   But many of them are probably due to errors, either in the reporting
   or recording of data.
+
+\index{outlier}
 
 \end{description}
 
@@ -1156,6 +1319,9 @@ address this problem using PMFs.
 
 
 \section{Representing PMFs}
+
+\index{Pmf object}
+\index{{\tt Pmf.py}
 
 {\tt Pmf.py} provides a class called {\tt Pmf} that represents PMFs.
 The notation can be confusing, but here it is: {\tt Pmf} is the
@@ -1229,6 +1395,8 @@ According to Wikipedia, ``Survival analysis is a branch of statistics
 which deals with death in biological organisms and failure in
 mechanical systems;'' see \url{wikipedia.org/wiki/Survival_analysis}.
 
+\index{survival analysis}
+
 As part of survival analysis, it is often useful to compute the
 remaining lifetime of, for example, a mechanical component.  If we
 know the distribution of lifetimes and the age of the component,
@@ -1242,6 +1410,10 @@ the distribution of remaining lifetimes.
 
 
 \begin{ex}
+
+\index{mean}
+\index{variance}
+\index{PMF}
 
 In Section~\ref{mean} we computed the mean of a sample by adding up
 the elements and dividing by $n$.  If you are given a PMF, you can
@@ -1266,6 +1438,9 @@ check that they are consistent with the methods {\tt Mean} and {\tt
 
 \section{Plotting PMFs}
 
+\index{plotting}
+\index{PMF}
+
 There are two common ways to plot Pmfs:
 
 \begin{itemize}
@@ -1274,9 +1449,15 @@ There are two common ways to plot Pmfs:
 or {\tt myplot.Hist}.  Bar graphs are most useful if the number
 of values in the Pmf is small.
 
+\index{bar plot}
+\index{plot!bar}
+
 \item To plot a Pmf as a line, you can use {\tt pyplot.plot}
 or {\tt myplot.Pmf}.  Line plots are most useful if there are
 a large number of values and the Pmf is smooth.
+
+\index{line plot}
+\index{plot!line}
 
 \end{itemize}
 
@@ -1287,35 +1468,36 @@ a large number of values and the Pmf is smooth.
 \label{nsfg_pmf}
 \end{figure}
 
+\index{pregnancy length}
+\index{length!pregnancy}
+
 Figure~\ref{nsfg_pmf} shows the PMF of pregnancy lengths as a bar
 graph.  Using the PMF, we can see more clearly where the distributions
 differ.  First babies seem to be less likely to arrive on time (week
 39) and more likely to be a late (weeks 41 and 42).
-
-\begin{ex}
 
 The code that generates the figures in this chapters is available from
 \url{thinkstats.com/descriptive.py}.  To run it, you will need the
 modules it imports and the data from the NSFG (see
 Section~\ref{nsfg}).
 
-Modify {\tt descriptive.py} to plot Pmfs using lines instead of
-bars.  What are the pros and cons of this format?
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{{\tt descriptive.py}}
 
 Note: {\tt pyplot} provides a function called {\tt hist} that
 takes a sequence of values, computes the histogram and plots it.
 Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
 
-\end{ex}
-
 
 \section{Outliers}
+\index{outlier}
 
-Outliers are values that are far from the mode.  Outliers might be
-caused by errors in collecting or processing the data, or they might
-be correct but unusual measurements.  It is always a good idea to
-check for outliers, and sometimes it is useful and appropriate to
-discard them.
+Outliers are values that are far from the central tendency.  Outliers
+might be caused by errors in collecting or processing the data, or
+they might be correct but unusual measurements.  It is always a good
+idea to check for outliers, and sometimes it is useful and appropriate
+to discard them.
 
 %weeks  count
 %0      1
@@ -1335,6 +1517,9 @@ weeks are certainly errors, and values higher than 30 weeks are
 probably legitimate.  But there are values in between that are
 hard to interpret.
 
+\index{pregnancy length}
+\index{length!pregnancy}
+
 On the other end, the highest values are:
 
 \begin{verbatim}
@@ -1353,16 +1538,28 @@ but it is hard to know for sure.  One option is to {\bf trim} the data
 by discarding some fraction of the highest and lowest values (see
 \url{wikipedia.org/wiki/Truncated_mean}).
 
+\index{trimmed mean}
+\index{mean!trimmed}
+\index{truncated mean}
+\index{mean!truncated}
+
 
 \section{Other visualizations}
+\index{vizualization}
+\index{exploratory data analysis}
 
 Histograms and PMFs are useful for exploratory data analysis;
 once you have an idea what is going on, it is often useful to
 design a visualization that focuses on the apparent effect.
 
+\index{apparent effect}
+
 In the NSFG data, the biggest differences in the distributions are
 near the mode.  So it makes sense to zoom in on that part of the
 graph, and to transform the data to emphasize differences.
+
+\index{National Survey of Family Growth}
+\index{NSFG}
 
 Figure~\ref{nsfg_diffs} shows the difference between the PMFs for weeks
 35-45.  I multiplied by 100 to express the differences in percentage
@@ -1381,12 +1578,16 @@ to be born in weeks 41 and 42.
 
 \section{Relative risk}
 \label{relative.risk}
+\index{relative risk}
 
 We started with the question, ``Do first babies arrive late?''  To
 make that more precise, let's say that a baby is early if it is born
 during Week 37 or earlier, on time if it is born during Week 38, 39 or
 40, and late if it is born during Week 41 or later.  Ranges like these
 that are used to group data are called {\bf bins}.
+
+\index{bin}
+\index{{\tt risk.py}}
 
 \begin{ex}
 
@@ -1414,6 +1615,8 @@ from \url{thinkstats.com/risk.py}.
 
 
 \section{Conditional probability}
+\index{conditional probability}
+\index{probability!conditional}
 
 Imagine that someone you know is pregnant, and it is the beginning of
 Week 39.  What is the chance that the baby will be born in the next
@@ -1433,6 +1636,9 @@ For each number of weeks, $x$, the number of pregnancies with
 duration $x$ is $1000 PMF(x)$.
 
 \item Remove from the cohort all pregnancies with length less than 39.
+
+\index{pregnancy length}
+\index{length!pregnancy}
 
 \item Compute the PMF of the remaining durations; the result is the
 conditional PMF.
@@ -1459,6 +1665,8 @@ Plot this value as a function of $x$ for first babies and others.
 You can download a solution to this problem from
 \url{thinkstats.com/conditional.py}.
 
+\index{{\tt conditional.py}}
+
 \end{ex}
 
 
@@ -1477,6 +1685,9 @@ decisions.  A pregnant woman might be interested in results that are
 relevant to her, like the conditional probabilities in the previous
 section.
 
+\index{clinically significant}
+\index{significance}
+
 How you report results also depends on your goals.  If you are
 trying to demonstrate the significance of an effect, you might choose
 summary statistics, like relative risk, that emphasize differences.
@@ -1492,6 +1703,9 @@ babies arrive late.
 Which summary statistics would you use if you wanted to get a story
 on the evening news?  Which ones would you use if you wanted to
 reassure an anxious patient?
+
+\index{Adams, Cecil}
+\index{Straight Dope, The}
 
 Finally, imagine that you are Cecil Adams, author of {\it The Straight
   Dope} (\url{straightdope.com}), and your job is to answer the
@@ -1509,48 +1723,65 @@ precisely, and accurately.
 
 \item[central tendency:] A characteristic of a sample or population;
 intuitively, it is the most average value. 
+\index{central tendency}
 
 \item[spread:] A characteristic of a sample or population;
 intuitively, it describes how much variability there is.
+\index{spread}
 
 \item[variance:] A summary statistic often used to quantify spread.
+\index{variance}
 
 \item[standard deviation:] The square root of variance, also used
 as a measure of spread.
+\index{standard deviation}
 
 \item[frequency:] The number of times a value appears in a sample.
+\index{frequency}
 
 \item[histogram:] A mapping from values to frequencies, or a graph
 that shows this mapping.
+\index{histogram}
 
 \item[probability:] A frequency expressed as a fraction of the sample
 size.
+\index{probability}
 
 \item[normalization:] The process of dividing a frequency by a sample
 size to get a probability.
+\index{normalization}
 
 \item[distribution:] A summary of the values that appear in a sample
 and the frequency, or probability, of each.
+\index{distribution}
 
 \item[PMF:] Probability mass function: a representation of a distribution
 as a function that maps from values to probabilities.
+\index{PMF}
 
 \item[mode:] The most frequent value in a sample.
+\index{mode}
 
 \item[outlier:] A value far from the central tendency.
+\index{outlier}
 
 \item[trim:] To remove outliers from a dataset.
+\index{trim}
 
 \item[bin:] A range used to group nearby values.
+\index{bin}
 
 \item[relative risk:] A ratio of two probabilities, often used to measure
 a difference between distributions.
+\index{relative risk}
 
 \item[conditional probability:] A probability computed under the assumption
 that some condition holds.
+\index{conditional probability}
 
 \item[clinically significant:] A result, like a difference between groups,
 that is relevant in practice.
+\index{clinically significant}
 
 \end{description}
 
@@ -1559,6 +1790,7 @@ that is relevant in practice.
 \label{cumulative}
 
 \section{The class size paradox}
+\index{class size}
 
 At many American colleges and universities, the student-to-faculty
 ratio is about 10:1.  But students are often surprised to discover
@@ -1604,6 +1836,8 @@ think that the average class size was higher.
 
 \begin{ex}
 
+\index{PMF}
+
 Build a PMF of these data and compute the mean as perceived by the
 Dean.  Since the data have been grouped in bins, you can use the
 mid-point of each bin.
@@ -1617,6 +1851,9 @@ An alternative is to choose a random sample of students and ask them
 the number of students in each of their classes.  Then you could compute
 the PMF of their responses.
 
+\index{bias!oversampling}
+\index{oversampling}
+
 The result would be biased because large classes
 would be oversampled, but you could estimate the actual
 distribution of class sizes by applying an appropriate transformation
@@ -1629,11 +1866,17 @@ distribution of class sizes.
 You can download a solution to this problem from
 \url{thinkstats.py/class_size.py}.
 
+\index{{\tt class\_size.py}}
+
 \end{ex}
 
 
 \begin{ex}
 \label{relay}
+
+\index{relay race}
+\index{bias!oversampling}
+\index{oversampling}
 
 In most foot races, everyone starts at the same time.  If you are a
 fast runner, you usually pass a lot of people at the beginning of the
@@ -1653,6 +1896,9 @@ Then I realized that I was the victim of selection bias.  The race
 was unusual in two ways: it used a staggered start, so teams started
 at different times; also, many teams included runners at different
 levels of ability.
+
+\index{bias!selection}
+\index{selection bias}
 
 As a result, runners were spread out along the course with little
 relationship between speed and location.  When I started running my
@@ -1678,6 +1924,9 @@ pace of each runner to MPH.  Download it from
 \url{thinkstats.com/relay.py}.  Run it and look at the PMF of
 speeds.
 
+\index{{\tt relay.py}}
+\index{{\tt relay\_soln.py}}
+
 Now compute the distribution of speeds you would observe if you ran a
 relay race at 7.5 MPH with this group of runners.  You can download a
 solution from \url{thinkstats.com/relay_soln.py}
@@ -1686,6 +1935,7 @@ solution from \url{thinkstats.com/relay_soln.py}
 
 
 \section{The limits of PMFs}
+\index{PMF}
 
 PMFs work well if the number of values is small.  But as the
 number of values increases, the probability associated with each value
@@ -1695,6 +1945,11 @@ For example, we might be interested in the distribution of birth
 weights.  In the NSFG data, the variable \verb"totalwgt_oz" records
 weight at birth in ounces.  Figure~\ref{nsfg_birthwgt_pmf} shows the
 PMF of these values for first babies and others.
+
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{birth weight}
+\index{weight!birth}
 
 \begin{figure}
 % cumulative.py
@@ -1712,6 +1967,8 @@ It is hard to tell which of these features are significant.  Also, it
 is hard to see overall patterns; for example, which distribution do
 you think has the higher mean?
 
+\index{binning}
+
 These problems can be mitigated by binning the data;
 that is, dividing the domain into non-overlapping intervals and counting
 the number of values in each bin.  Binning can be useful, but it is
@@ -1722,8 +1979,12 @@ An alternative that avoids these problems is the {\bf cumulative
 distribution function}, or {\bf CDF}.  But before we can get to that,
 we have to talk about percentiles.
 
+\index{cumulative distribution function}
+\index{CDF}
+
 
 \section{Percentiles}
+\index{percentile rank}
 
 If you have taken a standardized test, you probably got your
 results in the form of a raw score and a {\bf percentile rank}.
@@ -1770,6 +2031,8 @@ The result of this calculation is a {\bf percentile}.  For example,
 the 50th percentile is the value with percentile rank 50.  In the
 distribution of exam scores, the 50th percentile is 77.
 
+\index{percentile}
+
 \begin{ex}
 This implementation of {\tt Percentile} is not very efficient.  A
 better approach is to use the percentile rank to compute the index of
@@ -1777,6 +2040,9 @@ the corresponding percentile.  Write a version of {\tt Percentile} that
 uses this algorithm.
 
 You can download a solution from \url{thinkstats.com/score_example.py}.
+
+\index{{\tt score\_example.py}}
+
 \end{ex}
 
 \begin{ex}
@@ -1786,6 +2052,8 @@ efficient to sort the scores.  A better option is the selection
 algorithm, which you can read about at
 \url{wikipedia.org/wiki/Selection_algorithm}.
 
+\index{selection algorithm}
+
 Write (or find) an implementation of the selection algorithm and use
 it to write an efficient version of {\tt Percentile}.
 
@@ -1793,6 +2061,9 @@ it to write an efficient version of {\tt Percentile}.
 
 
 \section{Cumulative distribution functions}
+
+\index{cumulative distribution function}
+\index{CDF}
 
 Now that we understand percentiles, we are ready to tackle the
 cumulative distribution function (CDF).  The CDF is the function that
@@ -1852,12 +2123,15 @@ will see distributions whose CDFs are continuous functions.
 
 \section{Representing CDFs}
 
+\index{{\tt Cdf.py}}
+\index{Cdf object}
+
 I have written a module called {\tt Cdf} that provides a class named
 {\tt Cdf} that represents CDFs.  You can read the documentation of
 this module at \url{thinkstats.com/Cdf.html} and you can download it
 from \url{thinkstats.com/Cdf.py}.
 
-Cdfs are implemented with two sorts lists: {\tt xs}, which contains
+Cdfs are implemented with two sorted lists: {\tt xs}, which contains
 the values, and {\tt ps}, which contains the probabilities.  The
 most important methods Cdfs provide are:
 
@@ -1871,10 +2145,13 @@ corresponding value, $x$; that is, the inverse CDF of $p$.
 \end{description}
 
 Because {\tt xs} and {\tt ps} are sorted, these operations can use the
-bisection algorithm, which is efficient (it runs in logarithmic time,
-if you are familiar with that concept).
+bisection algorithm, which is efficient.  The runtime is proportional
+to the logarithm of the number of values; see
+\url{wikipedia.org/wiki/Time_complexity}.
 
-Cdfs also provide {\tt Render}, which return two lists, {\tt xs} and
+\index{bisection algorithm}
+
+Cdfs also provide {\tt Render}, which returns two lists, {\tt xs} and
 {\tt ps}, suitable for plotting the CDF.  Because the CDF is a
 step function, these lists have two elements for each unique
 value in the distribution.
@@ -1894,11 +2171,19 @@ running speeds.  Which gives you a better sense of the shape of the
 distribution, the PMF or the CDF?  You can download a solution
 from \url{thinkstats.com/relay_cdf.py}.
 
+\index{{\tt Cdf.py}}
+\index{{\tt relay\_cdf.py}}
+
 \end{ex}
 
 
 \section{Back to the survey data}
 \label{birth_weights}
+
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{birth weight}
+\index{weight!birth}
 
 Figure~\ref{nsfg_birthwgt_cdf} shows the CDFs of birth weight for
 first babies and others in the NSFG dataset.
@@ -1914,6 +2199,8 @@ This figure makes the shape of the distributions, and the differences
 between them, much clearer.  We can see that first babies are slightly
 lighter throughout the distribution, with a larger discrepancy above 
 the mean.
+
+\index{shape}
 
 %\begin{ex}
 
@@ -1943,10 +2230,16 @@ birth weights and then compute the CDF of the percentile ranks.  What do
 you expect it to look like?  Hint: what fraction of the class do you
 expect to be above the median?
 
+\index{birth weight}
+\index{weight!birth}
+
 \end{ex}
 
 
 \section{Conditional distributions}
+
+\index{conditional distribution}
+\index{distribution!conditional}
 
 A {\bf conditional distribution} is the distribution of a subset of
 the data which is selected according to a condition.
@@ -1969,11 +2262,16 @@ some range).
 Percentile ranks are useful for comparing measurements from
 different tests, or tests applied to different groups.
 
+\index{percentile rank}
+\index{rank!percentile}
+
 For example, people who compete in foot races are usually grouped by
 age and gender.  To compare people in different groups, you can convert
 race times to percentile ranks.
 
 \begin{ex}
+
+\index{race time}
 
 I recently ran the James Joyce Ramble 10K
 in Dedham MA.  The results are available from
@@ -1995,8 +2293,10 @@ F2029 division.  How fast does she have to run her next 10K to
 
 \end{ex}
 
+
 \section{Random numbers}
 \label{random}
+\index{random number}
 
 CDFs are useful for generating random numbers with a given
 distribution.  Here's how:
@@ -2020,16 +2320,28 @@ an integer, $n$, and returns a list of $n$ values chosen at
 random from the Cdf.  Hint: use {\tt random.random}.
 You will find a solution to this exercise in {\tt Cdf.py}.
 
+\index{inverse CDF algorithm}
+\index{{\tt Cdf.py}}
+
 Using the distribution of birth weights from the NSFG, generate a
 random sample with 1000 elements.  Compute the CDF of the sample.
 Make a plot that shows the original CDF and the CDF of the random
 sample.  For large values of $n$, the distributions should be
 the same.
 
+\index{birth weight}
+\index{weight!birth}
+\index{National Survey of Family Growth}
+\index{NSFG}
+
 \end{ex}
 
 This process, generating a random sample based on a measured sample,
 is called {\bf resampling}.
+
+\index{resampling}
+\index{sampling}
+\index{replacement, sampling}
 
 There are two ways to draw a sample from a population: with and
 without replacement.  If you imagine drawing marbles from an
@@ -2046,8 +2358,17 @@ In Python, sampling with replacement can be implemented with
 to choose an element from a sequence.  Sampling without replacement
 is provided by {\tt random.sample}.
 
+\index{random module}
+
 
 \section{Summary statistics revisited}
+\index{summary statistic}
+\index{interquartile range}
+\index{quartile}
+\index{percentile}
+\index{median}
+\index{central tendency}
+\index{spread}
 
 Once you have computed a CDF, it is easy to compute other summary
 statistics.  The median is just the 50th percentile\footnote{You might
@@ -2070,6 +2391,11 @@ the interquartile range.
 Compute the 25th, 50th, and 75th percentiles of the birth weight
 CDF.  Do these values suggest that the distribution is symmetric?
 
+\index{symmetric}
+
+\index{birth weight}
+\index{weight!birth}
+
 \end{ex}
 
 
@@ -2079,24 +2405,31 @@ CDF.  Do these values suggest that the distribution is symmetric?
 
 \item[percentile rank:] The percentage of values in a distribution that are
 less than or equal to a given value.
+\index{percentile rank}
 
 \item[CDF:] Cumulative distribution function, a function that maps
   from values to their percentile ranks.
+\index{CDF}
 
 \item[percentile:] The value associated with a given percentile rank.
+\index{percentile}
 
 \item[conditional distribution:] A distribution computed under the assumption
 that some condition holds.
+\index{conditional distribution}
 
 \item[resampling:] The process of generating a random sample from a
 distribution that was computed from a sample.
+\index{resampling}
 
 \item[replacement:] During a sampling process, ``replacement'' indicates
 that the population is the same for every sample.  ``Without replacement''
 indicates that each element can be selected only once.
+\index{replacement}
 
 \item[interquartile range:] A measure of spread, the difference between
 the 75th and 25th percentiles.
+\index{interquartile range}
 
 \end{description}
 
@@ -2104,6 +2437,10 @@ the 75th and 25th percentiles.
 
 \chapter{Continuous distributions}
 \label{continuous}
+\index{continuous distribution}
+\index{distribution!continuous}
+\index{empirical distribution}
+\index{distribution!empirical}
 
 The distributions we have used so far are called {\bf
   empirical distributions} because they are based on empirical
@@ -2115,6 +2452,8 @@ step function).  Many real world phenomena can be approximated by
 continuous distributions.
 
 \section{The exponential distribution}
+\index{exponential distribution}
+\index{distribution!exponential}
 
 I'll start with the exponential distribution because it is
 easy to work with.  In the real world, exponential distributions
@@ -2122,6 +2461,8 @@ come up when we look at a series of events and measure the
 times between events, which are called {\bf interarrival times}.
 If the events are equally likely to occur at any time, the distribution
 of interarrival times tends to look like an exponential distribution.
+
+\index{interarrival time}
 
 The CDF of the exponential distribution is:
 %
@@ -2141,6 +2482,11 @@ In general, the mean of an exponential distribution is $1 / \lambda$,
 so the mean of this distribution is 0.5.  The median is $\log(2) / \lambda$,
 which is roughly 0.35.
 
+\index{mean}
+\index{median}
+\index{Australia}
+\index{Brisbane}
+
 To see an example of a distribution that is approximately exponential,
 we will look at the interarrival time of babies.
 On December 18, 1997, 44 babies were born in a hospital in Brisbane,
@@ -2150,9 +2496,15 @@ Australia\footnote{This example is based on information and data from
 birth for all 44 babies were reported in the local paper; you can
 download the data from \url{thinkstats.com/babyboom.dat}.
 
+\index{birth time}
+
 Figure~\ref{interarrivals}(left) shows the CDF of the interarrival times
 in minutes.  It seems to have the general shape of an exponential
 distribution, but how can we tell?
+
+\index{complementary CDF}
+\index{CDF!complementary}
+\index{CCDF}
 
 One way is to plot the complementary CDF, $1 - CDF(x)$, on a
 log-$y$ scale.  For data from an exponential distribution, the result
@@ -2169,6 +2521,11 @@ If you take the log of both sides of this equation, you get:
 %
 So on a log-$y$ scale the CCDF is a straight line
 with slope $-\lambda$.
+
+\index{logarithmic scale}
+\index{complementary CDF}
+\index{CDF!complementary}
+\index{CCDF}
 
 \begin{figure}
 \centerline{
@@ -2188,16 +2545,23 @@ of day---is not exactly true.
 
 \begin{ex}
 
+\index{empirical distribution}
+\index{distribution!empirical}
+
 For small values of $n$, we don't expect an empirical distribution
 to fit a continuous distribution exactly.  One way to evaluate
 the quality of fit is to generate a sample from a continuous
 distribution and see how well it matches the data.
+
+\index{random module}
 
 The function {\tt expovariate} in the {\tt random} module generates
 random values from an exponential distribution with a given value of
 $\lambda$.  Use it to generate 44 values from an exponential
 distribution with mean 32.6.  Plot the CCDF on a log-$y$ scale and
 compare it to Figure~\ref{interarrivals}.
+
+\index{pyplot}
 
 Hint: You can use the function {\tt pyplot.yscale} to plot the $y$ axis
 on a log scale.
@@ -2220,10 +2584,17 @@ compute the interarrival times in days.  Plot the CDF of the interarrival
 times and the CCDF on a log-$y$ scale.  Does it look like
 an exponential distribution?
 
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{birthday}
+
 \end{ex}
 
 
 \section{The Pareto distribution}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{Pareto, Vilfredo}
 
 The Pareto distribution is named after the economist Vilfredo Pareto,
 who used it to describe the distribution of wealth (see
@@ -2231,6 +2602,8 @@ who used it to describe the distribution of wealth (see
 been used to describe phenomena in the natural and social
 sciences including sizes of cities and towns, sand particles and
 meteorites, forest fires and earthquakes.
+
+\index{CDF}
 
 The CDF of the Pareto distribution is:
 %
@@ -2251,6 +2624,11 @@ The median of this distribution is $x_m 2^{1/\alpha} = 1$, but the
 95th percentile is 10.  By contrast, the exponential distribution
 with median 1 has 95th percentile of only 1.5.
 
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{median}
+\index{logarithmic scale}
+
 There is a simple visual test that indicates whether an empirical
 distribution fits a Pareto distribution: on a log-log scale, the CCDF
 looks like a straight line.
@@ -2270,8 +2648,13 @@ straight line with slope $-\alpha$ and intercept $-\alpha \log x_m$.
 
 The {\tt random} module provides {\tt paretovariate},
 which generates random values from a Pareto distribution.  It takes
-a parameter for $\alpha$, but no parameter for $x_m$.  What is
-the default value for $x_m$?
+a parameter for $\alpha$, but no parameter for $x_m$.  The
+default value for $x_m$ is 1; you can generate a distribution
+with a different parameter by multiplying by $x_m$.
+
+\index{random module}
+\index{Pareto distribution}
+\index{distribution!Pareto}
 
 Write a wrapper function named {\tt paretovariate} that takes $\alpha$
 and $x_m$ as parameters and uses {\tt random.paretovariate} to
@@ -2280,6 +2663,10 @@ generate values from a two-parameter Pareto distribution.
 Use your function to generate a sample from a Pareto distribution.
 Compute the CCDF and plot it on a log-log scale.  Is it a straight
 line?  What is the slope?
+
+\index{complementary CDF}
+\index{CDF!complementary}
+\index{CCDF}
 
 \end{ex}
 
@@ -2291,9 +2678,13 @@ Choosing the parameters $x_m = 100$ cm and $\alpha = 1.7$, we
 get a distribution with a reasonable minimum, 100 cm,
 and median, 150 cm.
 
+\index{height}
+
 Generate 6 billion random values from this distribution.  What is the
 mean of this sample?  What fraction of the population is shorter than
 the mean?  How tall is the tallest person in Pareto World?
+
+\index{Pareto World}
 
 \end{ex}
 
@@ -2305,15 +2696,32 @@ unusual words, like ``hapaxlegomenon,'' that appear only a few times.
 Zipf's law predicts that in a body of text, called a ``corpus,'' the
 distribution of word frequencies is roughly Pareto.
 
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{Zipf's law}
+\index{hapaxlegomenon}
+\index{corpus}
+\index{frequency}
+\index{word frequency}
+
 Find a large corpus, in any language, in electronic
 format.  Count how many times each word appears.  Find the CCDF of the
 word counts and plot it on a log-log scale.  Does Zipf's law hold?
 What is the value of $\alpha$, approximately?
 
+\index{complementary CDF}
+\index{CDF!complementary}
+\index{CCDF}
+
 \end{ex}
 
 \begin{ex}
 \label{weibull}
+
+\index{Weibull distribution}
+\index{distribution!Weibull}
+\index{exponential distribution}
+\index{distribution!exponential}
 
 The Weibull distribution is a generalization of the exponential
 distribution that comes up in failure analysis
@@ -2325,6 +2733,8 @@ Can you find a transformation that makes a Weibull distribution look
 like a straight line?  What do the slope and intercept of the
 line indicate?
 
+\index{random module}
+
 Use {\tt random.weibullvariate} to generate a sample from a
 Weibull distribution and use it to test your transformation.
 
@@ -2332,6 +2742,10 @@ Weibull distribution and use it to test your transformation.
 
 
 \section{The normal distribution}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 \newcommand{\erf}{\mathrm{erf}}
 
@@ -2377,6 +2791,11 @@ weights in the NSFG.  Figure~\ref{nsfg_birthwgt_model} shows the
 empirical CDF of weights for all live births and the CDF of
 a normal distribution with the same mean and variance.
 
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{birth weight}
+\index{weight!birth}
+
 \begin{figure}
 % cumulative.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_model.eps}}
@@ -2398,6 +2817,11 @@ right, so it might not be appropriate to use the normal
 model.
 
 \begin{ex}
+
+\index{Adult Intelligence Scale}
+\index{WAIS}
+\index{IQ}
+\index{intelligence}
 
 The Wechsler Adult Intelligence Scale is a test that is intended
 to measure intelligence\footnote{Whether it does or not is a
@@ -2423,6 +2847,9 @@ how many do we expect to have an IQ of 190 or more\footnote{On this
 Plot the CDF of pregnancy lengths for all live births.  Does it
 look like a normal distribution?
 
+\index{pregnancy length}
+\index{length!pregnancy}
+
 Compute the mean and variance of the sample and plot the normal
 distribution with the same parameters.  Is the normal distribution a
 good model for this data?  If you had to summarize this distribution
@@ -2433,9 +2860,21 @@ with two statistics, what statistics would you choose?
 
 \section{Normal probability plot}
 
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Weibull distribution}
+\index{distribution!Weibull}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+
 For the exponential, Pareto and Weibull distributions, there are
 simple transformations we can use to test whether a continuous
 distribution is a good model of a dataset.
+
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 For the normal distribution there is no such transformation, but there
 is an alternative called a {\bf normal probability plot}.  It is based
@@ -2496,6 +2935,9 @@ you know how to generate a random sample.
 Figure~\ref{nsfg_birthwgt_normal} is a quick-and-dirty normal
 probability plot for the birth weight data.
 
+\index{birth weight}
+\index{weight!birth}
+
 \begin{figure}
 % continuous.py
 \centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_normal.eps}}
@@ -2508,6 +2950,11 @@ deviations from a normal distribution; nevertheless, it is a
 good (enough) model for many purposes.
 
 \begin{ex}
+
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 Write a function called {\tt NormalPlot} that takes a sequence of
 values and generates a normal probability plot.  You can download
@@ -2537,6 +2984,9 @@ mean and standard deviation; the mean of a lognormal distribution is
 $\exp(\mu + \sigma^2/2)$ and the standard deviation is
 ugly\footnote{See \url{wikipedia.org/wiki/Log-normal_distribution}.}.
 
+\index{weight!adult}
+\index{adult weight}
+
 It turns out that the distribution of weights for adults is
 approximately lognormal\footnote{I was tipped off to this possibility by a
   comment (without citation) at
@@ -2557,6 +3007,10 @@ the Behavioral Risk Factor Surveillance System
 2008, they interviewed 414,509 respondents and asked about their
 demographics, health and health risks.
 
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
+
 \begin{figure}
 \centerline{
 \includegraphics[height=2.5in]{workspace/brfss_weight_log.eps}
@@ -2576,6 +3030,11 @@ The normal model is a good fit for the data, although the highest
 weights exceed what we expect from the normal model even after the log
 transform.  Since the distribution of $\log w$ fits a normal distribution, we
 conclude that $w$ fits a lognormal distribution.
+
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 
 %Figure~\ref{brfss_weight_model} shows the
@@ -2606,11 +3065,17 @@ conclude that $w$ fits a lognormal distribution.
 
 \begin{ex}
 
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
 Download the BRFSS data from 
 \url{thinkstats.com/CDBRFS08.ASC.gz}, and my code for reading it
 from
 \url{thinkstats.com/brfss.py}.  Run {\tt brfss.py} and confirm that
 it prints summary statistics for a few of the variables.
+
+\index{weight!adult}
+\index{adult weight}
 
 Write a program that reads adult weights from the BRFSS and
 generates normal probability plots for $w$ and $\log w$.  You can
@@ -2623,6 +3088,9 @@ download a solution from \url{thinkstats.com/brfss_figs.py}.
 The distribution of populations for cities and towns has been proposed
 as an example of a real-world phenomenon that can be described
 with a Pareto distribution.
+
+\index{Pareto distribution}
+\index{distribution!Pareto}
 
 The U.S.~Census Bureau publishes data on the population of every
 incorporated city and town in the United States.  I have written a
@@ -2641,6 +3109,10 @@ can download it from \url{thinkstats.com/populations.py}.
   of the shape of the distribution.  Then plot the CCDF on a log-log
   scale to see if it has the characteristic shape of a Pareto
   distribution.
+
+\index{complementary CDF}
+\index{CDF!complementary}
+\index{CCDF}
 
 \item Try out the other transformations and plots in this chapter to
   see if there is a better model for this data.
@@ -2699,11 +3171,17 @@ are often the result of generative processes with positive feedback
 (so-called preferential attachment processes: see
 \url{wikipedia.org/wiki/Preferential_attachment}.).
 
+\index{Pareto distribution}
+\index{distribution!Pareto}
+
 Continuous distributions lend themselves to mathematical analysis, as
 we will see in Chapter~\ref{operations}.
 
 
 \section{Generating random numbers}
+
+\index{exponential distribution}
+\index{distribution!exponential}
 
 Continuous CDFs are also useful for generating random numbers.
 If there is an efficient way to compute the inverse CDF, $ICDF(p)$,
@@ -2735,6 +3213,9 @@ not 1, so 1-p can be 1 but not 0, which is good, because $\ln 0$ is
 undefined.
 
 \begin{ex}
+
+\index{Weibull distribution}
+\index{distribution!Weibull}
 
 Write a function named \verb"weibullvariate" that takes
 \verb"lam" and \verb"k" and returns a random value from the Weibull
@@ -3068,6 +3549,11 @@ his measurements and showed that it fit a normal distribution with
 mean 950 g and standard deviation 50 g.  He brought this evidence to
 the bread police, who gave the baker a warning.
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 For the next year, \Poincare~continued the practice of weighing his
 bread every day.  At the end of the year, he found that the average
 weight was 1000 g, just as it should be, but again he complained to
@@ -3099,6 +3585,9 @@ the distribution big enough to convince the bread police?
 If you go to a dance where partners are paired up randomly, what
 percentage of opposite sex couples will you see where the woman is
 taller than the man?
+
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
 
 In the BRFSS (see Section~\ref{lognormal}), the distribution of
 heights is roughly normal with parameters $\mu=178$ cm and
@@ -3471,6 +3960,10 @@ from the 1994 bag?
 This exercise is adapted from MacKay, {\em Information
   Theory, Inference, and Learning Algorithms}:
 
+\index{MacKay, David}
+\index{Presley, Elvis}
+\index{twin}
+
 Elvis Presley had a twin brother who died at birth.  According to the
 Wikipedia article on twins:
 
@@ -3581,6 +4074,12 @@ Compute the skewness for the distributions of pregnancy length and
 birth weight.  Are the results consistent with the shape of the
 distributions?
 
+\index{birth weight}
+\index{weight!birth}
+
+\index{pregnancy length}
+\index{length!pregnancy}
+
 Write a function named {\tt PearsonSkewness} that computes $g_p$
 for these distributions.  How does $g_p$ compare to $g_1$?
 
@@ -3637,6 +4136,14 @@ You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 \section{PDFs}
 \label{density}
 
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+
 The derivative of a CDF is called a {\bf probability density function},
 or PDF.  For example, the PDF of an exponential distribution is
 %
@@ -3671,6 +4178,9 @@ Since $CDF_{normal}$ is the integral of $PDF_{normal}$, we can write
 
 \begin{ex}
 \label{expo_pdf}
+
+\index{exponential distribution}
+\index{distribution!exponential}
 
 What is the probability that a value chosen from an exponential
 distribution with parameter $\lambda$ falls between 1 and 20?  Express
@@ -3725,7 +4235,10 @@ with the operator $\convolution$.
 \[ PDF_Z = PDF_Y \convolution PDF_X \]
 %
 So the distribution of the sum is the convolution of the distributions.
-See \url{wikipedia.org/wiki/Booya}!
+See \url{wiktionary.org/wiki/booyah}!
+
+\index{exponential distribution}
+\index{distribution!exponential}
 
 As an example, suppose $X$ and $Y$ are drawn independently from an
 exponential distribution with parameter $\lambda$.  To find their
@@ -3750,6 +4263,9 @@ This, it turns out, is the PDF of the Erlang distribution (see
 
 
 \begin{ex}
+
+\index{exponential distribution}
+\index{distribution!exponential}
 
 If $X$ is drawn from an exponential distribution with parameter
 $\lambda$, and $Y$ is drawn from an Erlang distribution with parameters
@@ -3783,6 +4299,11 @@ Write a similar function that computes the PMF of $Z = max(X,Y)$.
 
 \section{Why normal?}
 \label{why_normal}
+
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 \newcommand{\normal}{\mathcal{N}}
 \newcommand{\hasdist}{\sim}
@@ -3833,6 +4354,11 @@ of $Z = aX + bY$?
 \end{ex}
 
 \begin{ex}
+
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Pareto distribution}
+\index{distribution!Pareto}
 
 Let's see what happens when we add values from
 other distributions.  Choose a pair of distributions (any two of
@@ -3894,6 +4420,11 @@ So far we have seen:
 \item If we add values drawn from normal distributions, the distribution
 of the sum is normal.
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 \item If we add values drawn from other distributions, the sum does not
 generally have one of the continuous distributions we have seen.
 
@@ -3922,6 +4453,11 @@ caveats:
   from a distribution with finite mean and variance, so most Pareto
   distributions are out.
 
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{exponential distribution}
+\index{distribution!exponential}
+
 \item The number of values you need before you see convergence depends
   on the skewness of the distribution.  Sums from an exponential
   distribution converge for small sample sizes.  Sums from a
@@ -3941,6 +4477,11 @@ and environmental factors whose effect is additive.  The characteristics
 we measure are the sum of a large number of small effects, so their
 distribution tends to be normal.
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 \begin{ex}
 
 \newcommand{\xbar}{\bar{x}}
@@ -3957,6 +4498,11 @@ Hint: review Section~\ref{why_normal}.
 \end{ex}
 
 \begin{ex}
+
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Pareto distribution}
+\index{distribution!Pareto}
 
 Choose a distribution (one of exponential, lognormal or Pareto) and
 choose values for the parameter(s).  Generate samples with sizes
@@ -4006,6 +4552,14 @@ various kinds of smoothing.  One form of smoothing is to assume that
 the data come from an analytic continuous distribution
 (like exponential or normal) and to estimate the parameters of that
 distribution.  And that's what Chapter~\ref{estimation} is about.
+
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 
 If you divide a PDF into a set of bins, you can generate a PMF that is
 at least an approximation of the PDF.  We use this
@@ -4058,10 +4612,16 @@ including a number of differences between first babies and others.
 So far we have taken these effects at face value; in this chapter,
 finally, we put them to the test.
 
+\index{National Survey of Family Growth}
+\index{NSFG}
+
 The fundamental question we want to address is whether these effects
 are real.  For example, if we see a difference in the mean pregnancy
 length for first babies and others, we want to know whether that
 difference is real, or whether it occurred by chance.
+
+\index{pregnancy length}
+\index{length!pregnancy}
 
 That question turns out to be hard to address directly, so we will
 proceed in two steps.  First we will test whether the effect is {\bf
@@ -4124,6 +4684,11 @@ length for first babies is slightly longer, and the mean weight at
 birth is slightly smaller.  Now we will see if those effects are
 significant.
 
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{pregnancy length}
+\index{length!pregnancy}
+
 For these examples, the null hypothesis is that the distributions
 for the two groups are the same, and that the apparent difference is
 due to chance.
@@ -4171,6 +4736,9 @@ I'll address that in the next section.
 In the NSFG dataset, the difference in mean weight for first
 births is 2.0 ounces.  Estimate the p-value of this difference.
 
+\index{National Survey of Family Growth}
+\index{NSFG}
+
 Hint: for this kind of resampling it is important to sample
 with replacement, so you should use {\tt random.choice} rather
 than {\tt random.sample} (see Section~\ref{random}).
@@ -4205,6 +4773,9 @@ a p-value less than $\alpha$.  A common choice for $\alpha$ is 5\%.
 By this criterion, the apparent difference in pregnancy length for
 first babies is not significant, but the difference in weight is.
 
+\index{pregnancy length}
+\index{length!pregnancy}
+
 For this kind of hypothesis testing, we can compute the probability of
 a false positive explicitly: it turns out to be $\alpha$.
 
@@ -4236,6 +4807,9 @@ To investigate the effect of sample size on p-value, see what happens
 if you discard half of the data from the NSFG.  Hint: use {\tt
   random.sample}.  What if you discard three-quarters of the data, and
 so on?
+
+\index{National Survey of Family Growth}
+\index{NSFG}
 
 What is the smallest sample size where the difference in mean birth
 weight is still significant with $\alpha=5$\%?  How much
@@ -4270,6 +4844,9 @@ For the NSFG data, I defined the effect as ``a difference in mean
 (positive or negative) as big or bigger than $\delta$.''  By making
 this choice, I decided to evaluate the magnitude of the difference,
 ignoring the sign.
+
+\index{National Survey of Family Growth}
+\index{NSFG}
 
 A test like that is called {\bf two-sided}, because we consider both
 sides (positive and negative) in the distribution from
@@ -4329,6 +4906,11 @@ As an example, I'll compute $P(H_A | E)$ for pregnancy lengths in the
 NSFG.  We have already computed $P(E | H_0)=0.166$, so all we have to
 do is compute $P(E | H_A)$ and choose a value for the prior.
 
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{pregnancy length}
+\index{length!pregnancy}
+
 To compute $P(E | H_A)$, we assume that the effect is real---that is,
 that the difference in mean duration, $\delta$, is actually what we
 observed, $0.078$.  (This way of formulating $H_A$ is a little bit
@@ -4355,6 +4937,11 @@ we will correct this tendency.
 Using the data from the NSFG, what is the posterior probability that
 the distribution of birth weights is different for first babies and
 others?
+
+\index{birth weight}
+\index{weight!birth}
+\index{National Survey of Family Growth}
+\index{NSFG}
 
 You can start with the code I used to generate the results in this
 section, which you can download from \url{thinkstats.com/hypothesis.py}.
@@ -4383,6 +4970,9 @@ In a study like the NSFG, which studies a different cohort in each
 cycle, we can use one cycle for training and another for testing.
 Or we can partition the data into subsets (at random), then use
 one for training and one for testing.
+
+\index{National Survey of Family Growth}
+\index{NSFG}
 
 I implemented the second approach, dividing the Cycle 6 data roughly
 in half.  I ran the test several times with different random partitions.
@@ -4461,6 +5051,9 @@ significant.  But in Section~\ref{relative.risk}, when we computed
 relative risk, we saw that first babies are more likely to be early,
 less likely to be on time, and more likely to be late.
 
+\index{pregnancy length}
+\index{length!pregnancy}
+
 So maybe the distributions have the same mean and different variance.
 We could test the significance of the difference in variance, but
 variances are less robust than means, and hypothesis tests for
@@ -4524,6 +5117,9 @@ is statistically significant, with one caution: again we used the
 same dataset for exploration and testing.  It would be a good idea
 to confirm this result with another dataset.
 
+\index{National Survey of Family Growth}
+\index{NSFG}
+
 You can download the code I used in this section from
 \url{thinkstats.com/chi.py}.
 
@@ -4567,6 +5163,9 @@ laughed when they saw Figure~\ref{length_deltas_cdf}, because I used a
 lot of computer power to simulate something I could have figured out
 analytically.
 
+\index{pregnancy length}
+\index{length!pregnancy}
+
 Obviously mathematical analysis is not the focus of this book.  I am
 willing to use computers to do things the ``dumb'' way, because I
 think it is easier for beginners to understand simulations, and easier
@@ -4588,6 +5187,11 @@ is: we draw $n$ samples from a distribution, add them up, and
 divide by $n$.  If the distribution has mean $\mu$ and variance
 $\sigma^2$, then by the Central Limit Theorem, we know that the sum of
 the samples is $\normal (n \mu, n \sigma^2)$.
+
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 To figure out the distribution of the sample means, we have to invoke
 one of the properties of the normal distribution: if $X$ is
@@ -4753,6 +5357,11 @@ if it is false.
 Let's play a game.  I'll think of a distribution, and you have to guess
 what it is.  We'll start out easy and work our way up.
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 {\em I'm thinking of a distribution.}  I'll give you two hints; it's a
 normal distribution, and here's a random sample drawn from it:
 %
@@ -4775,6 +5384,11 @@ This process is called {\bf estimation}, and the statistic we used
 Using the sample mean to estimate $\mu$ is so obvious that it is hard
 to imagine a reasonable alternative.  But suppose we change the game by
 introducing outliers.  
+
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 {\em I'm thinking of a distribution.}  It's a normal distribution, and
 here's a sample that was collected by an unreliable surveyor who
@@ -4820,6 +5434,11 @@ chance of winning is 1 in 8, and that's the best you can do.
 
 \begin{ex}
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 Write a function that draws 6 values from a normal distribution with
 $\mu=0$ and $\sigma=1$.  Use the sample mean to estimate $\mu$ and
 compute the error $\xbar - \mu$.  Run the function 1000 times and
@@ -4832,6 +5451,11 @@ estimator.  Compute MSE again and compare to the MSE for $\xbar$.
 
 
 \section{Guess the variance}
+
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 {\em I'm thinking of a distribution.}  It's a normal distribution, and 
 here's a (familiar) sample:
@@ -4867,6 +5491,11 @@ $S_{n-1}^2$ is unbiased, see
 
 \begin{ex}
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 Write a function that draws 6 values from a normal distribution with
 $\mu=0$ and $\sigma=1$.  Use the sample variance to estimate
 $\sigma^2$ and compute the error $S^2 - \sigma^2$.  Run the function 1000
@@ -4901,6 +5530,8 @@ Now let's get back to the game.
 
 
 \section{Exponential distributions}
+\index{exponential distribution}
+\index{distribution!exponential}
 
 {\em I'm thinking of a distribution.}  It's an exponential distribution, and 
 here's a sample:
@@ -4959,6 +5590,9 @@ the range of values the parameter could have, and for each value in
 the range, a notion of how likely it is.
 
 Let's start with {\bf confidence intervals}.
+
+\index{exponential distribution}
+\index{distribution!exponential}
 
 {\em I'm thinking of a distribution.}  It's an exponential distribution, and 
 here's a sample:
@@ -5022,6 +5656,9 @@ So let's try a different version of the game.
 
 \newcommand{\boldx}{\mathbf{x}}
 
+\index{exponential distribution}
+\index{distribution!exponential}
+
 {\em I'm thinking of a distribution.}  It's an exponential
 distribution, and I chose $\lambda$ from a uniform distribution
 between 0.5 and 1.5.  Here's a sample, which I'll call $\boldx$:
@@ -5084,6 +5721,9 @@ take a prior distribution and a sample and return a posterior distribution.
 To represent distributions, you can use
 the {\tt Pmf} class in \url{thinkstats.com/Pmf.py}.
 
+\index{exponential distribution}
+\index{distribution!exponential}
+
 Test your function by generating a sample of six values from an
 exponential distribution with $\lambda = 1.2$.  Compute the posterior
 distribution and confirm that it has a central tendency near $\lambda$.
@@ -5119,6 +5759,11 @@ The following problem appears in Chapter 3 of David MacKay's
 \url{www.inference.phy.cam.ac.uk/mackay/itprnn/ps/}.
 
 \begin{quote}
+
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{particles}
+\index{unstable particles}
 
 Unstable particles are emitted from a source and decay at a distance
 $x$, a real number that has an exponential probability distribution
@@ -5385,6 +6030,11 @@ $\sigma$ {\bf normalizes} the deviation, so the values of $Z$ are
 dimensionless (no units) and their distribution has mean 0 and
 variance 1.
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 If $X$ is normally-distributed, so is $Z$; but if $X$ is skewed or has
 outliers, so does $Z$.  In those cases it is more robust to use
 percentile ranks.  If each $R$ contains the percentile ranks the
@@ -5495,6 +6145,9 @@ Figure~\ref{corr_examples} is from the Wikipedia page
 scatterplots and correlation coefficients for several
 carefully-constructed datasets.
 
+\index{scatter plot}
+\index{plot!scatter}
+
 The top row shows linear relationships with a range of correlations;
 you can use this row to get a sense of what different values of $\rho$
 mean.  The second row shows perfect correlations with a range of
@@ -5534,6 +6187,9 @@ d\includegraphics[height=2.0in]{workspace/scatter4.eps} \\
 in the BRFSS.}
 \label{scatterplots}
 \end{figure}
+
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
 
 The simplest way to check for a relationship between two variables
 is a scatterplot, but making a good scatterplot is not always easy.
@@ -5614,6 +6270,11 @@ Pearson's correlation works well if the relationship between variables
 is linear and if the variables are roughly normal.  But it is not
 robust in the presence of outliers.
 
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
 Anscombe's quartet demonstrates this effect; it contains four data
 sets with the same correlation.  One is a linear relation with random
 noise, one is a non-linear relation, one is a perfect relation with an
@@ -5654,12 +6315,18 @@ from \url{thinkstats.com/correlation.py}.
 
 \begin{ex}
 
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
 Download \url{thinkstats.com/brfss.py} and
 \url{thinkstats.com/brfss_scatter.py}.  Run them and confirm that you
 can read the BFRSS data and generate scatterplots.
 
 Comparing the scatterplots to Figure~\ref{corr_examples}, what value
 do you expect for Pearson's correlation?  What value do you get?
+
+\index{weight!adult}
+\index{adult weight}
 
 Because the distribution of adult weight is lognormal, there are
 outliers that affect the correlation.  Try plotting
@@ -5777,6 +6444,9 @@ computes $\inter$ and $\slope$.  You can download a solution from
 
 \begin{ex}
 
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
 Using the data from the BRFSS again, compute the linear least squares
 fit for $\log(\mathrm{weight})$ versus height.  You can download a
 solution from \url{thinkstats.com/brfss_corr.py}.
@@ -5792,6 +6462,9 @@ a wind turbine at that location can generate.  According to some
 sources, empirical distributions of wind speed are well modeled by a
 Weibull distribution (see
 \url{wikipedia.org/wiki/Wind_power#Distribution_of_wind_speed}).
+
+\index{Weibull distribution}
+\index{distribution!Weibull}
 
 To evaluate whether a location is a viable site for a wind turbine,
 you can set up an anemometer to measure wind speed for a period of
@@ -5866,6 +6539,11 @@ See \url{wikipedia.org/wiki/Howzzat}!
 
 \begin{ex}
 
+\index{Adult Intelligence Scale}
+\index{WAIS}
+\index{IQ}
+\index{intelligence}
+
 The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
 of intelligence; scores are calibrated so that the mean and standard
 deviation in the general population are 100 and 15.
@@ -5893,6 +6571,9 @@ from \url{thinkstats.com/correlation.py}.
 \end{ex}
 
 \begin{ex}
+
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
 
 Using the height and weight data from the BRFSS (one more time),
 compute $inter$, $slope$ and $R^2$.  If you were trying to guess
@@ -5978,6 +6659,11 @@ Section~\ref{birth_weights}).  But birth weight is also correlated
 with the mother's age, and mothers of first babies tend to be younger
 than mothers of other babies.
 
+\index{birth weight}
+\index{weight!birth}
+\index{National Survey of Family Growth}
+\index{NSFG}
+
 So it may be that first babies are lighter because their mothers are
 younger.  To control for the effect of age, we could divide the mothers
 into age groups and compare birth weights for first babies and others
@@ -6062,28 +6748,7 @@ approximately random.
 \end{description}
 
 
-% Topics to consider in the future:
-
-% Time series
-
-% Correlation of adjacent elements
-
-% Autocorrelation function
-
-% Information theory: Paul Revere example
-
-% Gelman's paradox
-% \url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
-
-% regression to the mean experiment
-
-% Poisson distribution
-
-% example using csvDictReader
-
-% NOTE: bring back the index once there is something in it!
-
-% \printindex
+\printindex
 
 \clearemptydoublepage
 %\blankpage
@@ -6107,3 +6772,25 @@ If so, maybe that explains adult weight distribution.
 
 
 Chapter 11:
+
+
+% Topics to consider in the future:
+
+% Time series
+
+% Correlation of adjacent elements
+
+% Autocorrelation function
+
+% Information theory: Paul Revere example
+
+% Gelman's paradox
+% \url{http://www.iq.harvard.edu/blog/sss/archives/2008/04/gelmans_paradox.shtml}
+
+% regression to the mean experiment
+
+% Poisson distribution
+
+% example using csvDictReader
+
+
