@@ -267,7 +267,7 @@ def MakePmfFromHist(hist, name=None):
 
     # make a copy of the dictionary
     d = dict(hist.GetDict())
-    pmf = Pmf(d, hist.name)
+    pmf = Pmf(d, name)
     pmf.Normalize()
     return pmf
 
@@ -284,7 +284,7 @@ def MakePmfFromCdf(cdf, name=None):
     if name is None:
         name = cdf.name
 
-    pmf = Pmf()
+    pmf = Pmf(name=name)
 
     prev = 0.0
     for val, prob in cdf.Items():
