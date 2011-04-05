@@ -1076,6 +1076,7 @@ This statistic is called the ``sample variance,'' and it is used
 to estimate the variance in a population using a sample.  We will
 come back to this in Chapter~\ref{estimation}.
 
+\index{sample variance}
 
 \section{Distributions}
 \label{distributions}
@@ -2478,6 +2479,9 @@ The parameter, $\lambda$, determines the shape of the
 distribution.  Figure~\ref{expo_cdf} shows what this CDF looks like with
 $\lambda = 2$.
 
+\index{parameter}
+
+
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{workspace/expo_cdf.eps}}
 \caption{CDF of exponential distribution.}
@@ -2620,6 +2624,8 @@ the distribution.  $x_m$ is the minimum possible value.
 Figure~\ref{pareto_cdf} shows the CDF of a Pareto distribution with
 parameters $x_m = 0.5$ and $\alpha = 1$.
 
+\index{parameter}
+
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{workspace/pareto_cdf.eps}}
 \caption{CDF of a Pareto distribution.}
@@ -2654,7 +2660,7 @@ straight line with slope $-\alpha$ and intercept $-\alpha \log x_m$.
 
 The {\tt random} module provides {\tt paretovariate},
 which generates random values from a Pareto distribution.  It takes
-a parameter for $\alpha$, but no parameter for $x_m$.  The
+a parameter for $\alpha$, but not $x_m$.  The
 default value for $x_m$ is 1; you can generate a distribution
 with a different parameter by multiplying by $x_m$.
 
@@ -2665,6 +2671,8 @@ with a different parameter by multiplying by $x_m$.
 Write a wrapper function named {\tt paretovariate} that takes $\alpha$
 and $x_m$ as parameters and uses {\tt random.paretovariate} to
 generate values from a two-parameter Pareto distribution.
+
+\index{parameter}
 
 Use your function to generate a sample from a Pareto distribution.
 Compute the CCDF and plot it on a log-log scale.  Is it a straight
@@ -2778,6 +2786,7 @@ written $\erf(x)$:
 The parameters $\mu$ and $\sigma$ determine the mean and standard
 deviation of the distribution.
 
+\index{parameter}
 \index{{\tt erf.py}}
 
 If these formulas make your eyes hurt, don't worry; they are easy to
@@ -3014,6 +3023,7 @@ mean and standard deviation; the mean of a lognormal distribution is
 $\exp(\mu + \sigma^2/2)$ and the standard deviation is
 ugly\footnote{See \url{wikipedia.org/wiki/Log-normal_distribution}.}.
 
+\index{parameter}
 \index{weight!adult}
 \index{adult weight}
 
@@ -3212,6 +3222,8 @@ Continuous models are also a form of data compression.  When a model
 fits a dataset well, a small set of parameters can summarize a
 large amount of data.
 
+\index{parameter}
+
 \index{compression}
 
 It is sometimes surprising when data from a natural phenomenon fit a
@@ -3281,6 +3293,8 @@ undefined.
 Write a function named \verb"weibullvariate" that takes
 \verb"lam" and \verb"k" and returns a random value from the Weibull
 distribution with those parameters.
+
+\index{parameter}
 
 \end{ex}
 
@@ -4889,6 +4903,9 @@ If you divide a PDF into a set of bins, you can generate a PMF that is
 at least an approximation of the PDF.  We use this
 technique in Chapter~\ref{estimation} to do Bayesian estimation.
 
+\index{Bayesian estimation}
+\index{estimation!Bayesian}
+
 \begin{ex}
 
 Write a function called {\tt MakePmfFromCdf} that takes a Cdf object
@@ -5809,6 +5826,7 @@ if it is false.
 
 \chapter{Estimation}
 \label{estimation}
+\index{estimation}
 
 \section{The estimation game}
 
@@ -5827,6 +5845,9 @@ normal distribution, and here's a random sample drawn from it:
 %
 What do you think is the mean parameter, $\mu$, of this distribution?
 
+\index{mean}
+\index{parameter}
+
 \newcommand{\xbar}{\bar{x}}
 \newcommand{\ybar}{\bar{y}}
 
@@ -5838,6 +5859,8 @@ be reasonable to guess $\mu = 0.155$.
 
 This process is called {\bf estimation}, and the statistic we used
 (the sample mean) is called an {\bf estimator}.
+
+\index{estimator}
 
 Using the sample mean to estimate $\mu$ is so obvious that it is hard
 to imagine a reasonable alternative.  But suppose we change the game by
@@ -5855,15 +5878,23 @@ occasionally puts the decimal point in the wrong place.
 \[ \{ -0.441, 1.774, -0.101, -1.138, 2.975, -213.8 \} \]
 %
 Now what's your estimate of $\mu$?  If you use the sample mean your
-guess is -35.12.  Is that your final answer?  What are the alternatives?
+guess is -35.12.  Is that the best choice?  What are the alternatives?
+
+\index{outlier}
 
 One option is to identify and discard outliers, then compute the sample
 mean of the rest.  Another option is to use the median as an estimator.
+
+\index{median}
 
 Which estimator is the best depends on the circumstances (for example,
 whether there are outliers) and on what the goal is.  Are you
 trying to minimize errors, or maximize your chance of getting the
 right answer?
+
+\index{error}
+\index{MSE}
+\index{mean squared error}
 
 If there are no outliers, the sample mean minimizes the {\bf mean squared
 error} (MSE).  If we play the game many times, and each time
@@ -5882,6 +5913,8 @@ overbuild the structure, increasing its cost.  But if we guess too
 low, the building might collapse.  Because cost as a function of
 error is asymmetric, minimizing MSE is not the best strategy.
 
+\index{prediction}
+
 As another example, suppose I roll three six-sided dice and ask you
 to predict the total.  If you get it exactly right, you get a prize;
 otherwise you get nothing.  In this case the value that minimizes MSE
@@ -5889,6 +5922,9 @@ is 10.5, but that would be a terrible guess.  For this game, you
 want an estimator that has the highest chance of being right, which is
 a {\bf maximum likelihood estimator} (MLE).  If you pick 10 or 11, your
 chance of winning is 1 in 8, and that's the best you can do.
+
+\index{MLE}
+\index{maximum likelihood estimator}
 
 \begin{ex}
 
@@ -5905,11 +5941,16 @@ compute MSE.
 Now modify the program to use the median as an
 estimator.  Compute MSE again and compare to the MSE for $\xbar$.
 
+\index{mean}
+\index{median}
+\index{MSE}
+
 \end{ex}
 
 
 \section{Guess the variance}
 
+\index{variance}
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
@@ -5930,6 +5971,13 @@ unknown parameter $\sigma^2$.
 For large samples, $S^2$ is an adequate estimator, but for small
 samples it tends to be too low.  Because of this unfortunate
 property, it is called a {\bf biased} estimator.
+
+\index{sample variance}
+\index{biased estimator}
+\index{estimator!biased}
+\index{unbiased estimator}
+\index{estimator!unbiased}
+
 
 An estimator is {\bf unbiased} if the expected total (or mean) error,
 after many iterations of the estimation game, is 0.
@@ -5968,6 +6016,8 @@ increase the number of games.
 
 \section{Understanding errors}
 
+\index{error}
+
 Before we go on, let's clear up a common source of confusion.
 Properties like MSE and bias are long-term expectations based on
 many iterations of the estimation game.
@@ -5998,6 +6048,9 @@ here's a sample:
 %
 What do you think is the parameter, $\lambda$, of this distribution?
 
+\index{parameter}
+\index{mean}
+
 \newcommand{\lamhat}{\hat{\lambda}}
 \newcommand{\lamhatmed}{\hat{\lambda}_{1/2}}
 
@@ -6006,15 +6059,21 @@ so working backwards, we might choose
 %
 \[ \lamhat = 1 / \xbar \]
 %
-It is common to use hat-notation for estimators, so $\lamhat$ is an
+It is common to use hat notation for estimators, so $\lamhat$ is an
 estimator of $\lambda$.  And not just any estimator; it is also the
 MLE estimator\footnote{See
 \url{wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}}.
 So if you want to maximize your chance of guessing $\lambda$ exactly,
 $\lamhat$ is the way to go.
 
+\index{MLE}
+\index{maximum likelihood estimator}
+
 But we know that $\xbar$ is not robust in the presence of outliers, so
 we expect $\lamhat$ to have the same problem.
+
+\index{robust}
+\index{outlier}
 
 Maybe we can find an alternative based on the sample median.  Remember
 that the median of an exponential distribution is $\log(2) / \lambda$,
@@ -6024,10 +6083,14 @@ so working backwards again, we can define an estimator
 %
 where $\mu_{1/2}$ is the sample median.
 
+\index{median}
+
 \begin{ex}
 
 Run an experiment to see which of $\lamhat$ and $\lamhatmed$ yields
 lower MSE.  Test whether either of them is biased.
+
+\index{biased estimator}
 
 %Note: in this kind of experiment, you start with a known value for
 %the parameter and generate a simulated data set, so you can compute
@@ -6038,6 +6101,11 @@ lower MSE.  Test whether either of them is biased.
 
 
 \section{Confidence intervals}
+
+\index{confidence interval}
+\index{interval!confidence}
+
+\index{point estimate}
 
 So far we have looked at estimators that generate single values, known
 as {\bf point estimates}.  For many problems, we might prefer an interval
@@ -6078,9 +6146,15 @@ from the previous section, and $\chi^2(k, x)$ is the CDF of a
 chi-squared distribution with $k$ degrees of freedom, evaluated at $x$
 (see \url{wikipedia.org/wiki/Chi-square_distribution}).
 
+\index{chi-square distribution}
+\index{distribution!chi-square}
+
 In general, confidence intervals are hard to compute analytically, but
 relatively easy to estimate using simulation.  But first we need
 to talk about Bayesian estimation.
+
+\index{Bayesian estimation}
+\index{estimation!Bayesian}
 
 
 %\begin{ex}
@@ -6109,6 +6183,10 @@ of falling in the interval.  But from a frequentist point of view,
 that is not correct because the parameter is an unknown but fixed
 value.  It is either in the interval you computed or not, so the
 frequentist definition of probability doesn't apply.
+
+\index{parameter}
+\index{frequentism}
+\index{Bayesianism}
 
 So let's try a different version of the game.
 
@@ -6167,10 +6245,17 @@ Given a posterior distribution, it is easy to compute a confidence
 interval.  For example, to compute a 90\% CI, you can
 use the 5th and 95th percentiles of the posterior.
 
+\index{credible interval}
+\index{interval!credible}
+
 Bayesian confidence intervals are sometimes called {\bf credible
 intervals}; for a discussion of the differences, see
 \url{wikipedia.org/wiki/Credible_interval}.
 
+
+% Put in the code
+
+% Use the ``people with different theories'' analogy
 
 \begin{ex}
 
@@ -6211,6 +6296,9 @@ You can download a solution to this problem from
 \section{Censored data}
 \label{censored}
 
+\index{censored data}
+\index{MacKay, David}
+
 The following problem appears in Chapter 3 of David MacKay's
 {\em Information Theory, Inference and Learning
   Algorithms}, which you can download from
@@ -6222,6 +6310,7 @@ The following problem appears in Chapter 3 of David MacKay's
 \index{distribution!exponential}
 \index{particles}
 \index{unstable particles}
+\index{decay}
 
 Unstable particles are emitted from a source and decay at a distance
 $x$, a real number that has an exponential probability distribution
@@ -6235,7 +6324,7 @@ $x=20$ cm.  $N$ decays are observed at locations $\{ x_1, ... , x_N
 This is an example of an estimation problem with {\bf censored data};
 that is, we know that some data are systematically excluded.
 
-One of the strengths of Bayesian inference is that it can deal with
+One of the strengths of Bayesian estimation is that it can deal with
 censored data with (relative) ease.  We can use the method from the
 previous section with only one change: we have to replace
 $PDF_{expo}$ with the conditional distribution:
@@ -6264,11 +6353,20 @@ You can download a solution to this problem from
 
 \begin{ex}
 
+\index{Coleman, Norm}
+\index{Franken, Al}
+\index{Minnesota Senate Race}
+\index{Seife, Charles}
+\index{{\em Proofiness}}
+
 In the 2008 Minnesota Senate race the final vote count was 1,212,629
 votes for Al Franken and 1,212,317 votes for Norm Coleman.  Franken
 was declared the winner, but as Charles Seife points out in {\it
   Proofiness}, the margin of victory was much smaller than the margin
 of error, so the result should have been considered a tie.
+
+\index{margin of victory}
+\index{margin of error}
 
 Assuming that there is a chance that any vote might be lost and a chance
 that any vote might be double-counted, what is the probability that
@@ -6280,6 +6378,10 @@ Hint: you will have to fill in some details to model the error process.
 
 
 \section{The locomotive problem}
+
+\index{locomotive problem}
+\index{Mosteller, Frederick}
+\index{German tank problem}
 
 The locomotive problem is a classic estimation problem also
 known as the ``German tank problem.''  Here is the version
@@ -6302,17 +6404,28 @@ questions:
 \item For a given estimate, $\nhat$, what is the likelihood of the
   evidence, $P(E|\nhat)$?  What is the maximum likelihood estimator?
 
+\index{MLE}
+\index{maximum likelihood estimator}
+
 \item If we see train $i$, it seems reasonable that we would guess
   some multiple of $i$, so let's assume $\nhat = a i$.  What value of
   $a$ minimizes mean squared error?
 
+\index{MSE}
+\index{mean squared error}
+
 \item Still assuming that $\nhat = a i$, can you find a value of $a$
   that makes $\nhat$ an unbiased estimator?
+
+\index{unbiased estimator}
+\index{estimator!unbiased}
 
 \item For what value of N is 60 the average value?
 
 \item What is the Bayesian posterior distribution assuming a prior
 distribution that is uniform from 1 to 200.
+
+\index{posterior distribution}
 
 \end{enumerate}
 
@@ -6389,6 +6502,9 @@ the evidence: we saw train $i$.  Again, $P(i|H_n)$
 is $1/n$ if $i \le n$, and 0 otherwise.  The normalizing constant,
 $P(i)$, is just the sum of the numerators for each hypothesis.
 
+\index{Bayesian estimation}
+\index{prior distribution}
+
 If the prior distribution is uniform from 1 to 200, we start with 200
 hypothesis and compute the likelihood for each.  You can download an
 implementation of this method from
@@ -6399,6 +6515,8 @@ The 90\% credible interval for this posterior is $[63, 189]$, which
 is still quite wide.  Seeing one train doesn't provide strong evidence
 for any of the hypotheses (although it does rule out the hypotheses
 with $n < i$).
+
+\index{credible interval}
 
 If we start with a different prior, the posterior is significantly
 different, which helps to explain why the other estimators are so
@@ -6429,26 +6547,39 @@ and several solutions at
 
 \item[estimation:] The process of inferring the parameters of a distribution
 from a sample.
+\index{estimation}
 
 \item[estimator:] A statistic used to estimate a parameter.
+\index{estimation}
 
 \item[mean squared error:] A measure of estimation error.
+\index{mean squared error}
+\index{MSE}
 
 \item[maximum likelihood estimator:] An estimator that computes the
 point estimate with the highest likelihood.
+\index{MLE}
+\index{maximum likelihood estimator}
 
 \item[bias:] The tendency of an estimator to be above or below the actual
 value of the parameter, when averaged over repeated samples.
+\index{biased estimator}
 
 \item[point estimate:] An estimate expressed as a single value.
+\index{point estimation}
 
 \item[confidence interval:] An estimate expressed as an interval with a
 given probability of containing the true value of the parameter.
+\index{confidence interval}
+\index{interval!confidence}
 
 \item[credible interval:] Another name for a Bayesian confidence interval.
+\index{credible interval}
+\index{interval!credible}
 
 \item[censored data:] A dataset sampled in a way that systematically
 excludes some data.
+\index{censored data}
 
 \end{description}
 
@@ -6462,10 +6593,14 @@ example, we have a sense that height is related to weight; people who
 are taller tend to be heavier.  {\bf Correlation} is a description of
 this kind of relationship.
 
+\index{correlation}
+
 A challenge in measuring correlation is that the variables we want
 to compare might not be expressed in the same units.  For example, height
 might be in centimeters and weight in kilograms.  And even if they are
 in the same units, they come from different distributions.
+
+\index{units}
 
 There are two common solutions to these problems:
 
@@ -6474,6 +6609,8 @@ There are two common solutions to these problems:
 \item Transform all values to {\bf standard scores}.  This leads to
 the Pearson coefficient of correlation.
 
+\index{standard scores}
+
 \index{Pearson coefficient of correlation}
 \index{Spearman coefficient of correlation}
 \index{coefficient!correlation}
@@ -6481,16 +6618,25 @@ the Pearson coefficient of correlation.
 \item Transform all values to their percentile ranks.  This
 leads to the Spearman coefficient.
 
+\index{rank}
+\index{percentile rank}
+
 \end{enumerate}
 
 If $X$ is a series of values, $x_i$, we can convert to standard
 scores by subtracting the mean and dividing by the standard deviation:
 $z_i = (x_i - \mu) / \sigma$.
 
+\index{mean}
+\index{standard deviation}
+
 The numerator is a deviation: the distance from the mean.  Dividing by
 $\sigma$ {\bf normalizes} the deviation, so the values of $Z$ are
 dimensionless (no units) and their distribution has mean 0 and
 variance 1.
+
+\index{normalize}
+\index{deviation}
 
 \index{normal distribution}
 \index{distribution!normal}
@@ -6503,8 +6649,12 @@ percentile ranks.  If each $R$ contains the percentile ranks the
 values in $X$, the distribution of $R$ is uniform between 0 and 100,
 regardless of the distribution of $X$.
 
+\index{robust}
 
 \section{Covariance}
+
+\index{covariance}
+\index{deviation}
 
 {\bf Covariance} is a measure of the tendency of two variables
 to vary together.  If we have two series, $X$ and $Y$, their
@@ -6517,6 +6667,7 @@ deviations from the mean are
 where $\mu_X$ is the mean of $X$ and $\mu_Y$ is the mean of $Y$.
 If $X$ and $Y$ vary together, their deviations tend to have the same
 sign.
+
 If we multiply them together, the product is positive when the
 deviations have the same sign and negative when they have the opposite
 sign.  So adding up the products gives a measure of the tendency to
@@ -6545,10 +6696,15 @@ $Cov(X, X) = Var(X)$.
 You can download a solution from
 \url{thinkstats.com/correlation.py}.
 
+\index{{\tt correlation.py}}
+
 \end{ex}
 
 
 \section{Correlation}
+
+\index{correlation}
+\index{normal score}
 
 One solution to this problem is to divide the deviations by $\sigma$,
 which yields normal scores, and compute the product of normal scores:
@@ -6563,6 +6719,10 @@ This value is called {\bf Pearson's correlation} after Karl Pearson,
 an influential early statistician.  It is easy to compute and easy to
 interpret.  Because normal scores are dimensionless, so is $\rho$.
 
+\index{Pearson, Karl}
+\index{Pearson coefficient of correlation}
+\index{coefficient!correlation}
+
 Also, the result is necessarily between -1 and +1.  To see why, we
 can rewrite $\rho$ by factoring out $\sigma_X$ and $\sigma_Y$:
 %
@@ -6576,12 +6736,16 @@ Then by the ever-useful Cauchy-Schwarz inequality\footnote{See
   \url{wikipedia.org/wiki/Cauchy-Schwarz_inequality}.}, we can show
 that $\rho^2 \le 1$, so $-1 \le \rho \le 1$.
 
+\index{Cauchy-Schwarz inequality}
+
 The magnitude of $\rho$ indicates the strength of the correlation.  If
 $\rho=1$ the variables are perfectly correlated, which means that if
 you know one, you can make a perfect prediction about the other.  The
 same is also true if $\rho=-1$.  It means that the variables
 are negatively correlated, but for purposes of prediction, a
 negative correlation is just as good as a positive one.
+
+\index{prediction}
 
 Most correlation in the real world is not perfect, but it
 is still useful.  For example, if you know someone's height, you might
@@ -6594,6 +6758,8 @@ relationship between the variables?  Unfortunately, no.  Pearson's
 correlation only measures {\em linear} relationships.  If there's a
 nonlinear relationship, $\rho$ understates the strength of the
 dependence.
+
+\index{linear relationship}
 
 \begin{figure}
 % descriptive.py
@@ -6624,20 +6790,32 @@ relationship is non-linear, the correlation coefficient is 0.
 The moral of this story is that you should always look at a scatterplot of
 your data before blindly computing a correlation coefficient.
 
+\index{correlation coefficient}
+\index{coefficient!correlation}
+
 \begin{ex}
 
 Write a function called {\tt Corr} that takes two lists and
-computes their correlation.  Hint: use {\tt thinkstats.Variance} and
+computes their correlation.  Hint: use {\tt thinkstats.Var} and
 the {\tt Cov} function you wrote in the previous exercise.
+
+\index{variance}
+\index{covariance}
 
 To test your function, compute the covariance of a list with itself
 and confirm that $Corr(X, X)$ is 1.0.  You can download a solution
 from \url{thinkstats.com/correlation.py}.
 
+\index{{\tt correlation.py}}
+
 \end{ex}
 
 
 \section{Making scatterplots in pyplot}
+
+\index{scatter plot}
+\index{plot!scatter}
+\index{pyplot}
 
 \begin{figure}
 % brfss_corr.py
@@ -6674,6 +6852,10 @@ the data are packed into columns.  The problem is that the heights
 were rounded to the nearest inch, converted to centimeters, and
 then rounded again.  Some information is lost in translation.
 
+\index{height}
+\index{weight}
+\index{jitter}
+
 We can't get that information back, but we can minimize the effect on
 the scatterplot by {\bf jittering} the data, which means adding random
 noise to reverse the effect of rounding off.  Since these measurements
@@ -6695,6 +6877,8 @@ There are many overlapping points, which hides data
 in the dense parts of the figure and gives disproportionate emphasis
 to outliers.
 
+\index{outlier}
+
 We can solve that with the {\tt alpha} parameter, which makes
 the points partly transparent:
 %
@@ -6708,6 +6892,9 @@ look darker, so darkness is proportional to density.
 Using transparency works well for moderate-sized datasets, but this
 figure only shows the first 1000 records in the BRFSS, out of a total
 of 414509.
+
+\index{hexbin plot}
+\index{plot!hexbin}
 
 To handle larger datasets, one option is a hexbin plot, which divides
 the graph into hexagonal bins and colors each bin according to how many
@@ -6723,6 +6910,9 @@ An advantage of a hexbin is that it shows the shape of the relationship
 well, and it is efficient for large datasets.  A drawback is that
 it makes the outliers invisible.
 
+\index{colormap}
+\index{grayscale}
+
 The moral of this story is that it is
 not easy to make a scatterplot that is not potentially misleading.
 You can download the code for these figures from
@@ -6735,6 +6925,10 @@ Pearson's correlation works well if the relationship between variables
 is linear and if the variables are roughly normal.  But it is not
 robust in the presence of outliers.
 
+\index{Pearson coefficient of correlation}
+\index{Spearman coefficient of correlation}
+\index{coefficient!correlation}
+
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
@@ -6746,6 +6940,8 @@ noise, one is a non-linear relation, one is a perfect relation with an
 outlier, and one has no relation except an artifact caused by an
 outlier.  You can read more about it at
 \url{wikipedia.org/wiki/Anscombe's_quartet}.
+
+\index{Anscombe's quartet}
 
 Spearman's rank correlation is an alternative that mitigates the
 effect of outliers and skewed distributions.  To compute Spearman's
@@ -6777,6 +6973,8 @@ usually small.
 Write a function that takes two sequences (with the same length) and
 computes their Spearman rank coefficient.  You can download a solution
 from \url{thinkstats.com/correlation.py}.
+
+\index{{\tt correlation.py}}
 
 \index{Spearman coefficient of correlation}
 \index{coefficient!correlation}
@@ -6916,6 +7114,8 @@ Write a function named {\tt LeastSquares} that takes $X$ and $Y$ and
 computes $\inter$ and $\slope$.  You can download a solution from
 \url{thinkstats.com/correlation.py}.
 
+\index{{\tt correlation.py}}
+
 \end{ex}
 
 \begin{ex}
@@ -7047,6 +7247,8 @@ Write a function named {\tt CoefDetermination} that takes the $\eps_i$
 and $Y$ and returns $R^2$.  To test your functions, confirm that $R^2
 = \rho^2$.  You can download a solution
 from \url{thinkstats.com/correlation.py}.
+
+\index{{\tt correlation.py}}
 
 \end{ex}
 
