@@ -3006,6 +3006,7 @@ data?  You can download a solution from
 
 \section{The lognormal distribution}
 \label{lognormal}
+
 \index{lognormal distribution}
 \index{distribution!lognormal}
 \index{CDF}
@@ -6998,6 +6999,7 @@ do you expect for Pearson's correlation?  What value do you get?
 \index{adult weight}
 \index{lognormal distribution}
 \index{distribution!lognormal}
+\index{outlier}
 
 Because the distribution of adult weight is lognormal, there are
 outliers that affect the correlation.  Try plotting
@@ -7014,6 +7016,9 @@ the relationship?  You can download a solution from
 
 \section{Least squares fit}
 
+\index{least squares fit}
+\index{linear least squares}
+
 \newcommand{\slope}{\beta}
 \newcommand{\inter}{\alpha}
 
@@ -7028,10 +7033,14 @@ variables.  A ``least squares'' fit is one that minimizes the mean
 squared error (MSE) between the line and the data\footnote{See
   \url{wikipedia.org/wiki/Simple_linear_regression}}.
 
+\index{linear regression}
+
 Suppose we have a sequence of points $Y$ that we want to express as a
 function of another sequence $X$.  If there is a linear relationship
 between $X$ and $Y$ with intercept $\inter$ and slope $\slope$, we
 expect each $y_i$ to be roughly $\inter + \slope x_i$.
+
+\index{residual}
 
 But unless the correlation is perfect, this prediction is only
 approximate.  The deviation, or {\bf residual}, is 
@@ -7044,6 +7053,9 @@ The residual might be due to random factors like measurement error,
 or non-random factors that are unknown.  For example, if we are
 trying to predict weight as a function of height, unknown factors
 might include diet, exercise, and body type.
+
+\index{slope}
+\index{intercept}
 
 If we get the parameters $\inter$ and $\slope$ wrong, the residuals
 get bigger, so it makes intuitive sense that the parameters we want
@@ -7071,6 +7083,9 @@ so much weight that the largest residual always dominates.
   $\inter$ and $\slope$\footnote{See Press et al., {\em Numerical Recipes in C},
     Chapter 15 at \url{www.nrbook.com/a/bookcpdf/c15-1.pdf}.}.
 
+\index{MLE}
+\index{maximum likelihood estimator}
+
 \item The values of $\inter$ and $\slope$ that minimize the squared
   residuals can be computed efficiently.
 
@@ -7081,10 +7096,14 @@ important than choosing the method most appropriate to the problem
 at hand.  That's no longer the case, so it is worth considering
 whether squared residuals are the right thing to minimize.
 
+\index{computation}
+
 For example, if you are using values of $X$ to predict values of $Y$,
 guessing too high might be better (or worse) than guessing too low.
 In that case you might want to compute some cost function,
 $\mathrm{cost}(\eps_i)$, and minimize total cost.
+
+\index{cost function}
 
 However, computing a least squares fit is quick, easy and often good
 enough, so here's how:
@@ -7132,6 +7151,10 @@ solution from \url{thinkstats.com/brfss_corr.py}.
 
 \begin{ex}
 
+\index{wind speed}
+\index{wind power density}
+\index{turbine}
+
 The distribution of wind speeds in a given location determines the
 wind power density, which is an upper bound on the average power that
 a wind turbine at that location can generate.  According to some
@@ -7148,9 +7171,13 @@ time.  But it is hard to measure the tail of the wind speed distribution
 accurately because, by definition, events in the tail don't happen
 very often.
 
+\index{tail}
+
 One way to address this problem is to use measurements to estimate the
 parameters of a Weibull distribution, then integrate over the
 continuous PDF to compute wind power density.
+
+\index{PDF}
 
 To estimate the parameters of a Weibull distribution, we can use the
 transformation from Exercise~\ref{weibull} and then use a linear fit
@@ -7168,6 +7195,9 @@ to do some research for this part).
 
 \section{Goodness of fit}
 
+\index{goodness of fit}
+\index{fit, goodness}
+
 Having fit a linear model to the data, we might want to know how good
 it is.  Well, that depends on what it's for.  One way to evaluate a
 model is its predictive power.
@@ -7176,6 +7206,10 @@ In the context of prediction, the quantity we are trying to guess is
 called a {\bf dependent variable} and the quantity we are using to
 make the guess is called an {\bf explanatory} or {\bf independent
   variable}.
+
+\index{dependent variable}
+\index{explanatory variable}
+\index{independent variable}
 
 \index{coefficient of determination}
 \index{coefficient!determination}
@@ -7203,6 +7237,8 @@ So the term $Var(\eps)/Var(Y)$ is the ratio of mean squared error with
 and without the explanatory variable, which is the fraction of
 variability left unexplained by the model.  The complement, $R^2$,
 is the fraction of variability explained by the model.
+
+\index{variability}
 
 If a model yields $R^2 = 0.64$, you could say that the model explains
 64\% of the variability, or it might be more precise to say that it
@@ -7243,6 +7279,8 @@ be the mean squared error (MSE) of your predictions?
 Write a function named {\tt Residuals} that takes $X$, $Y$, $inter$
 and $slope$ and returns a list of $\eps_i$.
 
+\index{residual}
+
 Write a function named {\tt CoefDetermination} that takes the $\eps_i$
 and $Y$ and returns $R^2$.  To test your functions, confirm that $R^2
 = \rho^2$.  You can download a solution
@@ -7267,6 +7305,11 @@ You can download a solution from
 
 
 \section{Correlation and Causation}
+
+\index{correlation}
+\index{causation}
+\index{xkcd}
+\index{comic}
 
 The web comic {\tt xkcd} demonstrates the difficulty of inferring
 causation:
@@ -7301,6 +7344,8 @@ So what can you do to provide evidence of causation?
   If the groups are nearly identical in all properties but one, you
   can eliminate spurious relationships.
 
+\index{spurious relationship}
+
   This works even if you don't know what the properties
   are, but it works even better if you do, because you can check that
   the groups are identical.
@@ -7312,6 +7357,12 @@ trial}, in which subjects are assigned randomly to two (or more)
 groups: a {\bf treatment} group that receives some kind of intervention,
 like a new medicine, and a {\bf control group} that receives
 no intervention, or another treatment whose effects are known.
+
+\index{randomized controlled trial}
+\index{controlled trial}
+\index{treatment group}
+\index{control group}
+\index{medicine}
 
 A randomized controlled trial is the most reliable way to demonstrate
 a causal relationship, and the foundation of science-based medicine
@@ -7328,11 +7379,15 @@ similar.  One danger of natural experiments is that the groups might
 differ in ways that are not apparent.  You can read more about this
 topic at \url{wikipedia.org/wiki/Natural_experiment}.
 
+\index{natural experiment}
+
 In some cases it is possible to infer causal relationships using {\bf
   regression analysis}.  A linear least squares fit
 is a simple form of regression that explains a dependent
 variable using one explanatory variable.  There are similar
 techniques that work with arbitrary numbers of independent variables.
+
+\index{regression analysis}
 
 I won't cover those techniques here, but there are also simple ways to
 control for spurious relationships.  For example, in the NSFG, we saw
@@ -7350,6 +7405,8 @@ So it may be that first babies are lighter because their mothers are
 younger.  To control for the effect of age, we could divide the mothers
 into age groups and compare birth weights for first babies and others
 in each age group.
+
+\index{pooled data}
 
 If the difference between first babies and others is the same in
 each age group as it was in the pooled data, we conclude
@@ -7377,7 +7434,7 @@ by the difference in ages?
 
 You can download a solution to this problem from
 \url{thinkstats.com/agemodel.py}.  If you are curious about
-multivariate regression, you can run \url{thinkstats.com/agemodel.py}
+multivariate regression, you can run \url{thinkstats.com/age_lm.py}
 which shows how to use the R statistical computing package from
 Python.  But that's a whole other book.
 
@@ -7389,26 +7446,35 @@ Python.  But that's a whole other book.
 \begin{description}
 
 \item[correlation:] a description of the dependence between variables.
+\index{correlation}
 
 \item[normalize:] To transform a set of values so that their mean is 0 and
 their variance is 1.
+\index{normalize}
 
 \item[standard score:] A value that has been normalized.
+\index{standard score}
 
 \item[covariance:] a measure of the tendency of two variables
 to vary together.
+\index{covariance}
 
 \item[rank:] The index where an element appears in a sorted list.
+\index{rank}
 
 \item[least squares fit:] A model of a dataset that minimizes the
 sum of squares of the residuals.
+\index{least squares fit}
 
 \item[residual:] A measure of the deviation of an actual value from a model.
+\index{residual}
 
 \item[dependent variable:] A variable we are trying to predict or explain.
+\index{dependent variable}
 
 \item[independent variable:] A variable we are using to predict a dependent
 variable, also called an explanatory variable.
+\index{independent variable}
 
 \item[coefficient of determination:] A measure of the goodness of fit
 of a linear model.
@@ -7417,16 +7483,20 @@ of a linear model.
 \item[randomized controlled trial:] An experimental design in which subject
 are divided into groups at random, and different groups are given different
 treatments.
+\index{randomized controlled trial}
 
 \item[treatment:] An change or intervention applied to one group in a
 controlled trial.
+\index{treatment group}
 
 \item[control group:] A group in a controlled trial that receives no
 treatment, or a treatment whose effect is known.
+\index{control group}
 
 \item[natural experiment:] An experimental design that takes advantage of
 a natural division of subjects into groups in ways that are at least
 approximately random.
+\index{natural experiment}
 
 \end{description}
 
