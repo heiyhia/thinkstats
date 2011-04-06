@@ -185,50 +185,75 @@ Version \theversion
 \chapter{Preface}
 \label{preface}
 
-\section*{Programming is a pedagogic wedge}
+\section*{Why I wrote this book}
 
-The thesis of this book is that if you know how to program, you can
-use that skill to help you understand probability and statistics.
-Here's how:
+{\em Think Stats: Probability and Statistics for Programmers} is a
+textbook for a new kind of introductory prob-stat class.  
+It emphasizes the use of statistics to explore large datasets.  It
+takes a computational approach, which has several advantages:
 
 \begin{itemize}
 
-\item Some of the exercises ask you to implement statistical computations;
-for example, you will write a function that computes the correlation
-of two variables.  By writing these functions, you test your understanding
-of the underlying concepy.
+\item Students write programs as a way of developing and testing their
+  understanding.  For example, they write functions to compute a least
+  squares fit, residuals, and the coefficient of determination.
+  Writing and testing this code requires them to understand the
+  concepts and implicitly corrects misunderstandings.
 
-\item Some exercises are experiments where you test  
+\item Students run experiments to test statistical behavior.  For
+  example, they explore the Central Limit Theorem (CLT) by generating
+  samples from several distributions.  When they see that the sum of
+  values from a Pareto distribution doesn't converge to normal, they
+  remember the requirements of the CLT.
+
+\item Some ideas that are hard to grasp mathematically are easy to
+  understand by simulation.  For example, we estimate p-values by
+  running Monte Carlo simulations, which reinforces the meaning of the
+  p-value.
+
+\item Using discrete distributions and computation makes it possible
+  to present topics like Bayesian estimation that are not usually
+  covered in an introductory class.  For example, one exercise asks
+  students to compute the posterior distribution for the ``German tank
+  problem,'' which is difficult analytically but surprisingly easy
+  computationally.
+
+\item Because students work in a general-purpose programming language
+  (Python), they are able to import data from almost any
+  source.  They are not limited to data that has been cleaned and
+  formatted for a particular statistics tool.
 
 \end{itemize}
 
-%Operational thinking vs relational thinking
+The book lends itself to a project-based approach.  In my class, students
+work on a semester-long project that requires them to pose a statistical
+question, find a dataset that can address it, and apply each of the
+techniques they learn to their own data.
 
-%example: counting frequencies
+To demonstrate the kind of analysis I want students to do,
+the book presents a case study that runs through all of the chapters.
+It uses data from two sources:
 
-%Notation: math notation and programming languages are formal languages
-%designed for different purposes.
+\begin{itemize}
 
-%Often consistent, so translation can be straightforward.
+\item The National Survey of Family Growth (NSFG), conducted by the
+  U.S. Centers for Disease Control and Prevention (CDC) to gather
+  ``information on family life, marriage and divorce, pregnancy,
+  infertility, use of contraception, and men's and women's health.''
+  (See \url{cdc.gov/nchs/nsfg.htm}.)
 
-%Other examples are surprisingly different.
+\item The Behavioral Risk Factor Surveillance System (BRFSS),
+  conducted by the National Center for Chronic Disease Prevention and
+  Health Promotion to ``track health conditions and risk behaviors in
+  the United States.''  (See \url{cdc.gov/BRFSS/}.)
 
-%Math notation is concise and general-purpose but suffers from
-%ambiguity, sloppy typing, implied scoping, overloading, poor
-%readability
+\end{itemize}
 
-%barrier for some people (more so than programming languages?)
+Other examples use data from the IRS, the U.S. Census, and
+the Boston Marathon.
 
-%Programs are executable, and therefore testable, which gives students
-%immediate feedback on their understanding of concepts.
 
-%Also lend themselves to empirical tests.
-
-%Probability is often tricky; hard to ``prove'' a result because it
-%is easy to write a bad proof.
-
-%A simulation can be a more compelling proof -- easier to read and check
-%correctness.  Erdos and the Monty Hall problem.
+\section*{How I wrote this book}
 
 When people sit down to write a new textbook, they usually start by
 reading a stack of old textbooks.  As a result, most books
@@ -254,7 +279,7 @@ to make sure that no part of it was encumbered by copyright restrictions.
 printed material, so I tried to make references to resources that are
 freely available on the Internet.
 
-\item Librarians and other proponents of old media think that the exclusive
+\item Proponents of old media think that the exclusive
 use of electronic resources is lazy and unreliable.  They might be right
 about the first part, but I think they are wrong about the second, so
 I wanted to test my theory.
@@ -607,7 +632,7 @@ use for this data and click ``I accept these terms'' (assuming that you do).
   and run it in the same directory you put the data files in.  It
   should read the data files and print the number of lines in each:
 
-\index{{\tt "survey.py}}
+\index{{\tt survey.py}}
 
 \begin{verbatim}
 Number of respondents 7643
@@ -644,7 +669,7 @@ respondent.  This information is called a {\bf record}.  The
 variables that make up a record are called {\bf fields}.  A
 collection of records is called a {\bf table}.
 
-\index{{\tt "survey.py}}
+\index{{\tt survey.py}}
 
 If you read {\tt survey.py} you will see class definitions for {\tt
   Record}, which is an object that represents a record, and {\tt
@@ -762,7 +787,7 @@ in the Pregnancies table.
 
 \begin{enumerate}
 
-\index{{\tt "survey.py}}
+\index{{\tt survey.py}}
 
 \item In the directory where you put {\tt survey.py} and the
 data files, create a file named \verb"first.py" and
@@ -1064,7 +1089,7 @@ For the exercises in this chapter you should download
 functions we will use throughout the book.  You can read documentation
 of these functions in \url{thinkstats.com/thinkstats.html}.
 
-\index{{\tt "thinkstats.py}}
+\index{{\tt thinkstats.py}}
 
 Write a function called
 {\tt Pumpkin} that uses functions from {\tt thinkstats.py} to compute
@@ -1077,8 +1102,8 @@ Reusing code from {\tt survey.py} and {\tt first.py}, compute the
 standard deviation of gestation time for first babies and others.
 Does it look like the spread is the same for the two groups?
 
-\index{{\tt "survey.py}}
-\index{{\tt "first.py}}
+\index{{\tt survey.py}}
+\index{{\tt first.py}}
 
 How big is the difference in the means compared to these standard
 deviations?  What does this comparison suggest about the statistical
@@ -1294,7 +1319,7 @@ first babies and others.
 
 \begin{figure}
 % descriptive.py
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_hist.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_hist.eps}}
 \caption{Histogram of pregnancy lengths.}
 \label{nsfg_hist}
 \end{figure}
@@ -1481,7 +1506,7 @@ a large number of values and the Pmf is smooth.
 
 \begin{figure}
 % descriptive.py
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_pmf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_pmf.eps}}
 \caption{PMF of pregnancy lengths.}
 \label{nsfg_pmf}
 \end{figure}
@@ -1584,7 +1609,7 @@ Figure~\ref{nsfg_diffs} shows the difference between the PMFs for weeks
 points.
 
 \begin{figure}
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_diffs.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_diffs.eps}}
 \caption{Difference in percentage, by week.}
 \label{nsfg_diffs}
 \end{figure}
@@ -1973,7 +1998,7 @@ PMF of these values for first babies and others.
 
 \begin{figure}
 % cumulative.py
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_pmf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_pmf.eps}}
 \caption{PMF of birth weights.}
 \label{nsfg_birthwgt_pmf}
 \end{figure}
@@ -2131,7 +2156,7 @@ If $x$ is greater than the largest value, $CDF(x)$ is 1.
 
 \begin{figure}
 % Cdf_test.py
-\centerline{\includegraphics[height=2.5in]{workspace/example_cdf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/example_cdf.eps}}
 \caption{Example of a CDF.}
 \label{example_cdf}
 \end{figure}
@@ -2210,7 +2235,7 @@ first babies and others in the NSFG dataset.
 
 \begin{figure}
 % cumulative.py
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_cdf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_cdf.eps}}
 \caption{CDF of birth weights.}
 \label{nsfg_birthwgt_cdf}
 \end{figure}
@@ -2498,7 +2523,7 @@ $\lambda = 2$.
 
 
 \begin{figure}
-\centerline{\includegraphics[height=2.5in]{workspace/expo_cdf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/expo_cdf.eps}}
 \caption{CDF of exponential distribution.}
 \label{expo_cdf}
 \end{figure}
@@ -2555,8 +2580,8 @@ with slope $-\lambda$.
 \begin{figure}
 \centerline{
 \begin{tabular}{cc}
-\includegraphics[height=2.3in]{workspace/interarrivals.eps} &
-\includegraphics[height=2.3in]{workspace/interarrivals_logy.eps}
+\includegraphics[height=2.3in]{figs/interarrivals.eps} &
+\includegraphics[height=2.3in]{figs/interarrivals_logy.eps}
 \end{tabular}}
 \caption{Interarrival times.  Left: CDF, Right: CCDF.}
 \label{interarrivals}
@@ -2642,7 +2667,7 @@ parameters $x_m = 0.5$ and $\alpha = 1$.
 \index{parameter}
 
 \begin{figure}
-\centerline{\includegraphics[height=2.5in]{workspace/pareto_cdf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/pareto_cdf.eps}}
 \caption{CDF of a Pareto distribution.}
 \label{pareto_cdf}
 \end{figure}
@@ -2816,7 +2841,7 @@ with parameters $\mu=2.0$ and $\sigma=0.5$.  The sigmoid shape of
 this curve is a recognizable characteristic of a normal distribution.
 
 \begin{figure}
-\centerline{\includegraphics[height=2.5in]{workspace/normal_cdf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/normal_cdf.eps}}
 \caption{CDF of a normal distribution.}
 \label{normal_cdf}
 \end{figure}
@@ -2833,7 +2858,7 @@ a normal distribution with the same mean and variance.
 
 \begin{figure}
 % cumulative.py
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_model.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_model.eps}}
 \caption{CDF of birth weights with a normal model.}
 \label{nsfg_birthwgt_model}
 \end{figure}
@@ -2986,7 +3011,7 @@ probability plot for the birth weight data.
 
 \begin{figure}
 % continuous.py
-\centerline{\includegraphics[height=2.5in]{workspace/nsfg_birthwgt_normal.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_normal.eps}}
 \caption{Normal probability plot of birth weights.}
 \label{nsfg_birthwgt_normal}
 \end{figure}
@@ -3069,7 +3094,7 @@ demographics, health and health risks.
 
 \begin{figure}
 \centerline{
-\includegraphics[height=2.5in]{workspace/brfss_weight_log.eps}
+\includegraphics[height=2.5in]{figs/brfss_weight_log.eps}
 }
 \caption{CDF of adult weights (log
   transform).}
@@ -3103,7 +3128,7 @@ conclude that $w$ fits a lognormal distribution.
 %and variance.
 
 %\begin{figure}
-%\centerline{\includegraphics[height=2.5in]{workspace/brfss_weight_model.eps}}
+%\centerline{\includegraphics[height=2.5in]{figs/brfss_weight_model.eps}}
 %\caption{CDF of adult weights from the BRFSS.}
 %\label{brfss_weight_model}
 %\end{figure}
@@ -3115,8 +3140,8 @@ conclude that $w$ fits a lognormal distribution.
 %\begin{figure}
 %\centerline{
 %\begin{tabular}{cc}
-%\includegraphics[height=2.3in]{workspace/brfss_weight_log.eps}
-%\includegraphics[height=2.3in]{workspace/brfss_weight_lognormal.eps}
+%\includegraphics[height=2.3in]{figs/brfss_weight_log.eps}
+%\includegraphics[height=2.3in]{figs/brfss_weight_lognormal.eps}
 %\end{tabular}
 %}
 %\caption{CDF and normal probability plot for adult weights (log
@@ -3643,7 +3668,7 @@ B or Scenario C, so the total probability of winning is 2/3.
 
 \newcommand{\Erdos}{Erd\H{o}s}
 
-\index{\Erdos, Paul}
+%\index{\Erdos, Paul}
 
 If you are not completely convinced by this argument, you are
 in good company.  When a friend presented this solution to
@@ -3691,7 +3716,7 @@ Otherwise, are you better off switching or sticking?
 \newcommand{\Poincare}{Poincar\'{e}}
 
 \section{\Poincare}
-\index{\Poincare, Henry}
+%\index{\Poincare, Henry}
 
 Henri \Poincare~was a French mathematician who taught at the Sorbonne
 around 1900.  The following anecdote about him is probably fabricated,
@@ -3768,7 +3793,6 @@ variability between groups, it is useful to compute the {\bf
 fraction of the mean, $\sigma / \mu$.  By this measure, women's
 heights are slightly more variable.
 
-\index{coefficient of variation}
 \index{coefficient!variation}
 
 % From brfss.py
@@ -4249,7 +4273,7 @@ one does has no effect on the probability of another.
 \item[coefficient of variation:] A statistic that measures spread,
 normalized by central tendency, for comparison between distributions
 with different means.
-\index{coefficient of variation}
+\index{coefficient!variation}
 
 \item[Monte Carlo simulation:] A method of computing probabilities by
   simulating random processes (see
@@ -4868,7 +4892,7 @@ Hint: look at the distribution of the log of the products.
 \index{framework, distributions}
 
 \begin{figure}
-\centerline{\includegraphics[height=2.5in]{distribution_functions.eps}}
+\centerline{\includegraphics[height=2.2in]{figs/distribution_functions.eps}}
 \caption{A framework that relates different representations of distribution
 functions.}
 \label{dist_framework}
@@ -5101,7 +5125,7 @@ population.  I computed differences for 1000 sample pairs;
 Figure~\ref{length_deltas_cdf} shows their distribution.
 
 \begin{figure}
-\centerline{\includegraphics[height=2.5in]{workspace/length_deltas_cdf.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/length_deltas_cdf.eps}}
 \caption{CDF of difference in mean for resampled data.}
 \label{length_deltas_cdf}
 \end{figure}
@@ -5581,7 +5605,7 @@ to confirm this result with another dataset.
 You can download the code I used in this section from
 \url{thinkstats.com/chi.py}.
 
-\index{{\em chi.py}}
+\index{{\tt chi.py}}
 
 % See \url{en.wiktionary.org/wiki/voila}!
 
@@ -6504,7 +6528,7 @@ same mean is $\nhat = 2i - 1$.
 
 \begin{figure}
 % locomotive.py
-\centerline{\includegraphics[height=2.5in]{workspace/locomotive.eps}}
+\centerline{\includegraphics[height=2.5in]{figs/locomotive.eps}}
 \caption{Posterior distribution of the number of trains.}
 \label{locomotive}
 \end{figure}
@@ -6789,7 +6813,6 @@ Figure~\ref{corr_examples} is from the Wikipedia page
 scatterplots and correlation coefficients for several
 carefully-constructed datasets.
 
-\index{coefficient of correlation}
 \index{coefficient!correlation}
 
 \index{scatter plot}
@@ -6837,10 +6860,10 @@ from \url{thinkstats.com/correlation.py}.
 % brfss_corr.py
 \centering
 \begin{tabular}{cc}
-a\includegraphics[height=2.0in]{workspace/scatter1.eps} &
-b\includegraphics[height=2.0in]{workspace/scatter2.eps} \\
-c\includegraphics[height=2.0in]{workspace/scatter3.eps} &
-d\includegraphics[height=2.0in]{workspace/scatter4.eps} \\ 
+a\includegraphics[height=2.0in]{figs/scatter1.eps} &
+b\includegraphics[height=2.0in]{figs/scatter2.eps} \\
+c\includegraphics[height=2.0in]{figs/scatter3.eps} &
+d\includegraphics[height=2.0in]{figs/scatter4.eps} \\ 
 \end{tabular}
 \caption{Scatterplots of weight versus height for the respondents
 in the BRFSS.}
@@ -6902,8 +6925,12 @@ the points partly transparent:
 pyplot.scatter(heights, weights, alpha=0.2)
 \end{verbatim}
 %
-Figure~\ref{scatterplots}c shows the result.  Overlapping data points
-look darker, so darkness is proportional to density.
+Figure~\ref{scatterplots}c shows the result.  Overlapping data
+points look darker, so darkness is proportional to density.  In this
+version of the plot we can see an apparent artifact: a horizontal line
+near 90 kg or 200 pounds.  Since this data is based on self-reports in
+pounds, the most likely explanation is some responses were rounded off
+(possibly down).
 
 Using transparency works well for moderate-sized datasets, but this
 figure only shows the first 1000 records in the BRFSS, out of a total
@@ -7037,7 +7064,6 @@ the relationship?  You can download a solution from
 \newcommand{\slope}{\beta}
 \newcommand{\inter}{\alpha}
 
-\index{coefficient of correlation}
 \index{coefficient!correlation}
 
 Correlation coefficients measure the strength and sign of a
@@ -7226,7 +7252,6 @@ make the guess is called an {\bf explanatory} or {\bf independent
 \index{explanatory variable}
 \index{independent variable}
 
-\index{coefficient of determination}
 \index{coefficient!determination}
 
 To measure the predictive power of a model, we can compute the {\bf
@@ -7330,7 +7355,7 @@ The web comic {\tt xkcd} demonstrates the difficulty of inferring
 causation:
 
 \vspace{0.1in}
-\centerline{\includegraphics{correlation.eps}}
+\centerline{\includegraphics{figs/correlation.eps}}
 
 In general, a relationship between two variables does not tell you
 whether one causes the other, or the other way around, or both, or
@@ -7493,7 +7518,7 @@ variable, also called an explanatory variable.
 
 \item[coefficient of determination:] A measure of the goodness of fit
 of a linear model.
-\index{coefficient of determination}
+\index{coefficient!determination}
 
 \item[randomized controlled trial:] An experimental design in which subject
 are divided into groups at random, and different groups are given different
@@ -7526,20 +7551,19 @@ approximately random.
 
 \end{document}
 
-Chapter 10: time series
+%Chapter 10: time series
 
-serial correlation
+%serial correlation
 
-auto-correlation function
+%auto-correlation function
 
-generating random series with correlation
+%generating random series with correlation
 
-violating the CLT and see if the sum of correlated normals is lognormal
+%violating the CLT and see if the sum of correlated normals is lognormal
 
-If so, maybe that explains adult weight distribution.
+%If so, maybe that explains adult weight distribution.
 
 
-Chapter 11:
 
 
 % Topics to consider in the future:

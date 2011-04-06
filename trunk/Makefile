@@ -18,7 +18,7 @@ PDFFLAGS = -dCompatibilityLevel=1.4 -dPDFSETTINGS=/prepress \
 
 all:	book.tex
 	latex book
-	makeindex book
+	makeindex book.idx
 	latex book
 	dvips -t letter -Ppdf -o thinkstats.ps book
 #	dvips -T 6.75in,9.25in -Ppdf -o thinkstats.ps book
