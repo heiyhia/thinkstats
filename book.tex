@@ -28,7 +28,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.4.2}
+\newcommand{\theversion}{1.4.3}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -204,7 +204,7 @@ takes a computational approach, which has several advantages:
   example, they explore the Central Limit Theorem (CLT) by generating
   samples from several distributions.  When they see that the sum of
   values from a Pareto distribution doesn't converge to normal, they
-  remember the requirements of the CLT.
+  remember the assumptions the CLT is based on.
 
 \item Some ideas that are hard to grasp mathematically are easy to
   understand by simulation.  For example, we estimate p-values by
@@ -255,7 +255,7 @@ the Boston Marathon.
 
 \section*{How I wrote this book}
 
-When people sit down to write a new textbook, they usually start by
+When people write a new textbook, they usually start by
 reading a stack of old textbooks.  As a result, most books
 contain the same material in pretty much the same order.  Often there
 are phrases, and errors, that propagate from one book to the next;
@@ -655,14 +655,19 @@ The poet-philosopher Steve Martin once said:
   have a different word for everything.
 \end{quote}
 
+\index{Martin, Steve}
+\index{oeuf}
+\index{chapeau}
+\index{French}
+
 Like the French, database programmers speak a slightly
 different language, and since we're working with a database we need
 to learn some vocabulary.
 
 \index{database}
-\index{record}
-\index{field}
-\index{table}
+\index{record (database)}
+\index{field (database)}
+\index{table (database)}
 
 Each line in the respondents file contains information about one
 respondent.  This information is called a {\bf record}.  The
@@ -788,6 +793,7 @@ in the Pregnancies table.
 \begin{enumerate}
 
 \index{{\tt survey.py}}
+\index{{\tt first.py}}
 
 \item In the directory where you put {\tt survey.py} and the
 data files, create a file named \verb"first.py" and
@@ -863,7 +869,7 @@ several questions we still want to ask:
 \index{significance}
 
 
-\item Is it possible that the apparent effect is due to sample bias or
+\item Is it possible that the apparent effect is due to selection bias or
   some other error in the experimental setup?  If so, then we might
   conclude that the effect is an {\bf artifact}; that is, something we
   created (by accident) rather than found. 
@@ -1183,7 +1189,7 @@ with function objects, but in this case we are using a dictionary
 \section{Representing histograms}
 \index{histogram}
 \index{Hist object}
-\index{{\tt Pmf.py}}
+\index{{\tt pmf.py}@{\tt Pmf.py}}
 
 I wrote a Python module called {\tt Pmf.py} that contains class
 definitions for Hist objects, which represent histograms, and Pmf
@@ -1364,7 +1370,7 @@ address this problem using PMFs.
 \section{Representing PMFs}
 
 \index{Pmf object}
-\index{{\tt Pmf.py}}
+\index{{\tt pmf.py}@{\tt Pmf.py}}
 
 {\tt Pmf.py} provides a class called {\tt Pmf} that represents PMFs.
 The notation can be confusing, but here it is: {\tt Pmf} is the
@@ -1473,6 +1479,8 @@ Write functions called {\tt PmfMean} and {\tt PmfVar} that take a
 Pmf object and compute the mean and variance.  To test these methods,
 check that they are consistent with the methods {\tt Mean} and {\tt
   Var} in {\tt Pmf.py}.
+
+\index{{\tt pmf.py}@{\tt Pmf.py}}
 
 \end{ex}
 
@@ -1909,7 +1917,7 @@ observed values and returns a new Pmf object that estimates the
 distribution of class sizes.
 
 You can download a solution to this problem from
-\url{thinkstats.py/class_size.py}.
+\url{thinkstats.com/class_size.py}.
 
 \index{{\tt class\_size.py}}
 
@@ -2168,7 +2176,7 @@ will see distributions whose CDFs are continuous functions.
 
 \section{Representing CDFs}
 
-\index{{\tt Cdf.py}}
+\index{{\tt cdf.py}@{\tt Cdf.py}}
 \index{Cdf object}
 
 I have written a module called {\tt Cdf} that provides a class named
@@ -2208,6 +2216,8 @@ and returns their Cdf.
 Finally, {\tt myplot.py} provides functions named {\tt Cdf} and
 {\tt Cdfs} that plot Cdfs as lines.
 
+\index{{\tt myplot.py}}
+
 \begin{ex}
 
 Download {\tt Cdf.py} and \verb"relay.py" (see
@@ -2216,7 +2226,7 @@ running speeds.  Which gives you a better sense of the shape of the
 distribution, the PMF or the CDF?  You can download a solution
 from \url{thinkstats.com/relay_cdf.py}.
 
-\index{{\tt Cdf.py}}
+\index{{\tt cdf.py}@{\tt Cdf.py}}
 \index{{\tt relay\_cdf.py}}
 
 \end{ex}
@@ -2368,7 +2378,8 @@ random from the Cdf.  Hint: use {\tt random.random}.
 You will find a solution to this exercise in {\tt Cdf.py}.
 
 \index{inverse CDF algorithm}
-\index{{\tt Cdf.py}}
+
+\index{{\tt cdf.py}@{\tt Cdf.py}}
 
 Using the distribution of birth weights from the NSFG, generate a
 random sample with 1000 elements.  Compute the CDF of the sample.
@@ -2406,6 +2417,23 @@ to choose an element from a sequence.  Sampling without replacement
 is provided by {\tt random.sample}.
 
 \index{random module}
+
+\begin{ex}
+
+The numbers generated by {\tt random.random} are supposed to be
+uniform between 0 and 1; that is, every value in the range
+should have the same probability.
+
+Generate 1000 numbers from {\tt random.random} and plot their
+PMF and CDF.  Can you tell whether they are uniform?
+
+You can read about the uniform distribution at
+\url{wikipedia.org/wiki/Uniform_distribution_(discrete)}.
+
+\index{uniform distribution}
+\index{distribution!uniform}
+
+\end{ex}
 
 
 \section{Summary statistics revisited}
@@ -2881,6 +2909,7 @@ model.
 
 \begin{ex}
 
+\index{Wechsler Adult Intelligence Scale}
 \index{Adult Intelligence Scale}
 \index{WAIS}
 \index{IQ}
@@ -3033,6 +3062,10 @@ Write a function called {\tt NormalPlot} that takes a sequence of
 values and generates a normal probability plot.  You can download
 a solution from \url{thinkstats.com/rankit.py}.
 
+\index{{\tt rankit.py}}
+\index{{\tt relay.py}}
+\index{{\tt relay\_normal.py}}
+
 \index{relay race}
 \index{race!relay}
 
@@ -3160,6 +3193,9 @@ from
 \url{thinkstats.com/brfss.py}.  Run {\tt brfss.py} and confirm that
 it prints summary statistics for a few of the variables.
 
+\index{{\tt brfss.py}}
+\index{{\tt brfss\_figs.py}}
+
 \index{weight!adult}
 \index{adult weight}
 
@@ -3185,6 +3221,8 @@ The U.S.~Census Bureau publishes data on the population of every
 incorporated city and town in the United States.  I have written a
 small program that downloads this data and stores it in a file.  You
 can download it from \url{thinkstats.com/populations.py}.
+
+\index{{\tt populations.py}}
 
 \begin{enumerate}
 
@@ -3212,6 +3250,8 @@ What conclusion do you draw about the distribution of sizes
 for cities and towns?  You can download a solution from
 \url{populations_cdf.py}.
 
+\index{{\tt populations\_cdf.py}}
+
 \end{ex}
 
 
@@ -3237,8 +3277,9 @@ Extract the distribution of incomes from this dataset.  Are any of
 the continuous distributions in this chapter a good model of
 the data?  You can download a solution from \url{thinkstats.com/irs.py}.
 
-\end{ex}
+\index{{\tt irs.py}}
 
+\end{ex}
 
 
 \section{Why model?}
@@ -3294,6 +3335,9 @@ we will see in Chapter~\ref{operations}.
 \index{random number}
 \index{CDF}
 \index{inverse CDF algorithm}
+
+\index{uniform distribution}
+\index{distribution!uniform}
 
 Continuous CDFs are also useful for generating random numbers.
 If there is an efficient way to compute the inverse CDF, $ICDF(p)$,
@@ -3882,6 +3926,8 @@ download \url{thinkstats.com/thinkstats.py} you will see a function
 named {\tt Binom} that computes the binomial coefficient with reasonable
 efficiency.
 
+\index{{\tt thinkstats.py}}
+
 \begin{ex}
 \index{coin}
 
@@ -4264,6 +4310,7 @@ applies to a series of identical trials.
 \item[Bayesianism:] A more general interpretation that uses
 probability to represent a subjective degree of belief.
 \index{subjective belief}
+\index{belief}
 \index{Bayesianism}
 
 \item[independent:] Two events are independent if the occurrence of
@@ -4953,7 +5000,7 @@ and returns the corresponding Pmf object.
 
 You can find a solution to this exercise in {\tt thinkstats.com/Pmf.py}.
 
-\index{{\tt Pmf.py}}
+\index{{\tt pmf.py}@{\tt Pmf.py}}
 
 \end{ex}
 
@@ -5390,6 +5437,8 @@ others?
 You can start with the code I used to generate the results in this
 section, which you can download from \url{thinkstats.com/hypothesis.py}.
 
+\index{{\tt hypothesis.py}}
+
 \end{ex}
 
 
@@ -5448,6 +5497,7 @@ the right priors.  For people who expect scientific results to be
 objective and universal, this property is deeply unsettling.
 
 \index{subjective belief}
+\index{belief}
 \index{swamp}
 \index{convergence}
 
@@ -6102,7 +6152,7 @@ so working backwards, we might choose
 It is common to use hat notation for estimators, so $\lamhat$ is an
 estimator of $\lambda$.  And not just any estimator; it is also the
 MLE estimator\footnote{See
-\url{wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}}.
+\url{wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}.}.
 So if you want to maximize your chance of guessing $\lambda$ exactly,
 $\lamhat$ is the way to go.
 
@@ -6235,6 +6285,9 @@ So let's try a different version of the game.
 \index{exponential distribution}
 \index{distribution!exponential}
 
+\index{uniform distribution}
+\index{distribution!uniform}
+
 {\em I'm thinking of a distribution.}  It's an exponential
 distribution, and I chose $\lambda$ from a uniform distribution
 between 0.5 and 1.5.  Here's a sample, which I'll call $\boldx$:
@@ -6293,44 +6346,121 @@ intervals}; for a discussion of the differences, see
 \url{wikipedia.org/wiki/Credible_interval}.
 
 
-% Put in the code
+\section{Implementing Bayesian estimation}
 
-% Use the ``people with different theories'' analogy
+To represent the prior distribution, we could use a Pmf, Cdf, or
+any other representation of a distribution, but since we want to
+map from a hypothesis to a probability, a Pmf is a natural choice.
 
-\begin{ex}
+\index{Pmf object}
+\index{prior}
+\index{posterior}
 
-Write a function that implements the steps described above.  It should
-take a prior distribution and a sample and return a posterior distribution.
-To represent distributions, you can use
-the {\tt Pmf} class in \url{thinkstats.com/Pmf.py}.
+Each value in the Pmf represents a hypothesis; for example, the
+value 0.5 represents the hypothesis that $\lambda$ is 0.5.
+In the prior distribution, all hypotheses have the same probability.
+So we can construct the prior like this:
+
+\begin{verbatim}
+def MakeUniformSuite(low, high, steps):
+    hypos = [low + (high-low) * i / (steps-1.0) for i in range(steps)]
+    pmf = Pmf.MakePmfFromList(hypos)
+    return pmf
+\end{verbatim}
+
+This function makes and returns a Pmf that represents a 
+collection of related hypotheses, called a {\bf suite}.  Each hypothesis
+has the same probability, so the distribution is {\bf uniform}.
+
+\index{uniform distribution}
+\index{distribution!uniform}
+
+\index{suite}
+
+The arguments {\tt low} and {\tt high} specify the range of values;
+{\tt steps} is the number of hypotheses.
+
+\index{update}
+
+To perform the update, we take a suite of hypotheses and a body of
+evidence:
+
+\begin{verbatim}
+def Update(suite, evidence):
+    for hypo in suite.Values():
+        likelihood = Likelihood(evidence, hypo)
+        suite.Mult(hypo, likelihood)
+    suite.Normalize()
+\end{verbatim}
+
+For each hypothesis in the suite, we multiply the prior probablity
+by the likelihood of the evidence.  Then we normalize the suite.
+
+In this function, {\tt suite} has to be a Pmf, but {\tt evidence}
+can be any type, as long as {\tt Likelihood} knows how to interpret it.
+
+\index{likelihood}
+
+Here's the likelihood function:
+
+\begin{verbatim}
+def Likelihood(evidence, hypo):
+    param = hypo
+    likelihood = 1
+    for x in evidence:
+        likelihood *= ExpoPdf(x, param)
+
+    return likelihood
+\end{verbatim}
+
+In {\tt Likelihood} we assume that {\tt evidence} is a sample
+from an exponential distribution and compute the product in the
+previous section.
 
 \index{exponential distribution}
 \index{distribution!exponential}
+\index{PDF}
 
-Test your function by generating a sample of six values from an
-exponential distribution with $\lambda = 1.2$.  Compute the posterior
-distribution and confirm that it has a central tendency near $\lambda$.
+{\tt ExpoPdf} evaluates the PDF of the exponential distribution
+at {\tt x}:
 
-Test your function with a range of sample sizes.  Compute a 90\% CI
-for each sample and confirm that it gets narrower as
-the sample size increases.  Run the test 1000 times and confirm that
-the actual value falls in the CI about 90\% of the time.
+\begin{verbatim}
+def ExpoPdf(x, param):
+    p = param * math.exp(-param * x)
+    return p
+\end{verbatim}
 
-You can download a solution to this problem from
+Putting it all together, here's the code that creates the prior
+and computes the posterior:
+
+\begin{verbatim}
+evidence = [2.675, 0.198, 1.152, 0.787, 2.717, 4.269]
+prior = MakeUniformSuite(0.5, 1.5, 100)
+posterior = prior.Copy()
+Update(posterior, evidence)
+\end{verbatim}
+
+You can download the code in this section from
 \url{thinkstats.com/estimate.py}.
 
-\end{ex}
+\index{{\tt estimate.py}}
 
+When I think of Bayesian estimation, I imagine a room full of people,
+where each person has a different guess about whatever you are trying
+to estimate.  So in this example they each have a guess about the
+correct value of $\lambda$.
 
-%\begin{ex}
+Initially, each person has a degree of confidence about their own hypothesis.
+After seeing the evidence, each person updates their confidence based on
+$P(E|H)$, the likelihood of the evidence, given their hypothesis.
 
-%Compute the analytic version using a prior Gamma distribution with the
-%same mean and variance as the uniform prior, and compare
-%it to the discrete approximation.
+Most often the likelihood function computes a
+probability, which is at most 1, so initially everyone's confidence
+goes down (or stays the same).  But then we normalize, which increases
+everyone's confidence.
 
-%See \url{wikipedia.org/wiki/Exponential_distribution#Bayesian_inference}.
-
-%\end{ex}
+So the net effect is that some people get more confident, and some less,
+depending on the relative likelihood of their hypothesis.
 
 
 \section{Censored data}
@@ -6365,7 +6495,7 @@ This is an example of an estimation problem with {\bf censored data};
 that is, we know that some data are systematically excluded.
 
 One of the strengths of Bayesian estimation is that it can deal with
-censored data with (relative) ease.  We can use the method from the
+censored data with relative ease.  We can use the method from the
 previous section with only one change: we have to replace
 $PDF_{expo}$ with the conditional distribution:
 %
@@ -6381,12 +6511,23 @@ you to keep it handy.
 
 \begin{ex}
 
-Compute the posterior distribution of $\lambda$ for the sample
-$\boldx = \{ 1.5, 2, 3, 4, 5, 12 \}$.  For the prior distribution you
-can use a uniform distribution between 0 and 1.5 (not including 0).
+Download \url{thinkstats.com/estimate.py}, which contains the code
+from the previous section, and make a copy named {\tt decay.py}.
+
+\index{{\tt estimate.py}}
+
+Modify {\tt decay.py} to compute the posterior distribution of
+$\lambda$ for the sample $\boldx = \{ 1.5, 2, 3, 4, 5, 12 \}$.  For
+the prior you can use a uniform distribution between 0
+and 1.5 (not including 0).
+
+\index{uniform distribution}
+\index{distribution!uniform}
 
 You can download a solution to this problem from
 \url{thinkstats.com/decay.py}.
+
+\index{{\tt decay.py}}
 
 \end{ex}
 
@@ -6397,7 +6538,7 @@ You can download a solution to this problem from
 \index{Franken, Al}
 \index{Minnesota Senate Race}
 \index{Seife, Charles}
-\index{{\em Proofiness}}
+\index{Proofiness@{\em Proofiness}}
 
 In the 2008 Minnesota Senate race the final vote count was 1,212,629
 votes for Al Franken and 1,212,317 votes for Norm Coleman.  Franken
@@ -6463,8 +6604,10 @@ questions:
 \item For what value of N is 60 the average value?
 
 \item What is the Bayesian posterior distribution assuming a prior
-distribution that is uniform from 1 to 200.
+distribution that is uniform from 1 to 200?
 
+\index{uniform distribution}
+\index{distribution!uniform}
 \index{posterior distribution}
 
 \end{enumerate}
@@ -6546,10 +6689,15 @@ $P(i)$, is just the sum of the numerators for each hypothesis.
 \index{prior distribution}
 
 If the prior distribution is uniform from 1 to 200, we start with 200
-hypothesis and compute the likelihood for each.  You can download an
-implementation of this method from
+hypotheses and compute the likelihood for each.  You can download an
+implementation from
 \url{thinkstats.com/locomotive.py}.  Figure~\ref{locomotive} shows
 what the result looks like.
+
+\index{{\tt locomotive.py}}
+
+\index{uniform distribution}
+\index{distribution!uniform}
 
 The 90\% credible interval for this posterior is $[63, 189]$, which
 is still quite wide.  Seeing one train doesn't provide strong evidence
@@ -6563,16 +6711,18 @@ different, which helps to explain why the other estimators are so
 diverse.
 
 One way to think of different estimators is that they are implicitly
-based on different priors.  If there is enough evidence to swamp
-the priors, then all estimators tend to converge; otherwise, as
-in this case, we choose different values depending on which properties
-we are looking for.
+based on different priors.  If there is enough evidence to swamp the
+priors, then all estimators tend to converge; otherwise, as in this
+case, there is no single estimator that has all of the properties we
+might want.
 
 \begin{ex}
 
 Generalize \verb"locomotive.py" to handle the case where you
 see more than one train.  You should only have to
 change a few lines of code.
+
+\index{{\tt locomotive.py}}
 
 See if you can answer the other questions for the case where you
 see more than one train.  You can find a discussion of the problem
@@ -6688,6 +6838,9 @@ outliers, so does $Z$.  In those cases it is more robust to use
 percentile ranks.  If each $R$ contains the percentile ranks the
 values in $X$, the distribution of $R$ is uniform between 0 and 100,
 regardless of the distribution of $X$.
+
+\index{uniform distribution}
+\index{distribution!uniform}
 
 \index{robust}
 
@@ -6808,7 +6961,7 @@ dependence.
 \label{corr_examples}
 \end{figure}
 
-Figure~\ref{corr_examples} is from the Wikipedia page
+Figure~\ref{corr_examples} is from
 \url{wikipedia.org/wiki/Correlation_and_dependence}.  It shows
 scatterplots and correlation coefficients for several
 carefully-constructed datasets.
@@ -6820,7 +6973,7 @@ carefully-constructed datasets.
 
 The top row shows linear relationships with a range of correlations;
 you can use this row to get a sense of what different values of $\rho$
-mean.  The second row shows perfect correlations with a range of
+look like.  The second row shows perfect correlations with a range of
 slopes, which demonstrates that correlation is unrelated to slope
 (we'll talk about estimating slope soon).  The third
 row shows variables that are clearly related, but because the
@@ -6901,6 +7054,10 @@ noise to reverse the effect of rounding off.  Since these measurements
 were rounded to the nearest inch, they can be off by up to 0.5 inches or
 1.3 cm.  So I added uniform noise in the range -1.3 to 1.3:
 
+\index{uniform distribution}
+\index{distribution!uniform}
+\index{noise}
+
 \begin{verbatim}
 jitter = 1.3
 heights = [h + random.uniform(-jitter, jitter) for h in heights]
@@ -6961,6 +7118,7 @@ not easy to make a scatterplot that is not potentially misleading.
 You can download the code for these figures from
 \url{thinkstats.com/brfss_scatter.py}.
 
+\index{{\tt brfss\_scatter.py}}
 
 \section{Spearman's rank correlation}
 
@@ -7034,6 +7192,9 @@ Download \url{thinkstats.com/brfss.py} and
 \url{thinkstats.com/brfss_scatter.py}.  Run them and confirm that you
 can read the BFRSS data and generate scatterplots.
 
+\index{{\tt brfss.py}}
+\index{{\tt brfss\_scatter.py}}
+
 Comparing the scatterplots to Figure~\ref{corr_examples}, what value
 do you expect for Pearson's correlation?  What value do you get?
 
@@ -7052,6 +7213,8 @@ Finally, compute Spearman's rank correlation for weight and height.
 Which coefficient do you think is the best measure of the strength of
 the relationship?  You can download a solution from
 \url{thinkstats.com/brfss_corr.py}.
+
+\index{{\tt brfss\_corr.py}}
 
 \end{ex}
 
@@ -7072,7 +7235,7 @@ the slope; the most common is a {\bf linear least squares fit}.  A
 ``linear fit'' is a line intended to model the relationship between
 variables.  A ``least squares'' fit is one that minimizes the mean
 squared error (MSE) between the line and the data\footnote{See
-  \url{wikipedia.org/wiki/Simple_linear_regression}}.
+  \url{wikipedia.org/wiki/Simple_linear_regression}.}.
 
 \index{linear regression}
 
@@ -7118,7 +7281,7 @@ negative residuals the same, which is usually what we want.
 \item Squaring gives more weight to large residuals, but not
 so much weight that the largest residual always dominates.
 
-\item If the residuals are independent of $x$, random, and uniformly
+\item If the residuals are independent of $x$, random, and normally
   distributed with $\mu=0$ and constant (but unknown) $\sigma$, then
   the least squares fit is also the maximum likelihood estimator of
   $\inter$ and $\slope$\footnote{See Press et al., {\em Numerical Recipes in C},
@@ -7186,6 +7349,8 @@ computes $\inter$ and $\slope$.  You can download a solution from
 Using the data from the BRFSS again, compute the linear least squares
 fit for $\log(\mathrm{weight})$ versus height.  You can download a
 solution from \url{thinkstats.com/brfss_corr.py}.
+
+\index{{\tt brfss\_corr.py}}
 
 \end{ex}
 
@@ -7341,6 +7506,8 @@ someone's weight, how much would it help to know their height?
 You can download a solution from
 \url{thinkstats.com/brfss_corr.py}.
 
+\index{{\tt brfss\_corr.py}}
+
 \end{ex}
 
 
@@ -7352,7 +7519,7 @@ You can download a solution from
 \index{comic}
 
 The web comic {\tt xkcd} demonstrates the difficulty of inferring
-causation:
+causation\footnote{From \url{xkcd.com} by Randall Munroe.}:
 
 \vspace{0.1in}
 \centerline{\includegraphics{figs/correlation.eps}}
@@ -7478,6 +7645,9 @@ multivariate regression, you can run \url{thinkstats.com/age_lm.py}
 which shows how to use the R statistical computing package from
 Python.  But that's a whole other book.
 
+\index{{\tt agemodel.py}}
+\index{{\tt age\_lm.py}}
+
 \end{ex}
 
 
@@ -7541,7 +7711,7 @@ approximately random.
 \end{description}
 
 
-\printindex
+%    \printindex
 
 \clearemptydoublepage
 %\blankpage
