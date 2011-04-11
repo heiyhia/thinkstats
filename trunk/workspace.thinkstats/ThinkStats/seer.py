@@ -23,7 +23,7 @@ class Records(table.Table):
         self.Recode()
 
     def GetFilename(self):
-        return 'yr1973_2007.seer9/BREAST.TXT'
+        return 'yr1973_2007.seer9/BREAST.TXT.gz'
 
     def GetFields(self):
         """Returns a tuple specifying the fields to extract.
@@ -80,7 +80,7 @@ class Records(table.Table):
     def MakeHists(self):
         for field in self.GetFields():
             attr = field[0]
-            if attr not in ['caseid']:
+            if attr not in ['caseid', 'cause', 'survival']:
                 self.MakeHist(attr)
 
     def MakeHist(self, attr):
