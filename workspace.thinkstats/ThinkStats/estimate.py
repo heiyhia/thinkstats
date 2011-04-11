@@ -4,11 +4,6 @@ by Allen B. Downey, available from greenteapress.com
 Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
-Exercise 8.5 from Think Stats: write a function that takes a
-sample from an exponential distribution with parameter lambda
-and a prior distribution for lambda, and returns a posterior
-distribution for lambda.
-
 """
 
 import math
