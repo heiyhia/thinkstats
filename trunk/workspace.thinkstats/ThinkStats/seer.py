@@ -9,6 +9,9 @@ import sys
 import gzip
 import os
 
+import matplotlib.pyplot as pyplot
+
+import myplot
 import Pmf
 import table
 
@@ -71,7 +74,7 @@ class Records(table.Table):
             ('race', 224, 224, int),
             ('hisp', 225, 225, int),
             ('stage', 229, 230, int),
-            ('survival', 241, 244, int),
+            ('survival', 241, 244, str),
             ('cause', 245, 249, int),
             ('status', 255, 255, int),
             ('deathclass', 264, 264, int),
@@ -93,13 +96,62 @@ class Records(table.Table):
             print val, freq
         print
 
+    def Recode(self):
+        for r in self.records:
+            years, months = int(r.survival[:2]), int(r.survival[2:])
+            assert months < 12
+            r.interval = 12 * years + months
+
+    def Filter(self):
+        self.records = [r for r in self.records if (
+                r.behavior == 3 and r.seqno == 0 and r.follow in [2, 4]
+                )]
+
+    def FilterAge(self):
+        self.records = [r for r in self.records if (
+                r.age >= 30 and r.age <=39
+                )]
+
+    def MakeSurvivalCurve(self):
+        alive = Pmf.Hist()
+        dead = Pmf.Hist()
+        for r in self.records:
+            if r.deathclass == 0:
+                alive.Incr(r.interval)
+            elif r.deathclass == 1:
+                dead.Incr(r.interval)
+
+        known_alive = alive.Total() + dead.Total()
+        known_dead = 0
+
+        values = set(alive.Values() + dead.Values())
+
+        xs, ps = [], []
+        for val in sorted(values):
+            ratio = Ratio(known_alive, known_dead)
+            known_alive -= alive.Freq(val)
+            known_dead += dead.Freq(val)
+            xs.append(val)
+            ps.append(ratio)
+
+        pyplot.plot(xs, ps)
+        myplot.Plot(show=True)
+
+def Ratio(a, b):
+    return float(a) / (a + b)
 
 def main(name, data_dir=None):
     table = Records()
-    table.ReadRecords(data_dir=data_dir, n=1000000)
+    table.ReadRecords(data_dir=data_dir, n=10000000)
     print 'Number of records', len(table.records)
 
-    table.MakeHists()
+    table.Filter()
+    print 'Malignant, single primary with follow-up', len(table.records)
+
+    table.FilterAge()
+    print 'Age in 30s', len(table.records)
+
+    table.MakeSurvivalCurve()
 
     
 if __name__ == '__main__':
