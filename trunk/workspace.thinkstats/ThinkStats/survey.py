@@ -164,16 +164,15 @@ class Pregnancies(Table):
             if rec.agepreg != 'NA':
                 rec.agepreg /= 100.0
 
-            # add up the total weight at birth
+            # convert weight at birth from lbs/oz to total ounces
+            # note: there are some very low birthweights
+            # that are almost certainly errors, but for now I am not
+            # filtering
             if (rec.birthwgt_lb != 'NA' and rec.birthwgt_lb < 20 and
-                rec.birthwgt_lb != 'NA' and rec.birthwgt_lb < 20):
+                rec.birthwgt_oz != 'NA' and rec.birthwgt_oz <= 16):
                 rec.totalwgt_oz = rec.birthwgt_lb * 16 + rec.birthwgt_oz
             else:
                 rec.totalwgt_oz = 'NA'
-
-            # note: there are some very low and very high birthweights
-            # that are almost certainly errors, but for now I am not
-            # filtering
 
 
 def main(name, data_dir='.'):
