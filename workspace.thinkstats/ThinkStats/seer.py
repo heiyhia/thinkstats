@@ -14,9 +14,12 @@ import os
 
 import matplotlib.pyplot as pyplot
 
+import Cdf
 import myplot
 import Pmf
 import table
+import thinkstats
+
 
 class Records(table.Table):
     """Represents the record table."""
@@ -83,14 +86,25 @@ class Records(table.Table):
             ('deathclass', 264, 264, int),
             ]
 
+    def Recode(self):
+        """Computes recoded variables."""
+        for r in self.records:
+            # convert survival time in YYMM to decimal years
+            years, months = int(r.survival[:2]), int(r.survival[2:])
+            assert months < 12
+            r.interval = years + months / 12.0
+
+            r.diagdate = r.diagyr + r.diagmo / 12.0
+
     def MakeHists(self):
+        """Makes a histogram for each attribute."""
         for field in self.GetFields():
             attr = field[0]
             if attr not in ['caseid', 'cause', 'survival']:
                 self.MakeHist(attr)
 
     def MakeHist(self, attr):
-
+        """Makes a histogram for the given attribute and prints it."""
         vals = [getattr(record, attr) for record in self.records]
         hist = Pmf.MakeHistFromList(vals)
 
@@ -99,13 +113,12 @@ class Records(table.Table):
             print val, freq
         print
 
-    def Recode(self):
-        for r in self.records:
-            years, months = int(r.survival[:2]), int(r.survival[2:])
-            assert months < 12
-            r.interval = years + months / 12.0
-
     def Filter(self):
+        """Makes a new table with a subset of the records.
+
+        Selects malignant tumors, patients with only one primary tumor
+        in their lifetimes, and cases with active follow-up.
+        """
         table = copy(self)
         table.records = [r for r in table.records if (
                 r.behavior == 3 and r.seqno == 0 and r.follow in [2, 4]
@@ -113,18 +126,32 @@ class Records(table.Table):
         return table
 
     def FilterAge(self, low, high):
+        """Makes a new table with only records in the given age range."""
         table = copy(self)
         table.records = [r for r in table.records if (
-                r.age >= low and r.age <= high
+                low <= r.age < high
+                )]
+        return table
+
+    def FilterDate(self, low, high):
+        """Makes a new table with only records in the given age range."""
+        table = copy(self)
+        table.records = [r for r in table.records if (
+                low <= r.diagdate < high
                 )]
         return table
 
     def FilterInterval(self, low):
+        """Makes a new table with only records with interval > low."""
         table = copy(self)
         table.records = [r for r in table.records if (
                 r.interval >= low
                 )]
         return table
+
+    def MeanDiagDate(self):
+        xs = [r.diagdate for r in self.records]
+        return thinkstats.Mean(xs)
 
     def ComputeHazard(self, t):
         """Computes the fraction of the cohort that dies at time t.
@@ -141,74 +168,127 @@ class Records(table.Table):
         d, n = len(deaths), len(self.records)
         return d, n, Fraction(d, n)
 
-    def ComputeCumulativeHazard(self):
+    def ComputeSurvivalCurve(self, high=20, factor=3):
+        """Estimates the survival curve and event density.
+
+        Uses the Kaplan-Meier product-limit estimator:
+        http://www.statsdirect.com/help/survival_analysis/kaplan.htm
+        http://tkchen.wordpress.com/2008/09/21/
+        kaplan-meier-and-nelson-aalen-estimators/
+        """
         intervals = set(r.interval for r in self.records)
         table = copy(self)
 
-        ts, fs, ss = [], [], []
-        total = 0
+        lams = Pmf.Pmf(name='hazard')
+        tables = []
+        ts, ss = [], []
+        prod = 1.0
+
         for t in sorted(intervals):
+            if t > high:
+                break
+
+            # find the cohort at risk
+            tables.append(table)
             table = table.FilterInterval(t)
+
+            # find the number of deaths and death rate
             d, n, f = table.ComputeHazard(t)
-            total += f
-            s = math.exp(-total)
-            print t, d, n, f, total, s
+
+            # find the cumulative probability of survival
+            s = prod
+            prod *= (1 - f)
+
             ts.append(t)
-            fs.append(f)
             ss.append(s)
 
-        return ts, fs, ss
+            bin = math.floor(t*factor) / factor
+            lams.Incr(bin, f)
 
-    def MakeSurvivalCurve(self):
-        alive = Pmf.Hist()
-        dead = Pmf.Hist()
-        for r in self.records:
-            if r.deathclass == 0:
-                alive.Incr(r.interval)
-            elif r.deathclass == 1:
-                dead.Incr(r.interval)
+        return tables, ts, lams, ss
 
-        known_alive = alive.Total() + dead.Total()
-        known_dead = 0
 
-        values = set(alive.Values() + dead.Values())
+def ComputeProbSurvival(ts, ss, t):
+    ps = [1-s for s in ss]
+    cdf = Cdf.Cdf(ts, ps)
+    s = 1 - cdf.Prob(t)
+    return s
 
-        xs, ps = [], []
-        for val in sorted(values):
-            ratio = Ratio(known_alive, known_dead)
-            known_alive -= alive.Freq(val)
-            known_dead += dead.Freq(val)
-            xs.append(val)
-            ps.append(ratio)
 
-        pyplot.plot(xs, ps)
-        #myplot.Plot(show=True)
+def ComputeConditionalSurvival(tables):
+    for table in tables:
+        _, ts, lams, ss = table.ComputeSurvivalCurve()        
+        p5 = ComputeProbSurvival(ts, ss, 5)
 
-def PlotSurvivalCurve(ts, fs, ss):
-    pyplot.plot(fs, ss)
-    pyplot.plot(ts, ss)
-    myplot.Plot(show=True)
+def PlotSurvivalCurve(ts, lams, ss):
+    # scale lams
+    denom = max(lams.Probs())
+    lams.Normalize(denom)
+    myplot.Pmf(lams, 
+               line_options=dict(linewidth=2, linestyle='dashed', color='0.7'))
+
+    pyplot.plot(ts, ss, linewidth=2, color='blue', label='survival')
+    myplot.Plot(root='seer1',
+                title='',
+                xlabel='Survival time (years)',
+                ylabel='Probability')
+
+
+def PlotDiagDates(ts, tables):
+    mus = [table.MeanDiagDate() for table in tables]
+    pyplot.plot(ts, mus, linewidth=2, color='green')
+    myplot.Plot(root='seer2',
+                title='',
+                xlabel='Survival time (years)',
+                ylabel='Mean diagnosis date')
+
 
 def Fraction(n, m):
     return float(n) / m
 
-def Ratio(a, b):
-    return float(a) / (a + b)
+
+def PartitionByAge(table):
+    for age in [20, 30, 40, 50, 60, 70]:
+        part = table.FilterAge(age, age+10)
+        print age, len(part.records)
+        tables, ts, lams, ss = part.ComputeSurvivalCurve()
+        pyplot.plot(ts, ss, linewidth=2, label=str(age))
+
+    myplot.Plot(root='seer3', show=True,
+                xlabel='Survival time (years)',
+                ylabel='Probability')
+
+
+def PartitionByDate(table):
+    for date in [1995, 1990, 1985, 1980, 1975, 1970]:
+        part = table.FilterDate(date, date+5)
+        print date, len(part.records)
+        tables, ts, lams, ss = part.ComputeSurvivalCurve()
+        pyplot.plot(ts, ss, linewidth=2, label=str(date))
+
+    myplot.Plot(root='seer3', show=True,
+                xlabel='Survival time (years)',
+                ylabel='Probability')
+
 
 def main(name, data_dir=None):
     table = Records()
-    table.ReadRecords(data_dir=data_dir, n=10000000)
+    table.ReadRecords(data_dir=data_dir, n=10000)
     print 'Number of records', len(table.records)
 
     table = table.Filter()
     print 'Malignant, single primary with follow-up', len(table.records)
 
-    table = table.FilterAge(30, 39)
-    print 'Age in 30s', len(table.records)
+    #table = table.FilterAge(30, 39)
+    #print 'Age in 30s', len(table.records)
 
-    table.MakeSurvivalCurve()
-    ts, fs, ss = table.ComputeCumulativeHazard()
-    PlotSurvivalCurve(ts, fs, ss)
-    
+    tables, ts, lams, ss = table.ComputeSurvivalCurve()
+    #PlotSurvivalCurve(ts, lams, ss)
+    #PlotDiagDates(ts, tables)
+
+    ComputeConditionalSurvival(ts, ss)
+
+    #PartitionByDate(table)
+
 if __name__ == '__main__':
     main(*sys.argv)
