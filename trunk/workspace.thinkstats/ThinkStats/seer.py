@@ -5,8 +5,11 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+from copy import copy
+
 import sys
 import gzip
+import math
 import os
 
 import matplotlib.pyplot as pyplot
@@ -100,17 +103,61 @@ class Records(table.Table):
         for r in self.records:
             years, months = int(r.survival[:2]), int(r.survival[2:])
             assert months < 12
-            r.interval = 12 * years + months
+            r.interval = years + months / 12.0
 
     def Filter(self):
-        self.records = [r for r in self.records if (
+        table = copy(self)
+        table.records = [r for r in table.records if (
                 r.behavior == 3 and r.seqno == 0 and r.follow in [2, 4]
                 )]
+        return table
 
-    def FilterAge(self):
-        self.records = [r for r in self.records if (
-                r.age >= 30 and r.age <=39
+    def FilterAge(self, low, high):
+        table = copy(self)
+        table.records = [r for r in table.records if (
+                r.age >= low and r.age <= high
                 )]
+        return table
+
+    def FilterInterval(self, low):
+        table = copy(self)
+        table.records = [r for r in table.records if (
+                r.interval >= low
+                )]
+        return table
+
+    def ComputeHazard(self, t):
+        """Computes the fraction of the cohort that dies at time t.
+
+        If we use deathclass, we get the Net cancer-specific survival.
+
+        If we use status, we get Observed all cause survival
+
+        The right stat for purposes of prognosis is Crude probability of death
+        """
+        deaths = [r for r in self.records if (
+                r.interval == t and r.deathclass == 1
+                )]
+        d, n = len(deaths), len(self.records)
+        return d, n, Fraction(d, n)
+
+    def ComputeCumulativeHazard(self):
+        intervals = set(r.interval for r in self.records)
+        table = copy(self)
+
+        ts, fs, ss = [], [], []
+        total = 0
+        for t in sorted(intervals):
+            table = table.FilterInterval(t)
+            d, n, f = table.ComputeHazard(t)
+            total += f
+            s = math.exp(-total)
+            print t, d, n, f, total, s
+            ts.append(t)
+            fs.append(f)
+            ss.append(s)
+
+        return ts, fs, ss
 
     def MakeSurvivalCurve(self):
         alive = Pmf.Hist()
@@ -135,7 +182,15 @@ class Records(table.Table):
             ps.append(ratio)
 
         pyplot.plot(xs, ps)
-        myplot.Plot(show=True)
+        #myplot.Plot(show=True)
+
+def PlotSurvivalCurve(ts, fs, ss):
+    pyplot.plot(fs, ss)
+    pyplot.plot(ts, ss)
+    myplot.Plot(show=True)
+
+def Fraction(n, m):
+    return float(n) / m
 
 def Ratio(a, b):
     return float(a) / (a + b)
@@ -145,14 +200,15 @@ def main(name, data_dir=None):
     table.ReadRecords(data_dir=data_dir, n=10000000)
     print 'Number of records', len(table.records)
 
-    table.Filter()
+    table = table.Filter()
     print 'Malignant, single primary with follow-up', len(table.records)
 
-    table.FilterAge()
+    table = table.FilterAge(30, 39)
     print 'Age in 30s', len(table.records)
 
     table.MakeSurvivalCurve()
-
+    ts, fs, ss = table.ComputeCumulativeHazard()
+    PlotSurvivalCurve(ts, fs, ss)
     
 if __name__ == '__main__':
     main(*sys.argv)
