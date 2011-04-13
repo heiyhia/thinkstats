@@ -30,13 +30,17 @@ class _DictWrapper(object):
         return self.d
 
     def Values(self):
-        """Gets an unsorted sequence of  values.
+        """Gets an unsorted sequence of values.
 
         Note: one source of confusion is that the keys in this
         dictionaries are the values of the Hist/Pmf, and the
         values are frequencies/probabilities.
         """
         return self.d.keys()
+
+    def Probs(self):
+        """Gets an unsorted sequence of probabilities."""
+        return self.d.values()
 
     def Items(self):
         """Gets an unsorted sequence of (value, freq/prob) pairs."""
@@ -160,7 +164,7 @@ class Pmf(_DictWrapper):
         Args:
             denom: float divisor; if None, computes the total of all probs
         """
-        denom = denom or float(self.Total())
+        denom = float(denom) or float(self.Total())
         
         for x, p in self.d.iteritems():
             self.d[x] = p / denom
