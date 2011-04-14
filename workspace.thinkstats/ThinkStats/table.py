@@ -20,16 +20,12 @@ class Table(object):
     def __len__(self):
         return len(self.records)
 
-    def ReadFile(self, data_dir, filename, fields, constructor, n=None):
+    def ReadFile(self, data_dir, filename, constructor, n=None):
         """Reads a compressed data file builds one object per record.
 
         Args:
             data_dir: string directory name
             filename: string name of the file to read
-
-            fields: sequence of (name, start, end, cast) tuples specifying 
-            the fields to extract
-
             constructor: what kind of object to create
         """
         filename = os.path.join(data_dir, filename)
@@ -42,26 +38,22 @@ class Table(object):
         for i, line in enumerate(fp):
             if i == n:
                 break
-            record = self.MakeRecord(line, fields, constructor)
+            record = self.MakeRecord(line, constructor)
             self.AddRecord(record)
         fp.close()
 
-    def MakeRecord(self, line, fields, constructor):
+    def MakeRecord(self, line, constructor):
         """Scans a line and returns an object with the appropriate fields.
 
         Args:
             line: string line from a data file
-
-            fields: sequence of (name, start, end, cast) tuples specifying 
-            the fields to extract
-
             constructor: callable that makes an object for the record.
 
         Returns:
             Record with appropriate fields.
         """
         obj = constructor()
-        for (field, start, end, cast) in fields:
+        for (field, start, end, cast) in self.GetFields():
             try:
                 s = line[start-1:end]
                 val = cast(s)
