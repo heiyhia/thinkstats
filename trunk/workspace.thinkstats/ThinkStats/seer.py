@@ -5,8 +5,6 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from copy import copy
-
 import sys
 import gzip
 import math
@@ -17,18 +15,18 @@ import matplotlib.pyplot as pyplot
 import Cdf
 import myplot
 import Pmf
-import table
+from table import Table, Record
 import thinkstats
 
 
-class Records(table.Table):
+class SeerTable(Table):
     """Represents the record table."""
 
     def ReadRecords(self, data_dir=None, n=None):
         if data_dir == None:
             data_dir = './SEER/incidence'
         filename = self.GetFilename()
-        self.ReadFile(data_dir, filename, self.GetFields(), table.Record, n)
+        self.ReadFile(data_dir, filename, Record, n)
         self.Recode()
 
     def GetFilename(self):
@@ -119,32 +117,32 @@ class Records(table.Table):
         Selects malignant tumors, patients with only one primary tumor
         in their lifetimes, and cases with active follow-up.
         """
-        table = copy(self)
-        table.records = [r for r in table.records if (
+        table = SeerTable()
+        table.records = [r for r in self.records if (
                 r.behavior == 3 and r.seqno == 0 and r.follow in [2, 4]
                 )]
         return table
 
     def FilterAge(self, low, high):
         """Makes a new table with only records in the given age range."""
-        table = copy(self)
-        table.records = [r for r in table.records if (
+        table = SeerTable()
+        table.records = [r for r in self.records if (
                 low <= r.age < high
                 )]
         return table
 
     def FilterDate(self, low, high):
         """Makes a new table with only records in the given age range."""
-        table = copy(self)
-        table.records = [r for r in table.records if (
+        table = SeerTable()
+        table.records = [r for r in self.records if (
                 low <= r.diagdate < high
                 )]
         return table
 
     def FilterInterval(self, low):
         """Makes a new table with only records with interval > low."""
-        table = copy(self)
-        table.records = [r for r in table.records if (
+        table = SeerTable()
+        table.records = [r for r in self.records if (
                 r.interval >= low
                 )]
         return table
@@ -156,40 +154,47 @@ class Records(table.Table):
     def ComputeHazard(self, t):
         """Computes the fraction of the cohort that dies at time t.
 
-        If we use deathclass, we get the Net cancer-specific survival.
+        If we use deathclass==1, we get the Net cancer-specific survival.
 
-        If we use status, we get Observed all cause survival
+        If we use status==4, we get Observed all cause survival
 
         The right stat for purposes of prognosis is Crude probability of death
         """
         deaths = [r for r in self.records if (
-                r.interval == t and r.deathclass == 1
+                r.interval == t and r.status==4
                 )]
         d, n = len(deaths), len(self.records)
         return d, n, Fraction(d, n)
 
-    def ComputeSurvivalCurve(self, high=20, factor=3):
+    def ComputeSurvivalCurve(self, high=20, factor=3, save_tables=False):
         """Estimates the survival curve and event density.
 
         Uses the Kaplan-Meier product-limit estimator:
         http://www.statsdirect.com/help/survival_analysis/kaplan.htm
         http://tkchen.wordpress.com/2008/09/21/
         kaplan-meier-and-nelson-aalen-estimators/
-        """
-        intervals = set(r.interval for r in self.records)
-        table = copy(self)
 
+        Returns:
+          tables: list of Table objects, conditioned on each value of t
+          ts: times in years
+          lams: Pmf representing the hazard function
+          ss: list of values for the survival curve
+        """
         lams = Pmf.Pmf(name='hazard')
         tables = []
         ts, ss = [], []
         prod = 1.0
+
+        table = self
+        intervals = set(r.interval for r in self.records)
 
         for t in sorted(intervals):
             if t > high:
                 break
 
             # find the cohort at risk
-            tables.append(table)
+            if save_tables:
+                tables.append(table)
             table = table.FilterInterval(t)
 
             # find the number of deaths and death rate
@@ -209,16 +214,48 @@ class Records(table.Table):
 
 
 def ComputeProbSurvival(ts, ss, t):
+    """Given a survival curve, find the probability of survival >= t."""
     ps = [1-s for s in ss]
     cdf = Cdf.Cdf(ts, ps)
     s = 1 - cdf.Prob(t)
     return s
 
 
-def ComputeConditionalSurvival(tables):
-    for table in tables:
+def ComputeConditionalSurvival(ts, tables):
+    """Compute the probability of surviving an addition 5 or 10 years
+    conditioned on surviving at least t.
+    """
+    ps = []
+    newts = []
+
+    for t, table in zip(ts, tables):
+        if t>10:
+            break
+
         _, ts, lams, ss = table.ComputeSurvivalCurve()        
-        p5 = ComputeProbSurvival(ts, ss, 5)
+        p5 = ComputeProbSurvival(ts, ss, t+5)
+        p10 = ComputeProbSurvival(ts, ss, t+10)
+        print t, p5, p10
+
+        newts.append(t)
+        ps.append((p5, p10))
+
+    return newts, ps
+
+
+def PlotConditionalSurvival(ts, ps):
+    """Plot the probability of surviving an addition 5 or 10 years
+    conditioned on surviving at least t.
+    """
+    pyplot.clf()
+    p5s, p10s = zip(*ps)
+    pyplot.plot(ts, p5s, linewidth=2, color='blue', label='5 years')
+    pyplot.plot(ts, p10s, linewidth=2, color='green', label='10 years')
+    myplot.Plot(root='seer5',
+                title='',
+                xlabel='Survival time (years)',
+                ylabel='Probability')
+
 
 def PlotSurvivalCurve(ts, lams, ss):
     # scale lams
@@ -235,6 +272,8 @@ def PlotSurvivalCurve(ts, lams, ss):
 
 
 def PlotDiagDates(ts, tables):
+    """Plot the mean date of diagnosis for successive cohorts."""
+    pyplot.clf()
     mus = [table.MeanDiagDate() for table in tables]
     pyplot.plot(ts, mus, linewidth=2, color='green')
     myplot.Plot(root='seer2',
@@ -248,47 +287,57 @@ def Fraction(n, m):
 
 
 def PartitionByAge(table):
+    pyplot.clf()
     for age in [20, 30, 40, 50, 60, 70]:
         part = table.FilterAge(age, age+10)
         print age, len(part.records)
-        tables, ts, lams, ss = part.ComputeSurvivalCurve()
+        _, ts, lams, ss = part.ComputeSurvivalCurve()
         pyplot.plot(ts, ss, linewidth=2, label=str(age))
 
-    myplot.Plot(root='seer3', show=True,
+    myplot.Plot(root='seer3',
                 xlabel='Survival time (years)',
                 ylabel='Probability')
 
 
 def PartitionByDate(table):
+    pyplot.clf()
     for date in [1995, 1990, 1985, 1980, 1975, 1970]:
         part = table.FilterDate(date, date+5)
         print date, len(part.records)
-        tables, ts, lams, ss = part.ComputeSurvivalCurve()
+        _, ts, lams, ss = part.ComputeSurvivalCurve()
         pyplot.plot(ts, ss, linewidth=2, label=str(date))
 
-    myplot.Plot(root='seer3', show=True,
+    myplot.Plot(root='seer4',
                 xlabel='Survival time (years)',
                 ylabel='Probability')
 
 
 def main(name, data_dir=None):
-    table = Records()
-    table.ReadRecords(data_dir=data_dir, n=10000)
+    table = SeerTable()
+    table.ReadRecords(data_dir=data_dir, n=1000000)
     print 'Number of records', len(table.records)
+
+    table.MakeHists()
 
     table = table.Filter()
     print 'Malignant, single primary with follow-up', len(table.records)
 
-    #table = table.FilterAge(30, 39)
-    #print 'Age in 30s', len(table.records)
+    #PartitionByAge(table)
 
-    tables, ts, lams, ss = table.ComputeSurvivalCurve()
-    #PlotSurvivalCurve(ts, lams, ss)
-    #PlotDiagDates(ts, tables)
+    table = table.FilterAge(30, 39)
+    print 'Age in 30s', len(table.records)
 
-    ComputeConditionalSurvival(ts, ss)
+    tables, ts, lams, ss = table.ComputeSurvivalCurve(save_tables=True)
 
-    #PartitionByDate(table)
+    PlotSurvivalCurve(ts, lams, ss)
+
+    PlotDiagDates(ts, tables)
+
+    PartitionByDate(table)
+
+    ts, ps = ComputeConditionalSurvival(ts, tables)
+    PlotConditionalSurvival(ts, ps)
+
 
 if __name__ == '__main__':
     main(*sys.argv)

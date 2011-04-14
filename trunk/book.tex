@@ -15,12 +15,13 @@
 % texlive-latex-extra (in Ubuntu)
 
 \usepackage{pslatex}
+%\usepackage{hyperref}
 \usepackage{url}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{subfig}
 \usepackage{amsmath, amsthm, amssymb}
-\usepackage{exercise}                        % texlive-latex-extra
+%\usepackage{exercise}                        % texlive-latex-extra
 \usepackage{makeidx}
 \usepackage{setspace}
 \usepackage{hevea}                           
@@ -28,7 +29,7 @@
 
 \title{Think Stats}
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.4.3}
+\newcommand{\theversion}{1.4.4}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -51,7 +52,16 @@
 
 \input{latexonly}
 
-\newtheorem{ex}{Exercise}[chapter]
+% \newtheorem{ex}{Exercise}[chapter]
+
+\newcounter{exercise}[chapter]
+\newcommand{\nextexercise}{\refstepcounter{exercise}}
+
+\newenvironment{exercise}
+{\nextexercise\par\noindent\textbf{Exercise \thechapter.\theexercise}
+\begin{itshape}\noindent}
+{\end{itshape}}
+
 
 \begin{latexonly}
 
@@ -207,7 +217,7 @@ takes a computational approach, which has several advantages:
   remember the assumptions the CLT is based on.
 
 \item Some ideas that are hard to grasp mathematically are easy to
-  understand by simulation.  For example, we estimate p-values by
+  understand by simulation.  For example, we approximate p-values by
   running Monte Carlo simulations, which reinforces the meaning of the
   p-value.
 
@@ -347,6 +357,8 @@ and Molly spotted several typos.
 \item Andrew Heine found an error in my error function.
 
 \item Dr. Nikolas Akerblom knows how big a Hyracotherium is.
+
+\item Alex Morrow clarified one of the code examples.
 
 % ENDCONTRIB
 
@@ -591,8 +603,7 @@ Of course, the drawback of oversampling is that it is not as easy
 to draw conclusions about the general population based on statistics
 from the survey.  We will come back to this point later.
 
-\begin{ex}
-
+\begin{exercise}
 Although the NSFG has been conducted seven times, it is not a
 longitudinal study.  Read the Wikipedia pages
 \url{wikipedia.org/wiki/Cross-sectional_study}
@@ -600,10 +611,9 @@ and
 \url{wikipedia.org/wiki/Longitudinal_study}
 to make sure you understand why not.
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 In this exercise, you will download data from the NSFG; we will use
 this data throughout the book.
 
@@ -644,7 +654,7 @@ section explains how it works.
 
 \end{enumerate}
 
-\end{ex}
+\end{exercise}
 
 \section{Tables and records}
 
@@ -684,12 +694,15 @@ There are two subclasses of
 {\tt Record}---{\tt Respondent} and {\tt Pregnancy}---which
 contain records from the respondent and pregnancy tables.
 For the time being, these classes are empty; in particular, there
-is no {\tt init} method to initialize their attributes.  Instead
+is no init method to initialize their attributes.  Instead
 we will use {\tt Table.MakeRecord} to convert a line of text into
 a {\tt Record} object.
 
+\index{init method}
+\index{method!init}
+
 There are also two subclasses of {\tt Table}: {\tt Respondents}
-and {\tt Pregnancies}.  The {\tt init} method in each class
+and {\tt Pregnancies}.  The init method in each class
 specifies the default name of the data file and the type of
 record to create.  Each {\tt Table} object has an attribute
 named {\tt records}, which is a list of {\tt Record} objects.
@@ -785,8 +798,7 @@ yourself.
 You might also notice that {\tt Pregnancies} has a method called
 {\tt Recode} that does some additional checking and recoding.
 
-\begin{ex}
-
+\begin{exercise}
 In this exercise you will write a program to explore the data
 in the Pregnancies table.
 
@@ -837,7 +849,7 @@ You can download a solution to this exercise from
 
 \index{{\tt first.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Significance}
@@ -881,8 +893,7 @@ several questions we still want to ask:
 Answering these questions will take most of the rest of this book.
 
 
-\begin{ex}
-
+\begin{exercise}
 The best way to learn about statistics is to work on a project you are
 interested in.  Is there a question like, ``Do first babies arrive
 late,'' that you would like to investigate?
@@ -919,7 +930,7 @@ available on the web, but for sensitive data you might have to
 write to the authors, provide information about how you plan to use
 the data, or agree to certain terms of use.  Be persistent!
 
-\end{ex}
+\end{exercise}
 
 
 \section{Glossary}
@@ -1089,7 +1100,7 @@ $\sigma^2$.  The square root of variance, $\sigma$, is called the {\bf
 \index{deviation}
 \index{standard deviation}
 
-\begin{ex}
+\begin{exercise}
 For the exercises in this chapter you should download
 \url{thinkstats.com/thinkstats.py}, which contains general-purpose
 functions we will use throughout the book.  You can read documentation
@@ -1101,9 +1112,9 @@ Write a function called
 {\tt Pumpkin} that uses functions from {\tt thinkstats.py} to compute
 the mean, variance and standard deviation of the pumpkins weights in
 the previous section.
-\end{ex}
+\end{exercise}
 
-\begin{ex}
+\begin{exercise}
 Reusing code from {\tt survey.py} and {\tt first.py}, compute the
 standard deviation of gestation time for first babies and others.
 Does it look like the spread is the same for the two groups?
@@ -1114,13 +1125,13 @@ Does it look like the spread is the same for the two groups?
 How big is the difference in the means compared to these standard
 deviations?  What does this comparison suggest about the statistical
 significance of the difference?
-\end{ex}
+\end{exercise}
 
 If you have prior experience, you might have seen a 
 formula for variance with $n-1$ in the denominator, rather than $n$.
 This statistic is called the ``sample variance,'' and it is used
 to estimate the variance in a population using a sample.  We will
-come back to this in Chapter~\ref{estimation}.
+come back to this in Chapter~\url{estimation}.
 
 \index{sample variance}
 
@@ -1166,7 +1177,7 @@ which is called {\bf normalization}:
 n = float(len(t))
 pmf = {}
 for x, freq in hist.items():
-    pmf[x] = hist[x] / n
+    pmf[x] = freq / n
 \end{verbatim}
 
 \index{PMF}
@@ -1252,8 +1263,7 @@ for val, freq in hist.Items():
      print val, freq
 \end{verbatim}
 
-\begin{ex}
-
+\begin{exercise}
 The mode of a distribution is the most frequent value (see
 \url{wikipedia.org/wiki/Mode_(statistics)}).  Write a function called
     {\tt Mode} that takes a Hist object and returns the most frequent
@@ -1267,7 +1277,7 @@ pairs in descending order of frequency.  Hint: the {\tt operator}
 module provides a function called {\tt itemgetter} which you can
 pass as a key to {\tt sorted}.
 
-\end{ex}
+\end{exercise}
 
 
 \section{Plotting histograms}
@@ -1438,8 +1448,7 @@ To renormalize, call {\tt Normalize}:
 Pmf objects provide a {\tt Copy} method so you can
 use {\tt Incr} and {\tt Mult} without modifying the original object.
 
-\begin{ex}
-
+\begin{exercise}
 According to Wikipedia, ``Survival analysis is a branch of statistics
 which deals with death in biological organisms and failure in
 mechanical systems;'' see \url{wikipedia.org/wiki/Survival_analysis}.
@@ -1455,15 +1464,15 @@ Write a function called {\tt RemainingLifetime} that takes a
 Pmf of lifetimes and an age, and returns a new Pmf that represents
 the distribution of remaining lifetimes.
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
+\begin{exercise}
+%
 \index{mean}
 \index{variance}
 \index{PMF}
-
+%
 In Section~\ref{mean} we computed the mean of a sample by adding up
 the elements and dividing by $n$.  If you are given a PMF, you can
 still compute the mean, but the process is slightly different:
@@ -1482,7 +1491,7 @@ check that they are consistent with the methods {\tt Mean} and {\tt
 
 \index{{\tt pmf.py}@{\tt Pmf.py}}
 
-\end{ex}
+\end{exercise}
 
 
 
@@ -1596,7 +1605,7 @@ by discarding some fraction of the highest and lowest values (see
 
 
 \section{Other visualizations}
-\index{vizualization}
+\index{visualization}
 \index{exploratory data analysis}
 
 Histograms and PMFs are useful for exploratory data analysis;
@@ -1640,8 +1649,7 @@ that are used to group data are called {\bf bins}.
 \index{bin}
 \index{{\tt risk.py}}
 
-\begin{ex}
-
+\begin{exercise}
 Create a file named {\tt risk.py}.
 Write functions named {\tt ProbEarly}, {\tt ProbOnTime} and
 {\tt ProbLate} that take a PMF and compute the fraction of births
@@ -1662,7 +1670,7 @@ Write code to confirm that result, then compute the relative risks of
 being born on time and being late.  You can download a solution
 from \url{thinkstats.com/risk.py}.
 
-\end{ex}
+\end{exercise}
 
 
 \section{Conditional probability}
@@ -1704,8 +1712,7 @@ This algorithm is conceptually clear, but not very efficient.
 A simple alternative is to remove from the distribution the values
 less than 39 and then renormalize.
 
-\begin{ex}
-
+\begin{exercise}
 Write a function that implements either of these algorithms and
 computes the probability that a baby will be born during Week 39,
 given that it was not born prior to Week 39.
@@ -1720,7 +1727,7 @@ You can download a solution to this problem from
 
 \index{{\tt conditional.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Reporting results}
@@ -1747,8 +1754,7 @@ summary statistics, like relative risk, that emphasize differences.
 If you are trying to reassure a patient, you might choose statistics
 that put the differences in context.
 
-\begin{ex}
-
+\begin{exercise}
 Based on the results from the previous exercises, suppose you were
 asked to summarize what you learned about whether first
 babies arrive late.
@@ -1766,7 +1772,7 @@ question, ``Do first babies arrive late?''  Write a paragraph that
 uses the results in this chapter to answer the question clearly,
 precisely, and accurately.
 
-\end{ex}
+\end{exercise}
 
 
 
@@ -1887,13 +1893,12 @@ But if you survey a group of students, ask them how many
 students are in their classes, and compute the mean, you would
 think that the average class size was higher.
 
-\begin{ex}
-
-\index{PMF}
-
+\begin{exercise}
 Build a PMF of these data and compute the mean as perceived by the
 Dean.  Since the data have been grouped in bins, you can use the
 mid-point of each bin.
+
+\index{PMF}
 
 Now find the distribution of class sizes as perceived by students
 and compute its mean.  
@@ -1921,20 +1926,19 @@ You can download a solution to this problem from
 
 \index{{\tt class\_size.py}}
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
+\begin{exercise}
 \label{relay}
-
-\index{relay race}
-\index{bias!oversampling}
-\index{oversampling}
-
 In most foot races, everyone starts at the same time.  If you are a
 fast runner, you usually pass a lot of people at the beginning of the
 race, but after a few miles everyone around you is going at the same
 speed.
+
+\index{relay race}
+\index{bias!oversampling}
+\index{oversampling}
 
 When I ran a long-distance (209 miles) relay race for the first
 time, I noticed an odd phenomenon: when I overtook another runner, I
@@ -1984,7 +1988,7 @@ Now compute the distribution of speeds you would observe if you ran a
 relay race at 7.5 MPH with this group of runners.  You can download a
 solution from \url{thinkstats.com/relay_soln.py}
 
-\end{ex}
+\end{exercise}
 
 
 \section{The limits of PMFs}
@@ -2086,7 +2090,7 @@ distribution of exam scores, the 50th percentile is 77.
 
 \index{percentile}
 
-\begin{ex}
+\begin{exercise}
 This implementation of {\tt Percentile} is not very efficient.  A
 better approach is to use the percentile rank to compute the index of
 the corresponding percentile.  Write a version of {\tt Percentile} that
@@ -2096,10 +2100,9 @@ You can download a solution from \url{thinkstats.com/score_example.py}.
 
 \index{{\tt score\_example.py}}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 Optional: If you only want to compute one percentile, it is not
 efficient to sort the scores.  A better option is the selection
 algorithm, which you can read about at
@@ -2110,7 +2113,7 @@ algorithm, which you can read about at
 Write (or find) an implementation of the selection algorithm and use
 it to write an efficient version of {\tt Percentile}.
 
-\end{ex}
+\end{exercise}
 
 
 \section{Cumulative distribution functions}
@@ -2198,7 +2201,7 @@ corresponding value, $x$; that is, the inverse CDF of $p$.
 \end{description}
 
 Because {\tt xs} and {\tt ps} are sorted, these operations can use the
-bisection algorithm, which is efficient.  The runtime is proportional
+bisection algorithm, which is efficient.  The run time is proportional
 to the logarithm of the number of values; see
 \url{wikipedia.org/wiki/Time_complexity}.
 
@@ -2218,8 +2221,7 @@ Finally, {\tt myplot.py} provides functions named {\tt Cdf} and
 
 \index{{\tt myplot.py}}
 
-\begin{ex}
-
+\begin{exercise}
 Download {\tt Cdf.py} and \verb"relay.py" (see
 Exercise~\ref{relay}) and generate a plot that shows the CDF of
 running speeds.  Which gives you a better sense of the shape of the
@@ -2229,7 +2231,7 @@ from \url{thinkstats.com/relay_cdf.py}.
 \index{{\tt cdf.py}@{\tt Cdf.py}}
 \index{{\tt relay\_cdf.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Back to the survey data}
@@ -2257,17 +2259,16 @@ the mean.
 
 \index{shape}
 
-%\begin{ex}
+%\begin{exercise}
 
 %In the figure above, you might notice
 %a sequence of equally-spaced values with higher frequency than
 %their neighbors.  See if you can figure out what is going on.
 %Hint: look at the PMF of \verb"birthwgt_oz".
 
-%\end{ex}
+%\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 How much did you weigh at birth?  If you don't know, call your mother
 or someone else who knows.  Using the pooled data (all live births),
 compute the distribution of birth weights and use it to find your
@@ -2276,10 +2277,9 @@ in the distribution for first babies.  Otherwise use the distribution
 for others.  How big is the difference between your percentile ranks
 in the two distributions?
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 Suppose you and your classmates compute the percentile rank of your
 birth weights and then compute the CDF of the percentile ranks.  What do
 you expect it to look like?  Hint: what fraction of the class do you
@@ -2288,7 +2288,7 @@ expect to be above the median?
 \index{birth weight}
 \index{weight!birth}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Conditional distributions}
@@ -2326,19 +2326,18 @@ For example, people who compete in foot races are usually grouped by
 age and gender.  To compare people in different groups, you can convert
 race times to percentile ranks.
 
-\begin{ex}
-
-\index{race time}
-
+\begin{exercise}
 I recently ran the James Joyce Ramble 10K
 in Dedham MA.  The results are available from
 \url{coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
 Go to that page and find my results.  I came in 97th in a field
 of 1633, so what is my percentile rank in the field?
 
+\index{James Joyce Ramble}
+\index{race time}
+
 In my division (M4049 means ``male between 40 and 49 years of age'')
 I came in 26th out of 256.  What is my percentile rank in my division?
-What does that tell you about my division?
 
 If I am still running in 10 years (and I hope I am), I will be in
 the M5059 division.  Assuming that my percentile rank in my division
@@ -2348,7 +2347,7 @@ I maintain a friendly rivalry with a student of mine who is in the
 F2029 division.  How fast does she have to run her next 10K to
 ``beat'' me in terms of percentile ranks?
 
-\end{ex}
+\end{exercise}
 
 
 \section{Random numbers}
@@ -2370,8 +2369,7 @@ that corresponds to the probability you chose.
 It might not be obvious why this works, but since it is easier
 to implement than to explain, let's try it out.
 
-\begin{ex}
-
+\begin{exercise}
 Write a function called {\tt Sample}, that takes a Cdf and
 an integer, $n$, and returns a list of $n$ values chosen at
 random from the Cdf.  Hint: use {\tt random.random}.
@@ -2392,7 +2390,7 @@ the same.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-\end{ex}
+\end{exercise}
 
 This process, generating a random sample based on a measured sample,
 is called {\bf resampling}.
@@ -2418,8 +2416,7 @@ is provided by {\tt random.sample}.
 
 \index{random module}
 
-\begin{ex}
-
+\begin{exercise}
 The numbers generated by {\tt random.random} are supposed to be
 uniform between 0 and 1; that is, every value in the range
 should have the same probability.
@@ -2433,7 +2430,7 @@ You can read about the uniform distribution at
 \index{uniform distribution}
 \index{distribution!uniform}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Summary statistics revisited}
@@ -2457,8 +2454,7 @@ The 25th and 75th percentiles are often used to check whether
 a distribution is symmetric, and their difference, which is called
 the {\bf interquartile range}, measures the spread.
 
-\begin{ex}
-
+\begin{exercise}
 Write a function called {\tt Median} that takes a Cdf and computes the
 median, and one called {\tt Interquartile} that computes
 the interquartile range.
@@ -2471,7 +2467,7 @@ CDF.  Do these values suggest that the distribution is symmetric?
 \index{birth weight}
 \index{weight!birth}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Glossary}
@@ -2621,16 +2617,14 @@ the exponential distribution is only an approximation.  Most likely
 the underlying assumption---that a birth is equally likely at any time
 of day---is not exactly true.
 
-\begin{ex}
-
-\index{empirical distribution}
-\index{distribution!empirical}
-
+\begin{exercise}
 For small values of $n$, we don't expect an empirical distribution
 to fit a continuous distribution exactly.  One way to evaluate
 the quality of fit is to generate a sample from a continuous
 distribution and see how well it matches the data.
 
+\index{empirical distribution}
+\index{distribution!empirical}
 \index{random module}
 
 The function {\tt expovariate} in the {\tt random} module generates
@@ -2653,10 +2647,9 @@ transform the axes; to plot a CCDF on a log-$y$ scale:
 myplot.Cdf(cdf, complement=True, xscale='linear', yscale='log') 
 \end{verbatim}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 Collect the birthdays of the students in your class, sort them, and
 compute the interarrival times in days.  Plot the CDF of the interarrival
 times and the CCDF on a log-$y$ scale.  Does it look like
@@ -2666,7 +2659,7 @@ an exponential distribution?
 \index{distribution!exponential}
 \index{birthday}
 
-\end{ex}
+\end{exercise}
 
 
 \section{The Pareto distribution}
@@ -2724,8 +2717,7 @@ Taking the log of both sides yields:
 So if you plot $\log y$ versus $\log x$, it should look like a
 straight line with slope $-\alpha$ and intercept $-\alpha \log x_m$.
 
-\begin{ex}
-
+\begin{exercise}
 The {\tt random} module provides {\tt paretovariate},
 which generates random values from a Pareto distribution.  It takes
 a parameter for $\alpha$, but not $x_m$.  The
@@ -2750,10 +2742,9 @@ line?  What is the slope?
 \index{CDF!complementary}
 \index{CCDF}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 To get a feel for the Pareto distribution, imagine what the world
 would be like if the distribution of human height were Pareto.
 Choosing the parameters $x_m = 100$ cm and $\alpha = 1.7$, we
@@ -2768,10 +2759,9 @@ the mean?  How tall is the tallest person in Pareto World?
 
 \index{Pareto World}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 Zipf's law is an observation about how often different words are used.
 The most common words have very high frequencies, but there are many
 unusual words, like ``hapaxlegomenon,'' that appear only a few times.
@@ -2795,16 +2785,10 @@ What is the value of $\alpha$, approximately?
 \index{CDF!complementary}
 \index{CCDF}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
+\begin{exercise}
 \label{weibull}
-
-\index{Weibull distribution}
-\index{distribution!Weibull}
-\index{exponential distribution}
-\index{distribution!exponential}
-
 The Weibull distribution is a generalization of the exponential
 distribution that comes up in failure analysis
 (see \url{wikipedia.org/wiki/Weibull_distribution}).  Its CDF is
@@ -2815,15 +2799,20 @@ Can you find a transformation that makes a Weibull distribution look
 like a straight line?  What do the slope and intercept of the
 line indicate?
 
+\index{Weibull distribution}
+\index{distribution!Weibull}
+\index{exponential distribution}
+\index{distribution!exponential}
 \index{random module}
 
 Use {\tt random.weibullvariate} to generate a sample from a
 Weibull distribution and use it to test your transformation.
 
-\end{ex}
+\end{exercise}
 
 
 \section{The normal distribution}
+\label{normal}
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
@@ -2907,19 +2896,18 @@ babies, it would be important to get this part of the distribution
 right, so it might not be appropriate to use the normal
 model.
 
-\begin{ex}
+\begin{exercise}
+The Wechsler Adult Intelligence Scale is a test that is intended
+to measure intelligence\footnote{Whether it does or not is a
+fascinating controversy that I invite you to investigate at your
+leisure.}.  Results are transformed so that the distribution of scores
+in the general population is normal with $\mu=100$ and $\sigma=15$.
 
 \index{Wechsler Adult Intelligence Scale}
 \index{Adult Intelligence Scale}
 \index{WAIS}
 \index{IQ}
 \index{intelligence}
-
-The Wechsler Adult Intelligence Scale is a test that is intended
-to measure intelligence\footnote{Whether it does or not is a
-fascinating controversy that I invite you to investigate at your
-leisure.}.  Results are transformed so that the distribution of scores
-in the general population is normal with $\mu=100$ and $\sigma=15$.
 
 Use {\tt erf.NormalCdf} to investigate the frequency of rare events in
 a normal distribution.  What fraction of the population has an IQ
@@ -2934,11 +2922,10 @@ how many do we expect to have an IQ of 190 or more\footnote{On this
 \index{Langan, Christopher}
 \index{six-sigma event}
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
+\begin{exercise}
 Plot the CDF of pregnancy lengths for all live births.  Does it
 look like a normal distribution?
 
@@ -2950,11 +2937,11 @@ distribution with the same parameters.  Is the normal distribution a
 good model for this data?  If you had to summarize this distribution
 with two statistics, what statistics would you choose?
 
-\end{ex}
+\end{exercise}
 
 
 \section{Normal probability plot}
-\index{normal probablity plot}
+\index{normal probability plot}
 \index{plot!normal probability}
 
 \index{exponential distribution}
@@ -2982,8 +2969,7 @@ distribution for the $k$th value.
 
 \index{rankit}
 
-\begin{ex}
-
+\begin{exercise}
 Write a function called {\tt Sample} that generates 6 samples from a
 normal distribution with $\mu = 0$ and $\sigma = 1$.  Sort and return
 the values.
@@ -3001,7 +2987,7 @@ this:
 If you increase the number of times you call {\tt Sample}, the
 results should converge on these values.
 
-\end{ex}
+\end{exercise}
 
 % Algorithms for exact and approximate normal rank stats
 % http://download.osgeo.org/grass/grass6_progman/as177_8c_source.html
@@ -3051,16 +3037,15 @@ good (enough) model for many purposes.
 
 \index{model}
 
-\begin{ex}
+\begin{exercise}
+Write a function called {\tt NormalPlot} that takes a sequence of
+values and generates a normal probability plot.  You can download
+a solution from \url{thinkstats.com/rankit.py}.
 
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
-
-Write a function called {\tt NormalPlot} that takes a sequence of
-values and generates a normal probability plot.  You can download
-a solution from \url{thinkstats.com/rankit.py}.
 
 \index{{\tt rankit.py}}
 \index{{\tt relay.py}}
@@ -3074,7 +3059,7 @@ probability plot.  Is the normal distribution a good model for this
 data?  You can download a solution from
 \url{thinkstats.com/relay_normal.py}.
 
-\end{ex}
+\end{exercise}
 
 
 \section{The lognormal distribution}
@@ -3182,16 +3167,15 @@ conclude that $w$ fits a lognormal distribution.
 %\label{brfss_weight_log}
 %\end{figure}
 
-\begin{ex}
-
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-
+\begin{exercise}
 Download the BRFSS data from 
 \url{thinkstats.com/CDBRFS08.ASC.gz}, and my code for reading it
 from
 \url{thinkstats.com/brfss.py}.  Run {\tt brfss.py} and confirm that
 it prints summary statistics for a few of the variables.
+
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
 
 \index{{\tt brfss.py}}
 \index{{\tt brfss\_figs.py}}
@@ -3203,10 +3187,9 @@ Write a program that reads adult weights from the BRFSS and
 generates normal probability plots for $w$ and $\log w$.  You can
 download a solution from \url{thinkstats.com/brfss_figs.py}.
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 The distribution of populations for cities and towns has been proposed
 as an example of a real-world phenomenon that can be described
 with a Pareto distribution.
@@ -3252,20 +3235,18 @@ for cities and towns?  You can download a solution from
 
 \index{{\tt populations\_cdf.py}}
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
+\begin{exercise}
 \label{irs}
+The Internal Revenue Service of the United States (IRS) provides data
+about income taxes at \url{irs.gov/taxstats}.
 
 \index{Internal Revenue Service}
 \index{IRS}
 \index{income}
 \index{taxes}
-
-The Internal Revenue Service of the United States (IRS) provides data
-about income taxes at \url{irs.gov/taxstats}.
 
 One of their files, containing information about individual incomes
 for 2008, is available from \url{thinkstats.com/08in11si.csv}.  I
@@ -3279,7 +3260,7 @@ the data?  You can download a solution from \url{thinkstats.com/irs.py}.
 
 \index{{\tt irs.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Why model?}
@@ -3370,18 +3351,16 @@ undefined.
 
 \index{random module}
 
-\begin{ex}
-
-\index{Weibull distribution}
-\index{distribution!Weibull}
-
+\begin{exercise}
 Write a function named \verb"weibullvariate" that takes
 \verb"lam" and \verb"k" and returns a random value from the Weibull
 distribution with those parameters.
 
+\index{Weibull distribution}
+\index{distribution!Weibull}
 \index{parameter}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Glossary}
@@ -3406,7 +3385,7 @@ function.
 
 \item[normal probability plot:] A plot of the sorted values in a sample
 versus the expected value for each if their distribution is normal.
-\index{normal probablity plot}
+\index{normal probability plot}
 \index{plot!normal probability}
 
 \item[rankit:] The expected value of an element in a sorted list of
@@ -3598,29 +3577,29 @@ there are some scenarios where people are surprisingly bad at this
 kind of analysis.  For examples and discussion of this phenomenon, see
 \url{wikipedia.org/wiki/Conjunction_fallacy}.
 
-\index{conjuction fallacy}
+\index{conjunction fallacy}
 \index{fallacy!conjunction}
 
-\begin{ex}
-\index{dice}
-
+\begin{exercise}
 If I roll two dice and the total is 8, what is the chance that
 one of the dice is a 6?
-\end{ex}
 
-\begin{ex}
+\index{dice}
+
+\end{exercise}
+
+\begin{exercise}
 If I roll 100 dice, what is the chance of getting all sixes?
 What is the chance of getting no sixes?
-\end{ex}
+\end{exercise}
 
-\begin{ex}
+\begin{exercise}
+The following questions are adapted from Mlodinow, {\em The Drunkard's
+  Walk}.
 
 \index{Mlodinow, Leonard}
 \index{Florida, girl named}
 \index{girl named Florida}
-
-The following questions are adapted from Mlodinow, {\em The Drunkard's
-  Walk}.
 
 \begin{enumerate}
 
@@ -3644,7 +3623,7 @@ and that the children in a family are independent trials (in more ways
 than one).  You can also assume that the percentage of girls named
 Florida is small.
 
-\end{ex}
+\end{exercise}
 
 
 \section{Monty Hall}
@@ -3723,8 +3702,7 @@ Only Numbers}, page 83.}''
 No amount of argument could convince him.  In the end, it took
 a computer simulation to bring him around.
 
-\begin{ex}
-
+\begin{exercise}
 Write a program that simulates the Monty Hall problem and use
 it to estimate the probability of winning if you stick and if
 you switch.
@@ -3735,25 +3713,24 @@ Then read the discussion of the problem at
 Which do you find more convincing, the simulation or the arguments,
 and why?
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{Monty Hall! confused}
-\index{confused Monty problem}
-
+\begin{exercise}
 To understand the Monty Hall problem, it is important to realize
 that by deciding which door to open, Monty is giving you information.
 To see why this matters, imagine the case where Monty doesn't
 know where the prizes are, so he chooses Door B or C at random.
+
+\index{Monty Hall! confused}
+\index{confused Monty problem}
 
 If he opens the door with the car, the game is over, you lose, and
 you don't get to choose whether to switch or stick.
 
 Otherwise, are you better off switching or sticking?
 
-\end{ex}
+\end{exercise}
 
 
 
@@ -3794,8 +3771,7 @@ consistent with the hypothesis that the baker was still making 950 g
 loaves, but deliberately giving \Poincare~the heavier ones.
 
 
-\begin{ex}
-
+\begin{exercise}
 Write a program that simulates a baker who chooses $n$ loaves from a
 distribution with mean 950 g and standard deviation 50 g, and gives
 the heaviest one to \Poincare.  What value of $n$ yields a
@@ -3805,18 +3781,17 @@ Compare this distribution to a normal distribution with the same mean
 and the same standard deviation.  Is the difference in the shape of
 the distribution big enough to convince the bread police?
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
+\begin{exercise}
 \label{coef_var}
-
-\index{dance}
-\index{height}
-
 If you go to a dance where partners are paired up randomly, what
 percentage of opposite sex couples will you see where the woman is
 taller than the man?
+
+\index{dance}
+\index{height}
 
 \index{Behavioral Risk Factor Surveillance System}
 \index{BRFSS}
@@ -3844,7 +3819,7 @@ heights are slightly more variable.
 % 1 178.090966766 59.4275328443 7.70892553112 0.0432864488925
 % 2 163.226104443 52.7684723388 7.26419110011 0.0445038563217
 
-\end{ex}
+\end{exercise}
 
 \section{Another rule of probability}
 \index{probability!rules of}
@@ -3875,22 +3850,21 @@ becomes even clearer if I toss three coins.
 
 \index{coin}
 
-\begin{ex}
+\begin{exercise}
+If I roll two dice, what is the chance of rolling at least one 6?
 
 \index{dice}
 
-If I roll two dice, what is the chance of rolling at least one 6?
-
 % 1/6 + 1/6 - 1/36
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
+\begin{exercise}
 What is the general formula for the probability of $A$ or $B$ but not both?
 
 % P(A XOR B) = P(A) + P(B) - 2 P(A \AND B)
 
-\end{ex}
+\end{exercise}
 
 
 \section{Binomial distribution}
@@ -3928,15 +3902,15 @@ efficiency.
 
 \index{{\tt thinkstats.py}}
 
-\begin{ex}
-\index{coin}
-
+\begin{exercise}
 If you flip a coin 100 times, you expect about 50 heads, but what
 is the probability of getting exactly 50 heads?
 
+\index{coin}
+
 % 0.079589
 
-\end{ex}
+\end{exercise}
 
 
 \section{Streaks and hot spots}
@@ -3985,10 +3959,7 @@ cluster.  This process is called {\bf Monte Carlo} simulation because
 generating random numbers is reminiscent of casino games (and Monte
 Carlo is famous for its casino).
 
-\begin{ex}
-
-\index{basketball}
-
+\begin{exercise}
 If there are 10 players in a basketball game and each one takes
 15 shots during the course of the game, and each shot has a
 50\% probability of going in, what is the probability that 
@@ -3997,6 +3968,10 @@ hits 10 shots in a row?  If you watch a season of 82 games,
 what are the chances you will see at least one streak of
 10 hits or misses?
 
+\index{basketball}
+\index{simulation!Monte Carlo}
+\index{Monte Carlo}
+
 This problem demonstrates some strengths and weaknesses of Monte
 Carlo simulation.  A strength is that it is often easy and fast
 to write a simulation, and no great knowledge of probability is
@@ -4004,20 +3979,19 @@ required.  A weakness is that estimating the probability of
 rare events can take a long time!  A little bit of analysis can
 save a lot of computing.
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{baseball}
-\index{DiMaggio, Joe}
-\index{hitting streak}
-
+\begin{exercise}
 In 1941 Joe DiMaggio got at least one hit
 in 56 consecutive games\footnote{See
   \url{wikipedia.org/wiki/Hitting_streak}.}.  Many baseball fans
 consider this streak the greatest achievement in any sport in history,
 because it was so unlikely.
+
+\index{baseball}
+\index{DiMaggio, Joe}
+\index{hitting streak}
 
 \index{simulation!Monte Carlo}
 \index{Monte Carlo}
@@ -4026,18 +4000,17 @@ Use a Monte Carlo simulation to estimate the probability that
 any player in major league baseball will have a hitting streak
 of 57 or more games in the next century.
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{cluster}
-\index{cancer cluster}
-
+\begin{exercise}
 A cancer cluster is defined by the Centers for Disease Control (CDC)
 as ``greater-than-expected number of cancer cases that occurs within a
 group of people in a geographic area over a period of
 time.\footnote{From \url{cdc.gov/nceh/clusters/about.htm}.}''
+
+\index{cluster}
+\index{cancer cluster}
 
 \index{Gawande, Atul}
 
@@ -4100,7 +4073,7 @@ a 10 year period and estimates the distribution of total cases.
 
 \end{enumerate}
 
-\end{ex}
+\end{exercise}
 
 
 
@@ -4160,7 +4133,7 @@ $P(E)$ is the {\bf normalizing constant}.
 
 \index{update}
 \index{prior}
-\index{posterion}
+\index{posterior}
 \index{likelihood}
 \index{normalizing constant}
 
@@ -4216,8 +4189,7 @@ Putting it together, we have
 Plugging in the given values yields $P(D|E) = 0.76$, which means
 that of the people who test positive, about 1 in 4 is innocent. 
 
-\begin{ex}
-
+\begin{exercise}
 Write a program that takes the actual rate of drug use, and the
 sensitivity and specificity of the test, and uses Bayes's theorem
 to compute $P(D|E)$.
@@ -4226,13 +4198,10 @@ Suppose the same test is applied to a population where the actual
 rate of drug use is 1\%.  What is the probability that someone
 who tests positive is actually a drug user?
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{cookie}
-
+\begin{exercise}
 This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 
 \begin{quote}
@@ -4245,16 +4214,18 @@ This exercise is from \url{wikipedia.org/wiki/Bayesian_inference}.
 
 \end{quote}
 
-\end{ex}
+\index{cookie}
 
-\begin{ex}
+\end{exercise}
 
-\index{M\&M}
+\begin{exercise}
 
 The blue M\&M was introduced in 1995.  Before then, the color mix in
 a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
 Green, 10\% Orange, 10\% Tan).  Afterward it was (24\% Blue , 20\%
 Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown).
+
+\index{M\&M}
 
 A friend of mine has two bags of M\&Ms, and he tells me
 that one is from 1994 and one from 1996.  He won't tell me which is
@@ -4262,10 +4233,9 @@ which, but he gives me one M\&M from each bag.  One is yellow and
 one is green.  What is the probability that the yellow M\&M came
 from the 1994 bag?
   
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
+\begin{exercise}
 This exercise is adapted from MacKay, {\em Information
   Theory, Inference, and Learning Algorithms}:
 
@@ -4284,7 +4254,7 @@ twins.''
 
 What is the probability that Elvis was an identical twin?
 
-\end{ex}
+\end{exercise}
 
 
 \section{Glossary}
@@ -4406,8 +4376,7 @@ to the effect of outliers.
 
 \index{robust}
 
-\begin{ex}
-
+\begin{exercise}
 Write a function named {\tt Skewness} that computes
 $g_1$ for a sample.
 
@@ -4424,11 +4393,10 @@ distributions?
 Write a function named {\tt PearsonSkewness} that computes $g_p$
 for these distributions.  How does $g_p$ compare to $g_1$?
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
+\begin{exercise}
 The ``Lake Wobegon effect'' is an amusing nickname\footnote{If you
   don't get it, see \url{wikipedia.org/wiki/Lake_Wobegon}.} for {\bf
   illusory superiority}, which is the tendency for people to
@@ -4449,21 +4417,20 @@ possible, although unlikely.
 What percentage of the population has more than the average number
 of legs?
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{Internal Revenue Service}
-\index{IRS}
-\index{income}
-\index{taxes}
-
+\begin{exercise}
 The Internal Revenue Service of the United States (IRS) provides data
 about income taxes, and other statistics, at \url{irs.gov/taxstats}.
 If you did Exercise~\ref{irs}, you have already worked with this data;
 otherwise, follow the instructions there to extract the distribution
 of incomes from this dataset.
+
+\index{Internal Revenue Service}
+\index{IRS}
+\index{income}
+\index{taxes}
 
 What fraction of the population reports a taxable income below the
 mean?
@@ -4489,7 +4456,112 @@ Hint: use the PMF to compute the relative mean difference
 
 You can download a solution to this exercise from \url{thinkstats.com/gini.py}.
 
-\end{ex}
+\end{exercise}
+
+
+\section{Random Variables}
+\index{random variable}
+\index{variable!random}
+
+A {\bf random variable} represents a process that generates a random
+number.  Random variables are usually written with a capital letter,
+like $X$.  When you see a random variable, you should think ``a value
+selected from a distribution.''
+
+\index{cumulative distribution function}
+\index{CDF}
+
+For example, the formal definition of the cumulative distribution
+function is:
+
+\[ CDF_X (x) = P(X \le x) \]
+
+I have avoided this notation until now because it is so awful, but
+here's what it means: The CDF of the random variable $X$, evaluated
+for a particular value $x$, is defined as the probability that
+a value generated by the random process $X$ is less than or equal
+to $x$.
+
+As a computer scientist, I find it helpful to think of a random
+variable as an object that provides a method, which I will call
+{\tt generate}, that uses a random process to generate values.
+
+For example, here is a definition for a class that represents
+random variables:
+
+\begin{verbatim}
+class RandomVariable(object):
+    """Parent class for all random variables."""
+\end{verbatim}
+
+And here is a random variable with an exponential distribution:
+
+\index{exponential distribution}
+\index{distribution!exponential}
+
+\begin{verbatim}
+class Exponential(RandomVariable):
+    def __init__(lam):
+        self.lam = lam
+
+    def generate():
+        return random.expovariate(lam)
+\end{verbatim}
+
+The init method takes the parameter, $\lambda$, and stores it as
+an attribute.  The {\tt generate} method returns a random value
+from the exponential distribution with that parameter.
+
+\index{init method}
+\index{method!init}
+
+Each time you invoke {\tt generate}, you get a different value.  The
+value you get is called a {\bf random variate}, which is why many
+function names in the {\tt random} module include the word ``variate.''
+
+\index{random variate}
+\index{variate!random}
+
+If I were just generating exponential variates, I would not bother to
+define a new class; I would use {\tt random.expovariate}.  But for
+other distributions it might be useful to use RandomVariable objects.
+For example, the Erlang distribution is a continuous distribution with
+parameters $\lambda$ and $k$ (see
+\url{wikipedia.org/wiki/Erlang_distribution}).
+
+\index{Erlang distribution}
+\index{distribution!Erlang}
+
+One way to generate values from an Erlang distribution is to add
+$k$ values from an exponential distribution with the same $\lambda$.
+Here's an implementation:
+
+\begin{verbatim}
+class Erlang(RandomVariable):
+    def __init__(lam, k):
+        self.lam = lam
+        self.k = k
+        self.expo = Exponential(lam)
+
+    def generate():
+        total = 0
+        for i in range(self.k):
+            total += self.expo.generate()
+        return total
+\end{verbatim}
+
+The init method creates an Exponential object with the given
+parameter; then {\tt generate} uses it.  In general, the init method
+can take any set of parameters and the {\tt generate} function can
+implement any random process.
+
+\begin{exercise}
+Write a definition for a class that represents a random variable
+with a Gumbel distribution (see \url{wikipedia.org/wiki/Gumbel_distribution}).
+
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
+\end{exercise}
 
 
 \section{PDFs}
@@ -4530,77 +4602,143 @@ volume; in order to get a mass, you have to multiply by volume or,
 if the density is not constant, you have to integrate over volume.
 
 \index{inertia}
-\index{moment of intertia}
+\index{moment of inertia}
 
 Similarly, probability density measures probability per unit of $x$.
 In order to get a probability mass\footnote{To take the analogy one
 step farther, the mean of a distribution is its center of mass, and
 the variance is its moment of inertia.}, you have to integrate over $x$.
-For example, the probability that a value from a normal distribution
-falls between -0.5 and 0.5 is
+For example, is $X$ is a random variable whose PDF is $PDF_X$, we
+can compute the probability that a value from $X$
+falls between -0.5 and 0.5:
 %
-\[ P[-0.5 \le X < 0.5] = \int_{-0.5}^{0.5} PDF_{normal}(x) dx \]
+\[ P(-0.5 \le X < 0.5) = \int_{-0.5}^{0.5} PDF_{X}(x) dx \]
 %
-Since $CDF_{normal}$ is the integral of $PDF_{normal}$, we can write
+Or, since the CDF is the integral of the PDF, we can write
 %
-\[ P[-0.5 \le X < 0.5] = CDF_{normal}(0.5) - CDF_{normal}(-0.5) \]
+\[ P(-0.5 \le X < 0.5) = CDF_{X}(0.5) - CDF_{X}(-0.5) \]
 
+For some distributions we can evaluate the CDF explicitly, so we would
+use the second option.  Otherwise we usually have to integrate the
+PDF numerically.
 
-\begin{ex}
+\begin{exercise}
 \label{expo_pdf}
-
-\index{exponential distribution}
-\index{distribution!exponential}
-
 What is the probability that a value chosen from an exponential
 distribution with parameter $\lambda$ falls between 1 and 20?  Express
 your answer as a function of $\lambda$.  Keep this result handy;
 we will use it in Section~\ref{censored}.
 
-\end{ex}
+\index{exponential distribution}
+\index{distribution!exponential}
+
+\end{exercise}
+
+
+\begin{exercise}
+In the BRFSS (see Section~\ref{lognormal}), the distribution of
+heights is roughly normal with parameters $\mu=178$ cm and
+$\sigma=59.4$ cm for men, and $\mu=163$ cm and $\sigma=52.8$ cm for
+women.
+
+\index{normal distribution}
+\index{distribution!normal}
+
+\index{height}
+\index{Blue Man Group}
+\index{Group, Blue Man}
+
+In order to join Blue Man Group, you have to be male between 5'10''
+and 6'1'' (see \url{bluemancasting.com}).  What percentage of the
+U.S. male population is in this range?  Hint: see
+Section~\ref{normal}.
+
+\end{exercise}
 
 
 \section{Convolution}
 \index{convolution}
 \index{PDF}
 
-PDFs are useful for computing operations on distributions.  For
-example, suppose we have two values, $X$ and $Y$, drawn independently
-from distributions $CDF_X$ and $CDF_Y$.  What is the distribution of
-the sum $Z = X + Y$?
+Suppose we have two random variables, $X$ and $Y$, 
+with distributions $CDF_X$ and $CDF_Y$.  What is the
+distribution of the sum $Z = X + Y$?
 
+\index{random variable}
+\index{variable!random}
 \index{sum}
 
-One way to get to the answer it to imagine that the particular value
-of $X$ is $x$.  Then for any value of $z$ we can compute:
-%
-\[ P[Z \le z | X = x] = P[Y \le z-x] = CDF_Y(z-x) \]
-%
-The notation is getting a little dense, so let's read it back.  
-$P[Z \le z | X = x]$ is ``the probability that the sum is less than
-$z$, given that we know the first term of the sum is $x$.''  Well, if
-the first term is $x$ and the sum has to be less than $z$, then the
-second term has to be less than $z-x$.
+One option is to write a RandomVariable object that generates
+the sum:
+
+\begin{verbatim}
+class Sum(RandomVariable):
+    def __init__(X, Y):
+        self.X = X
+        self.Y = Y
+
+    def generate():
+        return X.generate() + Y.generate()
+\end{verbatim}
+
+Given any RandomVariables, $X$ and $Y$, we can create a Sum
+object that represents $Z$.  Then we can use a sample from $Z$
+to approximate $CDF_Z$.
+
+This approach is simple and versatile, but not very efficient; we
+have to generate a large sample to estimate $CDF_Z$ accurately, and
+even then it is not exact.
+
+If $CDF_X$ and $CDF_Y$ are expressed as functions, sometimes we can
+find $CDF_Z$ exactly.  Here's how:
 
 \newcommand{\infint}{\int_{-\infty}^{\infty}}
 \newcommand{\convolution}{\star}
+\newcommand{\spa}{~}
+\newcommand{\given}{~|~}
 
-Good so far?  OK, let's make it harder.  Since we don't actually know
+\begin{enumerate}
+
+\item To start, assume that the particular value
+of $X$ is $x$.  Then $CDF_Z(z)$ is 
+%
+\[ P(Z \le z \given X = x)  =  P(Y \le z-x) \]
+%
+Let's read that back.  
+The left side is ``the probability that the sum is less than
+$z$, given that the first term is $x$.''  Well, if
+the first term is $x$ and the sum has to be less than $z$, then the
+second term has to be less than $z-x$.
+
+\item To get the probability that $Y$ is less than $z-x$, we
+evaluate $CDF_Y$.
+%
+\[ P(Y \le z-x) = CDF_Y(z-x) \]
+%
+This follows from the definition of the CDF.
+
+\item Good so far?  Let's go on.  Since we don't actually know
 the value of $X$, we have to consider all values it could have and
 integrate over them:
 %
-\[ P[Z \le z] = \infint P[Z \le z | X = x] PDF_X(x) dx \]
+\[ P(Z \le z) = \infint P(Z \le z \given X = x) \spa PDF_X(x) \spa dx \]
 %
-Substituting in the previous equation we get
+The integrand is ``the probability that $Z$ is less than or equal
+to $z$, given that $X=x$, times the probability that $X=x$.''
+
+Substituting from the previous steps we get
 %
-\[ P[Z \le z] = \infint CDF_Y(z-x) PDF_X(x) dx \]
+\[ P(Z \le z) = \infint CDF_Y(z-x) \spa PDF_X(x) \spa dx \]
 %
-The left side of this equation is the definition of
-$CDF_Z$, so we could stop here and declare victory.  Or, if
-we are interested in $PDF_Z$, we could take the derivative of
+The left side is the definition of $CDF_Z$, so we conclude:
+%
+\[ CDF_Z(z) = \infint CDF_Y(z-x) \spa PDF_X(x) \spa dx \]
+%
+
+\item To get $PDF_Z$, take the derivative of
 both sides with respect to $z$.  The result is
 %
-\[ PDF_Z(z) = \infint PDF_Y(z-x) PDF_X(x) dx  \]
+\[ PDF_Z(z) = \infint PDF_Y(z-x) \spa PDF_X(x) \spa dx  \]
 %
 If you have studied signals and systems, you might recognize that
 integral.  It is the {\bf convolution} of $PDF_Y$ and $PDF_z$, denoted
@@ -4615,69 +4753,80 @@ See \url{wiktionary.org/wiki/booyah}!
 \index{exponential distribution}
 \index{distribution!exponential}
 
+\end{enumerate}
+
 \index{independent}
 
-As an example, suppose $X$ and $Y$ are drawn independently from an
-exponential distribution with parameter $\lambda$.  To find their
-distribution, let's start by finding the probability that their
-sum, $Z$, is $z$.
+As an example, suppose $X$ and $Y$ are random variables with an
+exponential distribution with parameter $\lambda$.  
+The distribution of $Z = X + Y$ is:
 %
-\[ PDF_Z(z) = \infint PDF_X(x)~PDF_Y(z-x) dx = 
+\[ PDF_Z(z) = \infint PDF_X(x)~PDF_Y(z-x) \spa dx = 
 \infint \lambda e^{-\lambda x}~\lambda e^{\lambda (z-x)} \]
 %
 Now we have to remember that $PDF_{expo}$ is 0 for all negative
 values, but we can handle that by adjusting the limits of integration:
 %
-\[ PDF_Z(z) = \int_{0}^{z} \lambda e^{-\lambda x}~\lambda e^{-\lambda (z-x)} dx \]
+\[ PDF_Z(z) = \int_{0}^{z} \lambda e^{-\lambda x}~\lambda e^{-\lambda (z-x)} \spa dx \]
 %
 Now we can combine terms and move constants outside the integral:
 %
 \[ PDF_Z(z) = \lambda^2 e^{-\lambda z} \int_{0}^{z} dx = 
-\lambda^2 z e^{-\lambda z} \]
-%
-This, it turns out, is the PDF of the Erlang distribution (see
-\url{wikipedia.org/wiki/Erlang_distribution}).
+\lambda^2 z \spa e^{-\lambda z} \]
+% 
+This, it turns out, is the PDF of an Erlang distribution with
+parameter $k=2$ (see \url{wikipedia.org/wiki/Erlang_distribution}).
+So the convolution of two exponential distributions (with the same
+parameter) is an Erlang distribution.
 
+\index{Erlang distribution}
+\index{distribution!Erlang}
 
-\begin{ex}
+\begin{exercise}
+If $X$ has an exponential distribution with parameter
+$\lambda$, and $Y$ has an Erlang distribution with parameters
+$k$ and $\lambda$, what is the distribution of the sum $Z = X + Y$?
 
 \index{exponential distribution}
 \index{distribution!exponential}
 
-If $X$ is drawn from an exponential distribution with parameter
-$\lambda$, and $Y$ is drawn from an Erlang distribution with parameters
-$k$, $\lambda$, what is the distribution of the sum $Z = X+Y$?
+\end{exercise}
 
-\end{ex}
-
-\begin{ex}
-
-\index{max}
-
+\begin{exercise}
 Suppose I draw two values from a distribution; what is the distribution
 of the larger value?  Express your answer in terms of the PDF or CDF of
 the distribution.
 
+\index{max}
+
 As the number of values increases, the distribution of the maximum
 converges on one of the extreme value distributions; see
-\url{http://en.wikipedia.org/wiki/Gumbel_distribution}.
+\url{wikipedia.org/wiki/Gumbel_distribution}.
 
 \index{Gumbel distribution}
 \index{distribution!Gumbel}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
+\begin{exercise}
+If you are given Pmf objects, you can compute the distribution of
+the sum by enumerating all pairs of values:
 
-\index{PMF object}
+\index{Pmf object}
 
-Write a function that takes two Pmf objects that represent $PMF_X$ and
+\begin{verbatim}
+for x in pmf_x.Values():
+    for y in pmf_y.Values():
+        z = x + y
+\end{verbatim}
+
+Write a function that takes $PMF_X$ and
 $PMF_Y$ and returns a new Pmf that represents the distribution of
-the sum $Z = X+Y$.  Hint: enumerate all possible pairs of values.
+the sum $Z = X+Y$.
 
 Write a similar function that computes the PMF of $Z = max(X,Y)$.
 
-\end{ex}
+\end{exercise}
 
 
 
@@ -4698,8 +4847,10 @@ closed under linear transformation and convolution.  To explain what
 that means, it will help to introduce some notation.
 
 \index{analysis}
+\index{random variable}
+\index{variable!random}
 
-If the distribution of a variable, $X$, is
+If the distribution of a random variable, $X$, is
 normal with parameters $\mu$ and $\sigma$, you can write
 %
 \[ X \hasdist \normal (\mu, \sigma^2) \]
@@ -4734,16 +4885,19 @@ properties.
 
 \index{convolution}
 
-\begin{ex}
-
+\begin{exercise}
 If 
 $X \hasdist \normal (\mu_X, \sigma_X^2)$ and
 $Y \hasdist \normal (\mu_Y, \sigma_Y^2)$, what is the distribution
 of $Z = aX + bY$?
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
+\begin{exercise}
+Let's see what happens when we add values from
+other distributions.  Choose a pair of distributions (any two of
+exponential, normal, lognormal, and Pareto) and choose parameters
+that make their mean and variance similar.
 
 \index{exponential distribution}
 \index{distribution!exponential}
@@ -4752,11 +4906,6 @@ of $Z = aX + bY$?
 \index{lognormal distribution}
 \index{distribution!lognormal}
 
-Let's see what happens when we add values from
-other distributions.  Choose a pair of distributions (any two of
-exponential, normal, lognormal, and Pareto) and choose parameters
-that make their mean and variance similar.
-
 \index{sum}
 
 Generate random numbers from these distributions and compute the
@@ -4764,7 +4913,7 @@ distribution of their sums.  Use the tests from
 Chapter~\ref{continuous} to see if the sum can be modeled by a
 continuous distribution.
 
-\end{ex}
+\end{exercise}
 
 
 %\section{Chi-square distribution}
@@ -4794,13 +4943,13 @@ continuous distribution.
 %where $P$ is the regularized gamma function (see
 %\url{wikipedia.org/wiki/Regularized_Gamma_function}).
 
-%\begin{ex}
+%\begin{exercise}
 %\label{chi-squared}
 
 %Write a function to evaluate $\chi^2(k, x)$.  Keep it handy; we will
 %need it for Exercise~\ref{expo_ci}.
 
-%\end{ex}
+%\end{exercise}
 
 
 
@@ -4888,10 +5037,9 @@ distribution tends to be normal.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-\begin{ex}
-
 \newcommand{\xbar}{\bar{x}}
 
+\begin{exercise}
 If I draw a sample, $x_1 .. x_n$, independently from a
 distribution with finite mean $\mu$ and variance $\sigma^2$, what is
 the distribution of the sample mean:
@@ -4901,9 +5049,15 @@ the distribution of the sample mean:
 As $n$ increases, what happens to the variance of the sample mean?
 Hint: review Section~\ref{why_normal}.
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
+\begin{exercise}
+Choose a distribution (one of exponential, lognormal or Pareto) and
+choose values for the parameter(s).  Generate samples with sizes
+2, 4, 8, etc., and compute the distribution of their sums.  Use
+a normal probability plot to see if the distribution is approximately
+normal.  How many terms do you have to add to see convergence?
+
 
 \index{exponential distribution}
 \index{distribution!exponential}
@@ -4911,20 +5065,12 @@ Hint: review Section~\ref{why_normal}.
 \index{distribution!Pareto}
 \index{lognormal distribution}
 \index{distribution!lognormal}
-
-Choose a distribution (one of exponential, lognormal or Pareto) and
-choose values for the parameter(s).  Generate samples with sizes
-2, 4, 8, etc., and compute the distribution of their sums.  Use
-a normal probability plot to see if the distribution is approximately
-normal.  How many terms do you have to add to see convergence?
-
 \index{convergence}
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
+\begin{exercise}
 Instead of the distribution of sums, compute the distribution of
 products; what happens as the number of terms increases?
 Hint: look at the distribution of the log of the products.
@@ -4932,7 +5078,7 @@ Hint: look at the distribution of the log of the products.
 \index{logarithm}
 \index{product}
 
-\end{ex}
+\end{exercise}
 
 \section{The distribution framework}
 \index{distribution framework}
@@ -4940,7 +5086,7 @@ Hint: look at the distribution of the log of the products.
 
 \begin{figure}
 \centerline{\includegraphics[height=2.2in]{figs/distribution_functions.eps}}
-\caption{A framework that relates different representations of distribution
+\caption{A framework that relates representations of distribution
 functions.}
 \label{dist_framework}
 \end{figure}
@@ -4993,8 +5139,7 @@ technique in Chapter~\ref{estimation} to do Bayesian estimation.
 \index{Bayesian estimation}
 \index{estimation!Bayesian}
 
-\begin{ex}
-
+\begin{exercise}
 Write a function called {\tt MakePmfFromCdf} that takes a Cdf object
 and returns the corresponding Pmf object.
 
@@ -5002,7 +5147,7 @@ You can find a solution to this exercise in {\tt thinkstats.com/Pmf.py}.
 
 \index{{\tt pmf.py}@{\tt Pmf.py}}
 
-\end{ex}
+\end{exercise}
 
 \section{Glossary}
 
@@ -5020,6 +5165,14 @@ is a measure of how asymmetric the distribution is.
 they are better than average.
 \index{illusory superiority}
 \index{fallacy!illusory superiority}
+
+\item[random variable:] An object that represents a random process.
+\index{random variable}
+\index{variable!random}
+
+\item[random variate:] A value generated by a random process.
+\index{random variate}
+\index{variate!random}
 
 \item[PDF:] Probability density function, the derivative of a continuous CDF.
 \index{PDF}
@@ -5160,9 +5313,10 @@ difference in means (due to chance) is as big or bigger than the
 difference we actually observed.  This fraction is the p-value.
 
 For pregnancy length, we observed $n=4413$ first babies and $m=4735$
-others, and the difference in mean was $\delta=0.078$ weeks.  To estimate
-the p-value of this effect, I pooled the distributions, generated
-samples with sizes $n$ and $m$ and computed the difference in mean.
+others, and the difference in mean was $\delta=0.078$ weeks.  To
+approximate the p-value of this effect, I pooled the distributions,
+generated samples with sizes $n$ and $m$ and computed the difference
+in mean.
 
 \index{resampling}
 
@@ -5190,10 +5344,9 @@ distribution for the two groups is the same.
 So the apparent effect is not very likely, but is it unlikely enough?
 I'll address that in the next section.
 
-\begin{ex}
-
+\begin{exercise}
 In the NSFG dataset, the difference in mean weight for first
-births is 2.0 ounces.  Estimate the p-value of this difference.
+births is 2.0 ounces.  Compute the p-value of this difference.
 
 \index{National Survey of Family Growth}
 \index{NSFG}
@@ -5210,7 +5363,7 @@ section, which you can download from \url{thinkstats.com/hypothesis.py}.
 
 \index{{\tt hypothesis.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Choosing a threshold}
@@ -5243,7 +5396,7 @@ a p-value less than $\alpha$.  A common choice for $\alpha$ is 5\%.
 By this criterion, the apparent difference in pregnancy length for
 first babies is not significant, but the difference in weight is.
 
-\index{signficance criterion}
+\index{significance criterion}
 
 \index{pregnancy length}
 \index{length!pregnancy}
@@ -5275,8 +5428,7 @@ sample size (or, in some cases, decrease measurement error).
 
 \index{sample size}
 
-\begin{ex}
-
+\begin{exercise}
 To investigate the effect of sample size on p-value, see what happens
 if you discard half of the data from the NSFG.  Hint: use {\tt
   random.sample}.  What if you discard three-quarters of the data, and
@@ -5294,7 +5446,7 @@ section, which you can download from \url{thinkstats.com/hypothesis.py}.
 
 \index{{\tt hypothesis.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Defining the effect}
@@ -5350,7 +5502,7 @@ At the beginning of this chapter I said that the question we want to
 address is whether an apparent effect is real.  We started by defining
 the null hypothesis, denoted $H_0$, which is the
 hypothesis that the effect is not real.  Then we defined the p-value,
-which is $P(E | H_0)$, where $E$ is an effect as big as or bigger than
+which is $P(E \given H_0)$, where $E$ is an effect as big as or bigger than
 the apparent effect.  Then we computed p-values and compared
 them to a threshold, $\alpha$.
 
@@ -5374,23 +5526,23 @@ interpret the result of a hypothesis test:
 
 \index{Bayesian probability}
 
-\item[Bayesian:] What we really want to know is $P(H_A | E)$, where
+\item[Bayesian:] What we really want to know is $P(H_A \given E)$, where
   $H_A$ is the hypothesis that the effect is real.  By Bayes's theorem
   %
-  \[ P(H_A | E) = \frac{P(E | H_A) P(H_A)}{P(E)} \]
+  \[ P(H_A \given E) = \frac{P(E \given H_A) \spa P(H_A)}{P(E)} \]
   %  
   where $P(H_A)$ is the prior probability of $H_A$ before we saw the
-  effect, $P(E | H_A)$ is the probability of seeing $E$, assuming that
+  effect, $P(E \given H_A)$ is the probability of seeing $E$, assuming that
   the effect is real, and $P(E)$ is the probability of seeing $E$
   under any hypothesis.  Since the effect is either real or it's not,
   %
-  \[ P(E) = P(E | H_A) P(H_A) + P(E | H_0) P(H_0) \]
+  \[ P(E) = P(E \given H_A) \spa P(H_A) + P(E \given H_0) \spa P(H_0) \]
 
 \end{description}
 
-As an example, I'll compute $P(H_A | E)$ for pregnancy lengths in the
-NSFG.  We have already computed $P(E | H_0)=0.166$, so all we have to
-do is compute $P(E | H_A)$ and choose a value for the prior.
+As an example, I'll compute $P(H_A \given E)$ for pregnancy lengths in the
+NSFG.  We have already computed $P(E \given H_0)=0.166$, so all we have to
+do is compute $P(E \given H_A)$ and choose a value for the prior.
 
 \index{prior probability}
 
@@ -5399,13 +5551,13 @@ do is compute $P(E | H_A)$ and choose a value for the prior.
 \index{pregnancy length}
 \index{length!pregnancy}
 
-To compute $P(E | H_A)$, we assume that the effect is real---that is,
+To compute $P(E \given H_A)$, we assume that the effect is real---that is,
 that the difference in mean duration, $\delta$, is actually what we
 observed, $0.078$.  (This way of formulating $H_A$ is a little bit
 bogus.  I will explain and fix the problem in the next section.)
 
 By generating 1000 sample pairs, one from each
-distribution, I estimated $P(E | H_A) = 0.494$.  With the prior
+distribution, I estimated $P(E \given H_A) = 0.494$.  With the prior
 $P(H_A)=0.5$, the posterior probability of $H_A$ is 0.748.
 
 \index{posterior probability}
@@ -5423,8 +5575,7 @@ In fact, the method I used in this section is not quite right, and
 it tends to overstate the impact of the evidence.  In the next section
 we will correct this tendency.
 
-\begin{ex}
-
+\begin{exercise}
 Using the data from the NSFG, what is the posterior probability that
 the distribution of birth weights is different for first babies and
 others?
@@ -5439,7 +5590,7 @@ section, which you can download from \url{thinkstats.com/hypothesis.py}.
 
 \index{{\tt hypothesis.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Cross-validation}
@@ -5452,11 +5603,11 @@ That's not a good idea; it is too easy to generate misleading results.
 The problem is that even when the null hypothesis is true, there is
 likely to be some difference, $\delta$, between any two groups, just
 by chance.  If we use the observed value of $\delta$ to formulate
-the hypothesis, $P(H_A | E)$ is likely to be high even when $H_A$ is
+the hypothesis, $P(H_A \given E)$ is likely to be high even when $H_A$ is
 false.
 
 We can address this problem with {\bf cross-validation}, which uses
-one dataset to estimate $\delta$ and a {\em different} dataset to
+one dataset to compute $\delta$ and a {\em different} dataset to
 evaluate $H_A$.  The first dataset is called the {\bf training set};
 the second is called the {\bf testing set}.
 
@@ -5475,7 +5626,7 @@ one for training and one for testing.
 
 I implemented the second approach, dividing the Cycle 6 data roughly
 in half.  I ran the test several times with different random partitions.
-The average posterior probability was $P(H_A | E) = 0.621$.  As
+The average posterior probability was $P(H_A \given E) = 0.621$.  As
 expected, the impact of the evidence is smaller, partly because of
 the smaller sample size in the test set, and also because we are
 no longer using the same data for training and testing.
@@ -5510,31 +5661,29 @@ probability.
 \index{Bayes factor}
 
 Another option is to report just the {\bf likelihood ratio}, 
-$P(E | H_A)/P(E | H_0)$, rather than the posterior probability.  That way
+$P(E \given H_A) ~/~ P(E \given H_0)$, rather than the posterior probability.  That way
 readers can plug in whatever prior they like and compute their own
 posteriors (no pun intended).  The likelihood ratio is sometimes
-called a Bayes factor (see \url{http://en.wikipedia.org/wiki/Bayes_factor}).
+called a Bayes factor (see \url{wikipedia.org/wiki/Bayes_factor}).
 
-\begin{ex}
-
-\index{null hypothesis}
-
+\begin{exercise}
 If your prior probability for a hypothesis, $H_A$, is 0.3 and new
 evidence becomes available that yields a likelihood ratio of 3
 relative to the null hypothesis, $H_0$, what is your posterior
 probability for $H_A$?
 
+\index{null hypothesis}
+
 % 0.3 * 3 / (0.3 * 3 + 0.7) = 0.6
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{MacKay, David}
-
+\begin{exercise}
 This exercise is adapted from MacKay, {\em Information
   Theory, Inference, and Learning Algorithms}:
+
+\index{MacKay, David}
 
 \begin{quote}
 
@@ -5554,7 +5703,7 @@ For a solution and discussion, see page 55 of MacKay's book.
 
 \index{likelihood}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Chi-square test}
@@ -5660,18 +5809,17 @@ You can download the code I used in this section from
 % See \url{en.wiktionary.org/wiki/voila}!
 
 
-\begin{ex}
-
-\index{casino}
-\index{dice}
-\index{crooked die}
-
+\begin{exercise}
 Suppose you run a casino and you suspect that a customer has
 replaced a die provided by the casino with a ``crooked die;'' that
 is, one that has been tampered with to make one of the faces more
 likely to come up than the others.  You apprehend the alleged
 cheater and confiscate the die, but now you have to prove that it
 is crooked.
+
+\index{casino}
+\index{dice}
+\index{crooked die}
 
 You roll the die 60 times and get the following results:
 
@@ -5689,7 +5837,7 @@ Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
 What is the chi-squared statistic for these values?  What is the
 probability of seeing a chi-squared value as large by chance?
 
-\end{ex}
+\end{exercise}
 
 
 
@@ -5801,8 +5949,7 @@ positive if the null hypothesis is false.  In general, the power of a
 test depends on the sample size, the magnitude of the effect, and the
 threshold $\alpha$.
 
-\begin{ex}
-
+\begin{exercise}
 What is the power of the test in Section~\ref{threshold}, using
 $\alpha=0.05$ and assuming that the actual difference between the
 means is $0.078$ weeks?
@@ -5813,11 +5960,11 @@ in the mean, and counting the number of positive tests.
 
 What is the power of the test with $\alpha=0.10$?
 
-\end{ex}
+\end{exercise}
 
 One way to report the power of a test, along with a negative result,
 is to say something like, ``If the apparent effect were as large
-as X, this test would reject the null hypothesis with probability P.''
+as $x$, this test would reject the null hypothesis with probability $p$.''
 
 
 %\section{Discussion}
@@ -5897,7 +6044,7 @@ apparent effect from what is expected by chance.
 the test statistic.
 \index{ch-square test}
 
-\item[likelihood ratio:] The ratio of $P(E|A)$ to $P(E|B)$ for two
+\item[likelihood ratio:] The ratio of $P(E \given A)$ to $P(E \given B)$ for two
 hypotheses $A$ and $B$, which is a way to report
 results from a Bayesian analysis without depending on priors.
 \index{likelihood ratio}
@@ -5938,7 +6085,6 @@ What do you think is the mean parameter, $\mu$, of this distribution?
 \index{mean}
 \index{parameter}
 
-\newcommand{\xbar}{\bar{x}}
 \newcommand{\ybar}{\bar{y}}
 
 One choice is to use the sample mean to estimate $\mu$.  Up
@@ -6016,17 +6162,16 @@ chance of winning is 1 in 8, and that's the best you can do.
 \index{MLE}
 \index{maximum likelihood estimator}
 
-\begin{ex}
+\begin{exercise}
+Write a function that draws 6 values from a normal distribution with
+$\mu=0$ and $\sigma=1$.  Use the sample mean to estimate $\mu$ and
+compute the error $\xbar - \mu$.  Run the function 1000 times and
+compute MSE.
 
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
-
-Write a function that draws 6 values from a normal distribution with
-$\mu=0$ and $\sigma=1$.  Use the sample mean to estimate $\mu$ and
-compute the error $\xbar - \mu$.  Run the function 1000 times and
-compute MSE.
 
 Now modify the program to use the median as an
 estimator.  Compute MSE again and compare to the MSE for $\xbar$.
@@ -6035,7 +6180,7 @@ estimator.  Compute MSE again and compare to the MSE for $\xbar$.
 \index{median}
 \index{MSE}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Guess the variance}
@@ -6085,23 +6230,22 @@ For an explanation of why $S^2$ is biased, and a proof that
 $S_{n-1}^2$ is unbiased, see
 \url{wikipedia.org/wiki/Bias_of_an_estimator}.
 
-\begin{ex}
+\begin{exercise}
+Write a function that draws 6 values from a normal distribution with
+$\mu=0$ and $\sigma=1$.  Use the sample variance to estimate
+$\sigma^2$ and compute the error $S^2 - \sigma^2$.  Run the function 1000
+times and compute mean error (not squared).
 
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-Write a function that draws 6 values from a normal distribution with
-$\mu=0$ and $\sigma=1$.  Use the sample variance to estimate
-$\sigma^2$ and compute the error $S^2 - \sigma^2$.  Run the function 1000
-times and compute mean error (not squared).
-
 Now modify the program to use the unbiased estimator $S_{n-1}^2$.
 Compute the mean error again and see if it converges to zero as you
 increase the number of games.
 
-\end{ex}
+\end{exercise}
 
 
 \section{Understanding errors}
@@ -6152,7 +6296,7 @@ so working backwards, we might choose
 It is common to use hat notation for estimators, so $\lamhat$ is an
 estimator of $\lambda$.  And not just any estimator; it is also the
 MLE estimator\footnote{See
-\url{wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}.}.
+\url{wikipedia.org/wiki/Exponential_distribution\#Maximum_likelihood}.}.
 So if you want to maximize your chance of guessing $\lambda$ exactly,
 $\lamhat$ is the way to go.
 
@@ -6175,8 +6319,7 @@ where $\mu_{1/2}$ is the sample median.
 
 \index{median}
 
-\begin{ex}
-
+\begin{exercise}
 Run an experiment to see which of $\lamhat$ and $\lamhatmed$ yields
 lower MSE.  Test whether either of them is biased.
 
@@ -6187,7 +6330,7 @@ lower MSE.  Test whether either of them is biased.
 %errors.  But remember that in non-experimental conditions you can't
 %compute MSE or check for bias.
 
-\end{ex}
+\end{exercise}
 
 
 \section{Confidence intervals}
@@ -6247,7 +6390,7 @@ to talk about Bayesian estimation.
 \index{estimation!Bayesian}
 
 
-%\begin{ex}
+%\begin{exercise}
 %\label{expo_ci}
 
 %Write a function that computes a 90\% confidence interval for
@@ -6262,7 +6405,7 @@ to talk about Bayesian estimation.
 %and checks whether the interval contains the $\lambda$.  Run the
 %function 1000 times and count the number of hits.
 
-%\end{ex}
+%\end{exercise}
 
 
 \section{Bayesian estimation}
@@ -6296,7 +6439,7 @@ between 0.5 and 1.5.  Here's a sample, which I'll call $\boldx$:
 %
 Based on this sample, what value of $\lambda$ do you think I chose?
 
-In this version of the game, $\lambda$ {\em is} a random variable, so we
+In this version of the game, $\lambda$ {\em is} a random quantity, so we
 can reasonably talk about its distribution, and we can compute it
 easily using Bayes's theorem.
 
@@ -6310,10 +6453,10 @@ actual value of $\lambda$ falls in the $i$th bin.
 Since $\lambda$ was drawn from a uniform distribution, the prior
 probability, $P(H_i)$, is the same for all $i$.
 
-\item For each hypothesis, we compute the likelihood, $P(\boldx|H_i)$,
+\item For each hypothesis, we compute the likelihood, $P(\boldx \given H_i)$,
 which is the chance of drawing the sample $\boldx$ given $H_i$.
 %
-\[ P(\boldx|H_i) = \prod_j \mathrm{expo}(\lambda_i, x_j)  \]
+\[ P(\boldx \given H_i) = \prod_j \mathrm{expo}(\lambda_i, x_j)  \]
 %
 where $\mathrm{expo}(\lambda, x)$ is a function that
 computes the PDF of the exponential distribution with parameter $\lambda$,
@@ -6326,11 +6469,11 @@ The symbol $\prod$ represents the product of a sequence (see
 
 \item Then by Bayes's theorem the posterior distribution is
 %
-\[ P(H_i|\boldx) =  P(H_i) P(\boldx|H_i) / f \]
+\[ P(H_i \given \boldx) =  P(H_i) P(\boldx \given H_i) / f \]
 %
 where $f$ is the normalization factor
 %
-\[ f = \sum_i P(H_i) P(\boldx|H_i) \]
+\[ f = \sum_i P(H_i) P(\boldx \given H_i) \]
 %
 \end{enumerate}
 
@@ -6393,7 +6536,7 @@ def Update(suite, evidence):
     suite.Normalize()
 \end{verbatim}
 
-For each hypothesis in the suite, we multiply the prior probablity
+For each hypothesis in the suite, we multiply the prior probability
 by the likelihood of the evidence.  Then we normalize the suite.
 
 In this function, {\tt suite} has to be a Pmf, but {\tt evidence}
@@ -6452,7 +6595,7 @@ correct value of $\lambda$.
 
 Initially, each person has a degree of confidence about their own hypothesis.
 After seeing the evidence, each person updates their confidence based on
-$P(E|H)$, the likelihood of the evidence, given their hypothesis.
+$P(E \given H)$, the likelihood of the evidence, given their hypothesis.
 
 Most often the likelihood function computes a
 probability, which is at most 1, so initially everyone's confidence
@@ -6503,14 +6646,13 @@ $PDF_{expo}$ with the conditional distribution:
 %
 for $1 < x < 20$, and 0 otherwise, with
 %
-\[ Z(\lambda) = \int_1^{20} \lambda e^{-\lambda x} dx = 
+\[ Z(\lambda) = \int_1^{20} \lambda e^{-\lambda x} \spa dx = 
 e^{-\lambda} - e^{-20 \lambda}  \]
 %
 You might remember $Z(\lambda)$ from Exercise~\ref{expo_pdf}.  I told
 you to keep it handy.
 
-\begin{ex}
-
+\begin{exercise}
 Download \url{thinkstats.com/estimate.py}, which contains the code
 from the previous section, and make a copy named {\tt decay.py}.
 
@@ -6529,22 +6671,21 @@ You can download a solution to this problem from
 
 \index{{\tt decay.py}}
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
+\begin{exercise}
+In the 2008 Minnesota Senate race the final vote count was 1,212,629
+votes for Al Franken and 1,212,317 votes for Norm Coleman.  Franken
+was declared the winner, but as Charles Seife points out in {\it
+  Proofiness}, the margin of victory was much smaller than the margin
+of error, so the result should have been considered a tie.
 
 \index{Coleman, Norm}
 \index{Franken, Al}
 \index{Minnesota Senate Race}
 \index{Seife, Charles}
 \index{Proofiness@{\em Proofiness}}
-
-In the 2008 Minnesota Senate race the final vote count was 1,212,629
-votes for Al Franken and 1,212,317 votes for Norm Coleman.  Franken
-was declared the winner, but as Charles Seife points out in {\it
-  Proofiness}, the margin of victory was much smaller than the margin
-of error, so the result should have been considered a tie.
 
 \index{margin of victory}
 \index{margin of error}
@@ -6555,7 +6696,7 @@ Coleman actually received more votes?
 
 Hint: you will have to fill in some details to model the error process.
 
-\end{ex}
+\end{exercise}
 
 
 \section{The locomotive problem}
@@ -6583,7 +6724,7 @@ questions:
 \begin{enumerate}
 
 \item For a given estimate, $\nhat$, what is the likelihood of the
-  evidence, $P(E|\nhat)$?  What is the maximum likelihood estimator?
+  evidence, $P(E \given \nhat)$?  What is the maximum likelihood estimator?
 
 \index{MLE}
 \index{maximum likelihood estimator}
@@ -6678,10 +6819,10 @@ same mean is $\nhat = 2i - 1$.
 
 Finally, to compute the Bayesian posterior distribution, we compute
 %
-\[ P(H_n|i) = \frac{P(i|H_n) P(H_n)}{P(i)} \]
+\[ P(H_n \given i) = \frac{P(i \given H_n) P(H_n)}{P(i)} \]
 %
 Where $H_n$ is the hypothesis that there are $n$ trains, and $i$ is
-the evidence: we saw train $i$.  Again, $P(i|H_n)$
+the evidence: we saw train $i$.  Again, $P(i \given H_n)$
 is $1/n$ if $i \le n$, and 0 otherwise.  The normalizing constant,
 $P(i)$, is just the sum of the numerators for each hypothesis.
 
@@ -6716,8 +6857,7 @@ priors, then all estimators tend to converge; otherwise, as in this
 case, there is no single estimator that has all of the properties we
 might want.
 
-\begin{ex}
-
+\begin{exercise}
 Generalize \verb"locomotive.py" to handle the case where you
 see more than one train.  You should only have to
 change a few lines of code.
@@ -6729,7 +6869,7 @@ see more than one train.  You can find a discussion of the problem
 and several solutions at
 \url{wikipedia.org/wiki/German_tank_problem}.
 
-\end{ex}
+\end{exercise}
 
 \section{Glossary}
 
@@ -6879,8 +7019,7 @@ interpret.  Among other problems, its units are the product of the
 units of $X$ and $Y$.  So the covariance of weight and height might be
 in units of kilogram-meters, which doesn't mean much.
 
-\begin{ex}
-
+\begin{exercise}
 Write a function called {\tt Cov} that takes two lists
 and computes their covariance.  To test your function, compute
 the covariance of a list with itself and confirm that
@@ -6891,7 +7030,7 @@ You can download a solution from
 
 \index{{\tt correlation.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Correlation}
@@ -6985,8 +7124,7 @@ your data before blindly computing a correlation coefficient.
 \index{correlation coefficient}
 \index{coefficient!correlation}
 
-\begin{ex}
-
+\begin{exercise}
 Write a function called {\tt Corr} that takes two lists and
 computes their correlation.  Hint: use {\tt thinkstats.Var} and
 the {\tt Cov} function you wrote in the previous exercise.
@@ -7000,7 +7138,7 @@ from \url{thinkstats.com/correlation.py}.
 
 \index{{\tt correlation.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Making scatterplots in pyplot}
@@ -7160,8 +7298,7 @@ correlation of the logs.
 \index{lognormal distribution}
 \index{distribution!lognormal}
 
-\begin{ex}
-
+\begin{exercise}
 Write a function that takes a sequence and returns a list that
 contains the rank for each element.  For example, if the sequence is
 $\{ 7, 1, 2, 5 \}$, the result should be $\{ 4, 1, 2, 3 \}$.
@@ -7180,17 +7317,16 @@ from \url{thinkstats.com/correlation.py}.
 \index{Spearman coefficient of correlation}
 \index{coefficient!correlation}
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-
+\begin{exercise}
 Download \url{thinkstats.com/brfss.py} and
 \url{thinkstats.com/brfss_scatter.py}.  Run them and confirm that you
 can read the BFRSS data and generate scatterplots.
+
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
 
 \index{{\tt brfss.py}}
 \index{{\tt brfss\_scatter.py}}
@@ -7216,7 +7352,7 @@ the relationship?  You can download a solution from
 
 \index{{\tt brfss\_corr.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Least squares fit}
@@ -7331,42 +7467,39 @@ To see how this is derived, you can read
 \url{wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
 
-\begin{ex}
-
+\begin{exercise}
 Write a function named {\tt LeastSquares} that takes $X$ and $Y$ and
 computes $\inter$ and $\slope$.  You can download a solution from
 \url{thinkstats.com/correlation.py}.
 
 \index{{\tt correlation.py}}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-
+\begin{exercise}
 Using the data from the BRFSS again, compute the linear least squares
 fit for $\log(\mathrm{weight})$ versus height.  You can download a
 solution from \url{thinkstats.com/brfss_corr.py}.
 
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
 \index{{\tt brfss\_corr.py}}
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
-\index{wind speed}
-\index{wind power density}
-\index{turbine}
-
+\begin{exercise}
 The distribution of wind speeds in a given location determines the
 wind power density, which is an upper bound on the average power that
 a wind turbine at that location can generate.  According to some
 sources, empirical distributions of wind speed are well modeled by a
 Weibull distribution (see
 \url{wikipedia.org/wiki/Wind_power#Distribution_of_wind_speed}).
+
+\index{wind speed}
+\index{wind power density}
+\index{turbine}
 
 \index{Weibull distribution}
 \index{distribution!Weibull}
@@ -7396,7 +7529,7 @@ Now write a function that takes the parameters of a Weibull distribution
 of wind speed and computes average wind power density (you might have
 to do some research for this part).
 
-\end{ex}
+\end{exercise}
 
 
 \section{Goodness of fit}
@@ -7458,16 +7591,15 @@ determination and Pearson's correlation coefficient, $\rho$:
 See \url{wikipedia.org/wiki/Howzzat}!
 \index{howzzat}
 
-\begin{ex}
+\begin{exercise}
+The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
+of intelligence; scores are calibrated so that the mean and standard
+deviation in the general population are 100 and 15.
 
 \index{Adult Intelligence Scale}
 \index{WAIS}
 \index{IQ}
 \index{intelligence}
-
-The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
-of intelligence; scores are calibrated so that the mean and standard
-deviation in the general population are 100 and 15.
 
 Suppose that you wanted to predict someone's WAIS score based on their
 SAT scores.  According to one study, there is a Pearson correlation of
@@ -7476,11 +7608,10 @@ SAT scores.  According to one study, there is a Pearson correlation of
 If you applied your predictor to a large sample, what would you expect to
 be the mean squared error (MSE) of your predictions?
 
-\end{ex}
+\end{exercise}
 
 
-\begin{ex}
-
+\begin{exercise}
 Write a function named {\tt Residuals} that takes $X$, $Y$, $inter$
 and $slope$ and returns a list of $\eps_i$.
 
@@ -7493,22 +7624,21 @@ from \url{thinkstats.com/correlation.py}.
 
 \index{{\tt correlation.py}}
 
-\end{ex}
+\end{exercise}
 
-\begin{ex}
-
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-
+\begin{exercise}
 Using the height and weight data from the BRFSS (one more time),
 compute $inter$, $slope$ and $R^2$.  If you were trying to guess
 someone's weight, how much would it help to know their height?
 You can download a solution from
 \url{thinkstats.com/brfss_corr.py}.
 
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
 \index{{\tt brfss\_corr.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Correlation and Causation}
@@ -7622,8 +7752,7 @@ we conclude that the effect is entirely due to age.  Or,
 if the difference is smaller, we can quantify how much of the effect
 is due to age.
 
-\begin{ex}
-
+\begin{exercise}
 The NSFG data includes a variable named {\tt agepreg} that records
 the age of the mother at the time of birth.
 Make a scatterplot of mother's age and baby's weight for each live
@@ -7648,7 +7777,7 @@ Python.  But that's a whole other book.
 \index{{\tt agemodel.py}}
 \index{{\tt age\_lm.py}}
 
-\end{ex}
+\end{exercise}
 
 
 \section{Glossary}
@@ -7711,7 +7840,7 @@ approximately random.
 \end{description}
 
 
-%    \printindex
+\printindex
 
 \clearemptydoublepage
 %\blankpage

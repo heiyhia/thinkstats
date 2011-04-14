@@ -52,6 +52,16 @@ distrib:
 	rsync -a dist/* $(DEST)
 	chmod -R o+r $(DEST)/*
 
+plastex:
+	plastex --filename=book.xml book.tex
+	# ~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+
+oreilly:
+	rsync -a book/ ~/oreilly
+	rsync -a figs/* ~/oreilly/figs
+	ps2pdf $(PDFFLAGS) thinkstats.ps
+	cp thinkstats.pdf ~/oreilly/pdf
+
 clean:
 	rm -f *~ *.aux *.log *.dvi *.idx *.ilg *.ind *.toc
 
