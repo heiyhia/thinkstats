@@ -4501,11 +4501,11 @@ And here is a random variable with an exponential distribution:
 
 \begin{verbatim}
 class Exponential(RandomVariable):
-    def __init__(lam):
+    def __init__(self, lam):
         self.lam = lam
 
     def generate():
-        return random.expovariate(lam)
+        return random.expovariate(self.lam)
 \end{verbatim}
 
 The init method takes the parameter, $\lambda$, and stores it as
@@ -4538,12 +4538,12 @@ Here's an implementation:
 
 \begin{verbatim}
 class Erlang(RandomVariable):
-    def __init__(lam, k):
+    def __init__(self, lam, k):
         self.lam = lam
         self.k = k
         self.expo = Exponential(lam)
 
-    def generate():
+    def generate(self):
         total = 0
         for i in range(self.k):
             total += self.expo.generate()
