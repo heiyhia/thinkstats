@@ -54,7 +54,7 @@ distrib:
 
 plastex:
 	plastex --filename=book.xml book.tex
-	# ~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+	~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
 
 oreilly:
 	rsync -a book/ ~/oreilly
