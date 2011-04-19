@@ -15,21 +15,21 @@
 % texlive-latex-extra (in Ubuntu)
 
 \usepackage{pslatex}
-%\usepackage{hyperref}
 \usepackage{url}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{subfig}
 \usepackage{amsmath, amsthm, amssymb}
-%\usepackage{exercise}                        % texlive-latex-extra
 \usepackage{makeidx}
 \usepackage{setspace}
 \usepackage{hevea}                           
 \usepackage{upquote}
 
 \title{Think Stats}
+\author{Allen B. Downey}
+
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.4.4}
+\newcommand{\theversion}{1.4.5}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -44,23 +44,26 @@
 
 \makeindex
 
+\newif\ifplastex
+\plastexfalse
+
 \begin{document}
 
 \frontmatter
 
 % LATEXONLY
 
-\input{latexonly}
-
+\ifplastex
+    \usepackage{mylocals}
+\else
+    \input{latexonly}
+\fi
 % \newtheorem{ex}{Exercise}[chapter]
 
 \newcounter{exercise}[chapter]
 \newcommand{\nextexercise}{\refstepcounter{exercise}}
 
-\newenvironment{exercise}
-{\nextexercise\par\noindent\textbf{Exercise \thechapter.\theexercise}
-\begin{itshape}\noindent}
-{\end{itshape}}
+\newenvironment{exercise}{\nextexercise \noindent \textbf{Exercise \thechapter.\theexercise} \begin{itshape} \noindent}{\end{itshape}}
 
 
 \begin{latexonly}
@@ -359,6 +362,8 @@ and Molly spotted several typos.
 \item Dr. Nikolas Akerblom knows how big a Hyracotherium is.
 
 \item Alex Morrow clarified one of the code examples.
+
+\item Jonathan Street caught an error in the nick of time.
 
 % ENDCONTRIB
 
@@ -804,12 +809,12 @@ in the Pregnancies table.
 
 \begin{enumerate}
 
-\index{{\tt survey.py}}
-\index{{\tt first.py}}
-
 \item In the directory where you put {\tt survey.py} and the
 data files, create a file named \verb"first.py" and
 type or paste in the following code:
+
+\index{{\tt survey.py}}
+\index{{\tt first.py}}
 
 \begin{verbatim}
 import survey
@@ -1318,7 +1323,7 @@ is the format {\tt bar} expects:
 \end{verbatim}
 
 I wrote a module called {\tt myplot.py} that provides functions
-for plotting histograms, PDFs and other objects we will see soon.
+for plotting histograms, PMFs and other objects we will see soon.
 You can read the documentation at {\tt
   thinkstats.com/myplot.html} and download the code from {\tt
   thinkstats.com/myplot.py}.  Or you can use
