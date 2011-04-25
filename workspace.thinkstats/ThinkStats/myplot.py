@@ -185,7 +185,7 @@ def Diff(t):
     return diffs
 
 
-def Cdf(cdf, clf=True, root=None, plot_options=[{}], **options):
+def Cdf(cdf, clf=True, root=None, plot_options={}, **options):
     """Plots a CDF as a line.
 
     Args:
