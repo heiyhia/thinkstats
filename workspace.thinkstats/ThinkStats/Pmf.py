@@ -15,6 +15,9 @@ _DictWrapper: private parent class for Hist and Pmf.
 
 """
 
+import logging
+
+
 class _DictWrapper(object):
     """An object that contains a dictionary."""
 
@@ -158,14 +161,16 @@ class Pmf(_DictWrapper):
         """
         return self.d.get(x, 0)
 
-    def Normalize(self, denom=None):
+    def Normalize(self, denom=0.0):
         """Normalizes this PMF so the sum of all probs is 1.
 
         Args:
             denom: float divisor; if None, computes the total of all probs
         """
         denom = float(denom) or float(self.Total())
-        
+        if denom == 0.0:
+            logging.warning('Pmf.Normalize: total probability is zero')
+
         for x, p in self.d.iteritems():
             self.d[x] = p / denom
     

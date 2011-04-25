@@ -18,13 +18,13 @@ between them and the rest of the population.
 
 """
 
-import relay_bias
+import relay
 import rankit
 
 
 def main():
-    results = relay_bias.ReadResults()
-    speeds = relay_bias.GetSpeeds(results)
+    results = relay.ReadResults()
+    speeds = relay.GetSpeeds(results)
     rankit.MakeNormalPlot(speeds,
                           root='relay_normal',
                           ylabel='Speed (MPH)')

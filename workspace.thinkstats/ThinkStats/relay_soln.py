@@ -5,7 +5,7 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import relay_bias
+import relay
 import Pmf
 import myplot
 
@@ -33,8 +33,8 @@ def BiasPmf(pmf, speed, name=None):
 
 
 def main():
-    results = relay_bias.ReadResults()
-    speeds = relay_bias.GetSpeeds(results)
+    results = relay.ReadResults()
+    speeds = relay.GetSpeeds(results)
 
     # plot the distribution of actual speeds
     pmf = Pmf.MakePmfFromList(speeds, 'actual speeds')
