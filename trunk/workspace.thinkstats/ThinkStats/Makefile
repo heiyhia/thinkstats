@@ -6,7 +6,7 @@ decay.py Cdf.py Cdf_test.py locomotive.py myplot.py CDBRFS08.ASC.gz \
 erf.py estimate.py gini.py 08in11si.csv irs.py brfss_scatter.py \
 brfss_corr.py agemodel.py age_lm.py hypothesis_analytic.py \
 score_example.py relay.py relay_soln.py relay_cdf.py relay_normal.py \
-brfss_figs.py chi.py correlation.py
+brfss_figs.py chi.py correlation.py babyboom.dat
 
 DOCS = survey.html first.html risk.html Pmf.html thinkstats.html \
 descriptive.html myplot.html brfss.html hypothesis.html cumulative.html \
