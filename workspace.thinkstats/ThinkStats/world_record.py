@@ -6,7 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import csv
-from datetime import datetime
+import datetime
 import math
 import random
 import sys
@@ -43,15 +43,26 @@ def ReadData(filename='Marathon_world_record_times.csv', speed=False):
     return races
 
 def ParseDate(date):
-    formats = ['%m/%d/%Y', '%B %d, %Y']
+    formats = ['%m/%d/%Y', '%B %d, %Y', '%d %B %Y']
     date = date.split('[')[0]
 
     for format in formats:
         try:
-            return datetime.strptime(date, format)
+            return datetime.datetime.strptime(date, format)
         except ValueError:
             print date
             continue
+
+def ParseTime(time):
+    try:
+        time = datetime.datetime.strptime(time, '%H:%M:%S')
+    except ValueError:
+        minutes, seconds = time.split(':')[:2]
+        minutes = int(minutes)
+        seconds = float(seconds)
+        hours, minutes = divmod(minutes, 60)
+        time = datetime.time(hours, minutes, seconds)
+    return time
 
 def ReadRace(reader, speed):
     try:
@@ -65,7 +76,7 @@ def ReadRace(reader, speed):
             break
 
         time, date = t[0], t[3]
-        time = datetime.strptime(time, '%H:%M:%S')
+        time = ParseTime(time)
         hours = time.hour + time.minute / 60.0 + time.second / 3600.0
 
         date = ParseDate(date)
