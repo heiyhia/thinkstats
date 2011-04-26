@@ -32,15 +32,15 @@ def ReadData(filename='Marathon_world_record_times.csv', speed=False):
     reader = csv.reader(fp)
     reader.next()
     
-    races = {}
+    distances = {}
 
     while True:
-        race, gender, data = ReadRace(reader, speed)
-        if race == None:
+        distance, gender, data = ReadDistance(reader, speed)
+        if distance == None:
             break
-        races[race, gender] = data
+        distances[distance, gender] = data
 
-    return races
+    return distances
 
 def ParseDate(date):
     formats = ['%m/%d/%Y', '%B %d, %Y', '%d %B %Y']
@@ -50,8 +50,8 @@ def ParseDate(date):
         try:
             return datetime.datetime.strptime(date, format)
         except ValueError:
-            print date
             continue
+    print date
 
 def ParseTime(time):
     try:
@@ -64,9 +64,9 @@ def ParseTime(time):
         time = datetime.time(hours, minutes, seconds)
     return time
 
-def ReadRace(reader, speed):
+def ReadDistance(reader, speed):
     try:
-        race, gender = reader.next()
+        distance, gender = reader.next()
     except StopIteration:
         return None, None, None
 
@@ -77,21 +77,19 @@ def ReadRace(reader, speed):
 
         time, date = t[0], t[3]
         time = ParseTime(time)
-        hours = time.hour + time.minute / 60.0 + time.second / 3600.0
+        minutes = time.hour * 60.0 + time.minute + time.second / 60.0
 
         date = ParseDate(date)
         dayofyear = int(date.strftime('%j'))
         years = date.year + dayofyear / 365.24
 
         if speed:
-            speed = 26.2 / hours
+            speed = 26.2 / (minutes / 60)
             data.append((years, speed))
         else:
-            data.append((years, hours))
+            data.append((years, minutes))
 
-        print years, hours
-
-    return race, gender, data
+    return distance, gender, data
 
 def Logistic(z):
     return 1 / (1 + math.exp(-z))
@@ -114,21 +112,24 @@ def WorldRecord(m=100000):
             
     return pmf, data
 
-def PlotData(races):
-    pyplot.clf()
+def PlotData(distances, plot_gender='male'):
 
-    for (race, gender), data in races.iteritems():
-        print race
+    for (distance, gender), data in distances.iteritems():
+        if gender != plot_gender:
+            continue
+
+        pyplot.clf()
         xs, ys = zip(*data)
         pyplot.plot(xs, ys, 'o')
 
-    myplot.Plot(show=True)
+        root = 'world_record_%s' % distance
+        myplot.Plot(root=root)
 
 """There are six billion ways not to be the fastest marathoner in the world."""
 
 def main(script):
-    races = ReadData(speed=False)
-    PlotData(races)
+    distances = ReadData(speed=False)
+    PlotData(distances)
 
 
 def PlotCdf():
