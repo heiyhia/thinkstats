@@ -118,6 +118,7 @@ def PlotData(races):
     pyplot.clf()
 
     for (race, gender), data in races.iteritems():
+        print race
         xs, ys = zip(*data)
         pyplot.plot(xs, ys, 'o')
 
