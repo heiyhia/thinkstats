@@ -121,7 +121,7 @@ half marathon,female
 66:25:00,Lornah Kiplagat, Netherlands,10/14/2007,"Udine, ITA"
 65:50:00,Mary Keitany, Kenya,2/18/2011,"Ras Al Khaimah, UAE"
 
-10K,male
+10000m,male
 30:58.8, Jean Bouin (FRA),,11/16/1911,"Paris, France[4]"
 30:40.2, Paavo Nurmi (FIN),,6/22/1921,"Stockholm, Sweden[4]"
 30:35.4, Ville Ritola (FIN),,5/25/1924,"Helsinki, Finland[4]"
@@ -160,7 +160,7 @@ half marathon,female
 26:20.31, Kenenisa Bekele (ETH),,6/8/2004,"Ostrava, Czech Republic[4]"
 26:17.53, Kenenisa Bekele (ETH),,8/26/2005,"Brussels, Belgium[4"
 
-10K,female
+10000m,female
 32:17.20, Yelena Sipatova (URS),,10/19/1981,"Moscow, Russia[5]"
 31:35.3, Mary Decker-Slaney (USA),,7/16/1982,"Eugene, USA[5]"
 31:35.01, Lyudmila Bragina (URS),,5/29/1983,"Krasnodar, Russia[5]"
@@ -224,7 +224,7 @@ mile,female
 4:41.4,Marise Chamberlain, New Zealand,12/8/1962,Perth
 4:39.2,Anne Rosemary Smith, United Kingdom,5/13/1967,London
 
-5K,male
+5000m,male
 14:36.6, Hannes Kolehmainen (FIN),,6/10/1912,"Stockholm, Sweden[3]"
 14:35.4, Paavo Nurmi (FIN),,9/12/1922,"Stockholm, Sweden[3]"
 14:28.2, Paavo Nurmi (FIN),,6/19/1924,"Helsinki, Finland[3]"
@@ -261,7 +261,7 @@ mile,female
 12:39.36, Haile Gebrselassie (ETH),,6/13/1998,"Helsinki, Finland[3]"
 12:37.35, Kenenisa Bekele (ETH),,5/31/2004,"Hengelo, Netherlands[3"
 
-5K,female
+5000m,female
 15:14.51, Paula Fudge (GBR),,9/13/1981,"Knarvik, Norway[4]"
 15:13.22, Anne Audain (NZL),,3/17/1982,"Auckland, New Zealand[4]"
 15:08.26, Mary Decker-Slaney (USA),,7/5/1982,"Eugene, Oregon, United States[4]"
@@ -276,7 +276,7 @@ mile,female
 14:16.63, Meseret Defar (ETH),,6/15/2007,"Oslo, Norway[4]"
 14:11.15, Tirunesh Dibaba (ETH),,6/6/2008,"Oslo, Norway[4]"
 
-1500,male
+1500m,male
 3:55.8, Abel Kiviat (USA),,6/8/1912,"Cambridge, Massachusetts, USA"
 3:54.7, John Zander (SWE),,8/5/1917,"Stockholm, Sweden"
 3:52.6, Paavo Nurmi (FIN),,6/19/1924,"Helsinki, Finland"
@@ -316,7 +316,7 @@ mile,female
 3:27.37, Noureddine Morceli (ALG),,7/12/1995,"Nice, France"
 3:26.00, Hicham El Guerrouj (MAR),,7/14/1998,"Rome, Italy"
 
-1500,female
+1500m,female
 4:17.3, Anne Rosemary Smith (GBR),,6/3/1967,"Chiswick, Great Britain"
 4:15.6, Maria Gommers (NED),,10/24/1967,"Sittard, Netherlands"
 4:12.4, Paola Pigni (ITA),,7/2/1969,"Milan, Italy"
@@ -331,7 +331,7 @@ mile,female
 3:52.47, Tatyana Kazankina (URS),,8/3/1980,"Zurich, Switzerland"
 3:50.46, Qu Yunxia (CHN),,9/11/1993,"Beijing, China"
 
-800,male
+800m,male
 1:51.9, Ted Meredith (USA),,7/8/1912,"Stockholm, Sweden[1]"
 1:51.6, Otto Peltzer (GER),,7/3/1926,"London, United Kingdom[1]"
 1:50.6, Sera Martin (FRA),,7/14/1928,"Paris, France[1]"
@@ -356,7 +356,7 @@ mile,female
 1:41.09, David Rudisha (KEN),,8/22/2010,"Berlin, Germany"
 1:41.01, David Rudisha (KEN),,8/29/2010,"Rieti, Italy"
 
-800,female
+800m,female
 2:30.4, Georgette Lenoir (FRA),,8/20/1922,"Paris, France[2]"
 2:26.6, Mary Lines (GBR),,8/30/1922,"London, United Kingdom[2]"
 2:23.8, Lina Radke (GER),,8/7/1927,"Breslau, Germany[2]"
@@ -387,7 +387,7 @@ mile,female
 1:53.5, Nadezhda Olizarenko (URS),,7/27/1980,"Moscow, Soviet Union[2]"
 1:53.28, Jarmila Kratochvílová (TCH),,7/26/1983,"Munich, West Germany[2"
 
-3000,male
+3000m,male
 8:36.8, Hannes Kolehmainen (FIN),,7/12/1912,"Stockholm, Sweden"
 8:33.2, John Zander (SWE),,1918-08-07[1],"Stockholm, Sweden"
 8:28.6, Paavo Nurmi (FIN),,1922-08-27[1],"Turku, Finland"
@@ -415,7 +415,7 @@ mile,female
 7:25.11, Noureddine Morceli (ALG),,1994-08-02[1],"Monte Carlo, Monaco"
 7:20.67, Daniel Komen (KEN),,1996-09-01[1],"Rieti, Italy"
 
-3000,female
+3000m,female
 10:56.0, Phyllis Perkins (GBR),,5/22/1954,"London, United Kingdom"
 10:55.2, Phyllis Perkins (GBR),,6/25/1955,"London, United Kingdom"
 10:25.8, Leila Buckland (GBR),,8/27/1955,"London, United Kingdom"
@@ -438,7 +438,7 @@ mile,female
 8:12.19, Wang Junxia (CHN),,1993-09-12[1],"Beijing, PR China"
 8:06.11, Wang Junxia (CHN),,1993-09-13[1],"Beijing, PR China"
 
-400m ,male
+400m,male
 47.8,Maxey Long, United States,"September 29, 1900[1]","New York, USA"
 48.2,Charles Reidpath, United States,"July 13, 1912[1]","Stockholm, Sweden"
 47.4,Ted Meredith, United States,"May 27, 1916[1]","Cambridge, USA"

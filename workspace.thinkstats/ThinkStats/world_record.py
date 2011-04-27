@@ -55,20 +55,23 @@ def ParseDate(date):
     print date
 
 def ParseTime(time):
+    print time
+    t = time.split(':')
+    seconds = float(t[-1])
+    
     try:
-        time = datetime.datetime.strptime(time, '%H:%M:%S')
-    except ValueError:
-        try:
-            minutes, seconds = time.split(':')[:2]
-            minutes = int(minutes)
-            seconds = float(seconds)
-        except ValueError:
-            minutes = 0
-            seconds = float(time)
-            
-        hours, minutes = divmod(minutes, 60)
-        time = datetime.time(hours, minutes, seconds)
-    return time
+        minutes = int(t[-2])
+    except IndexError:
+        minutes = 0
+
+    try:
+        hours = int(t[-3])
+    except IndexError:
+        hours = 0
+
+    minutes = hours * 60.0 + minutes + seconds / 60.0
+    print minutes
+    return minutes
 
 def ReadDistance(reader, speed):
     try:
@@ -82,8 +85,7 @@ def ReadDistance(reader, speed):
             break
 
         time, date = t[0], t[3]
-        time = ParseTime(time)
-        minutes = time.hour * 60.0 + time.minute + time.second / 60.0
+        minutes = ParseTime(time)
 
         date_obj = ParseDate(date)
         if date_obj is None:
