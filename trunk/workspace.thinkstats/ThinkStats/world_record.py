@@ -43,8 +43,9 @@ def ReadData(filename='Marathon_world_record_times.csv', speed=False):
     return distances
 
 def ParseDate(date):
-    formats = ['%m/%d/%Y', '%B %d, %Y', '%d %B %Y']
     date = date.split('[')[0]
+
+    formats = ['%m/%d/%Y', '%B %d, %Y', '%b %d, %Y', '%d %B %Y', '%Y-%m-%d']
 
     for format in formats:
         try:
@@ -57,9 +58,14 @@ def ParseTime(time):
     try:
         time = datetime.datetime.strptime(time, '%H:%M:%S')
     except ValueError:
-        minutes, seconds = time.split(':')[:2]
-        minutes = int(minutes)
-        seconds = float(seconds)
+        try:
+            minutes, seconds = time.split(':')[:2]
+            minutes = int(minutes)
+            seconds = float(seconds)
+        except ValueError:
+            minutes = 0
+            seconds = float(time)
+            
         hours, minutes = divmod(minutes, 60)
         time = datetime.time(hours, minutes, seconds)
     return time
@@ -79,9 +85,12 @@ def ReadDistance(reader, speed):
         time = ParseTime(time)
         minutes = time.hour * 60.0 + time.minute + time.second / 60.0
 
-        date = ParseDate(date)
-        dayofyear = int(date.strftime('%j'))
-        years = date.year + dayofyear / 365.24
+        date_obj = ParseDate(date)
+        if date_obj is None:
+            print t
+            print date
+        dayofyear = int(date_obj.strftime('%j'))
+        years = date_obj.year + dayofyear / 365.24
 
         if speed:
             speed = 26.2 / (minutes / 60)
