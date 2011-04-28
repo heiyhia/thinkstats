@@ -509,7 +509,6 @@ mile,female
 19.8,Tommie Smith, United States,"October 16, 1968[1]","Mexico City, Mexico"
 19.8,Donald Quarrie, Jamaica,"August 3, 1971[1]","Cali, Colombia"
 19.8,Donald Quarrie, Jamaica,"June 7, 1975[1","Eugene, Oregon, United States"
-19.83,Tommie Smith, United States,"October 16, 1968[1]","Mexico City, Mexico"
 19.72,Pietro Mennea, Italy,"September 12, 1979[1]","Mexico City, Mexico"
 19.66,Michael Johnson, United States,"June 23, 1996[1]","Atlanta, United States"
 19.32,Michael Johnson, United States,"August 1, 1996[1]","Atlanta, United States"
@@ -545,3 +544,93 @@ mile,female
 21.71,Heike Drechsler, East Germany,"August 29, 1986[1]","Stuttgart, Germany"
 21.56,Florence Griffith-Joyner, United States,"September 29, 1988[1]","Seoul, South Korea"
 21.34,Florence Griffith-Joyner, United States,"September 29, 1988[1]","Seoul, South Korea"
+
+100m,male
+10.6,Don Lippincott, United States,7/6/1912,"Stockholm, Sweden",[1]
+10.4,Charlie Paddock, United States,4/23/1921,"Redlands, USA",[1]
+10.3,Percy Williams, Canada,8/9/1930,"Toronto, Canada",[1]
+10.2,Jesse Owens, United States,6/20/1936,"Chicago, USA",[1]
+10.1,Willie Williams, United States,8/3/1956,"Berlin, Germany",[1]
+10,Armin Hary, West Germany,6/21/1960,"Zürich, Switzerland",[1]
+9.9,Jim Hines, United States,6/20/1968,"Sacramento, USA",[1]
+10.06,Bob Hayes, United States,10/15/1964,"Tokyo, Japan",[3]
+10.03,Jim Hines, United States,6/20/1968,"Sacramento, USA",[3]
+10.02,Charles Greene, United States,10/13/1968,"Mexico City, Mexico",A[3]
+9.95,Jim Hines, United States,10/14/1968,"Mexico City, Mexico","OR, A[1]"
+9.93,Calvin Smith, United States,7/3/1983,"Colorado Springs, USA",A[1]
+9.93,Carl Lewis, United States,8/30/1987,"Rome, Italy",[3][4][note 3]
+9.92,Carl Lewis, United States,9/24/1988,"Seoul, South Korea",OR[1]
+9.9,Leroy Burrell, United States,6/14/1991,"New York, USA",[1]
+9.86,Carl Lewis, United States,8/25/1991,"Tokyo, Japan",[1]
+9.85,Leroy Burrell, United States,7/6/1994,"Lausanne, Switzerland",[1]
+9.84,Donovan Bailey, Canada,7/27/1996,"Atlanta, USA",OR[1]
+9.79,Maurice Greene, United States,6/16/1999,"Athens, Greece",[1]
+9.78,Tim Montgomery, United States,9/14/2002,"Paris, France",[5][note 4]
+9.77,Asafa Powell, Jamaica,6/14/2005,"Athens, Greece",[1]
+9.74,Asafa Powell, Jamaica,9/9/2007,"Rieti, Italy",[note 6]
+9.72,Usain Bolt, Jamaica,5/31/2008,"New York, USA",[1]
+9.69,Usain Bolt,"Beijing, China",8/16/2008,,OR [1]
+9.58,Usain Bolt,"Berlin, Germany",8/16/2009,,[7][8
+
+200m,female
+13.6,Marie Mejzlikova II, Czechoslovakia,"August 5, 1922[1]","Prague, Czechoslovakia"
+12.8,Mary Lines, United Kingdom,"August 20, 1922[1]","Paris, France"
+12.4,Leni Schmidt, Germany,8/30/1925,"Leipzig, Germany"
+12.2,Leni Junker, Germany,9/13/1925,"Wiesbaden, Germany"
+12.4,Gundel Wittmann, Germany,"August 22, 1926[1]","Braunschweig, Germany"
+12.2,Leni Junker, Germany,8/29/1926,"Hanover, Germany"
+12.1,Gertrud Gladitsch, Germany,7/3/1927,"Stuttgart, Germany"
+12.2,Kinue Hitomi, Japan,"May 20, 1928[1]","Osaka, Japan"
+12,Betty Robinson, United States,6/2/1928,"Chicago, Illinois, United States"
+12,Myrtle Cook, Canada,"July 2, 1928[1]","Halifax, Nova Scotia, Canada"
+12,Leni Junker, Germany,8/1/1931,"Magdeburg, Germany"
+12,Tollien Schuurman, Netherlands,"August 31, 1930[1]","Amsterdam, Netherlands"
+11.9,Tollien Schuurman, Netherlands,"June 5, 1932[1]","Haarlem, Netherlands"
+11.9,Stanislawa Walasiewicz[2], Poland,"August 1, 1932[1]","Los Angeles, United States"
+11.9,Hilda Strike, Canada,8/2/1932,"Los Angeles, United States"
+11.8,Stanislawa Walasiewicz[2], Poland,"September 17, 1933[1]","Poznan, Poland"
+11.9,Käthe Krauß, Germany,8/11/1934,"London, England"
+11.7,Stanislawa Walasiewicz[2], Poland,"August 26, 1934[1]","Warsaw, Poland"
+11.9,Helen Stephens, United States,4/10/1935,"Fulton, United States"
+11.8,Helen Stephens, United States,6/1/1935,"Saint Louis, United States"
+11.6,Helen Stephens, United States,"June 8, 1935[1]","Kansas City, United States"
+11.5,Helen Stephens, United States,8/10/1936,"Dresden, Germany"
+11.6,Stanislawa Walasiewicz[2], Poland,"August 1, 1937[1]","Berlin, Germany"
+11.5,Lulu Mae Hymes, United States,5/6/1939,Tuskegee
+11.5,Rowena Harrison, United States,5/6/1939,Tuskegee
+11.5,Fanny Blankers-Koen, Netherlands,9/5/1943,"Amsterdam, Netherlands"
+11.5,Fanny Blankers-Koen, Netherlands,"June 13, 1948[1]","Amsterdam, Netherlands"
+11.5,Marjorie Jackson, Australia,7/22/1952,"Helsinki, Finland"
+11.4,Marjorie Jackson, Australia,"October 4, 1952[1]","Gifu, Japan"
+11.3,Shirley Strickland, Australia,8/4/1955,"Warsaw, Poland"
+11.3,Vera Krepkina, Soviet Union,"September 13, 1958[1]","Kiev, Soviet Union"
+11.3,Wilma Rudolph, United States,"September 2, 1960[1]","Rome, Italy"
+11.2,Wilma Rudolph, United States,"July 19, 1961[1]","Stuttgart, West Germany"
+11.2,Wyomia Tyus, United States,"October 15, 1964[1]","Tokyo, Japan"
+11.1,Irena Kirszenstein, Poland,"July 9, 1965[1]","Prague, Czechoslovakia"
+11.1,Wyomia Tyus, United States,"July 31, 1965[1]","Kiev, Soviet Union"
+11.1,Barbara Ferrell, United States,"July 2, 1967[1]","Santa Barbara, United States"
+11.1,Wyomia Tyus, United States,4/21/1968,"Mexico City, Mexico"
+11.1,Lyudmila Samotyosova, Soviet Union,"August 15, 1968[1]","Leninakan, Soviet Union"
+11.1,Margaret Bailes, United States,8/18/1968,"Aurora, Philippines"
+11.1,Barbara Ferrell, United States,10/14/1968,"Mexico City, Mexico"
+11.1,Irena Szewińska, Poland,"October 14, 1968[1]","Mexico City, Mexico"
+11,Chi Cheng, Chinese Taipei,"July 18, 1970[1]","Vienna, Austria"
+11,Renate Meißner, East Germany,"August 2, 1970[1]","Berlin, East Germany"
+11,Renate Meißner, East Germany,"July 31, 1971[1]","Berlin, East Germany"
+11,Renate Meißner, East Germany,"June 3, 1972[1]","Potsdam, East Germany"
+11,Ellen Strophal, East Germany,"June 15, 1972[1]","Potsdam, East Germany"
+11,Eva Gleskova, Czechoslovakia,"July 1, 1972[1]","Budapest, Hungary"
+10.9,Renate Meißner, East Germany,"June 7, 1973[1]","Ostrava, Czechoslovakia"
+10.9,Renate Stecher, East Germany,6/30/1973,"Leipzig, East Germany"
+10.9,Renate Meißner, East Germany,"July 20, 1973[1","Dresden, East Germany"
+11.07,Wyomia Tyus, United States,"October 15, 1968[1]","Mexico City, Mexico"
+11.07,Renate Stecher, East Germany,"September 2, 1972[1]","Munich, West Germany"
+11.04,Inge Helten, West Germany,"June 13, 1976[1]","Fürth, West Germany"
+11.01,Annegret Richter, West Germany,"July 25, 1976[1]","Montreal, Canada"
+10.88,Marlies Oelsner, East Germany,"July 1, 1977[1]","Dresden, East Germany"
+10.88,Marlies Göhr, East Germany,"July 9, 1982[1]","Karl-Marx-Stadt, East Germany"
+10.81,Marlies Göhr, East Germany,"June 8, 1983[1]","Berlin, East Germany"
+10.79,Evelyn Ashford, United States,"July 3, 1983[1]","US Air Force Academy, United States"
+10.76,Evelyn Ashford, United States,"August 22, 1984[1]","Zürich, Switzerland"
+10.49,Florence Griffith-Joyner, United States,"July 16, 1988[1","Indianapolis, United States"

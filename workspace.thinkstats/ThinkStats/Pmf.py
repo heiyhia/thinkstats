@@ -132,6 +132,19 @@ class Hist(_DictWrapper):
         """
         return self.d.get(x, 0)
 
+    def IsSubset(self, other):
+        """Checks whether the values in this histogram are a subset of
+        the values in the given histogram."""
+        for val, freq in self.Items():
+            if freq > other.Freq(val):
+                return False
+        return True
+
+    def Subtract(self, other):
+        """Subtracts the values in the given histogram from this histogram."""
+        for val, freq in other.Items():
+            self.Incr(val, -freq)
+
 
 class Pmf(_DictWrapper):
     """Represents a probability mass function.

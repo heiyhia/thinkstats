@@ -52,10 +52,11 @@ def ParseDate(date):
             return datetime.datetime.strptime(date, format)
         except ValueError:
             continue
-    print date
+
+    print 'Unparsed date:', date
+    return None
 
 def ParseTime(time):
-    print time
     t = time.split(':')
     seconds = float(t[-1])
     
@@ -70,13 +71,16 @@ def ParseTime(time):
         hours = 0
 
     minutes = hours * 60.0 + minutes + seconds / 60.0
-    print minutes
     return minutes
 
 def ReadDistance(reader, speed):
     try:
-        distance, gender = reader.next()
+        t = reader.next()
+        distance, gender = t
     except StopIteration:
+        return None, None, None
+    except ValueError:
+        print t
         return None, None, None
 
     data = []
@@ -100,6 +104,7 @@ def ReadDistance(reader, speed):
         else:
             data.append((years, minutes))
 
+    data.sort()
     return distance, gender, data
 
 def Logistic(z):
@@ -131,10 +136,13 @@ def PlotData(distances, plot_gender='male'):
 
         pyplot.clf()
         xs, ys = zip(*data)
-        pyplot.plot(xs, ys, 'o')
+        pyplot.plot(xs, ys, 'o:')
 
         root = 'world_record_%s' % distance
-        myplot.Plot(root=root)
+        myplot.Plot(root=root,
+                    xlabel='year',
+                    ylabel='minutes',
+                    title='%s world record progression' % distance)
 
 """There are six billion ways not to be the fastest marathoner in the world."""
 
