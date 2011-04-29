@@ -26,8 +26,13 @@ class Cdf(object):
         self.ps = ps or []
         self.name = name
 
+    def Values(self):
+        """Returns a sorted list of values.
+        """
+        return self.xs
+
     def Items(self):
-        """Returns a sequence of sorted (value, probability) pairs.
+        """Returns a sorted sequence of (value, probability) pairs.
 
         Note: in Python3, returns an iterator.
         """

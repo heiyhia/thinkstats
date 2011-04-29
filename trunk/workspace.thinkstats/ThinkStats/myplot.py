@@ -237,6 +237,12 @@ def Cdfs(cdfs,
             options['xscale'] = 'log'
             options['yscale'] = 'log'
 
+        if transform == 'gumbel':
+            xs.pop(0)
+            ps.pop(0)
+            ps = [-math.log(p) for p in ps]
+            options['yscale'] = 'log'
+
         if complement:
             ps = [1.0-p for p in ps]
 
