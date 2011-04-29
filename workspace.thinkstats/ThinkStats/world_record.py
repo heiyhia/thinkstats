@@ -133,13 +133,15 @@ def GeneratePerson(n=10):
     logs = [Logistic(x) for x in factors]
     return min(logs)
 
-def WorldRecord(m=100000):
+def WorldRecord(m=1000000, n=10, fast=False):
     pmf = Pmf.Pmf()
     data = []
     best = 0.0
     for i in xrange(m):
-        person = GeneratePerson()
-        pmf.Incr(person)
+        person = GeneratePerson(n)
+        if not fast:
+            pmf.Incr(person)
+
         if person > best:
             best = person
             data.append((float(i)/m, best))
@@ -191,7 +193,6 @@ def PlotSpeeds(distances, plot_gender='male'):
 
         pyplot.subplot(6, 2, i)
         xs, ys = zip(*data)
-        pyplot.plot(xs, ys, 'o:')
 
         # extend the current record to the present
         first_x = xs[1]
@@ -199,7 +200,10 @@ def PlotSpeeds(distances, plot_gender='male'):
         pyplot.xticks([int(first_x), 1960, 2011])
 
         last_y = ys[-1]
-        pyplot.plot([last_x, 2011.4], [last_y, last_y], ':')
+        pyplot.plot([last_x, 2011.4], [last_y, last_y], 'b:')
+
+        pyplot.plot(xs, ys, 'o:')
+
         pyplot.title(distance)
 
     root = 'world_record_speed'
@@ -211,31 +215,45 @@ def main(script):
     #distances = ReadData(speed=False)
     #PlotTimes(distances)
 
-    distances = ReadData(speed=True)
-    PlotSpeeds(distances)
+    #distances = ReadData(speed=True)
+    #PlotSpeeds(distances)
 
-    #PlotCdf()
-    #PlotSimulation()
+    #PlotCdfs()
+    PlotSimulation()
 
-def PlotCdf():
-    pmf, data = WorldRecord()
-    cdf = Cdf.MakeCdfFromPmf(pmf)
+def PlotCdfs():
+    """Plots distribution of ability for different number of factors.
+    
+    After 100000 people:
+    n   max value
+    50  0.333842852938
+    10  0.6483317765470
+    5   0.837633976492
+    1   0.983619459771
 
-    xs, ys = cdf.Render()
-    txs, tys = [], []
-    for x, y in zip(xs, ys):
-        if y in [0.0, 1.0]:
-            continue
-        txs.append(x)
-        tys.append(math.log(-math.log(y)))
+    """
+    cdfs = []
+    for n in [50, 10, 5, 1]:
+        pmf, data = WorldRecord(m=100000, n=n)
+        cdf = Cdf.MakeCdfFromPmf(pmf, name='n=%d' % n)
+        print n, max(cdf.Values())
+        cdfs.append(cdf)
 
-    pyplot.plot(txs, tys)
-    myplot.Plot(show=True)
+    options = dict(linewidth=2)
+    plot_options = [options] * len(cdfs)
+
+    myplot.Cdfs(cdfs, root='world_record_cdfs', plot_options=plot_options)
 
 def PlotSimulation():
-    pmf, data = WorldRecord()
+    pmf, data = WorldRecord(m=1000000, n=10, fast=True)
     xs, ys = zip(*data)
-    pyplot.plot(xs, ys, 'o')
+
+    # extend to the present
+    last_x = xs[-1]
+    last_y = ys[-1]
+    pyplot.plot([last_x, 1.0], [last_y, last_y], 'b:')
+
+    pyplot.plot(xs, ys, 'o:')
 
     myplot.Plot(show=True, xscale='log')
 
