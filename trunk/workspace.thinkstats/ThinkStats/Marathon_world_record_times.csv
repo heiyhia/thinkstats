@@ -46,7 +46,7 @@ marathon,male
 2:04:26,Haile Gebrselassie, Ethiopia,9/30/2007,Berlin Marathon,"IAAF,[36] ARRS[37]"
 2:03:59,Haile Gebrselassie, Ethiopia,9/28/2008,Berlin Marathon,"IAAF,[36] ARRS[37]"
 
-marathon ,female
+marathon,female
 3:40:22,Violet Piercy, United Kingdom,10/3/1926,London [nb 7],"IAAF,[36] ARRS[37]"
 3:37:07,Merry Lepper, United States,"December 16, 1963[nb 8]","Culver City, United States",IAAF[36],Disputed (short course).[68]
 3:27:45,Dale Greig, United Kingdom,5/23/1964,Ryde,"IAAF,[36] ARRS[37]"
@@ -86,40 +86,40 @@ marathon ,female
 2:15:25,Paula Radcliffe, United Kingdom,4/13/2003,London Marathon,"IAAF,[36] ARRS[37]",First world record for the women's marathon ratified by the International Association of Athletics Federations.[77]
 
 half marathon,male
-62:37:00,Toshihiro Matsumoto, Japan,2/6/1977,Beppu
-62:36:00,Nick Rose, United Kingdom,10/14/1979,"Dayton, USA"
-62:32:00,Kirk Pfeffer, United States,12/7/1979,"Las Vegas, USA"
-62:16:00,Stan Mavis, United States,1/27/1980,"New Orleans, USA"
-61:47:00,Herb Lindsay, United States,9/20/1981,"Manchester, USA"
-61:36:00,Mike Musyoki, Kenya,9/19/1982,"Philadelphia, USA"
-61:32:00,Paul Cummings, United States,9/25/1983,"Dayton, USA"
-61:14:00,Steve Jones, United Kingdom,8/11/1985,"Birmingham, GBR"
-60:55:00,Mark Curp, United States,9/15/1985,"Philadelphia, USA"
-60:46:00,Dionicio Cerón, Mexico,9/16/1990,"Philadelphia, USA"
-60:24:00,Benson Masya, Kenya,4/3/1993,The Hague
-60:13:00,Paul Tergat, Kenya,4/15/1993,"Milan, ITA"
-59:56:00,Shem Kororia, Kenya,10/4/1997,Kosice
-59:17:00,Paul Tergat, Kenya,4/4/1998,"Milan, ITA"
-59:16:00,Samuel Wanjiru, Kenya,9/11/2005,"Rotterdam, NED"
-58:55:00,Haile Gebrselassie, Ethiopia,1/15/2006,Tempe
-58:53:00,Samuel Wanjiru, Kenya,2/17/2007,"Ras al-Khaimah, UAE"
-58:35:00,Samuel Wanjiru, Kenya,3/17/2007,"The Hague, NED"
-58:23:00,Zersenay Tadese, Eritrea,3/21/2010,"Lisbon, POR"
+62:37.0,Toshihiro Matsumoto, Japan,2/6/1977,Beppu
+62:36.0,Nick Rose, United Kingdom,10/14/1979,"Dayton, USA"
+62:32.0,Kirk Pfeffer, United States,12/7/1979,"Las Vegas, USA"
+62:16.0,Stan Mavis, United States,1/27/1980,"New Orleans, USA"
+61:47.0,Herb Lindsay, United States,9/20/1981,"Manchester, USA"
+61:36.0,Mike Musyoki, Kenya,9/19/1982,"Philadelphia, USA"
+61:32.0,Paul Cummings, United States,9/25/1983,"Dayton, USA"
+61:14.0,Steve Jones, United Kingdom,8/11/1985,"Birmingham, GBR"
+60:55.0,Mark Curp, United States,9/15/1985,"Philadelphia, USA"
+60:46.0,Dionicio Cerón, Mexico,9/16/1990,"Philadelphia, USA"
+60:24.0,Benson Masya, Kenya,4/3/1993,The Hague
+60:13.0,Paul Tergat, Kenya,4/15/1993,"Milan, ITA"
+59:56.0,Shem Kororia, Kenya,10/4/1997,Kosice
+59:17.0,Paul Tergat, Kenya,4/4/1998,"Milan, ITA"
+59:16.0,Samuel Wanjiru, Kenya,9/11/2005,"Rotterdam, NED"
+58:55.0,Haile Gebrselassie, Ethiopia,1/15/2006,Tempe
+58:53.0,Samuel Wanjiru, Kenya,2/17/2007,"Ras al-Khaimah, UAE"
+58:35.0,Samuel Wanjiru, Kenya,3/17/2007,"The Hague, NED"
+58:23.0,Zersenay Tadese, Eritrea,3/21/2010,"Lisbon, POR"
 
 half marathon,female
-77:48:00,Daniele Justin, Belgium,11/12/1978,"Nazaré, POR"
-75:58:00,Michiko Gorman, United States,11/19/1978,"Pasadena, USA"
-75:01:00,Ellison Goodall, United States,3/10/1979,"Winston-Salem, USA"
-74:03:00,Patti Catalano, United States,9/29/1979,"Manchester, USA"
-73:59:00,Marja Wokke, Netherlands,3/29/1980,"The Hague, NED"
-73:26:00,Joan Benoit, United States,1/18/1981,"New Orleans, USA"
-71:16:00,Joan Benoit, United States,3/7/1981,"San Diego, USA"
-69:57:00,Grete Waitz, Norway,5/15/1982,"Gothenburg, SWE"
-69:10:00,Joan Benoit, United States,9/18/1983,"Philadelphia, USA"
-68:34:00,Joan Benoit, United States,9/16/1984,"Philadelphia, USA"
-66:40:00,Ingrid Kristiansen, Norway,4/5/1987,Sandnes
-66:25:00,Lornah Kiplagat, Netherlands,10/14/2007,"Udine, ITA"
-65:50:00,Mary Keitany, Kenya,2/18/2011,"Ras Al Khaimah, UAE"
+77:48.0,Daniele Justin, Belgium,11/12/1978,"Nazaré, POR"
+75:58.0,Michiko Gorman, United States,11/19/1978,"Pasadena, USA"
+75:01.0,Ellison Goodall, United States,3/10/1979,"Winston-Salem, USA"
+74:03.0,Patti Catalano, United States,9/29/1979,"Manchester, USA"
+73:59.0,Marja Wokke, Netherlands,3/29/1980,"The Hague, NED"
+73:26.0,Joan Benoit, United States,1/18/1981,"New Orleans, USA"
+71:16.0,Joan Benoit, United States,3/7/1981,"San Diego, USA"
+69:57.0,Grete Waitz, Norway,5/15/1982,"Gothenburg, SWE"
+69:10.0,Joan Benoit, United States,9/18/1983,"Philadelphia, USA"
+68:34.0,Joan Benoit, United States,9/16/1984,"Philadelphia, USA"
+66:40.0,Ingrid Kristiansen, Norway,4/5/1987,Sandnes
+66:25.0,Lornah Kiplagat, Netherlands,10/14/2007,"Udine, ITA"
+65:50.0,Mary Keitany, Kenya,2/18/2011,"Ras Al Khaimah, UAE"
 
 10000m,male
 30:58.8, Jean Bouin (FRA),,11/16/1911,"Paris, France[4]"
@@ -572,7 +572,7 @@ mile,female
 9.69,Usain Bolt,"Beijing, China",8/16/2008,,OR [1]
 9.58,Usain Bolt,"Berlin, Germany",8/16/2009,,[7][8
 
-200m,female
+100m,female
 13.6,Marie Mejzlikova II, Czechoslovakia,"August 5, 1922[1]","Prague, Czechoslovakia"
 12.8,Mary Lines, United Kingdom,"August 20, 1922[1]","Paris, France"
 12.4,Leni Schmidt, Germany,8/30/1925,"Leipzig, Germany"
