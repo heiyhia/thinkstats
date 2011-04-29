@@ -18,7 +18,6 @@ import myplot
 import Pmf
 import thinkstats
 
-
 def ReadData(filename='Marathon_world_record_times.csv', speed=False):
     """Reads a CSV file 
 
@@ -71,7 +70,26 @@ def ParseTime(time):
         hours = 0
 
     minutes = hours * 60.0 + minutes + seconds / 60.0
+
+    if minutes > 1000:
+        print time, seconds, minutes, hours
+
     return minutes
+
+miles = {
+    'marathon' : 26.21875,
+    'half marathon' : 13.109375,
+    '10000m' : 6.21371192,
+    '5000m' : 3.10685596,
+    '3000m' : 1.86411358,
+    'mile' : 1,
+    '1500m' : 0.932056788,
+    '800m' : 0.497096954,
+    '400m' : 0.248548477,
+    '200m' : 0.124274238,
+    '100m' :  0.0621371192,
+}
+
 
 def ReadDistance(reader, speed):
     try:
@@ -99,7 +117,7 @@ def ReadDistance(reader, speed):
         years = date_obj.year + dayofyear / 365.24
 
         if speed:
-            speed = 26.2 / (minutes / 60)
+            speed = miles[distance] / (minutes / 60)
             data.append((years, speed))
         else:
             data.append((years, minutes))
@@ -110,7 +128,7 @@ def ReadDistance(reader, speed):
 def Logistic(z):
     return 1 / (1 + math.exp(-z))
 
-def GeneratePerson(n=30):
+def GeneratePerson(n=10):
     factors = [random.normalvariate(0.0, 1.0) for i in range(n)]
     logs = [Logistic(x) for x in factors]
     return min(logs)
@@ -128,7 +146,7 @@ def WorldRecord(m=100000):
             
     return pmf, data
 
-def PlotData(distances, plot_gender='male'):
+def PlotTimes(distances, plot_gender='male'):
 
     for (distance, gender), data in distances.iteritems():
         if gender != plot_gender:
@@ -144,12 +162,60 @@ def PlotData(distances, plot_gender='male'):
                     ylabel='minutes',
                     title='%s world record progression' % distance)
 
+def PlotSpeeds(distances, plot_gender='male'):
+
+    pyplot.rcdefaults()
+    pyplot.rc('figure', figsize=(4, 10))
+    pyplot.rc('font', size=9.0)
+    pyplot.rc('xtick.major', size=0)
+    pyplot.rc('ytick.major', size=0)
+
+    pyplot.subplots_adjust(wspace=0.4, hspace=0.4, 
+                           right=0.95, left=0.1,
+                           top=0.95, bottom=0.05)
+
+    t = miles.items()
+    t.sort(key=lambda x: x[1])
+    titles = [x[0] for x in t]
+
+    gender = plot_gender
+    i=0
+    for distance in titles:
+        if distance == '200m':
+            continue
+        i += 1
+
+        data = distances[distance, gender]
+        if gender != plot_gender:
+            continue
+
+        pyplot.subplot(6, 2, i)
+        xs, ys = zip(*data)
+        pyplot.plot(xs, ys, 'o:')
+
+        # extend the current record to the present
+        first_x = xs[1]
+        last_x = xs[-1]
+        pyplot.xticks([int(first_x), 1960, 2011])
+
+        last_y = ys[-1]
+        pyplot.plot([last_x, 2011.4], [last_y, last_y], ':')
+        pyplot.title(distance)
+
+    root = 'world_record_speed'
+    myplot.Save(root=root)
+
 """There are six billion ways not to be the fastest marathoner in the world."""
 
 def main(script):
-    distances = ReadData(speed=False)
-    PlotData(distances)
+    #distances = ReadData(speed=False)
+    #PlotTimes(distances)
 
+    distances = ReadData(speed=True)
+    PlotSpeeds(distances)
+
+    #PlotCdf()
+    #PlotSimulation()
 
 def PlotCdf():
     pmf, data = WorldRecord()
@@ -165,10 +231,13 @@ def PlotCdf():
 
     pyplot.plot(txs, tys)
     myplot.Plot(show=True)
-    return
 
-    PlotData(data)
-    return
+def PlotSimulation():
+    pmf, data = WorldRecord()
+    xs, ys = zip(*data)
+    pyplot.plot(xs, ys, 'o')
+
+    myplot.Plot(show=True, xscale='log')
 
 
 if __name__ == '__main__':
