@@ -14,6 +14,7 @@ import sys
 import matplotlib.pyplot as pyplot
 
 import Cdf
+import correlation
 import myplot
 import Pmf
 import thinkstats
@@ -144,7 +145,7 @@ def WorldRecord(m=1000000, n=10, fast=False):
 
         if person > best:
             best = person
-            data.append((float(i)/m, best))
+            data.append((float(i+1)/m, best))
             
     return pmf, data
 
@@ -215,11 +216,13 @@ def main(script):
     #distances = ReadData(speed=False)
     #PlotTimes(distances)
 
-    #distances = ReadData(speed=True)
-    #PlotSpeeds(distances)
+    distances = ReadData(speed=True)
+    PlotSpeeds(distances)
 
     #PlotCdfs()
-    PlotSimulation()
+    #PlotSimulations()
+
+    #PlotMarathon(distances['marathon', 'male'])
 
 def PlotCdfs():
     """Plots distribution of ability for different number of factors.
@@ -244,8 +247,28 @@ def PlotCdfs():
 
     myplot.Cdfs(cdfs, root='world_record_cdfs', plot_options=plot_options)
 
-def PlotSimulation():
-    pmf, data = WorldRecord(m=1000000, n=10, fast=True)
+
+def PlotSimulations():
+    pyplot.rcdefaults()
+    pyplot.rc('figure', figsize=(4, 4.5))
+    pyplot.rc('font', size=9.0)
+    pyplot.rc('xtick.major', size=0)
+    pyplot.rc('ytick.major', size=0)
+
+    pyplot.subplots_adjust(wspace=0.4, hspace=0.4, 
+                           right=0.95, left=0.1,
+                           top=0.95, bottom=0.05)
+
+    for i in range(1, 5):
+        pyplot.subplot(2, 2, i)
+        PlotSimulation(100000)
+
+    myplot.Plot(root='world_record_sim')
+
+
+
+def PlotSimulation(m=100000):
+    pmf, data = WorldRecord(m=m, n=10, fast=True)
     xs, ys = zip(*data)
 
     # extend to the present
@@ -254,9 +277,40 @@ def PlotSimulation():
     pyplot.plot([last_x, 1.0], [last_y, last_y], 'b:')
 
     pyplot.plot(xs, ys, 'o:')
+    pyplot.xscale('log')
 
-    myplot.Plot(show=True, xscale='log')
 
+def PlotMarathon(data):
+    xs, ys = zip(*data)
+
+    n = 29
+    fxs, fys = xs[:n], ys[:n]
+    sxs, sys = xs[n:], ys[n:]
+
+    inter, slope = correlation.LeastSquares(sxs, sys)
+    print '(inter, slope):', inter, slope
+
+    target = 26.21875 / 2
+    lxs, lys = MakeLine(target, 0, [1965, 2045.5])
+    pyplot.plot(lxs, lys, 'r')
+
+    lxs, lys = MakeLine(inter, slope, [1965, 2045.5])
+    pyplot.plot(lxs, lys, 'b')
+
+    #pyplot.plot(fxs, fys, 'go')
+    pyplot.plot(sxs, sys, 'bo')
+
+    xticks = range(1980, 2060, 20)
+    pyplot.xticks(xticks)
+
+    myplot.Plot(root='world_record_predict',
+                title='marathon record projection',
+                ylabel='mph')
+
+
+def MakeLine(inter, slope, xs):
+    return xs, [inter + slope * x for x in xs]
+    
 
 if __name__ == '__main__':
     main(*sys.argv)

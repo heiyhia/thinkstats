@@ -275,15 +275,14 @@ def Plot(root=None, formats=None, **options):
     ylabel = options.get('ylabel', '')
     pyplot.ylabel(ylabel)
 
-    yscale = options.get('yscale', 'linear')
-    pyplot.yscale(yscale)
+    if 'xscale' in options:
+        pyplot.xscale(options['xscale'])
 
-    xscale = options.get('xscale', 'linear')
-    pyplot.xscale(xscale)
+    if 'yscale' in options:
+        pyplot.xscale(options['yscale'])
 
-    axis = options.get('axis', None)
-    if axis:
-        pyplot.axis(axis)
+    if 'axis' in options:
+        pyplot.axis(options['axis'])
 
     loc = options.get('loc', 0)
     legend = options.get('legend', True)
