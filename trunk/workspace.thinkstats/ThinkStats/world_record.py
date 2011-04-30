@@ -82,6 +82,7 @@ miles = {
     'half marathon' : 13.109375,
     '10000m' : 6.21371192,
     '5000m' : 3.10685596,
+    'two mile' : 2,
     '3000m' : 1.86411358,
     'mile' : 1,
     '1500m' : 0.932056788,
@@ -168,13 +169,13 @@ def PlotTimes(distances, plot_gender='male'):
 def PlotSpeeds(distances, plot_gender='male'):
 
     pyplot.rcdefaults()
-    pyplot.rc('figure', figsize=(4, 10))
+    pyplot.rc('figure', figsize=(5, 10))
     pyplot.rc('font', size=9.0)
     pyplot.rc('xtick.major', size=0)
     pyplot.rc('ytick.major', size=0)
 
     pyplot.subplots_adjust(wspace=0.4, hspace=0.4, 
-                           right=0.95, left=0.1,
+                           right=0.95, left=0.15,
                            top=0.95, bottom=0.05)
 
     t = miles.items()
@@ -184,8 +185,6 @@ def PlotSpeeds(distances, plot_gender='male'):
     gender = plot_gender
     i=0
     for distance in titles:
-        if distance == '200m':
-            continue
         i += 1
 
         data = distances[distance, gender]
@@ -193,36 +192,31 @@ def PlotSpeeds(distances, plot_gender='male'):
             continue
 
         pyplot.subplot(6, 2, i)
+        if i%2 == 1:
+            pyplot.ylabel('mph')
+
         xs, ys = zip(*data)
 
         # extend the current record to the present
         first_x = xs[1]
         last_x = xs[-1]
-        pyplot.xticks([int(first_x), 1960, 2011])
+
+        if i==2:
+            pyplot.xticks([int(first_x), 2011])
+        else:
+            pyplot.xticks([int(first_x), 1960, 2011])
 
         last_y = ys[-1]
-        pyplot.plot([last_x, 2011.4], [last_y, last_y], 'b:')
+        pyplot.plot([last_x, 2011.4], [last_y, last_y], 'b-')
 
-        pyplot.plot(xs, ys, 'o:')
+        pyplot.plot(xs, ys, 'o-', markersize=4)
 
         pyplot.title(distance)
 
     root = 'world_record_speed'
-    myplot.Save(root=root)
-
-"""There are six billion ways not to be the fastest marathoner in the world."""
-
-def main(script):
-    #distances = ReadData(speed=False)
-    #PlotTimes(distances)
-
-    distances = ReadData(speed=True)
-    PlotSpeeds(distances)
-
-    #PlotCdfs()
-    #PlotSimulations()
-
-    #PlotMarathon(distances['marathon', 'male'])
+    myplot.Save(root=root, format='eps')
+    myplot.Save(root=root, format='png')
+    pyplot.rcdefaults()
 
 def PlotCdfs():
     """Plots distribution of ability for different number of factors.
@@ -249,7 +243,6 @@ def PlotCdfs():
 
 
 def PlotSimulations():
-    pyplot.rcdefaults()
     pyplot.rc('figure', figsize=(4, 4.5))
     pyplot.rc('font', size=9.0)
     pyplot.rc('xtick.major', size=0)
@@ -264,6 +257,7 @@ def PlotSimulations():
         PlotSimulation(100000)
 
     myplot.Plot(root='world_record_sim')
+    pyplot.rcdefaults()
 
 
 
@@ -311,6 +305,20 @@ def PlotMarathon(data):
 def MakeLine(inter, slope, xs):
     return xs, [inter + slope * x for x in xs]
     
+
+"""There are six billion ways not to be the fastest marathoner in the world."""
+
+def main(script):
+    #distances = ReadData(speed=False)
+    #PlotTimes(distances)
+
+    #distances = ReadData(speed=True)
+    #PlotSpeeds(distances)
+
+    PlotCdfs()
+    #PlotSimulations()
+
+    #PlotMarathon(distances['marathon', 'male'])
 
 if __name__ == '__main__':
     main(*sys.argv)
