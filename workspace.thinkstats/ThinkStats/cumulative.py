@@ -83,8 +83,7 @@ def MakeFigures(pool, firsts, others):
                bar_options=bar_options, 
                title='Birth weight PMF',
                xlabel='weight (ounces)',
-               ylabel='probability',
-               axis=None)
+               ylabel='probability')
 
     line_options = [
                     dict(linewidth=0.5),

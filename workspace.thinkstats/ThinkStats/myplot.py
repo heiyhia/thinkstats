@@ -311,6 +311,6 @@ def Save(root, format='eps'):
     """
     filename = '%s.%s' % (root, format)
     print 'Writing', filename
-    pyplot.savefig(filename, format=format)
+    pyplot.savefig(filename, format=format, dpi=300)
 
 

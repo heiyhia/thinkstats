@@ -93,7 +93,7 @@ miles = {
 }
 
 
-def ReadDistance(reader, speed):
+def ReadDistance(reader, speed, min_year=1950):
     try:
         t = reader.next()
         distance, gender = t
@@ -117,6 +117,9 @@ def ReadDistance(reader, speed):
             print date
         dayofyear = int(date_obj.strftime('%j'))
         years = date_obj.year + dayofyear / 365.24
+
+        if years < min_year:
+            continue
 
         if speed:
             speed = miles[distance] / (minutes / 60)
@@ -166,7 +169,7 @@ def PlotTimes(distances, plot_gender='male'):
                     ylabel='minutes',
                     title='%s world record progression' % distance)
 
-def PlotSpeeds(distances, plot_gender='male'):
+def PlotSpeeds(distances, plot_gender='male', special=False):
 
     pyplot.rcdefaults()
     pyplot.rc('figure', figsize=(5, 10))
@@ -201,13 +204,18 @@ def PlotSpeeds(distances, plot_gender='male'):
         first_x = xs[1]
         last_x = xs[-1]
 
-        if i==2:
+        if special:
+            pyplot.xticks([1950, 1970, 1990, 2011])
+        elif i==2:
             pyplot.xticks([int(first_x), 2011])
         else:
             pyplot.xticks([int(first_x), 1960, 2011])
 
+        first_y = ys[0]
         last_y = ys[-1]
         pyplot.plot([last_x, 2011.4], [last_y, last_y], 'b-')
+        if special:
+            pyplot.plot([1950, first_x], [first_y, first_y], 'b-')
 
         pyplot.plot(xs, ys, 'o-', markersize=4)
 
@@ -312,10 +320,10 @@ def main(script):
     #distances = ReadData(speed=False)
     #PlotTimes(distances)
 
-    #distances = ReadData(speed=True)
-    #PlotSpeeds(distances)
+    distances = ReadData(speed=True)
+    PlotSpeeds(distances, special=True)
 
-    PlotCdfs()
+    #PlotCdfs()
     #PlotSimulations()
 
     #PlotMarathon(distances['marathon', 'male'])
