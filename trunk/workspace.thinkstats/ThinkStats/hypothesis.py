@@ -231,6 +231,7 @@ def SampleWithoutReplacement(t, n):
  
  
 def main():
+    random.seed(17)
 
     # get the data
     pool, firsts, others = cumulative.MakeTables()

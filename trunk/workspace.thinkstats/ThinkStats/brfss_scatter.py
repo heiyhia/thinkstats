@@ -70,6 +70,7 @@ def MakeFigures():
     resp.ScatterPlot('scatter2', heights, weights)
 
     # after remaking scatter3, you have to convert the png version to eps
+    # convert scatter3.png scatter3.eps
     pyplot.clf()
     resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
 

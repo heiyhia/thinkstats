@@ -13,6 +13,7 @@ railroad has."
 
 """
 
+import matplotlib.pyplot as pyplot
 import myplot
 import Pmf
 import Cdf
@@ -101,6 +102,7 @@ def main():
     print CredibleInterval(posterior, 90)
 
     # plot the posterior distribution
+    pyplot.subplots_adjust(wspace=0.4, left=0.15)
     plot_options = dict(linewidth=2)
 
     myplot.Pmf(posterior, 

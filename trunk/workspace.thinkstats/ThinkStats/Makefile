@@ -18,7 +18,7 @@ Cdf.py
 
 DEST = /home/downey/public_html/greent/thinkstats
 
-FIGS = actual_speeds.eps               nsfg_birthwgt_cdf.eps \
+FIGS = actual_speeds.eps        nsfg_birthwgt_cdf.eps \
 age_scatter.eps                 nsfg_birthwgt_lognormal.eps \
 bq_cdf1.eps                     nsfg_birthwgt_model.eps \
 bq_cdf2.eps                     nsfg_birthwgt_normal.eps \
@@ -51,7 +51,49 @@ marathon_pmf.eps                sigma.eps \
 nlsy_scatter.eps                slashdot.loglog.eps \
 nnsfg_birthwgt_model.eps        slashdot.logx.eps \
 normal_cdf.eps                  weight_deltas_cdf.eps \
-nsfg_age_cdf.eps
+nsfg_age_cdf.eps \
+actual_speeds.png        nsfg_birthwgt_cdf.png \
+age_scatter.png                 nsfg_birthwgt_lognormal.png \
+bq_cdf1.png                     nsfg_birthwgt_model.png \
+bq_cdf2.png                     nsfg_birthwgt_normal.png \
+bq_cdf.png                      nsfg_birthwgt_pmf.png \
+bq_gap1.png                     nsfg_diffs.png \
+bq_gap2.png                     nsfg_hist.png \
+brfss_change2.png               nsfg_oz_pmf.png \
+brfss_change.png                nsfg_pmf.png \
+brfss_scatter.png               nsfg_ratios.png \
+brfss_weight_log.png            observed_speeds.png \
+brfss_weight_lognormal.png      pareto_cdf.png \
+brfss_weight_model.png          pareto_height.png \
+brfss_weight_normal.png         populations.png \
+conditional.png                 populations_loglog.png \
+example_cdf.png                 populations_logx.png \
+expo_cdf.png                    populations_rankit.png \
+heri1.png                       posteriors.png \
+heri2.png                       race_predictor1.png \
+heri3.png                       race_predictor2.png \
+income_loglog.png               race_predictor3.png \
+income_logx.png                 race_predictor4.png \
+interarrivals.png               relay_normal.png \
+interarrivals_logy.png          resample_cdf.png \
+interarrivals_model.png         resampled_delta_cdf.png \
+length_analytic_deltas_cdf.png  scatter1.png \
+length_deltas_cdf.png           scatter2.png \
+locomotive.png                  scatter3.png \
+marathon_cdf.png                scatter4.png \
+marathon_pmf.png                sigma.png \
+nlsy_scatter.png                slashdot.loglog.png \
+nnsfg_birthwgt_model.png        slashdot.logx.png \
+normal_cdf.png                  weight_deltas_cdf.png \
+nsfg_age_cdf.png
+
+all_figs:
+	python descriptive.py
+	python cumulative.py
+	python babyboom.py
+	python continuous.py
+	python hypothesis.py
+	python locomotive.py
 
 FIGDEST = ../../figs
 

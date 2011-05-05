@@ -42,13 +42,13 @@ def MakeFigure():
     sample = [random.expovariate(1/mu) for i in range(n)]
     model = Cdf.MakeCdfFromList(sample, 'model')
     
-    myplot.Cdfs([cdf], 'interarrivals',
+    myplot.Cdf(cdf, root='interarrivals',
               title='Time between births',
               xlabel='minutes',
               ylabel='CDF',
               legend=False)
 
-    myplot.Cdfs([cdf], 'interarrivals_logy',
+    myplot.Cdf(cdf, root='interarrivals_logy',
               complement=True,
               title='Time between births',
               xlabel='minutes',
@@ -56,7 +56,7 @@ def MakeFigure():
               yscale='log',
               legend=False)
 
-    myplot.Cdfs([cdf, model], 'interarrivals_model',
+    myplot.Cdfs([cdf, model], root='interarrivals_model',
               complement=True,
               title='Time between births',
               xlabel='minutes',
