@@ -17,14 +17,10 @@ PDFFLAGS = -dCompatibilityLevel=1.4 -dPDFSETTINGS=/prepress \
 	ps2pdf $(PDFFLAGS) $<
 
 all:	book.tex
-	latex book
+	pdflatex book
 	makeindex book.idx
-	latex book
-	dvips -t letter -Ppdf -o thinkstats.ps book
-#	dvips -T 6.75in,9.25in -Ppdf -o thinkstats.ps book
-#	dvips -t b5 -Ppdf -o thinkstats.ps book
-#	dvips -T 7in,10in -Ppdf -o thinkstats.ps book
-	gv thinkstats.ps
+	mv book.pdf thinkstats.pdf
+	evince thinkstats.pdf
 
 html:	book.tex header.html footer.html
 	rm -rf html
@@ -41,10 +37,9 @@ html:	book.tex header.html footer.html
 DEST = /home/downey/public_html/greent/thinkstats
 
 distrib:
-	ps2pdf $(PDFFLAGS) thinkstats.ps
 	rm -rf dist
 	mkdir dist dist/tex dist/tex/figs
-	rsync -a thinkstats.pdf thinkstats.ps html cover_nolines.png dist
+	rsync -a thinkstats.pdf html cover_nolines.png dist
 	rsync -a Makefile book.tex latexonly htmlonly dist/tex
 	# rsync -a figs/*.fig figs/*.eps dist/tex/figs
 	cd dist; zip -r thinkstats.tex.zip tex
@@ -53,13 +48,16 @@ distrib:
 	chmod -R o+r $(DEST)/*
 
 plastex:
-	plastex --filename=book.xml book.tex
-	~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
+	#~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+
+sample:
+	plastex --renderer=DocBook --theme=book --image-resolution=300 --image-scale-factor=0.25 --filename=sample2e.xml sample2e.tex
+	~/Downloads/xxe-perso-4_8_0/bin/xxe sample2e/sample2e.xml
 
 oreilly:
 	rsync -a book/ ~/oreilly
 	rsync -a figs/* ~/oreilly/figs
-	ps2pdf $(PDFFLAGS) thinkstats.ps
 	cp thinkstats.pdf ~/oreilly/pdf
 
 clean:
