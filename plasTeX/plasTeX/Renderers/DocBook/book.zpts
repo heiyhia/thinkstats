@@ -19,11 +19,20 @@ name: ref
 type:xml
 <xref tal:attributes="linkend self/idref/label/id" />
 
+name: it mathit
+<emphasis tal:content="self"></emphasis>
+
 name: bf
 <emphasis role="bold" tal:content="self"></emphasis>
 
 name: tt
 <literal tal:content="self"></literal>
+
+name: super
+<emphasis><superscript tal:content="self"></superscript></emphasis>
+
+name: sub
+<emphasis><subscript tal:content="self"></subscript></emphasis>
 
 name:Anchor
 <anchor tal:attributes="id self/id" />
