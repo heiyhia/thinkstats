@@ -54,6 +54,7 @@
 \frontmatter
 
 \ifplastex
+    \newcommand{\f}{\mathit{f}}
     \newcommand{\gee}{\mathit{g}}
     \newcommand{\ii}{\mathit{i}}
     \newcommand{\kk}{\mathit{k}}
@@ -69,28 +70,42 @@
     \newcommand{\z}{\mathit{z}}
     \newcommand{\Z}{\mathit{Z}}
     \newcommand{\E}{\mathit{E}}
+    \newcommand{\OO}{\mathit{O}}
     \newcommand{\HH}{\mathit{H}}
     \newcommand{\A}{\mathit{A}}
     \newcommand{\B}{\mathit{B}}
     \newcommand{\D}{\mathit{D}}
     \newcommand{\N}{\mathit{N}}
+    \newcommand{\R}{\mathit{R}}
     \newcommand{\mya}{\mathit{a}}
     \newcommand{\myb}{\mathit{b}}
     \newcommand{\Prob}{\mathit{P}}
     \newcommand{\xsubi}{\mathit{x}\sub{i}}
     \newcommand{\psubi}{\mathit{p}\sub{i}}
-    \newcommand{\mmu}{\mathit{\mu}}
-    \newcommand{\malpha}{\mathit{\alpha}}
-    \newcommand{\msigma}{\mathit{\sigma}}
-    \newcommand{\mlambda}{\mathit{\lambda}}
-    \newcommand{\mdelta}{\mathit{\delta}}
+    \newcommand{\mymu}{\mathit{\mu}}
+    \newcommand{\mychi}{\mathit{\chi}}
+    \newcommand{\myalpha}{\mathit{\alpha}}
+    \newcommand{\mysigma}{\mathit{\sigma}}
+    \newcommand{\myrho}{\mathit{\rho}}
+    \newcommand{\mylambda}{\mathit{\lambda}}
+    \newcommand{\mydelta}{\mathit{\delta}}
     \newcommand{\sigmasq}{\mathit{\sigma}\super{2}}
 
     \newcommand{\plus}{+}
     \newcommand{\myminus}{-}
     \newcommand{\mytimes}{\times}
     \newcommand{\mydivide}{\div}
+    \newcommand{\mystar}{\star}
+    \newcommand{\mysim}{\sim}
+    \newcommand{\mynormal}{$\mathcal{N}$}
+
+    \newcommand{\myslope}{\mathit{\beta}}
+    \newcommand{\myinter}{\mathit{\alpha}}
+
+    \newcommand{\myeps}{\mathit{\varepsilon}}
+    \newcommand{\myxbar}{\xbar}
 \else
+    \newcommand{\f}{$f$}
     \newcommand{\gee}{$g$}
     \newcommand{\ii}{$i$}
     \newcommand{\kk}{$k$}
@@ -107,21 +122,25 @@
     \newcommand{\z}{$z$}
     \newcommand{\Z}{$Z$}
     \newcommand{\E}{$E$}
+    \newcommand{\OO}{$O$}
     \newcommand{\HH}{$H$}
     \newcommand{\A}{$A$}
     \newcommand{\B}{$B$}
     \newcommand{\D}{$D$}
     \newcommand{\N}{$N$}
+    \newcommand{\R}{$R$}
     \newcommand{\mya}{$a$}
     \newcommand{\myb}{$b$}
     \newcommand{\Prob}{$P$}
     \newcommand{\xsubi}{$x_i$}
     \newcommand{\psubi}{$p_i$}
-    \newcommand{\mmu}{$\mu$}
-    \newcommand{\malpha}{$\alpha$}
-    \newcommand{\msigma}{$\sigma$}
-    \newcommand{\mlambda}{$\lambda$}
-    \newcommand{\mdelta}{$\delta$}
+    \newcommand{\mymu}{$\mu$}
+    \newcommand{\mychi}{$\chi$}
+    \newcommand{\myalpha}{$\alpha$}
+    \newcommand{\mysigma}{$\sigma$}
+    \newcommand{\myrho}{$\rho$}
+    \newcommand{\mylambda}{$\lambda$}
+    \newcommand{\mydelta}{$\delta$}
     \newcommand{\sigmasq}{$\sigma^2$}
 
     \newcommand{\plus}{$+$}
@@ -131,6 +150,21 @@
 
     \newcommand{\sub}[1]{$_{#1}$}
     \newcommand{\super}[1]{$^{#1}$}
+    \newcommand{\mystar}{$\star$}
+    \newcommand{\mysim}{$\sim$}
+    \newcommand{\normal}{\mathcal{N}}
+    \newcommand{\mynormal}{$\mathcal{N}$}
+
+    \newcommand{\slope}{\beta}
+    \newcommand{\inter}{\alpha}
+    \newcommand{\myslope}{$\beta$}
+    \newcommand{\myinter}{$\alpha$}
+
+    \newcommand{\eps}{\varepsilon}
+    \newcommand{\myeps}{$\varepsilon$}
+
+    \newcommand{\xbar}{\bar{x}}
+    \newcommand{\myxbar}{$\bar{x}$}
 \fi
 
 \newcommand{\PMF}{\mathrm{PMF}}
@@ -150,6 +184,7 @@
     \M@gettitle{}\label{#1}% 
     \@esphack%
 }
+
 
 \else
 
@@ -432,7 +467,7 @@ Allen B. Downey \\
 Needham MA \\
 August 27, 2010
 
-Allen Downey is an Associate Professor of Computer Science at 
+Allen Downey is a Professor of Computer Science at 
 the Franklin W. Olin College of Engineering.
 
 
@@ -1110,7 +1145,7 @@ we go any farther, let's take care of that.
 \index{descriptive statistics}
 \index{summary statistics}
 
-If you have a sample of \n~values, \xsubi, the mean, \mmu, is
+If you have a sample of \n~values, \xsubi, the mean, \mymu, is
 the sum of the values divided by the number of values; in other words
 %
 \[ \mu = \frac{1}{n} \sum_i x_i \]
@@ -1161,9 +1196,9 @@ The variance of a set of values is
 %
 \[ \sigma^2 = \frac{1}{n} \sum_i (x_i - \mu)^2 \]
 %
-The term \xsubi-\mmu~is called the ``deviation from the mean,'' so
+The term \xsubi-\mymu~is called the ``deviation from the mean,'' so
 variance is the mean squared deviation, which is why it is denoted
-\sigmasq.  The square root of variance, \msigma, is called the {\bf
+\sigmasq.  The square root of variance, \mysigma, is called the {\bf
   standard deviation}.
 \index{deviation}
 \index{standard deviation}
@@ -2539,9 +2574,9 @@ The CDF of the exponential distribution is:
 %
 \[ CDF(x) = 1 - e^{-\lambda x} \]
 %
-The parameter, \mlambda, determines the shape of the
+The parameter, \mylambda, determines the shape of the
 distribution.  Figure~\ref{expo_cdf} shows what this CDF looks like with
-\mlambda=2.
+\mylambda=2.
 \index{parameter}
 
 
@@ -2553,8 +2588,8 @@ distribution.  Figure~\ref{expo_cdf} shows what this CDF looks like with
 \end{figure}
 
 In general, the mean of an exponential distribution is 1\mydivide
-\mlambda, so the mean of this distribution is 0.5.  The median is
-log(2)\mydivide \mlambda, which is roughly 0.35.  \index{mean}
+\mylambda, so the mean of this distribution is 0.5.  The median is
+log(2)\mydivide \mylambda, which is roughly 0.35.  \index{mean}
 \index{median} \index{Australia} \index{Brisbane}
 
 To see an example of a distribution that is approximately exponential,
@@ -2588,7 +2623,7 @@ If you take the log of both sides of this equation, you get:
 \[ \log y \approx -\lambda x \]
 %
 So on a log-\y~scale the CCDF is a straight line
-with slope \myminus \mlambda.
+with slope \myminus \mylambda.
 
 \index{logarithmic scale}
 \index{complementary CDF}
@@ -2626,7 +2661,7 @@ distribution and see how well it matches the data.
 
 The function {\tt expovariate} in the {\tt random} module generates
 random values from an exponential distribution with a given value of
-\mlambda.  Use it to generate 44 values from an exponential
+\mylambda.  Use it to generate 44 values from an exponential
 distribution with mean 32.6.  Plot the CCDF on a log-\y~scale and
 compare it to Figure~\ref{interarrival_ccdf}.
 \index{pyplot}
@@ -2674,10 +2709,10 @@ The CDF of the Pareto distribution is:
 %
 \[ CDF(x) = 1- \left( \frac{x}{x_m} \right) ^{-\alpha} \]
 %
-The parameters \x \sub{m} and \malpha~determine the location and shape of
+The parameters \x \sub{m} and \myalpha~determine the location and shape of
 the distribution. \x \sub{m} is the minimum possible value.
 Figure~\ref{pareto_cdf} shows the CDF of a Pareto distribution with
-parameters \x \sub{m} = 0.5 and \malpha=1.
+parameters \x \sub{m}~=~0.5 and \myalpha~=~1.
 \index{parameter}
 
 \begin{figure}
@@ -2687,7 +2722,7 @@ parameters \x \sub{m} = 0.5 and \malpha=1.
 \label{pareto_cdf}
 \end{figure}
 
-The median of this distribution is $x_m 2^{1/\alpha}$ = 1, but the
+The median of this distribution is $x_m 2^{1/\alpha}$~=~1, but the
 95th percentile is 10.  By contrast, the exponential distribution
 with median 1 has 95th percentile of only 1.5.
 \index{exponential distribution}
@@ -2708,13 +2743,13 @@ Taking the log of both sides yields:
 \[ \log y \approx -\alpha (\log x - \log x_m ) \]
 % 
 So if you plot log \y versus log \x, it should look like a straight
-line with slope \myminus \malpha~and intercept \myminus \malpha log \x
+line with slope \myminus \myalpha~and intercept \myminus \myalpha log \x
 \sub{m}.
 
 \begin{exercise}
 The {\tt random} module provides {\tt paretovariate},
 which generates random values from a Pareto distribution.  It takes
-a parameter for \malpha, but not \x \sub{m}.  The
+a parameter for \myalpha, but not \x \sub{m}.  The
 default value for \x \sub{m} is 1; you can generate a distribution
 with a different parameter by multiplying by \x \sub{m}.
 \index{random module}
@@ -2722,7 +2757,7 @@ with a different parameter by multiplying by \x \sub{m}.
 \index{distribution!Pareto}
 
 Write a wrapper function named {\tt paretovariate} that takes
-\malpha~and \x \sub{m} as parameters and uses {\tt
+\myalpha~and \x \sub{m} as parameters and uses {\tt
   random.paretovariate} to generate values from a two-parameter Pareto
 distribution.
 \index{parameter}
@@ -2739,7 +2774,7 @@ line?  What is the slope?
 \begin{exercise}
 To get a feel for the Pareto distribution, imagine what the world
 would be like if the distribution of human height were Pareto.
-Choosing the parameters \x \sub{m} = 100 cm and \malpha=1.7, we
+Choosing the parameters \x \sub{m}~=~100 cm and \myalpha~=~1.7, we
 get a distribution with a reasonable minimum, 100 cm,
 and median, 150 cm.
 \index{height}
@@ -2768,7 +2803,7 @@ distribution of word frequencies is roughly Pareto.
 Find a large corpus, in any language, in electronic
 format.  Count how many times each word appears.  Find the CCDF of the
 word counts and plot it on a log-log scale.  Does Zipf's law hold?
-What is the value of \malpha, approximately?
+What is the value of \myalpha, approximately?
 \index{complementary CDF}
 \index{CDF!complementary}
 \index{CCDF}
@@ -2826,7 +2861,7 @@ written erf(\x):
 %
 \[ \erf(x) = \frac{2}{\sqrt{\pi}} \int_{0}^x e^{-t^2} dt \]
 %
-The parameters \mmu~and \msigma~determine the mean and standard
+The parameters \mymu~and \mysigma~determine the mean and standard
 deviation of the distribution.
 \index{parameter}
 \index{{\tt erf.py}}
@@ -2839,7 +2874,7 @@ from \url{thinkstats.com/erf.py}, which provides functions named
 {\tt erf} and {\tt NormalCdf}.
 
 Figure~\ref{normal_cdf} shows the CDF of the normal distribution
-with parameters \mmu=2.0 and \msigma=0.5.  The sigmoid shape of
+with parameters \mymu~=~2.0 and \mysigma~=~0.5.  The sigmoid shape of
 this curve is a recognizable characteristic of a normal distribution.
 
 \begin{figure}
@@ -2868,7 +2903,7 @@ a normal distribution with the same mean and variance.
 The normal distribution is a good model for this dataset.  A {\bf
   model} is a useful simplification.  In this case it is useful
 because we can summarize the entire distribution with just two
-numbers, \mmu=116.5 and \msigma=19.9, and the resulting error
+numbers, \mymu~=~116.5 and \mysigma~=~19.9, and the resulting error
 (difference between the model and the data) is small.
 \index{model}
 \index{percentile}
@@ -2885,7 +2920,7 @@ The Wechsler Adult Intelligence Scale is a test that is intended
 to measure intelligence\footnote{Whether it does or not is a
 fascinating controversy that I invite you to investigate at your
 leisure.}.  Results are transformed so that the distribution of scores
-in the general population is normal with \mmu=100 and \msigma=15.
+in the general population is normal with \mymu~=~100 and \mysigma~=~15.
 \index{Wechsler Adult Intelligence Scale}
 \index{Adult Intelligence Scale}
 \index{WAIS}
@@ -2949,7 +2984,7 @@ distribution for the \kk th value.
 
 \begin{exercise}
 Write a function called {\tt Sample} that generates 6 samples from a
-normal distribution with \mmu=0 and \msigma=1.  Sort and return
+normal distribution with \mymu~=~0 and \mysigma~=~1.  Sort and return
 the values.
 
 Write a function called {\tt Samples} that calls {\tt Sample} 1000 times and
@@ -2976,7 +3011,7 @@ quick-and-dirty method that is even easier to implement:
 
 \begin{description}
 
-\item From a normal distribution with \mmu=0 and \msigma=1,
+\item From a normal distribution with \mymu~=~0 and \mysigma~=~1,
 generate a sample with the same size as your dataset and sort it.
 
 \item Sort the values in the dataset.
@@ -3049,7 +3084,7 @@ with log \x substituted for \x.
 \[ \CDF_{lognormal}(x) = \CDF_{normal}(\log x) \]
 % 
 The parameters of the lognormal distribution are usually denoted
-\mmu~and \msigma.  But remember that these parameters are {\em not}
+\mymu~and \mysigma.  But remember that these parameters are {\em not}
 the mean and standard deviation; the mean of a lognormal distribution
 is $\exp(\mu + \sigma^2/2)$ and the standard deviation is
 ugly\footnote{See \url{wikipedia.org/wiki/Log-normal_distribution}.}.
@@ -3461,7 +3496,7 @@ rules is
 %
 \[ P(A \AND B) = P(A) P(B) \quad \mbox{Warning: not always true!}\]
 %
-where $P(A \AND B)$ is the probability that events \A~and \B~both
+where \Prob(\A \AND \B) is the probability that events \A~and \B~both
 occur.  This formula is easy to remember; the only problem is that it
 is {\em not always true}.  This formula only applies if \A~and \B~are 
 {\bf independent}, which means that if I know \A~occurred, that
@@ -3502,7 +3537,7 @@ write.
 \[ P(A \AND B) = P(B) P(A|B) \]
 %
 These relationships hold whether \A~and \B~are independent or not.
-If they are independent, then \Prob(\A|\B) = \Prob(\A), which gets us back
+If they are independent, then \Prob(\A|\B)~=~\Prob(\A), which gets us back
 where we started.
 
 Because all probabilities are in the range 0 to 1, it is
@@ -3728,8 +3763,8 @@ taller than the man?
 \index{BRFSS}
 
 In the BRFSS (see Section~\ref{lognormal}), the distribution of
-heights is roughly normal with parameters \mmu=178 cm and
-\sigmasq=59.4 cm for men, and \mmu=163 cm and \sigmasq=52.8 cm for
+heights is roughly normal with parameters \mymu~=~178 cm and
+\sigmasq~=~59.4 cm for men, and \mymu~=~163 cm and \sigmasq~=~52.8 cm for
 women.
 \index{lognormal distribution}
 \index{distribution!lognormal}
@@ -3739,7 +3774,7 @@ As an aside, you might notice that the standard deviation for men is
 higher and wonder whether men's heights are more variable.  To compare
 variability between groups, it is useful to compute the {\bf
   coefficient of variation}, which is the standard deviation as a
-fraction of the mean, \msigma/\mmu.  By this measure, women's
+fraction of the mean, \mysigma/\mymu.  By this measure, women's
 heights are slightly more variable.
 \index{coefficient!variation}
 
@@ -3821,7 +3856,7 @@ Or recursively like this
 %
 \[ \binom{n}{k} = \binom{n-1}{k} + \binom{n-1}{k-1} \]
 %
-with two base cases: if \n=0 the result is 0; if \kk=0 the result is 1.
+with two base cases: if \n~=~0 the result is 0; if \kk~=~0 the result is 1.
 If you download \url{thinkstats.com/thinkstats.py} you will see a function
 named {\tt Binom} that computes the binomial coefficient with reasonable
 efficiency.
@@ -3954,26 +3989,25 @@ obligated to investigate.  According to their web page:
 \end{quote}
 
 \begin{enumerate}
-\index{cohort}
 
 \item Suppose that a particular cancer has an incidence of 1 case per
   thousand people per year.  If you follow a particular cohort of 100
   people for 10 years, you would expect to see about 1 case.  If you
   saw two cases, that would not be very surprising, but more than than
-  two would be rare.
+  two would be rare.\index{cohort}
 
-Write a program that simulates a large number of cohorts over
-a 10 year period and estimates the distribution of total cases.
+  Write a program that simulates a large number of cohorts over
+  a 10 year period and estimates the distribution of total cases.
 
 \item An observation is considered statistically significant if its
-  probability by chance alone, called a \p-value, is less than 5\%.
+  probability by chance alone, called a p-value, is less than 5\%.
   In a cohort of 100 people over 10 years, how many cases would you
   have to see to meet this criterion?
 
 \item Now imagine that you divide a population of 10000 people into 100
   cohorts and follow them for 10 years.  What is the chance that at
   least one of the cohorts will have a ``statistically significant''
-  cluster?  What if we require a \p-value of 1\%.?
+  cluster?  What if we require a p-value of 1\%.?
 
 \item Now imagine that you arrange 10000 people in a 100 \mytimes 100
   grid and follow them for 10 years.  What is the chance that there
@@ -4028,10 +4062,10 @@ hypothesis, \HH:
 \[ P(H|E) = P(H) \frac{P(E|H)}{P(E)} \]
 %
 In words, this equation says that the probability of \HH~after you
-have seen \E is the product of $P(H)$, which is the probability of
-\HH~before you saw the evidence, and the ratio of $P(E|H)$, the
+have seen \E is the product of \Prob(\HH), which is the probability of
+\HH~before you saw the evidence, and the ratio of \Prob(\E|\HH), the
 probability of seeing the evidence assuming that \HH~is true, and
-$P(E)$, the probability of seeing the evidence under any circumstances
+\Prob(\E), the probability of seeing the evidence under any circumstances
 (\HH~true or not).
 \index{diachronic}
 
@@ -4095,7 +4129,7 @@ Putting it together, we have
 %
 \[ P(D|E) = \frac{P(D) P(E|D)}{P(D) P(E|D) + P(N) P(E|N)}\]
 %
-Plugging in the given values yields \Prob(\D|\E) = 0.76, which means
+Plugging in the given values yields \Prob(\D|\E)~=~0.76, which means
 that of the people who test positive, about 1 in 4 is innocent. 
 
 \begin{exercise}
@@ -4246,8 +4280,8 @@ is:
 %
 \[ m_3 = \frac{1}{n} \sum_i (x_i - \mu)^3 \]
 %
-You might recognize \m \sub{2} as the mean squared deviation (also known as
-variance); \m \sub{3} is the mean cubed deviation.
+You might recognize \m\sub{2} as the mean squared deviation (also known as
+variance); \m\sub{3} is the mean cubed deviation.
 \index{deviation}
 \index{variance}
 
@@ -4271,7 +4305,7 @@ in a distribution that skews left, the mean is less than the median.
 
 {\bf Pearson's median skewness coefficient} is an alternative measure
 of skewness that explicitly captures the relationship between the
-mean, \mmu, and the median, \mmu \sub{1/2}:
+mean, \mymu, and the median, \mymu \sub{1/2}:
 %
 \[ g_p = 3 (\mu - \mu_{1/2}) / \sigma \]
 %
@@ -4402,7 +4436,7 @@ class Exponential(RandomVariable):
         return random.expovariate(self.lam)
 \end{verbatim}
 
-The init method takes the parameter, \mlambda, and stores it as
+The init method takes the parameter, \mylambda, and stores it as
 an attribute.  The {\tt generate} method returns a random value
 from the exponential distribution with that parameter.
 \index{init method}
@@ -4418,13 +4452,13 @@ If I were just generating exponential variates, I would not bother to
 define a new class; I would use {\tt random.expovariate}.  But for
 other distributions it might be useful to use RandomVariable objects.
 For example, the Erlang distribution is a continuous distribution with
-parameters \mlambda~and \kk~(see
+parameters \mylambda~and \kk~(see
 \url{wikipedia.org/wiki/Erlang_distribution}).
 \index{Erlang distribution}
 \index{distribution!Erlang}
 
 One way to generate values from an Erlang distribution is to add
-\kk~values from an exponential distribution with the same \mlambda.
+\kk~values from an exponential distribution with the same \mylambda.
 Here's an implementation:
 %
 \begin{verbatim}
@@ -4510,8 +4544,8 @@ PDF numerically.
 \begin{exercise}
 \label{expo_pdf}
 What is the probability that a value chosen from an exponential
-distribution with parameter \mlambda~falls between 1 and 20?  Express
-your answer as a function of \mlambda.  Keep this result handy;
+distribution with parameter \mylambda~falls between 1 and 20?  Express
+your answer as a function of \mylambda.  Keep this result handy;
 we will use it in Section~\ref{censored}.
 \index{exponential distribution}
 \index{distribution!exponential}
@@ -4521,8 +4555,8 @@ we will use it in Section~\ref{censored}.
 
 \begin{exercise}
 In the BRFSS (see Section~\ref{lognormal}), the distribution of
-heights is roughly normal with parameters \mmu=178 cm and
-\sigmasq=59.4 cm for men, and \mmu=163 cm and \sigmasq=52.8 cm for
+heights is roughly normal with parameters \mymu~=~178 cm and
+\sigmasq~=~59.4 cm for men, and \mymu~=~163 cm and \sigmasq~=~52.8 cm for
 women.
 \index{normal distribution}
 \index{distribution!normal}
@@ -4544,7 +4578,7 @@ Section~\ref{normal}.
 
 Suppose we have two random variables, \X~and \Y, 
 with distributions CDF\sub{X} and CDF\sub{Y}.  What is the
-distribution of the sum \Z = \X + \Y?
+distribution of the sum \Z~=~\X + \Y?
 \index{random variable}
 \index{variable!random}
 \index{sum}
@@ -4574,7 +4608,6 @@ If CDF\sub{X} and CDF\sub{Y} are expressed as functions, sometimes we can
 find CDF\sub{Z} exactly.  Here's how:
 
 \newcommand{\infint}{\int_{-\infty}^{\infty}}
-\newcommand{\convolution}{\star}
 \newcommand{\spa}{~}
 \newcommand{\given}{~|~}
 
@@ -4589,9 +4622,9 @@ Let's read that back.
 The left side is ``the probability that the sum is less than
 \z, given that the first term is \x.''  Well, if
 the first term is \x~and the sum has to be less than \z, then the
-second term has to be less than $z-x$.
+second term has to be less than \z-\x.
 
-\item To get the probability that \Y~is less than $z-x$, we
+\item To get the probability that \Y~is less than \z-\x, we
 evaluate CDF\sub{Y}.
 %
 \[ P(Y \le z-x) = \CDF_Y(z-x) \]
@@ -4605,7 +4638,7 @@ integrate over them:
 \[ P(Z \le z) = \infint P(Z \le z \given X = x) \spa \PDF_X(x) \spa dx \]
 %
 The integrand is ``the probability that \Z~is less than or equal
-to \z, given that $X=x$, times the probability that $X=x$.''
+to \z, given that \X~=~\x, times the probability that \X~=~\x.''
 
 Substituting from the previous steps we get
 %
@@ -4622,10 +4655,10 @@ both sides with respect to \z.  The result is
 \[ \PDF_Z(z) = \infint \PDF_Y(z-x) \spa \PDF_X(x) \spa dx  \]
 %
 If you have studied signals and systems, you might recognize that
-integral.  It is the {\bf convolution} of $\PDF_Y$ and $\PDF_z$, denoted
-with the operator $\convolution$.
+integral.  It is the {\bf convolution} of PDF\sub{Y} and PDF\sub{X}, 
+denoted with the operator \mystar.
 %
-\[ \PDF_Z = \PDF_Y \convolution \PDF_X \]
+\[ \PDF_Z = \PDF_Y \star \PDF_X \]
 %
 So the distribution of the sum is the convolution of the distributions.
 See \url{wiktionary.org/wiki/booyah}!
@@ -4637,8 +4670,8 @@ See \url{wiktionary.org/wiki/booyah}!
 \index{independent}
 
 As an example, suppose \X~and \Y~are random variables with an
-exponential distribution with parameter \mlambda.  
-The distribution of \Z = \X + \Y is:
+exponential distribution with parameter \mylambda.  
+The distribution of \Z~=~\X + \Y is:
 %
 \[ \PDF_Z(z) = \infint \PDF_X(x)~\PDF_Y(z-x) \spa dx = 
 \infint \lambda e^{-\lambda x}~\lambda e^{\lambda (z-x)} \]
@@ -4654,7 +4687,7 @@ Now we can combine terms and move constants outside the integral:
 \lambda^2 z \spa e^{-\lambda z} \]
 % 
 This, it turns out, is the PDF of an Erlang distribution with
-parameter \kk=2 (see \url{wikipedia.org/wiki/Erlang_distribution}).
+parameter \kk~=~2 (see \url{wikipedia.org/wiki/Erlang_distribution}).
 So the convolution of two exponential distributions (with the same
 parameter) is an Erlang distribution.
 \index{Erlang distribution}
@@ -4662,8 +4695,8 @@ parameter) is an Erlang distribution.
 
 \begin{exercise}
 If \X~has an exponential distribution with parameter
-\mlambda, and \Y~has an Erlang distribution with parameters
-\kk~and \mlambda, what is the distribution of the sum \Z = \X + \Y?
+\mylambda, and \Y~has an Erlang distribution with parameters
+\kk~and \mylambda, what is the distribution of the sum \Z~=~\X + \Y?
 \index{exponential distribution}
 \index{distribution!exponential}
 
@@ -4696,9 +4729,9 @@ for x in pmf_x.Values():
 
 Write a function that takes PMF\sub{X} and
 PMF\sub{Y} and returns a new Pmf that represents the distribution of
-the sum \Z = \X + \Y.
+the sum \Z~=~\X + \Y.
 
-Write a similar function that computes the PMF of Z = max(\X, \Y).
+Write a similar function that computes the PMF of \Z~=~max(\X, \Y).
 
 \end{exercise}
 
@@ -4711,9 +4744,6 @@ Write a similar function that computes the PMF of Z = max(\X, \Y).
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-\newcommand{\normal}{\mathcal{N}}
-\newcommand{\hasdist}{\sim}
-
 I said earlier that normal distributions are amenable to analysis,
 but I didn't say why.  One reason is that they are
 closed under linear transformation and convolution.  To explain what
@@ -4723,33 +4753,33 @@ that means, it will help to introduce some notation.
 \index{variable!random}
 
 If the distribution of a random variable, \X, is
-normal with parameters \mmu~and \msigma, you can write
+normal with parameters \mymu~and \mysigma, you can write
 %
-\[ X \hasdist \normal (\mu, \sigma^2) \]
+\[ X \sim \normal (\mu, \sigma^2) \]
 %
-where the symbol $\hasdist$ means ``is distributed'' and the script letter
-$\normal$ stands for ``normal.''
+where the symbol \mysim~means ``is distributed'' and the script letter
+\mynormal~stands for ``normal.''
 
 %The other continuous distributions in this chapter are sometimes
 %written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
 %\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
 %\sigma^2)$.
 
-A linear transformation of \X~is something like $X' = aX + b$, where $a$
-and $b$ are real numbers.\index{linear transformation}
+A linear transformation of \X~is something like \X'~=~\mya \X + \myb, where \mya
+and \myb~are real numbers.\index{linear transformation}
 A family of distributions is closed under
-linear transformation if $X'$ is in the same family as \X.  The normal
-distribution has this property; if $X \hasdist \normal (\mu,
-\sigma^2)$,
+linear transformation if \X' is in the same family as \X.  The normal
+distribution has this property; if \X \mysim \mynormal (\mymu,
+\sigmasq),
 %
-\[ X' \hasdist \normal (a \mu + b, a^2 \sigma^2) \]
+\[ X' \sim \normal (a \mu + b, a^2 \sigma^2) \]
 %
 Normal distributions are also closed under convolution.  
-If \Z = \X + \Y and
-$X \hasdist \normal (\mu_X, \sigma_X^2)$ and
-$Y \hasdist \normal (\mu_Y, \sigma_Y^2)$ then
+If \Z~=~\X + \Y and
+\X \mysim \mynormal (\mymu\sub{X}, \mysigma\sub{X}\super{2}) and
+\Y \mysim \mynormal (\mymu\sub{Y}, \mysigma\sub{Y}\super{2}) then
 %
-\[ Z \hasdist \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
+\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
 %
 The other distributions we have looked at do not have these
 properties.
@@ -4757,9 +4787,9 @@ properties.
 
 \begin{exercise}
 If 
-$X \hasdist \normal (\mu_X, \sigma_X^2)$ and
-$Y \hasdist \normal (\mu_Y, \sigma_Y^2)$, what is the distribution
-of \Z = \mya\X + \myb\Y?
+\X \mysim \mynormal (\mymu\sub{X}, \mysigma\sub{X}\super{2}) and
+\Y \mysim \mynormal (\mymu\sub{Y}, \mysigma\sub{Y}\super{2}), what 
+is the distribution of \Z~=~\mya\X + \myb\Y?
 
 \end{exercise}
 
@@ -4794,7 +4824,7 @@ continuous distribution.
 %the distribution of $Q$ is called a {\bf chi-squared distribution} with
 %\kk~{\bf degrees of freedom}, which is written
 %
-%\[ Q \hasdist \chi_k^2 \]
+%\[ Q \sim \chi_k^2 \]
 %
 %``Degrees of freedom'' is an odd term, but it means the number of
 %values that are free to vary.  If some values are constrained, then
@@ -4847,8 +4877,8 @@ almost any distribution, the distribution of the sum converges to
 normal.
 
 More specifically, if the distribution of the values has mean and
-standard deviation \mmu~and \msigma, the distribution of the sum is
-approximately $\normal(n \mu, n \sigma^2)$.
+standard deviation \mymu~and \mysigma, the distribution of the sum is
+approximately \mynormal(\n \mymu, \n \sigmasq).
 
 This is called the {\bf Central Limit Theorem}.  It is one of the
 most useful tools for statistical analysis, but it comes with
@@ -4898,11 +4928,9 @@ distribution tends to be normal.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-\newcommand{\xbar}{\bar{x}}
-
 \begin{exercise}
 If I draw a sample, \x\sub{1} .. \x\sub{n}, independently from a
-distribution with finite mean \mmu~and variance \sigmasq, what is
+distribution with finite mean \mymu~and variance \sigmasq, what is
 the distribution of the sample mean:
 %
 \[ \xbar = \frac{1}{n} \sum x_i \]
@@ -5153,8 +5181,8 @@ If we generate a large number of samples, we can count how often the
 difference in means (due to chance) is as big or bigger than the
 difference we actually observed.  This fraction is the p-value.
 
-For pregnancy length, we observed \n=4413 first babies and \m=4735
-others, and the difference in mean was \mdelta=0.078 weeks.  To
+For pregnancy length, we observed \n~=~4413 first babies and \m~=~4735
+others, and the difference in mean was \mydelta~=~0.078 weeks.  To
 approximate the p-value of this effect, I pooled the distributions,
 generated samples with sizes \n~and \m~and computed the difference
 in mean.
@@ -5174,12 +5202,12 @@ Figure~\ref{length_deltas_cdf} shows their distribution.
 
 The mean difference is near 0, as you would expect with samples
 from the same distribution.  The vertical lines show the cutoffs where
-\x=-\mdelta or \x=\mdelta.
+\x~=~-\mydelta or \x~=~\mydelta.
 
 Of 1000 sample pairs, there were 166 where the difference in mean
-(positive or negative) was as big or bigger than \mdelta, so the
+(positive or negative) was as big or bigger than \mydelta, so the
 p-value is approximately 0.166.  In other words, we expect to see an
-effect as big as \mdelta~about 17\% of the time, even if the actual
+effect as big as \mydelta~about 17\% of the time, even if the actual
 distribution for the two groups is the same.
 
 So the apparent effect is not very likely, but is it unlikely enough?
@@ -5228,8 +5256,8 @@ In hypothesis testing we have to worry about two kinds of errors.
 
 The most common approach to hypothesis testing is to choose a
 threshold\footnote{Also known as a ``Significance criterion.''},
-\malpha, for the p-value and to accept as significant any effect with
-a p-value less than \malpha.  A common choice for \malpha~is 5\%.
+\myalpha, for the p-value and to accept as significant any effect with
+a p-value less than \myalpha.  A common choice for \myalpha~is 5\%.
 By this criterion, the apparent difference in pregnancy length for
 first babies is not significant, but the difference in weight is.
 \index{significance criterion}
@@ -5237,7 +5265,7 @@ first babies is not significant, but the difference in weight is.
 \index{length!pregnancy}
 
 For this kind of hypothesis testing, we can compute the probability of
-a false positive explicitly: it turns out to be \malpha.
+a false positive explicitly: it turns out to be \myalpha.
 
 To see why, think about the definition of false positive---the chance
 of accepting a hypothesis that is false---and the definition of a
@@ -5246,8 +5274,8 @@ hypothesis is false.
 
 Putting these together, we can ask: if the hypothesis is false,
 what is the chance of generating a measured effect that will be
-considered significant with threshold \malpha?  The answer is
-\malpha.
+considered significant with threshold \myalpha?  The answer is
+\myalpha.
 
 We can decrease the chance of a false positive by decreasing the
 threshold.  For example, if the threshold is 1\%, there is only a 1\%
@@ -5271,8 +5299,8 @@ so on?
 \index{NSFG}
 
 What is the smallest sample size where the difference in mean birth
-weight is still significant with \malpha=5\%?  How much
-larger does the sample size have to be with \malpha=1\%?
+weight is still significant with \myalpha~=~5\%?  How much
+larger does the sample size have to be with \myalpha~=~1\%?
 
 You can start with the code I used to generate the results in this
 section, which you can download from \url{thinkstats.com/hypothesis.py}.
@@ -5303,7 +5331,7 @@ So when we ask, ``What were the chances of {\em that},'' we have
 to be careful about what we mean by ``that.''
 
 For the NSFG data, I defined the effect as ``a difference in mean
-(positive or negative) as big or bigger than \mdelta.''  By making
+(positive or negative) as big or bigger than \mydelta.''  By making
 this choice, I decided to evaluate the magnitude of the difference,
 ignoring the sign.
 \index{National Survey of Family Growth}
@@ -5333,7 +5361,7 @@ the null hypothesis, denoted \HH\sub{0}, which is the hypothesis that
 the effect is not real.  Then we defined the p-value, which is
 \Prob(\E \given \HH\sub{0}), where \E is an effect as big as or bigger
 than the apparent effect.  Then we computed p-values and compared them
-to a threshold, \malpha.
+to a threshold, \myalpha.
 
 That's a useful step, but it doesn't answer the original question,
 which is whether the effect is real.  There are several ways to
@@ -5342,7 +5370,7 @@ interpret the result of a hypothesis test:
 \begin{description}
 
 \item[Classical:] In classical hypothesis testing, if a p-value
-  is less than \malpha, you can say that the effect is statistically
+  is less than \myalpha, you can say that the effect is statistically
   significant, but you can't conclude that it's real.  This
   formulation is careful to avoid leaping to conclusions, but it is
   deeply unsatisfying.
@@ -5372,9 +5400,9 @@ interpret the result of a hypothesis test:
 \end{description}
 
 As an example, I'll compute \Prob(\HH\sub{A} \given E) for pregnancy
-lengths in the NSFG.  We have already computed \Prob(\E \given
-\HH\sub{0})=0.166, so all we have to do is compute \Prob(\E \given
-\HH\sub{A}) and choose a value for the prior.
+lengths in the NSFG.  We have already computed
+\Prob(\E \given \HH\sub{0})~=~0.166, so all we have to do is compute
+\Prob(\E \given \HH\sub{A}) and choose a value for the prior.
 \index{prior probability}
 \index{National Survey of Family Growth}
 \index{NSFG}
@@ -5383,17 +5411,17 @@ lengths in the NSFG.  We have already computed \Prob(\E \given
 
 To compute \Prob(\E \given \HH\sub{A}), we assume that the effect is
 real---that is,
-that the difference in mean duration, \mdelta, is actually what we
-observed, 0.078.  (This way of formulating \HH\sub{A} is a little bit
+that the difference in mean duration, \mydelta, is actually what we
+observed, 0.078.  (This way of formulating \HH\sub{A}~is a little bit
 bogus.  I will explain and fix the problem in the next section.)
 
 By generating 1000 sample pairs, one from each
-distribution, I estimated \Prob(E \given \HH\sub{A}) = 0.494.  With the prior
-\Prob(\HH\sub{A})=0.5, the posterior probability of \HH\sub{A} is 0.748.
+distribution, I estimated \Prob(E \given \HH\sub{A})~=~0.494.  With the prior
+\Prob(\HH\sub{A})~=~0.5, the posterior probability of \HH\sub{A} is 0.748.
 \index{posterior probability}
 \index{update}
 
-So if the prior probability of \HH\sub{A} is 50\%, the updated
+So if the prior probability of \HH\sub{A}~is 50\%, the updated
 probability, taking into account the evidence from this dataset,
 is almost 75\%.  It makes sense that the posterior
 is higher, since the data provide some support for the hypothesis.
@@ -5429,13 +5457,13 @@ hypothesis \HH\sub{A}, and then we used the same dataset to test it.
 That's not a good idea; it is too easy to generate misleading results.
 
 The problem is that even when the null hypothesis is true, there is
-likely to be some difference, \mdelta, between any two groups, just by
-chance.  If we use the observed value of \mdelta~to formulate the
+likely to be some difference, \mydelta, between any two groups, just by
+chance.  If we use the observed value of \mydelta~to formulate the
 hypothesis, \Prob(\HH\sub{A} \given \E) is likely to be high even when
-\HH\sub{A} is false.
+\HH\sub{A}~is false.
 
 We can address this problem with {\bf cross-validation}, which uses
-one dataset to compute \mdelta~and a {\em different} dataset to
+one dataset to compute \mydelta~and a {\em different} dataset to
 evaluate \HH\sub{A}.  The first dataset is called the {\bf training set};
 the second is called the {\bf testing set}.
 \index{training set}
@@ -5452,10 +5480,10 @@ one for training and one for testing.
 
 I implemented the second approach, dividing the Cycle 6 data roughly
 in half.  I ran the test several times with different random partitions.
-The average posterior probability was \Prob(\HH\sub{A} \given \E) = 0.621.  As
-expected, the impact of the evidence is smaller, partly because of
-the smaller sample size in the test set, and also because we are
-no longer using the same data for training and testing.
+The average posterior probability was \Prob(\HH\sub{A} \given \E)~=~0.621.
+As expected, the impact of the evidence is smaller, partly because of
+the smaller sample size in the test set, and also because we are no
+longer using the same data for training and testing.
 
 % t = [0.656, 0.622, 0.511, 0.651, 0.665]
 % sum(t)/len(t)
@@ -5464,7 +5492,7 @@ no longer using the same data for training and testing.
 \section{Reporting Bayesian probabilities}
 \index{Bayesian probability}
 
-In the previous section we chose the prior probability \Prob(\HH\sub{A}) = 0.5.
+In the previous section we chose the prior probability \Prob(\HH\sub{A})~=~0.5.
 If we have a set of hypotheses and no reason to think one is more
 likely than another, it is common to assign each the same probability.
 
@@ -5571,16 +5599,16 @@ later.
 \item We compute the number of babies we expect in each cell.  Under
   the null hypothesis, we assume that the distributions are the same
   for the two groups, so we can compute the pooled probabilities:
-  $p_{early}$, $p_{ontime}$ and $p_{late}$.
+  \Prob(early), \Prob(ontime) and \Prob(late).
 
-For first babies, we have \n=4413 samples, so under the null
-hypothesis we expect $n \cdot p_{early}$ first babies to be early, $n
-\cdot p_{ontime}$ to be on time, etc.  Likewise, we have \m=4735
-other babies, so we expect $m \cdot p_{early}$ other babies to be
+For first babies, we have \n~=~4413 samples, so under the null
+hypothesis we expect \n~\Prob(early) first babies to be early,
+\n~\Prob(ontime) to be on time, etc.  Likewise, we have \m~=~4735
+other babies, so we expect \m~\Prob(early) other babies to be
 early, etc.
 
 \item For each cell we compute the deviation; that is, the difference
-  between the observed value, $O_i$, and the expected value, $E_i$.
+  between the observed value, \OO\sub{i}, and the expected value, \E\sub{i}.
 \index{test statistic}
 \index{chi-square statistic}
 
@@ -5607,7 +5635,7 @@ the distribution of the test statistic can be computed analytically.
 \index{chi-square test}
 \index{analysis}
 
-Using the data from the NSFG I computed $\chi^2 = 91.64$, which would
+Using the data from the NSFG I computed \mychi\super{2}~=~91.64, which would
 occur by chance about one time in 10,000.  I conclude that this result
 is statistically significant, with one caution: again we used the
 same dataset for exploration and testing.  It would be a good idea
@@ -5677,7 +5705,7 @@ computing, and Figure~\ref{length_deltas_cdf} is one of those times.
 \index{mean, difference in}
 
 Remember that we were testing the observed difference in the mean between
-pregnancy lengths for $n=4413$ first babies and $m=4735$ others.  We formed
+pregnancy lengths for \n~=~4413 first babies and \m~=~4735 others.  We formed
 the pooled distribution for all babies, drew samples with sizes \n~and
 \m, and computed the difference in sample means.
 \index{sample mean}
@@ -5685,9 +5713,9 @@ the pooled distribution for all babies, drew samples with sizes \n~and
 Instead, we could directly compute the distribution of the difference
 in sample means.  To get started, let's think about what a sample mean
 is: we draw \n~samples from a distribution, add them up, and
-divide by \n.  If the distribution has mean \mmu~and variance
+divide by \n.  If the distribution has mean \mymu~and variance
 \sigmasq, then by the Central Limit Theorem, we know that the sum of
-the samples is $\normal (n \mu, n \sigma^2)$.
+the samples is \mynormal (\n \mymu, \n \sigmasq).
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
@@ -5695,34 +5723,34 @@ the samples is $\normal (n \mu, n \sigma^2)$.
 
 To figure out the distribution of the sample means, we have to invoke
 one of the properties of the normal distribution: if \X~is
-$\normal (\mu, \sigma^2)$,
+\mynormal (\mymu, \sigmasq),
 %
-\[ aX + b \hasdist \normal (a \mu + b, a^2 \sigma^2) \]
+\[ aX + b \sim \normal (a \mu + b, a^2 \sigma^2) \]
 %
-When we divide by \n, $a=1/n$ and $b=0$, so
+When we divide by \n, \mya~=~1/\n and \myb~=~0, so
 %
-\[ X/n \hasdist \normal (\mu / n, \sigma^2/ n^2) \]
+\[ X/n \sim \normal (\mu / n, \sigma^2/ n^2) \]
 %
-So the distribution of the sample mean is $\normal (\mu, \sigma^2/n)$.
+So the distribution of the sample mean is \mynormal (\mymu, \sigmasq/\n).
 
 To get the distribution of the difference between two sample means,
-we invoke another property of the normal distribution: if $X_1$ is
-$\normal (\mu_1, \sigma_1^2)$ and $X_2$ is
-$\normal (\mu_2, \sigma_2^2)$,
+we invoke another property of the normal distribution: if \X\sub{1} is
+\mynormal (\mymu\sub{1}, \mysigma\sub{1}\super{2}) and \X\sub{2} is
+\mynormal (\mymu\sub{2}, \mysigma\sub{2}\super{2}),
 %
-\[ aX_1 + bX_2 \hasdist \normal (a\mu_1 + b\mu_2, 
+\[ aX_1 + bX_2 \sim \normal (a\mu_1 + b\mu_2, 
                                  a^2\sigma_1^2 + b^2\sigma_2^2) \]
 %
 So as a special case:
 %
-\[ X_1 - X_2 \hasdist \normal (\mu_1 - \mu_2, 
+\[ X_1 - X_2 \sim \normal (\mu_1 - \mu_2, 
                                \sigma_1^2 + \sigma_2^2) \]
 %
 Putting it all together, we conclude that the sample in
 Figure~\ref{length_deltas_cdf} is drawn from 
-$\normal (0, f \sigma^2)$, where $f = 1/n + 1/m$.  Plugging in
-$n=4413$ and $m=4735$, we expect the difference of sample means to be
-$\normal (0, 0.0032)$.
+\mynormal (0, \f \sigmasq), where \f~=~1/\n + 1/\m.  Plugging in
+\n~=~4413 and \m~=~4735, we expect the difference of sample means to be
+\mynormal (0, 0.0032).
 \index{p-value}
 
 We can use {\tt erf.NormalCdf} to compute the p-value of the observed 
@@ -5752,18 +5780,18 @@ real?  That depends on the power of the test.
 Statistical {\bf power} is the probability that the test will be
 positive if the null hypothesis is false.  In general, the power of a
 test depends on the sample size, the magnitude of the effect, and the
-threshold \malpha.
+threshold \myalpha.
 
 \begin{exercise}
 What is the power of the test in Section~\ref{threshold}, using
-\malpha=0.05 and assuming that the actual difference between the
+\myalpha~=~0.05 and assuming that the actual difference between the
 means is 0.078 weeks?
 
 You can estimate power by generating random samples from distributions
 with the given difference in the mean, testing the observed difference
 in the mean, and counting the number of positive tests.
 
-What is the power of the test with \malpha=0.10?
+What is the power of the test with \myalpha~=~0.10?
 
 \end{exercise}
 
@@ -5883,23 +5911,23 @@ normal distribution, and here's a random sample drawn from it:
 %
 \[ \{ -0.441, 1.774, -0.101, -1.138, 2.975, -2.138 \} \]
 %
-What do you think is the mean parameter, \mmu, of this distribution?
+What do you think is the mean parameter, \mymu, of this distribution?
 \index{mean}
 \index{parameter}
 
 \newcommand{\ybar}{\bar{y}}
 
-One choice is to use the sample mean to estimate \mmu.  Up
-until now we have used the symbol \mmu~for both the sample mean and
-the mean parameter, but now to distinguish them I will use $\xbar$
-for the sample mean.  In this example, $\xbar$ is $0.155$, so it would
-be reasonable to guess \mmu=0.155.
+One choice is to use the sample mean to estimate \mymu.  Up
+until now we have used the symbol \mymu~for both the sample mean and
+the mean parameter, but now to distinguish them I will use \myxbar~for 
+the sample mean.  In this example, \myxbar~is 0.155, so it would
+be reasonable to guess \mymu~=~0.155.
 
 This process is called {\bf estimation}, and the statistic we used
 (the sample mean) is called an {\bf estimator}.
 \index{estimator}
 
-Using the sample mean to estimate \mmu~is so obvious that it is hard
+Using the sample mean to estimate \mymu~is so obvious that it is hard
 to imagine a reasonable alternative.  But suppose we change the game by
 introducing outliers.  
 \index{normal distribution}
@@ -5913,7 +5941,7 @@ occasionally puts the decimal point in the wrong place.
 %
 \[ \{ -0.441, 1.774, -0.101, -1.138, 2.975, -213.8 \} \]
 %
-Now what's your estimate of \mmu?  If you use the sample mean your
+Now what's your estimate of \mymu?  If you use the sample mean your
 guess is -35.12.  Is that the best choice?  What are the alternatives?
 \index{outlier}
 
@@ -5931,13 +5959,13 @@ right answer?
 
 If there are no outliers, the sample mean minimizes the {\bf mean squared
 error} (MSE).  If we play the game many times, and each time
-compute the error $\xbar - \mu$, the sample mean minimizes
+compute the error \myxbar~- \mymu, the sample mean minimizes
 %
 \[ MSE = \frac{1}{m} \sum (\xbar - \mu)^2 \]
 %
 Where \m~is the number of times you play the estimation game (not to
 be confused with \n, which is the size of the sample used to compute
-$\xbar$). 
+\myxbar). 
 
 Minimizing MSE is a nice property, but it's not always the best
 strategy.  For example, suppose we are estimating the distribution of
@@ -5959,8 +5987,8 @@ chance of winning is 1 in 8, and that's the best you can do.
 
 \begin{exercise}
 Write a function that draws 6 values from a normal distribution with
-\mmu=0 and \msigma=1.  Use the sample mean to estimate \mmu~and
-compute the error $\xbar - \mu$.  Run the function 1000 times and
+\mymu~=~0 and \mysigma~=~1.  Use the sample mean to estimate \mymu~and
+compute the error \myxbar~- \mymu.  Run the function 1000 times and
 compute MSE.
 \index{normal distribution}
 \index{distribution!normal}
@@ -5968,7 +5996,7 @@ compute MSE.
 \index{distribution!Gaussian}
 
 Now modify the program to use the median as an
-estimator.  Compute MSE again and compare to the MSE for $\xbar$.
+estimator.  Compute MSE again and compare to the MSE for \myxbar.
 \index{mean}
 \index{median}
 \index{MSE}
@@ -5990,12 +6018,12 @@ here's a (familiar) sample:
 %
 What do you think is the variance, \sigmasq, of my distribution?
 Again, the obvious choice is to use the sample variance as an estimator.
-I will use $S^2$ to denote the sample variance, to distinguish from the
+I will use \S\super{2} to denote the sample variance, to distinguish from the
 unknown parameter \sigmasq.
 %
 \[ S^2 = \frac{1}{n} \sum (x_i - \xbar)^2 \] 
 %
-For large samples, $S^2$ is an adequate estimator, but for small
+For large samples, \S\super{2} is an adequate estimator, but for small
 samples it tends to be too low.  Because of this unfortunate
 property, it is called a {\bf biased} estimator.
 \index{sample variance}
@@ -6014,24 +6042,24 @@ estimator of \sigmasq:
 %
 The biggest problem with this estimator is that its name and symbol
 are used inconsistently.  The name ``sample variance'' can refer to
-either $S^2$ or $S_{n-1}^2$, and the symbol $S^2$ is used
+either \S\super{2} or \S\sub{n-1}\super{2}, and the symbol \S\super{2} is used
 for either or both.
 
-For an explanation of why $S^2$ is biased, and a proof that
-$S_{n-1}^2$ is unbiased, see
+For an explanation of why \S\super{2} is biased, and a proof that
+\S\sub{n-1}\super{2} is unbiased, see
 \url{wikipedia.org/wiki/Bias_of_an_estimator}.
 
 \begin{exercise}
 Write a function that draws 6 values from a normal distribution with
-\mmu=0 and \msigma=1.  Use the sample variance to estimate
-\sigmasq~and compute the error $S^2 - \sigma^2$.  Run the function 1000
+\mymu~~=~~0 and \mysigma~~=~~1.  Use the sample variance to estimate
+\sigmasq~and compute the error \S\super{2} - \mysigma\super{2}.  Run the function 1000
 times and compute mean error (not squared).
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-Now modify the program to use the unbiased estimator $S_{n-1}^2$.
+Now modify the program to use the unbiased estimator \S\sub{n-1}\super{2}.
 Compute the mean error again and see if it converges to zero as you
 increase the number of games.
 
@@ -6069,7 +6097,7 @@ here's a sample:
 %
 \[ \{ 5.384, 4.493, 19.198, 2.790, 6.122, 12.844 \} \]
 %
-What do you think is the parameter, \mlambda, of this distribution?
+What do you think is the parameter, \mylambda, of this distribution?
 \index{parameter}
 \index{mean}
 
@@ -6082,26 +6110,26 @@ so working backwards, we might choose
 \[ \lamhat = 1 / \xbar \]
 %
 It is common to use hat notation for estimators, so $\lamhat$ is an
-estimator of \mlambda.  And not just any estimator; it is also the
+estimator of \mylambda.  And not just any estimator; it is also the
 MLE estimator\footnote{See
 \url{wikipedia.org/wiki/Exponential_distribution\#Maximum_likelihood}.}.
-So if you want to maximize your chance of guessing \mlambda~exactly,
+So if you want to maximize your chance of guessing \mylambda~exactly,
 $\lamhat$ is the way to go.
 \index{MLE}
 \index{maximum likelihood estimator}
 
-But we know that $\xbar$ is not robust in the presence of outliers, so
+But we know that \myxbar~is not robust in the presence of outliers, so
 we expect $\lamhat$ to have the same problem.
 \index{robust}
 \index{outlier}
 
 Maybe we can find an alternative based on the sample median.  Remember
-that the median of an exponential distribution is $\log(2) / \lambda$,
+that the median of an exponential distribution is log(2) / \mylambda,
 so working backwards again, we can define an estimator
 %
 \[ \lamhatmed = \log(2) / \mu_{1/2} \]
 %
-where \mmu \sub{1/2} is the sample median.
+where \mymu \sub{1/2} is the sample median.
 \index{median}
 
 \begin{exercise}
@@ -6140,23 +6168,23 @@ here's a sample:
 \[ \{ 5.384, 4.493, 19.198, 2.790, 6.122, 12.844 \} \]
 %
 I want you to give me a range of values that you think is likely to
-contain the unknown parameter \mlambda.  More specifically, I want
+contain the unknown parameter \mylambda.  More specifically, I want
 a 90\% confidence interval, which means that if we play this game over
-and over, your interval will contain \mlambda~90\% of the time.
+and over, your interval will contain \mylambda~90\% of the time.
 
 It turns out that this version of the game is hard, so I'm going
 to tell you the answer, and all you have to do is test it.
 
 Confidence intervals are usually described in terms of the miss rate,
-\malpha, so a 90\% confidence interval has miss rate \malpha = 0.1.
-The confidence interval for the \mlambda~parameter of an exponential
+\myalpha, so a 90\% confidence interval has miss rate \myalpha~=~0.1.
+The confidence interval for the \mylambda~parameter of an exponential
 distribution is
 %
 \[ \left( \lamhat \frac{\chi^2(2n, 1-\alpha/2)}{2n},
       \lamhat \frac{\chi^2(2n, \alpha/2)}{2n} \right) \]
 %
 where \n~is the sample size, $\lamhat$ is the mean-based estimator
-from the previous section, and $\chi^2(k, x)$ is the CDF of a
+from the previous section, and \mychi\super{2}(\kk, \x) is the CDF of a
 chi-squared distribution with \kk~degrees of freedom, evaluated at \x
 (see \url{wikipedia.org/wiki/Chi-square_distribution}).
 \index{chi-square distribution}
@@ -6173,15 +6201,15 @@ to talk about Bayesian estimation.
 %\label{expo_ci}
 
 %Write a function that computes a 90\% confidence interval for
-%\mlambda, given $\lamhat$, \n~and \malpha.
+%\mylambda, given $\lamhat$, \n~and \myalpha.
 
 %Run an experiment that checks whether the confidence interval has the
 %property we expect; that is, the interval should contain the actual
 %value 90\% of the time.
 
-%To do that, write a function that takes a value for \mlambda,
+%To do that, write a function that takes a value for \mylambda,
 %generates a sample of six values, computes a 90\% confidence interval,
-%and checks whether the interval contains the \mlambda.  Run the
+%and checks whether the interval contains the \mylambda.  Run the
 %function 1000 times and count the number of hits.
 
 %\end{exercise}
@@ -6208,14 +6236,14 @@ So let's try a different version of the game.
 \index{distribution!uniform}
 
 {\em I'm thinking of a distribution.}  It's an exponential
-distribution, and I chose \mlambda~from a uniform distribution
+distribution, and I chose \mylambda~from a uniform distribution
 between 0.5 and 1.5.  Here's a sample, which I'll call $\boldx$:
 %
 \[ \{ 2.675, 0.198, 1.152, 0.787, 2.717, 4.269 \} \]
 %
-Based on this sample, what value of \mlambda~do you think I chose?
+Based on this sample, what value of \mylambda~do you think I chose?
 
-In this version of the game, \mlambda~{\em is} a random quantity, so we
+In this version of the game, \mylambda~{\em is} a random quantity, so we
 can reasonably talk about its distribution, and we can compute it
 easily using Bayes's theorem.
 
@@ -6225,17 +6253,17 @@ Here are the steps:
 
 \item Divide the range (0.5, 1.5) into a set of equal-sized bins.
 For each bin, we define \HH\sub{i}, which is the hypothesis that the
-actual value of \mlambda~falls in the \ii th bin.
-Since \mlambda~was drawn from a uniform distribution, the prior
-probability, \Prob(\HH\sub{i}), is the same for all \i.
+actual value of \mylambda~falls in the \ii~th bin.
+Since \mylambda~was drawn from a uniform distribution, the prior
+probability, \Prob(\HH\sub{i}), is the same for all \ii.
 
 \item For each hypothesis, we compute the likelihood, \Prob(\boldx \given \HH\sub{i}),
 which is the chance of drawing the sample $\boldx$ given \HH\sub{i}.
 %
 \[ P(\boldx \given H_i) = \prod_j \mathrm{expo}(\lambda_i, x_j)  \]
 %
-where $\mathrm{expo}(\lambda, x)$ is a function that
-computes the PDF of the exponential distribution with parameter \mlambda,
+where expo(\mylambda, \x) is a function that
+computes the PDF of the exponential distribution with parameter \mylambda,
 evaluated at \x.  
 %
 \[ PDF_{expo}(\lambda, x) = \lambda e^{-\lambda x}\]
@@ -6247,7 +6275,7 @@ The symbol $\prod$ represents the product of a sequence (see
 %
 \[ P(H_i \given \boldx) =  P(H_i) P(\boldx \given H_i) / f \]
 %
-where $f$ is the normalization factor
+where \f is the normalization factor
 %
 \[ f = \sum_i P(H_i) P(\boldx \given H_i) \]
 %
@@ -6274,7 +6302,7 @@ map from a hypothesis to a probability, a Pmf is a natural choice.
 \index{posterior}
 
 Each value in the Pmf represents a hypothesis; for example, the
-value 0.5 represents the hypothesis that \mlambda~is 0.5.
+value 0.5 represents the hypothesis that \mylambda~is 0.5.
 In the prior distribution, all hypotheses have the same probability.
 So we can construct the prior like this:
 %
@@ -6359,7 +6387,7 @@ You can download the code in this section from
 When I think of Bayesian estimation, I imagine a room full of people,
 where each person has a different guess about whatever you are trying
 to estimate.  So in this example they each have a guess about the
-correct value of \mlambda.
+correct value of \mylambda.
 
 Initially, each person has a degree of confidence about their own hypothesis.
 After seeing the evidence, each person updates their confidence based on
@@ -6387,10 +6415,10 @@ The following problem appears in Chapter 3 of David MacKay's
 \begin{quote}
 Unstable particles are emitted from a source and decay at a distance
 \x, a real number that has an exponential probability distribution
-with [parameter] \mlambda.  Decay events can
-only be observed if they occur in a window extending from $x=1$ cm to
-$x=20$ cm.  \n~decays are observed at locations $\{ x_1, ... , x_N
-\}$.  What is \mlambda?
+with [parameter] \mylambda.  Decay events can
+only be observed if they occur in a window extending from \x~=~1 cm to
+\x~=~20 cm.  \n~decays are observed at locations \{ \x\sub{1}, ... , \x\sub{N}
+\}.  What is \mylambda?
 \index{exponential distribution}
 \index{distribution!exponential}
 \index{particles}
@@ -6414,7 +6442,7 @@ for $1 < x < 20$, and 0 otherwise, with
 \[ Z(\lambda) = \int_1^{20} \lambda e^{-\lambda x} \spa dx = 
 e^{-\lambda} - e^{-20 \lambda}  \]
 %
-You might remember Z(\mlambda) from Exercise~\ref{expo_pdf}.  I told
+You might remember Z(\mylambda) from Exercise~\ref{expo_pdf}.  I told
 you to keep it handy.
 
 \begin{exercise}
@@ -6423,7 +6451,7 @@ from the previous section, and make a copy named {\tt decay.py}.
 \index{{\tt estimate.py}}
 
 Modify {\tt decay.py} to compute the posterior distribution of
-\mlambda~for the sample $\boldx = \{ 1.5, 2, 3, 4, 5, 12 \}$.  For
+\mylambda~for the sample \X~=~\{ 1.5, 2, 3, 4, 5, 12 \}.  For
 the prior you can use a uniform distribution between 0
 and 1.5 (not including 0).
 \index{uniform distribution}
@@ -6488,12 +6516,12 @@ questions:
 \index{maximum likelihood estimator}
 
 \item If we see train \ii it seems reasonable that we would guess
-  some multiple of \ii so let's assume $\nhat$ = \mya \ii.  What value of
-  $a$ minimizes mean squared error?
+  some multiple of \ii so let's assume $\nhat$~=~\mya \ii.  What value of
+  \mya~minimizes mean squared error?
 \index{MSE}
 \index{mean squared error}
 
-\item Still assuming that $\nhat$ = \mya \ii can you find a value of \mya
+\item Still assuming that $\nhat$~=~\mya \ii can you find a value of \mya
   that makes $\nhat$ an unbiased estimator?
 \index{unbiased estimator}
 \index{estimator!unbiased}
@@ -6512,49 +6540,50 @@ For best results, you should take some time to work on these questions
 before you continue.
 
 For a given estimate, $\nhat$, the likelihood of seeing train \ii~is
-$1 / \nhat$ if $i \le \nhat$, and 0 otherwise.  So the MLE is $\nhat =
-i$.  In other words, if you see train 60 and you want to maximize your
+$1 / \nhat$ if $i \le \nhat$, and 0 otherwise.  So the MLE is 
+$\nhat$~=~\ii.  
+In other words, if you see train 60 and you want to maximize your
 chance of getting the answer exactly right, you should guess that there
 are 60 trains.
 
 But this estimator doesn't do very well in terms of MSE.  We can do
-better by choosing $\nhat = a i$; all we have to do is find a good
-value for $a$.
+better by choosing $\nhat$~=~\mya\ii; all we have to do is find a good
+value for \mya.
 
 Suppose that there are, in fact, \n~trains.  Each time we play
-the estimation game, we see train \ii~and guess $ai$, so the squared
-error is $(ai - N)^2$.
+the estimation game, we see train \ii~and guess \mya\ii, so the squared
+error is (\mya\ii - \N)\super{2}.
 
 If we play the game \n~times and see each train once, the mean
 squared error is 
 %
 \[ MSE = \frac{1}{N} \sum_{i=1}^N (ai - N)^2 \]
 %
-To minimize MSE, we take the derivative with respect to $a$:
+To minimize MSE, we take the derivative with respect to \mya:
 %
 \[ \frac{d MSE}{da} = \frac{1}{N} \sum_{i=1}^N 2i (ai - N) = 0 \]
 %
-And solve for $a$.
+And solve for \mya.
 %
 \[ a = \frac{3N}{2N+1} \]
 %
 At first glance, that doesn't seem very useful, because \n~appears on
 the right-hand side, which suggests that we need to know \n~to choose
-$a$, but if we knew \n, we wouldn't need an estimator in the first place.
+\mya, but if we knew \n, we wouldn't need an estimator in the first place.
 
-However, for large values of \n, the optimal value for $a$ converges
-to $3/2$, so we could choose $\nhat = 3i / 2$.
+However, for large values of \n, the optimal value for \mya~converges
+to $3/2$, so we could choose $\nhat$~=~3\ii / 2.
 
 To find an unbiased estimator, we can compute the mean error (ME):
 %
 \[ ME = \frac{1}{N} \sum_{i=1}^N (ai - N) \]
 %
-And find the value of $a$ that yields $ME = 0$, which turns out to be
+And find the value of \mya~that yields ME~=~0, which turns out to be
 %
 \[ a = \frac{2N}{N-1}\]
 %
-For large values of \n, $a$ converges to $2$, so we could choose
-$\nhat = 2i$.
+For large values of \n, \mya~converges to 2, so we could choose
+$\nhat$~=~2\ii.
 
 So far we have generated three estimators, \ii, 3\ii/2, and 2\ii,
 that have the properties of maximizing likelihood, minimizing squared
@@ -6563,7 +6592,7 @@ error, and being unbiased.
 Yet another way to generate an estimator is to choose the value
 that makes the population mean equal the sample mean.  If we see train
 \ii, the sample mean is just \ii; the train population that has the
-same mean is $\nhat$ = 2\ii - 1.
+same mean is $\nhat$~=~2\ii - 1.
 
 \begin{figure}
 % locomotive.py
@@ -6700,12 +6729,12 @@ leads to the Spearman coefficient.
 
 If \X~is a series of values, \xsubi, we can convert to standard
 scores by subtracting the mean and dividing by the standard deviation:
-$z_i = (x_i - \mu) / \sigma$.
+z\sub{i}~=~(x\sub{i} - \mymu) / \mysigma.
 \index{mean}
 \index{standard deviation}
 
 The numerator is a deviation: the distance from the mean.  Dividing by
-\msigma~{\bf normalizes} the deviation, so the values of \Z~are
+\mysigma~{\bf normalizes} the deviation, so the values of \Z~are
 dimensionless (no units) and their distribution has mean 0 and
 variance 1.
 \index{normalize}
@@ -6717,8 +6746,8 @@ variance 1.
 
 If \X~is normally-distributed, so is \Z; but if \X~is skewed or has
 outliers, so does \Z.  In those cases it is more robust to use
-percentile ranks.  If each $R$ contains the percentile ranks the
-values in \X, the distribution of $R$ is uniform between 0 and 100,
+percentile ranks.  If each \R contains the percentile ranks the
+values in \X, the distribution of \R is uniform between 0 and 100,
 regardless of the distribution of \X.
 \index{uniform distribution}
 \index{distribution!uniform}
@@ -6736,7 +6765,7 @@ deviations from the mean are
 %
 \[ dy_i = y_i - \mu_Y \]
 %
-where \mmu \sub{X} is the mean of \X~and \mmu \sub{Y} is the mean of \Y.
+where \mymu \sub{X} is the mean of \X~and \mymu \sub{Y} is the mean of \Y.
 If \X~and \Y~vary together, their deviations tend to have the same
 sign.
 
@@ -6762,7 +6791,7 @@ in units of kilogram-meters, which doesn't mean much.
 Write a function called {\tt Cov} that takes two lists
 and computes their covariance.  To test your function, compute
 the covariance of a list with itself and confirm that
-$Cov(X, X) = Var(X)$.
+Cov(\X, \X)~=~Var(\X).
 
 You can download a solution from
 \url{thinkstats.com/correlation.py}.
@@ -6775,7 +6804,7 @@ You can download a solution from
 \index{correlation}
 \index{normal score}
 
-One solution to this problem is to divide the deviations by \msigma,
+One solution to this problem is to divide the deviations by \mysigma,
 which yields normal scores, and compute the product of normal scores:
 %
 \[ p_i = \frac{(x_i - \mu_X)}{\sigma_X} \frac{(y_i - \mu_Y)}{\sigma_Y} \]
@@ -6786,13 +6815,13 @@ The mean of these products is
 %
 This value is called {\bf Pearson's correlation} after Karl Pearson,
 an influential early statistician.  It is easy to compute and easy to
-interpret.  Because normal scores are dimensionless, so is $\rho$.
+interpret.  Because normal scores are dimensionless, so is \myrho.
 \index{Pearson, Karl}
 \index{Pearson coefficient of correlation}
 \index{coefficient!correlation}
 
 Also, the result is necessarily between -1 and +1.  To see why, we
-can rewrite $\rho$ by factoring out \msigma \sub{X} and \msigma \sub{Y}:
+can rewrite \myrho by factoring out \mysigma \sub{X} and \mysigma \sub{Y}:
 %
 \[ \rho = \frac{Cov(X,Y)}{\sigma_X \sigma_Y} \]
 %
@@ -6802,13 +6831,13 @@ Expressed in terms of deviations, we have
 %
 Then by the ever-useful Cauchy-Schwarz inequality\footnote{See
   \url{wikipedia.org/wiki/Cauchy-Schwarz_inequality}.}, we can show
-that $\rho^2 \le 1$, so $-1 \le \rho \le 1$.
+that \myrho\super{2} $\le$ 1, so -1 $\le$ \myrho $\le$ 1.
 \index{Cauchy-Schwarz inequality}
 
-The magnitude of $\rho$ indicates the strength of the correlation.  If
-$\rho=1$ the variables are perfectly correlated, which means that if
+The magnitude of \myrho indicates the strength of the correlation.  If
+\myrho~=~1 the variables are perfectly correlated, which means that if
 you know one, you can make a perfect prediction about the other.  The
-same is also true if $\rho=-1$.  It means that the variables
+same is also true if \myrho~=~-1.  It means that the variables
 are negatively correlated, but for purposes of prediction, a
 negative correlation is just as good as a positive one.
 \index{prediction}
@@ -6819,10 +6848,10 @@ be able to guess their weight.  You might not get it exactly right, but
 your guess will be better than if you didn't know the height.
 Pearson's correlation is a measure of how much better.
 
-So if $\rho=0$, does that mean there is no
+So if \myrho~=~0, does that mean there is no
 relationship between the variables?  Unfortunately, no.  Pearson's
 correlation only measures {\em linear} relationships.  If there's a
-nonlinear relationship, $\rho$ understates the strength of the
+nonlinear relationship, \myrho understates the strength of the
 dependence.
 \index{linear relationship}
 
@@ -6842,7 +6871,7 @@ carefully-constructed datasets.
 \index{plot!scatter}
 
 The top row shows linear relationships with a range of correlations;
-you can use this row to get a sense of what different values of $\rho$
+you can use this row to get a sense of what different values of \myrho
 look like.  The second row shows perfect correlations with a range of
 slopes, which demonstrates that correlation is unrelated to slope
 (we'll talk about estimating slope soon).  The third
@@ -6862,7 +6891,7 @@ the {\tt Cov} function you wrote in the previous exercise.
 \index{covariance}
 
 To test your function, compute the covariance of a list with itself
-and confirm that $Corr(X, X)$ is 1.0.  You can download a solution
+and confirm that Corr(\X, \X) is 1.  You can download a solution
 from \url{thinkstats.com/correlation.py}.
 \index{{\tt correlation.py}}
 
@@ -7068,7 +7097,7 @@ do you expect for Pearson's correlation?  What value do you get?
 
 Because the distribution of adult weight is lognormal, there are
 outliers that affect the correlation.  Try plotting
-$\log(\mathrm{weight})$ versus height, and compute Pearson's
+log(weight) versus height, and compute Pearson's
 correlation for the transformed variable.
 
 Finally, compute Spearman's rank correlation for weight and height.
@@ -7084,8 +7113,6 @@ the relationship?  You can download a solution from
 \index{least squares fit}
 \index{linear least squares}
 
-\newcommand{\slope}{\beta}
-\newcommand{\inter}{\alpha}
 \index{coefficient!correlation}
 
 Correlation coefficients measure the strength and sign of a
@@ -7099,11 +7126,9 @@ squared error (MSE) between the line and the data\footnote{See
 
 Suppose we have a sequence of points, \Y, that we want to express as a
 function of another sequence \X.  If there is a linear relationship
-between \X~and \Y~with intercept $\inter$ and slope $\slope$, we
-expect each $y_i$ to be roughly $\inter + \slope x_i$.
+between \X~and \Y~with intercept \myinter and slope \myslope, we
+expect each \y\sub{i} to be roughly \myinter + \myslope \x\sub{i}.
 \index{residual}
-
-\newcommand{\eps}{\varepsilon}
 
 But unless the correlation is perfect, this prediction is only
 approximate.  The deviation, or {\bf residual}, is 
@@ -7117,7 +7142,7 @@ might include diet, exercise, and body type.
 \index{slope}
 \index{intercept}
 
-If we get the parameters $\inter$ and $\slope$ wrong, the residuals
+If we get the parameters \myinter and \myslope wrong, the residuals
 get bigger, so it makes intuitive sense that the parameters we want
 are the ones that minimize the residuals.
 
@@ -7138,14 +7163,14 @@ negative residuals the same, which is usually what we want.
 so much weight that the largest residual always dominates.
 
 \item If the residuals are independent of \x, random, and normally
-  distributed with \mmu=0 and constant (but unknown) \msigma, then
+  distributed with \mymu~=~0 and constant (but unknown) \mysigma, then
   the least squares fit is also the maximum likelihood estimator of
-  $\inter$ and $\slope$\footnote{See Press et al., {\em Numerical Recipes in C},
-    Chapter 15 at \url{www.nrbook.com/a/bookcpdf/c15-1.pdf}.}.
+  \myinter and \myslope.\footnote{See Press et al., {\em Numerical Recipes in C},
+    Chapter 15 at \url{www.nrbook.com/a/bookcpdf/c15-1.pdf}.}
 \index{MLE}
 \index{maximum likelihood estimator}
 
-\item The values of $\inter$ and $\slope$ that minimize the squared
+\item The values of \myinter and \myslope that minimize the squared
   residuals can be computed efficiently.
 
 \end{itemize}
@@ -7159,7 +7184,7 @@ whether squared residuals are the right thing to minimize.
 For example, if you are using values of \X~to predict values of \Y,
 guessing too high might be better (or worse) than guessing too low.
 In that case you might want to compute some cost function,
-$\mathrm{cost}(\eps_i)$, and minimize total cost.
+cost(\myeps\sub{i}), and minimize total cost.
 \index{cost function}
 
 However, computing a least squares fit is quick, easy and often good
@@ -7167,7 +7192,7 @@ enough, so here's how:
 
 \begin{enumerate}
 
-\item Compute the sample means, $\xbar$ and $\ybar$, the variance
+\item Compute the sample means, \myxbar~and $\ybar$, the variance
 of \X, and the covariance of \X~and \Y.
 
 \item The estimated slope is
@@ -7186,7 +7211,7 @@ To see how this is derived, you can read
 
 \begin{exercise}
 Write a function named {\tt LeastSquares} that takes \X~and \Y~and
-computes $\inter$ and $\slope$.  You can download a solution from
+computes \myinter and \myslope.  You can download a solution from
 \url{thinkstats.com/correlation.py}.
 \index{{\tt correlation.py}}
 
@@ -7194,7 +7219,7 @@ computes $\inter$ and $\slope$.  You can download a solution from
 
 \begin{exercise}
 Using the data from the BRFSS again, compute the linear least squares
-fit for $\log(\mathrm{weight})$ versus height.  You can download a
+fit for log(weight) versus height.  You can download a
 solution from \url{thinkstats.com/brfss_corr.py}.
 \index{Behavioral Risk Factor Surveillance System}
 \index{BRFSS}
@@ -7264,33 +7289,33 @@ To measure the predictive power of a model, we can compute the {\bf
 %
 \[ R^2 = 1 - \frac{Var(\eps)}{Var(Y)}\]
 %
-To understand what $R^2$ means, suppose (again) that you are trying
+To understand what \R\super{2} means, suppose (again) that you are trying
 to guess someone's weight.  If you didn't know anything about them,
 your best strategy would be to guess $\ybar$; in
-that case the MSE of your guesses would be $Var(Y)$:
+that case the MSE of your guesses would be Var(\Y):
 %
 \[ MSE = \frac{1}{n} \sum (\ybar - y_i)^2 = Var(Y) \]
 %
 But if I told you their height, you would guess $\hat{\inter} +
-\hat{\slope} x_i$; in that case your MSE would be $Var(\eps)$.
+\hat{\slope}$ \x\sub{i}; in that case your MSE would be Var(\myeps).
 %
 \[ MSE = 
 \frac{1}{n} \sum (\hat{\inter} + \hat{\slope} x_i - y_i)^2 =
 Var(\eps) \]
 %
-So the term $Var(\eps)/Var(Y)$ is the ratio of mean squared error with
+So the term Var(\myeps)/Var(\Y) is the ratio of mean squared error with
 and without the explanatory variable, which is the fraction of
-variability left unexplained by the model.  The complement, $R^2$,
+variability left unexplained by the model.  The complement, \R\super{2},
 is the fraction of variability explained by the model.
 \index{variability}
 
-If a model yields $R^2 = 0.64$, you could say that the model explains
+If a model yields \R\super{2}~=~0.64, you could say that the model explains
 64\% of the variability, or it might be more precise to say that it
 reduces the MSE of your predictions by 64\%.
 
 In the context of a linear least squares model, it turns out that
 there is a simple relationship between the coefficient of
-determination and Pearson's correlation coefficient, $\rho$:
+determination and Pearson's correlation coefficient, \myrho:
 %
 \[ R^2 = \rho^2 \]
 %
@@ -7318,13 +7343,13 @@ Hint: What is the MSE if you always guess 100?
 
 
 \begin{exercise}
-Write a function named {\tt Residuals} that takes \X, \Y, $inter$
-and $slope$ and returns a list of $\eps_i$.
+Write a function named {\tt Residuals} that takes \X, \Y, \myinter
+and \myslope and returns a list of \myeps\sub{i}.
 \index{residual}
 
-Write a function named {\tt CoefDetermination} that takes the $\eps_i$
-and \Y~and returns $R^2$.  To test your functions, confirm that $R^2
-= \rho^2$.  You can download a solution
+Write a function named {\tt CoefDetermination} that takes the 
+\myeps\sub{i}~and \Y~and returns \R\super{2}.  To test your functions, 
+confirm that {\R\super{2}~=~\myrho\super{2}}.  You can download a solution
 from \url{thinkstats.com/correlation.py}.
 \index{{\tt correlation.py}}
 
@@ -7332,7 +7357,7 @@ from \url{thinkstats.com/correlation.py}.
 
 \begin{exercise}
 Using the height and weight data from the BRFSS (one more time),
-compute $inter$, $slope$ and $R^2$.  If you were trying to guess
+compute \myinter, \myslope and \R\super{2}.  If you were trying to guess
 someone's weight, how much would it help to know their height?
 You can download a solution from
 \url{thinkstats.com/brfss_corr.py}.

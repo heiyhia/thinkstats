@@ -34,7 +34,7 @@ name: super
 name: sub
 <emphasis><subscript tal:content="self"></subscript></emphasis>
 
-name:Anchor
+name: Anchor
 <anchor tal:attributes="id self/id" />
 
 name: includegraphics
