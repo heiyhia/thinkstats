@@ -51,6 +51,9 @@ plastex:
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
 	#~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
 
+small: small.tex
+	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=small.xml small.tex
+
 sample:
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --image-scale-factor=0.25 --filename=sample2e.xml sample2e.tex
 	~/Downloads/xxe-perso-4_8_0/bin/xxe sample2e/sample2e.xml
