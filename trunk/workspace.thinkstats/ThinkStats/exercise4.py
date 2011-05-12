@@ -7,9 +7,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import myplot
 import Pmf
+import Cdf
 
-
-def BiasPmf(pmf, name, invert=False):
+def BiasPmf(pmf, name):
     """Returns the Pmf with oversampling proportional to value.
 
     If pmf is the distribution of true values, the result is the
@@ -18,12 +18,8 @@ def BiasPmf(pmf, name, invert=False):
     how big their classes are, large classes are oversampled in
     proportion to their size.
 
-    If invert=True, computes in inverse operation; for example,
-    unbiasing a sample collected from students.
-
     Args:
       pmf: Pmf object.
-      invert: boolean
 
      Returns:
        Pmf object
@@ -32,26 +28,13 @@ def BiasPmf(pmf, name, invert=False):
     new_pmf.name = name
 
     for x, p in pmf.Items():
-        if invert:
-            new_pmf.Mult(x, 1.0/x)
-        else:
-            new_pmf.Mult(x, x)
-        
-    new_pmf.Normalize()
+        print x, p
+
+        # NOTE: this function is incomplete; you need to finish it!
+        # See http://greenteapress.com/thinkstats/Pmf.html for information
+        # about Pmf operations.
+
     return new_pmf
-
-
-def UnbiasPmf(pmf, name):
-    """Returns the Pmf with oversampling proportional to 1/value.
-
-    Args:
-      pmf: Pmf object.
-      invert: boolean
-
-     Returns:
-       Pmf object
-    """
-    return BiasPmf(pmf, name, invert=True)
 
 
 def ClassSizes():
@@ -75,21 +58,11 @@ def ClassSizes():
     print 'mean', pmf.Mean()
     print 'var', pmf.Var()
     
-    # compute the biased pmf
-    biased_pmf = BiasPmf(pmf, 'observed')
-    print 'mean', biased_pmf.Mean()
-    print 'var', biased_pmf.Var()
-
-    # unbias the biased pmf
-    unbiased_pmf = UnbiasPmf(biased_pmf, 'unbiased')
-    print 'mean', unbiased_pmf.Mean()
-    print 'var', unbiased_pmf.Var()
-
-    # plot the Pmfs
-    myplot.Pmfs([pmf, biased_pmf],
+    # plot the actual pmf
+    myplot.Pmf(pmf, 
+               show=True, 
                xlabel='Class size',
-               ylabel='PMF',
-               show=True)
+               ylabel='PMF')
 
  
 def main():
