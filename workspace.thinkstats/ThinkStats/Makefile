@@ -18,40 +18,20 @@ Cdf.py
 
 DEST = /home/downey/public_html/greent/thinkstats
 
-FIGS = actual_speeds.eps        nsfg_birthwgt_cdf.eps \
-age_scatter.eps                 nsfg_birthwgt_lognormal.eps \
-bq_cdf1.eps                     nsfg_birthwgt_model.eps \
-bq_cdf2.eps                     nsfg_birthwgt_normal.eps \
-bq_cdf.eps                      nsfg_birthwgt_pmf.eps \
-bq_gap1.eps                     nsfg_diffs.eps \
-bq_gap2.eps                     nsfg_hist.eps \
-brfss_change2.eps               nsfg_oz_pmf.eps \
-brfss_change.eps                nsfg_pmf.eps \
-brfss_scatter.eps               nsfg_ratios.eps \
-brfss_weight_log.eps            observed_speeds.eps \
-brfss_weight_lognormal.eps      pareto_cdf.eps \
-brfss_weight_model.eps          pareto_height.eps \
-brfss_weight_normal.eps         populations.eps \
-conditional.eps                 populations_loglog.eps \
-example_cdf.eps                 populations_logx.eps \
-expo_cdf.eps                    populations_rankit.eps \
-heri1.eps                       posteriors.eps \
-heri2.eps                       race_predictor1.eps \
-heri3.eps                       race_predictor2.eps \
-income_loglog.eps               race_predictor3.eps \
-income_logx.eps                 race_predictor4.eps \
-interarrivals.eps               relay_normal.eps \
-interarrivals_logy.eps          resample_cdf.eps \
-interarrivals_model.eps         resampled_delta_cdf.eps \
-length_analytic_deltas_cdf.eps  scatter1.eps \
-length_deltas_cdf.eps           scatter2.eps \
-locomotive.eps                  scatter3.eps \
-marathon_cdf.eps                scatter4.eps \
-marathon_pmf.eps                sigma.eps \
-nlsy_scatter.eps                slashdot.loglog.eps \
-nnsfg_birthwgt_model.eps        slashdot.logx.eps \
-normal_cdf.eps                  weight_deltas_cdf.eps \
-nsfg_age_cdf.eps \
+FIGS = actual_speeds.pdf    length_deltas_cdf.pdf     observed_speeds.pdf \
+age_scatter.pdf             locomotive.pdf            pareto_cdf.pdf \
+bq_gap1.pdf                 marathon_cdf.pdf          pareto_height.pdf \
+bq_gap2.pdf                 marathon_pmf.pdf          populations_loglog.pdf \
+brfss_weight_lognormal.pdf  normal_cdf.pdf            populations_logx.pdf \
+brfss_weight_log.pdf        nsfg_age_cdf.pdf          populations.pdf \
+brfss_weight_model.pdf      nsfg_birthwgt_cdf.pdf     populations_rankit.pdf \
+brfss_weight_normal.pdf     nsfg_birthwgt_model.pdf   race_predictor4.pdf \
+example_cdf.pdf             nsfg_birthwgt_normal.pdf  scatter1.pdf \
+expo_cdf.pdf                nsfg_birthwgt_pmf.pdf     scatter2.pdf \
+interarrivals_logy.pdf      nsfg_diffs.pdf            scatter3.pdf \
+interarrivals_model.pdf     nsfg_hist.pdf             scatter4.pdf \
+interarrivals.pdf           nsfg_pmf.pdf              slashdot.logx.pdf \
+\
 actual_speeds.png        nsfg_birthwgt_cdf.png \
 age_scatter.png                 nsfg_birthwgt_lognormal.png \
 bq_cdf1.png                     nsfg_birthwgt_model.png \
@@ -94,6 +74,8 @@ all_figs:
 	python continuous.py
 	python hypothesis.py
 	python locomotive.py
+	python brfss_scatter.py
+	python brfss_figs.py
 
 FIGDEST = ../../figs
 

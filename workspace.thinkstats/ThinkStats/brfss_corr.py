@@ -14,7 +14,6 @@ import sys
 import brfss
 import brfss_scatter
 import correlation
-import myplot
 
 
 """
