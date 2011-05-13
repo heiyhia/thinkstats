@@ -40,10 +40,10 @@ class Respondents(brfss.Respondents):
         print 'Sigma', sigma
 
         xs, ps = continuous.RenderNormalCdf(mu, sigma, xmax)
-        pyplot.plot(xs, ps, label='model', linewidth=3, color='0.7')
+        pyplot.plot(xs, ps, label='model', linewidth=4, color='0.7')
     
         xs, ps = cdf.Render()
-        pyplot.plot(xs, ps, label='data', color='0.0')
+        pyplot.plot(xs, ps, label='data', linewidth=2, color='red')
      
         myplot.Plot(root,
                   title = 'Adult weight',

@@ -53,7 +53,7 @@ def MakeCdf(table):
 def main():
     table = ReadPregnancyRecords()
     Validate(table)
-    MakeCdf(table)
+    MakeHistogram(table)
     
 
 if __name__ == '__main__':

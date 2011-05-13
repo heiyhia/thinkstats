@@ -48,7 +48,7 @@ class Respondents(brfss.Respondents):
                     axis=[140, 210, 20, 200],
                     legend=False)
         
-    def HexBin(self, root, heights, weights, cmap=matplotlib.cm.gray_r):
+    def HexBin(self, root, heights, weights, cmap=matplotlib.cm.Blues):
         pyplot.hexbin(heights, weights, cmap=cmap)
         myplot.Plot(root=root,
                     xlabel='Height (cm)',
@@ -63,20 +63,18 @@ def MakeFigures():
 
     heights, weights = resp.GetHeightWeight(jitter=0.0)
     pyplot.clf()
-    resp.ScatterPlot('scatter1', heights, weights)
+    #resp.ScatterPlot('scatter1', heights, weights)
 
     heights, weights = resp.GetHeightWeight(jitter=1.3)
     pyplot.clf()
-    resp.ScatterPlot('scatter2', heights, weights)
+    #resp.ScatterPlot('scatter2', heights, weights)
 
-    # after remaking scatter3, you have to convert the png version to eps
-    # convert scatter3.png scatter3.eps
     pyplot.clf()
-    resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
+    #resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
 
     # read all respondents
     resp = Respondents()
-    resp.ReadRecords()
+    resp.ReadRecords(n=10000)
     heights, weights = resp.GetHeightWeight(jitter=1.3)
 
     pyplot.clf()
