@@ -32,8 +32,8 @@ class DocBook(_Renderer):
         s = re.compile(r'Exercise.<xref',re.I).sub(r'<xref', s)
         s = re.compile(r'Figure.<xref',re.I).sub(r'<xref', s)
         #
-        terms = ['figure', 'bookinfo', 'informalfigure',
-                 'informalexample', 'imageobject', 'blockquote']
+        terms = ['figure', 'bookinfo', 'informalfigure', 'programlisting',
+                 'informalexample', 'imageobject', 'blockquote', 'sidebar']
         pattern1 = r'<para>\s*(<(%s))' % or_terms(terms)
         pattern2 = r'(</(%s)>)\s*</para>' % or_terms(terms)
         s = re.compile(pattern1, re.I).sub(r'\1',s)
@@ -54,6 +54,7 @@ class DocBook(_Renderer):
         #s = re.compile(pattern2, re.I).sub(r'\1',s)
         #
         s = re.compile(r'<para>\s*</para>', re.I).sub(r'', s)
+        s = re.compile(r'(<programlisting>)\s*', re.I).sub(r'\1', s)
         #
         return s
     

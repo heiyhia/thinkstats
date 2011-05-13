@@ -43,7 +43,7 @@ class Respondents(brfss.Respondents):
         pyplot.plot(xs, ps, label='model', linewidth=4, color='0.7')
     
         xs, ps = cdf.Render()
-        pyplot.plot(xs, ps, label='data', linewidth=2, color='red')
+        pyplot.plot(xs, ps, label='data', linewidth=2, color='blue')
      
         myplot.Plot(root,
                   title = 'Adult weight',
@@ -61,6 +61,8 @@ class Respondents(brfss.Respondents):
                               title='Adult weight',
                               ylabel='Weight (kg)')
         
+        return
+
         log_weights = [math.log(weight) for weight in weights]
         xmax = math.log(175.0)
         axis = [3.5, 5.2, 0, 1]

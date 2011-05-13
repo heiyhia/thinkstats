@@ -51,6 +51,9 @@ plastex:
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
 	#~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
 
+vector:
+	plastex --renderer=DocBook --theme=book --vector-imager=dvisvgm --filename=book.xml book.tex
+
 small: small.tex
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=small.xml small.tex
 

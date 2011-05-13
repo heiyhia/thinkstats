@@ -127,7 +127,7 @@ def MakeNormalModel(weights):
     # plot the data
     cdf = Cdf.MakeCdfFromList(weights)
     xs, ps = cdf.Render()
-    pyplot.plot(xs, ps, label='data', linewidth=2, color='red')
+    pyplot.plot(xs, ps, label='data', linewidth=2, color='blue')
  
     myplot.Plot('nsfg_birthwgt_model',
                 title = 'Birth weights',

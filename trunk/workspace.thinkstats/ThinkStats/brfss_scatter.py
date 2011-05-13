@@ -63,16 +63,16 @@ def MakeFigures():
 
     heights, weights = resp.GetHeightWeight(jitter=0.0)
     pyplot.clf()
-    #resp.ScatterPlot('scatter1', heights, weights)
+    resp.ScatterPlot('scatter1', heights, weights)
 
     heights, weights = resp.GetHeightWeight(jitter=1.3)
     pyplot.clf()
-    #resp.ScatterPlot('scatter2', heights, weights)
+    resp.ScatterPlot('scatter2', heights, weights)
 
     pyplot.clf()
-    #resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
+    resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
 
-    # read all respondents
+    # read more respondents for the hexplot
     resp = Respondents()
     resp.ReadRecords(n=10000)
     heights, weights = resp.GetHeightWeight(jitter=1.3)

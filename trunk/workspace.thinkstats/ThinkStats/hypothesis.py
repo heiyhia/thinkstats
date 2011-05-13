@@ -162,7 +162,7 @@ def PlotCdf(root, cdf, delta):
     VertLine(delta)
 
     xs, ys = cdf.Render()    
-    pyplot.plot(xs, ys, linewidth=2, color='red')
+    pyplot.plot(xs, ys, linewidth=2, color='blue')
     
     myplot.Plot(root,
                 title='Resampled differences',
