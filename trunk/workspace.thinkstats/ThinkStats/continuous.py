@@ -42,7 +42,7 @@ def MakeExpoCdf():
     print 'Fraction <= ', percentile, ExpoCdf(lam, percentile)
 
     pyplot.clf()
-    pyplot.plot(xs, ps)
+    pyplot.plot(xs, ps, linewidth=2)
     myplot.Plot('expo_cdf',
                 title = 'Exponential CDF',
                 xlabel = 'x',
@@ -61,7 +61,7 @@ def MakeParetoCdf():
     print 'Fraction <= 10', ParetoCdf(xmin, alpha, 10)
     
     pyplot.clf()
-    pyplot.plot(xs, ps)
+    pyplot.plot(xs, ps, linewidth=2)
     myplot.Plot('pareto_cdf',
                 title = 'Pareto CDF',
                 xlabel = 'x',
@@ -80,7 +80,7 @@ def MakeParetoCdf2():
     print 'Median', ParetoMedian(xmin, alpha)
     
     pyplot.clf()
-    pyplot.plot(xs, ps)
+    pyplot.plot(xs, ps, linewidth=2)
     myplot.Plot('pareto_height',
                 title = 'Pareto CDF',
                 xlabel = 'height (cm)',
@@ -101,7 +101,7 @@ def MakeNormalCdf():
     xs, ps = RenderNormalCdf(2.0, 0.5, 4.0)
     
     pyplot.clf()
-    pyplot.plot(xs, ps)
+    pyplot.plot(xs, ps, linewidth=2)
     myplot.Plot('normal_cdf',
               title = 'Normal CDF',
               xlabel = 'x',
@@ -122,12 +122,12 @@ def MakeNormalModel(weights):
     xs, ps = RenderNormalCdf(mu, sigma, 200)
 
     pyplot.clf()
-    pyplot.plot(xs, ps, label='model', linewidth=3, color='0.7')
+    pyplot.plot(xs, ps, label='model', linewidth=4, color='0.8')
 
     # plot the data
     cdf = Cdf.MakeCdfFromList(weights)
     xs, ps = cdf.Render()
-    pyplot.plot(xs, ps, label='data', color='0.0')
+    pyplot.plot(xs, ps, label='data', linewidth=2, color='red')
  
     myplot.Plot('nsfg_birthwgt_model',
                 title = 'Birth weights',
@@ -142,6 +142,8 @@ def MakeNormalPlot(weights):
                           ylabel='Birth weights (oz)',)
 
 def main():
+    random.seed(17)
+
     # make the continuous CDFs
     MakeExpoCdf()
     MakeParetoCdf()

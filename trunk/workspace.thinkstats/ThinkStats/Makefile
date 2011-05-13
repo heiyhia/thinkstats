@@ -74,8 +74,8 @@ all_figs:
 	python continuous.py
 	python hypothesis.py
 	python locomotive.py
-	python brfss_scatter.py
 	python brfss_figs.py
+	python brfss_scatter.py
 
 FIGDEST = ../../figs
 

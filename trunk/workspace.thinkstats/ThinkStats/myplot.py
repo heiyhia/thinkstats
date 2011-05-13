@@ -62,7 +62,6 @@ def Pmf(pmf, clf=True, root=None, line_options=None, **options):
 
     line_options = Underride(line_options, 
                              label=pmf.name,
-                             color='blue',
                              linewidth=2)
 
     pyplot.plot(xs, ps, **line_options)
@@ -72,7 +71,7 @@ def Pmf(pmf, clf=True, root=None, line_options=None, **options):
 def Pmfs(pmfs,
          clf=True,
          root=None, 
-         plot_options=InfiniteList({}), 
+         plot_options=InfiniteList(dict(linewidth=2)), 
          **options):
     """Plots a sequence of PMFs.
     
@@ -185,7 +184,7 @@ def Diff(t):
     return diffs
 
 
-def Cdf(cdf, clf=True, root=None, plot_options={}, **options):
+def Cdf(cdf, clf=True, root=None, plot_options=dict(linewidth=2), **options):
     """Plots a CDF as a line.
 
     Args:
@@ -201,7 +200,7 @@ def Cdf(cdf, clf=True, root=None, plot_options={}, **options):
 def Cdfs(cdfs,
          clf=True,
          root=None, 
-         plot_options=InfiniteList({}), 
+         plot_options=InfiniteList(dict(linewidth=2)), 
          complement=False,
          transform=None,
          **options):

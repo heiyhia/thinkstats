@@ -43,7 +43,7 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
     xs.sort()
     
     pyplot.clf()
-    pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=2, **lineoptions)
+    pyplot.plot(sorted(xs), sorted(ys), 'r.', markersize=3, **lineoptions)
  
     myplot.Plot(root,
                 xlabel = 'Standard normal values',

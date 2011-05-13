@@ -162,7 +162,7 @@ def PlotCdf(root, cdf, delta):
     VertLine(delta)
 
     xs, ys = cdf.Render()    
-    pyplot.plot(xs, ys)
+    pyplot.plot(xs, ys, linewidth=2, color='red')
     
     myplot.Plot(root,
                 title='Resampled differences',
@@ -231,7 +231,7 @@ def SampleWithoutReplacement(t, n):
  
  
 def main():
-    random.seed(17)
+    random.seed(1)
 
     # get the data
     pool, firsts, others = cumulative.MakeTables()

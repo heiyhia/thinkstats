@@ -73,8 +73,8 @@ def MakeFigures(pool, firsts, others):
     """Creates several figures for the book."""
 
     bar_options = [
-        dict(linewidth=0, color='0.7'),
-        dict(linewidth=0, color='0.3')
+        dict(linewidth=0, color='blue'),
+        dict(linewidth=0, color='orange')
         ]
 
     # plot PMFs of birth weights for first babies and others
@@ -85,15 +85,15 @@ def MakeFigures(pool, firsts, others):
                xlabel='weight (ounces)',
                ylabel='probability')
 
-    line_options = [
-                    dict(linewidth=0.5),
-                    dict(linewidth=0.5)
+    plot_options = [
+                    dict(linewidth=2, color='blue'),
+                    dict(linewidth=2, color='orange')
                     ]
 
     # plot CDFs of birth weights for first babies and others
     myplot.Cdfs([firsts.weight_cdf, others.weight_cdf], 
                root='nsfg_birthwgt_cdf',
-               line_options=line_options, 
+               plot_options=plot_options, 
                title='Birth weight CDF',
                xlabel='weight (ounces)',
                ylabel='probability',

@@ -94,7 +94,7 @@ def MakeFigures(firsts, others):
     # bar options is a list of option dictionaries to be passed to myplot.bar
     bar_options = [
         dict(color='0.9'),
-        dict(color='0.5')
+        dict(color='blue')
         ]
 
     # make the histogram
