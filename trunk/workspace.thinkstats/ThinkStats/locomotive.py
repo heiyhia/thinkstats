@@ -111,7 +111,7 @@ def main():
                title='Locomotive problem',
                xlabel='Number of trains',
                ylabel='Posterior probability',
-               show=True)
+               show=False)
 
 if __name__ == '__main__':
     main()

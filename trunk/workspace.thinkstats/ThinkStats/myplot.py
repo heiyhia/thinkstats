@@ -290,7 +290,7 @@ def Plot(root=None, formats=None, **options):
         pyplot.legend(loc=loc)
 
     if formats is None:
-        formats = ['eps', 'png']
+        formats = ['eps', 'png', 'pdf']
 
     if root:
         for format in formats:
