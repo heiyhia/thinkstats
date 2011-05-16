@@ -48,6 +48,7 @@ distrib:
 	chmod -R o+r $(DEST)/*
 
 plastex:
+	rm -rf /home/downey/thinkstats/trunk/book/.svn
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
 	#~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
 
