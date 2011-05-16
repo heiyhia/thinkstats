@@ -64,5 +64,8 @@ name: ule
 name: minus
 &minus;
 
+name: lowast
+&lowast;
+
 name: Erdos
 Erd&#525;s

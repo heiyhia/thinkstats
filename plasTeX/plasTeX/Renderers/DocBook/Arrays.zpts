@@ -4,34 +4,36 @@ type: xml
    <metal:block tal:condition="self/title">
      <table tal:attributes="id self/title/id" remap="tabular">
      <caption tal:content="self/title"></caption>
-     <tr tal:repeat="row self">
+     <tgroup>
+     <row tal:repeat="row self">
      <metal:block tal:repeat="cell row">
        <th tal:condition="cell/isHeader"
            tal:attributes="colspan cell/attributes/colspan"
            tal:content="cell">
        </th>
-       <td tal:condition="not:cell/isHeader"
+       <entry tal:condition="not:cell/isHeader"
            tal:attributes="colspan cell/attributes/colspan"
            tal:content="cell">
-       </td>
+       </entry>
      </metal:block>
-     </tr>
+     </row>
      </table>
    </metal:block>
    <metal:block tal:condition="not:self/title">
      <informaltable remap="tabular">
-     <tr tal:repeat="row self">
+     <row tal:repeat="row self">
      <metal:block tal:repeat="cell row">
        <th tal:condition="cell/isHeader"
            tal:attributes="colspan cell/attributes/colspan"
            tal:content="cell">
        </th>
-       <td tal:condition="not:cell/isHeader"
+       <entry tal:condition="not:cell/isHeader"
            tal:attributes="colspan cell/attributes/colspan"
            tal:content="cell">
-       </td>
+       </entry>
      </metal:block>
-     </tr>
+     </row>
+     </tgroup>
      </informaltable>
    </metal:block>
 </metal:block>
