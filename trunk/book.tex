@@ -1285,10 +1285,9 @@ for x in t:
     hist[x] = hist.get(x, 0) + 1
 \end{verbatim}
 
-\index{normalization}
 The result is a dictionary that maps from values to frequencies.
 To get from frequencies to probabilities, we divide through by \n,
-which is called {\bf normalization}:
+which is called {\bf normalization}:\index{normalization}
 %
 \begin{verbatim}
 n = float(len(t))
@@ -2651,7 +2650,6 @@ Taking the log of both sides yields:
 
 So on a log-\y~scale the CCDF is a straight line
 with slope \minus\mylambda.
-
 \index{logarithmic scale}
 \index{complementary CDF}
 \index{CDF!complementary}
@@ -4980,7 +4978,6 @@ choose values for the parameter(s).  Generate samples with sizes
 2, 4, 8, etc., and compute the distribution of their sums.  Use
 a normal probability plot to see if the distribution is approximately
 normal.  How many terms do you have to add to see convergence?
-
 \index{exponential distribution}
 \index{distribution!exponential}
 \index{Pareto distribution}
@@ -6260,7 +6257,6 @@ frequentist definition of probability doesn't apply.
 \index{Bayesianism}
 
 So let's try a different version of the game.
-
 \index{exponential distribution}
 \index{distribution!exponential}
 \index{uniform distribution}
@@ -7139,10 +7135,6 @@ the relationship?  You can download a solution from
 
 
 \section{Least squares fit}
-\index{least squares fit}
-\index{linear least squares}
-
-\index{coefficient!correlation}
 
 Correlation coefficients measure the strength and sign of a
 relationship, but not the slope.  There are several ways to estimate
@@ -7151,6 +7143,9 @@ the slope; the most common is a {\bf linear least squares fit}.  A
 variables.  A ``least squares'' fit is one that minimizes the mean
 squared error (MSE) between the line and the data\footnote{See
   \url{http://wikipedia.org/wiki/Simple_linear_regression}.}.
+\index{least squares fit}
+\index{linear least squares}
+\index{coefficient!correlation}
 \index{linear regression}
 
 Suppose we have a sequence of points, \Y, that we want to express as a

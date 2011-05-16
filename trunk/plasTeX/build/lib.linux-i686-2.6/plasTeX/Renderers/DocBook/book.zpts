@@ -8,10 +8,10 @@ name: index
 </indexterm>
 
 name:exercise
-<sidebar>
-  <title>Exercise</title>
+<example>
+  <title/>
   <div tal:replace="self"></div>
-</sidebar>
+</example>
 
 name:verbatim
 <programlisting tal:content="self"></programlisting>
