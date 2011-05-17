@@ -9,6 +9,9 @@ def idgen():
 
 idgen = idgen()
 
+class Eqn(Base.Command):
+    args = 'self'
+
 class Anchor(Base.Command):
     args = 'label:str'
     def invoke(self, tex):

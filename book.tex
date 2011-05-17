@@ -180,6 +180,7 @@
     \newcommand{\myybar}{$\ybar$}
     \newcommand{\mynhat}{$\nhat$}
     \newcommand{\myle}{$\le$}
+    \newcommand{\Eqn}[1]{\quad #1}
 \fi
 
 \newcommand{\Erdos}{Erd\H{o}s}
@@ -533,6 +534,9 @@ and Molly spotted several typos.
 \item Jonathan Street caught an error in the nick of time.
 
 \item G\'{a}bor Lipt\'{a}k found a typo in the book and the relay race solution.
+
+\item Many thanks to Kevin Smith and Tim Arnold for their work on
+plasTeX, which I used to convert this book to DocBook.
 
 % ENDCONTRIB
 
@@ -1224,6 +1228,11 @@ variance is the mean squared deviation, which is why it is denoted
   standard deviation}.
 \index{deviation}
 \index{standard deviation}
+
+By itself, variance is hard to interpret.  One problem is that the
+units are strange; in this case the measurements are in pounds, so the
+variance is in pounds squared.  Standard deviation is more meaningful;
+in this case the units are pounds.
 
 \begin{exercise}
 For the exercises in this chapter you should download
@@ -2013,11 +2022,8 @@ You can download a solution to this problem from
 
 
 \begin{exercise}
-\ifplastex
-    \Anchor{relay}
-\else
-    \label{relay}
-\fi
+\label{relay}
+
 In most foot races, everyone starts at the same time.  If you are a
 fast runner, you usually pass a lot of people at the beginning of the
 race, but after a few miles everyone around you is going at the same
@@ -2229,17 +2235,17 @@ range 0--1 rather than a percentile rank in the range 0--100.
 As an example, suppose a sample has the values \{1, 2, 2, 3, 5\}.
 Here are some values from its CDF:
 
-\quad CDF(0)~=~0
+\Eqn{ CDF(0)~=~0  }
 
-\quad CDF(1)~=~0.2
+\Eqn{ CDF(1)~=~0.2 }
 
-\quad CDF(2)~=~0.6
+\Eqn{ CDF(2)~=~0.6 }
 
-\quad CDF(3)~=~0.8
+\Eqn{ CDF(3)~=~0.8 }
 
-\quad CDF(4)~=~0.8
+\Eqn{ CDF(4)~=~0.8 }
 
-\quad CDF(5)~=~1
+\Eqn{ CDF(5)~=~1 }
 
 We can evaluate the CDF for any value of \x, not just
 values that appear in the sample.
@@ -2646,7 +2652,7 @@ exponential, you expect to see a function like:
 %
 Taking the log of both sides yields:
 
-\quad log \y~\myapprox~-\mylambda \x
+\Eqn{ log \y~\myapprox~-\mylambda \x }
 
 So on a log-\y~scale the CCDF is a straight line
 with slope \minus\mylambda.
@@ -2747,12 +2753,10 @@ parameters \x \sub{m}~=~0.5 and \myalpha~=~1.
 \label{pareto_cdf}
 \end{figure}
 
-The median of this distribution is $x_m 2^{1/\alpha}$~=~1, but the
-95th percentile is 10.  By contrast, the exponential distribution
-with median 1 has 95th percentile of only 1.5.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{median}
+The median of this distribution is $x_m 2^{1/\alpha}$, which is 1, but
+the 95th percentile is 10.  By contrast, the exponential distribution
+with median 1 has 95th percentile of only 1.5.  \index{exponential
+  distribution} \index{distribution!exponential} \index{median}
 \index{logarithmic scale}
 
 There is a simple visual test that indicates whether an empirical
@@ -2765,7 +2769,7 @@ linear scale, you expect to see a function like:
 %
 Taking the log of both sides yields:
 
-\quad log y \myapprox \minus\myalpha~(log \x~\minus~log x\sub{m})
+\Eqn{ log y \myapprox \minus\myalpha~(log \x~\minus~log x\sub{m}) }
 
 So if you plot log \y~versus log \x, it should look like a straight
 line with slope \minus\myalpha~and intercept
@@ -2836,11 +2840,8 @@ What is the value of \myalpha, approximately?
 \end{exercise}
 
 \begin{exercise}
-\ifplastex
-    \Anchor{weibull}
-\else
-    \label{weibull}
-\fi
+\label{weibull}
+
 The Weibull distribution is a generalization of the exponential
 distribution that comes up in failure analysis
 (see \url{http://wikipedia.org/wiki/Weibull_distribution}).  Its CDF is
@@ -3110,7 +3111,7 @@ values have a {\bf lognormal} distribution.  The CDF of the lognormal
 distribution is the same as the CDF of the normal distribution,
 with log \x substituted for \x.
 
-\quad CDF\sub{lognormal}(\x) = CDF\sub{normal}(log \x)
+\Eqn{ CDF\sub{lognormal}(\x) = CDF\sub{normal}(log \x) }
  
 The parameters of the lognormal distribution are usually denoted
 \mymu~and \mysigma.  But remember that these parameters are {\em not}
@@ -3263,11 +3264,8 @@ for cities and towns?  You can download a solution from
 
 
 \begin{exercise}
-\ifplastex
-    \Anchor{irs}
-\else
-    \label{irs}
-\fi
+\label{irs}
+
 The Internal Revenue Service of the United States (IRS) provides data
 about income taxes at \url{http://irs.gov/taxstats}.
 \index{Internal Revenue Service}
@@ -3341,7 +3339,7 @@ If there is an efficient way to compute the inverse CDF, ICDF(\p),
 we can generate random values with the appropriate distribution
 by choosing from a uniform distribution from 0 to 1, then choosing
 
-\quad \x~=~ICDF(\p)
+\Eqn{ \x~=~ICDF(\p) }
 
 For example, the CDF of the exponential distribution is
 %
@@ -3349,7 +3347,7 @@ For example, the CDF of the exponential distribution is
 %
 Solving for \x~yields:
 
-\quad \x = \minus log (1~\minus~\p) / \mylambda
+\Eqn{ \x = \minus log (1~\minus~\p) / \mylambda }
 
 So in Python we can write
 %
@@ -3523,7 +3521,7 @@ For frequency probabilities, we can derive rules that relate
 probabilities of different events.  Probably the best known of these
 rules is
 
-\quad \Prob(\A \AND \B) = \Prob(\A) \Prob(\B) \quad Warning: not always true!
+\Eqn{ \Prob(\A \AND \B) = \Prob(\A) \Prob(\B) \quad Warning: not always true! }
 
 where \Prob(\A \AND \B) is the probability that events \A~and \B~both
 occur.  This formula is easy to remember; the only problem is that it
@@ -3553,7 +3551,7 @@ the conditional probability, \Prob(\A|\B), which is the probability of
 %
 From that we can derive the general relation
 
-\quad \Prob(\A \AND \B) = \Prob(\A) \Prob(\B|\A)
+\Eqn{ \Prob(\A \AND \B) = \Prob(\A) \Prob(\B|\A) }
 
 This might not be as easy to remember, but if you translate it into
 English it should make sense: ``The chance of both things happening
@@ -3563,7 +3561,7 @@ given the first.''
 There is nothing special about the order of events, so we could also
 write
 
-\quad \Prob(\A \AND \B) = \Prob(\B) \Prob(\A|\B)
+\Eqn{ \Prob(\A \AND \B) = \Prob(\B) \Prob(\A|\B) }
 
 These relationships hold whether \A~and \B~are independent or not.
 If they are independent, then \Prob(\A|\B)~=~\Prob(\A), which gets us back
@@ -3572,7 +3570,7 @@ where we started.
 Because all probabilities are in the range 0 to 1, it is
 easy to show that 
 
-\quad \Prob(\A \AND \B)~\myle~\Prob(\A)
+\Eqn{ \Prob(\A \AND \B)~\myle~\Prob(\A) }
 
 To picture this, imagine a club that only admits people who satisfy
 some requirement, \A.  Now suppose they add a new requirement for
@@ -3822,16 +3820,16 @@ heights are slightly more variable.
 If two events are {\bf mutually exclusive}, that means that only
 one of them can happen, so the conditional probabilities are 0:
 
-\quad \Prob(\A|\B) = \Prob(\B|\A) = 0
+\Eqn{ \Prob(\A|\B) = \Prob(\B|\A) = 0 }
 
 In this case it is easy to compute the probability of either event:
 
-\quad \Prob(\A \OR \B) = \Prob(\A)~+~\Prob(\B)   \quad \mbox{Warning: not always true.}
+\Eqn{ \Prob(\A \OR \B) = \Prob(\A)~+~\Prob(\B) \quad Warning: not always true.}
 
 But remember that this only applies if the events are mutually
 exclusive.  In general the probability of \A~or \B~or both is:
 
-\quad \Prob(\A \OR \B) = \Prob(\A)~+~\Prob(\B)~\minus~\Prob(\A \AND \B)
+\Eqn{ \Prob(\A \OR \B) = \Prob(\A)~+~\Prob(\B)~\minus~\Prob(\A \AND \B) }
 
 The reason we have to subtract off \Prob(\A \AND \B) is that otherwise it
 gets counted twice.  For example, if I flip two coins, the chance of
@@ -4066,15 +4064,15 @@ Event \B has occurred.  Bayes's theorem states:
 To see that this is true, it helps to write \Prob(\A \AND \B), which
 is the probability that A and B occur
 
-\quad \Prob(\A \AND \B) = \Prob(\A) \Prob(\B|\A)
+\Eqn{ \Prob(\A \AND \B) = \Prob(\A) \Prob(\B|\A) }
 
 But it is also true that 
 
-\quad \Prob(\A \AND \B) = \Prob(\B) \Prob(\A|\B) 
+\Eqn{ \Prob(\A \AND \B) = \Prob(\B) \Prob(\A|\B) }
 
 So
 
-\quad \Prob(\B) \Prob(\A|\B) = \Prob(\A) \Prob(\B|\A) 
+\Eqn{ \Prob(\B) \Prob(\A|\B) = \Prob(\A) \Prob(\B|\A) }
 
 Dividing through by \Prob(\B) yields Bayes's theorem\footnote{See
 \url{http://wikipedia.org/wiki/Q.E.D.}!}.
@@ -4146,7 +4144,7 @@ The normalizing constant, \Prob(\E) is a little harder to evaluate.  We
 have to consider two possibilities, \Prob(\E|\D) and \Prob(\E|\N), where
 \N~is the hypothesis that the subject of the test does not use drugs:
 
-\quad \Prob(\E) = \Prob(\D) \Prob(\E|\D)~+~\Prob(\N) \Prob(\E|\N)
+\Eqn{ \Prob(\E) = \Prob(\D) \Prob(\E|\D)~+~\Prob(\N) \Prob(\E|\N) }
 
 The probability of a false positive, \Prob(\E|\N), is the complement
 of the specificity, or 1\%.
@@ -4430,7 +4428,7 @@ selected from a distribution.''
 For example, the formal definition of the cumulative distribution
 function is:
 
-\quad CDF\sub{X}(\x) = \Prob(\X~\myle~\x)
+\Eqn{ CDF\sub{X}(\x) = \Prob(\X~\myle~\x) }
 
 I have avoided this notation until now because it is so awful, but
 here's what it means: The CDF of the random variable \X, evaluated
@@ -4570,11 +4568,8 @@ use the second option.  Otherwise we usually have to integrate the
 PDF numerically.
 
 \begin{exercise}
-\ifplastex
-    \Anchor{expo_pdf}
-\else
-    \label{expo_pdf}
-\fi
+\label{expo_pdf}
+
 What is the probability that a value chosen from an exponential
 distribution with parameter \mylambda~falls between 1 and 20?  Express
 your answer as a function of \mylambda.  Keep this result handy;
@@ -4690,7 +4685,7 @@ If you have studied signals and systems, you might recognize that
 integral.  It is the {\bf convolution} of PDF\sub{Y} and PDF\sub{X}, 
 denoted with the operator \mystar.
 
-\quad PDF\sub{Z} = PDF\sub{Y} \mystar PDF\sub{X}
+\Eqn{ PDF\sub{Z} = PDF\sub{Y} \mystar~PDF\sub{X} }
 
 So the distribution of the sum is the convolution of the distributions.
 See \url{http://wiktionary.org/wiki/booyah}!
@@ -4787,7 +4782,7 @@ that means, it will help to introduce some notation.
 If the distribution of a random variable, \X, is
 normal with parameters \mymu~and \mysigma, you can write
 
-\quad \X~\mysim~\mynormal (\mymu, \mysigma)
+\Eqn{ \X~\mysim~\mynormal (\mymu, \mysigma) }
 
 where the symbol \mysim~means ``is distributed'' and the script letter
 \mynormal~stands for ``normal.''
@@ -4804,7 +4799,7 @@ linear transformation if \X' is in the same family as \X.  The normal
 distribution has this property; if \X~\mysim~\mynormal (\mymu,
 \sigmasq),
 
-\quad \X'~\mysim~\mynormal (\mya \mymu~+~\myb, \mya\super{2} \mysigma)
+\Eqn{ \X'~\mysim~\mynormal (\mya \mymu~+~\myb, \mya\super{2} \mysigma) }
 
 Normal distributions are also closed under convolution.  
 If \Z~=~\X~+~\Y and
@@ -5426,7 +5421,7 @@ interpret the result of a hypothesis test:
   the effect is real, and \Prob(\E) is the probability of seeing \E
   under any hypothesis.  Since the effect is either real or it's not,
   
-  \quad \Prob(\E) = \Prob(\E|\HH\sub{A}) \Prob(\HH\sub{A})~+~\Prob(\E|\HH\sub{0}) \Prob(\HH\sub{0})
+  \Eqn{ \Prob(\E) = \Prob(\E|\HH\sub{A}) \Prob(\HH\sub{A})~+~\Prob(\E|\HH\sub{0}) \Prob(\HH\sub{0}) }
 
 \end{description}
 
@@ -5756,7 +5751,7 @@ To figure out the distribution of the sample means, we have to invoke
 one of the properties of the normal distribution: if \X~is
 \mynormal (\mymu, \sigmasq),
 
-\quad \mya\X~+~\myb~\mysim~\mynormal(\mya \mymu~+~\myb, \mya\super{2} \sigmasq)
+\Eqn{ \mya\X~+~\myb~\mysim~\mynormal(\mya \mymu~+~\myb, \mya\super{2} \sigmasq) }
 
 When we divide by \n, \mya~=~1/\n and \myb~=~0, so
 
@@ -6136,7 +6131,7 @@ What do you think is the parameter, \mylambda, of this distribution?
 In general, the mean of an exponential distribution is 1/\mylambda,
 so working backwards, we might choose
 
-\quad $\lamhat$ = 1 / \myxbar
+\Eqn{ $\lamhat$ = 1 / \myxbar }
 
 It is common to use hat notation for estimators, so $\lamhat$ is an
 estimator of \mylambda.  And not just any estimator; it is also the
@@ -6300,7 +6295,7 @@ The symbol $\prod$ represents the product of a sequence (see
 
 \item Then by Bayes's theorem the posterior distribution is
 
-\quad \Prob(\HH\sub{i}|\X) =  \Prob(\HH\sub{i}) \Prob(\X|\HH\sub{i}) /\f
+\Eqn{ \Prob(\HH\sub{i}|\X) =  \Prob(\HH\sub{i}) \Prob(\X|\HH\sub{i}) /\f }
 
 where \f is the normalization factor
 %
@@ -6786,9 +6781,9 @@ regardless of the distribution of \X.
 to vary together.  If we have two series, \X~and \Y, their
 deviations from the mean are
 
-\quad \dd\x\sub{i} = \x\sub{i}~\minus~\mymu\sub{X}
+\Eqn{ \dd\x\sub{i} = \x\sub{i}~\minus~\mymu\sub{X} }
 
-\quad \dd\y\sub{i} = \y\sub{i}~\minus~\mymu\sub{Y}
+\Eqn{ \dd\y\sub{i} = \y\sub{i}~\minus~\mymu\sub{Y} }
 
 where \mymu \sub{X} is the mean of \X~and \mymu \sub{Y} is the mean of \Y.
 If \X~and \Y~vary together, their deviations tend to have the same
@@ -7157,7 +7152,7 @@ expect each \y\sub{i} to be roughly \myinter~+ \myslope~\x\sub{i}.
 But unless the correlation is perfect, this prediction is only
 approximate.  The deviation, or {\bf residual}, is 
 
-\quad \myeps\sub{i}~=~(\myinter~+~\myslope \x\sub{i})~\minus~\y\sub{i}
+\Eqn{ \myeps\sub{i}~=~(\myinter~+~\myslope \x\sub{i})~\minus~\y\sub{i} }
 
 The residual might be due to random factors like measurement error,
 or non-random factors that are unknown.  For example, if we are
@@ -7341,7 +7336,7 @@ In the context of a linear least squares model, it turns out that
 there is a simple relationship between the coefficient of
 determination and Pearson's correlation coefficient, \myrho:
 
-\quad \R\super{2} = \myrho\super{2}
+\Eqn{ \R\super{2} = \myrho\super{2} }
 
 See \url{http://wikipedia.org/wiki/Howzzat}!
 \index{howzzat}

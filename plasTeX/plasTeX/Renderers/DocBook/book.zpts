@@ -8,10 +8,15 @@ name: index
 </indexterm>
 
 name:exercise
-<example>
+<example tal:attributes="id self/id">
   <title/>
   <div tal:replace="self"></div>
 </example>
+
+name:Eqn
+<simplelist>
+  <member tal:content="self"></member>
+</simplelist>
 
 name:verbatim
 <programlisting tal:content="self"></programlisting>
