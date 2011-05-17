@@ -50,6 +50,7 @@ distrib:
 plastex:
 	rm -rf /home/downey/thinkstats/trunk/book/.svn
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
+	rm -rf /home/downey/thinkstats/trunk/book/.svn
 	#~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
 
 vector:
