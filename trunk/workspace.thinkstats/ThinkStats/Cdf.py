@@ -204,7 +204,7 @@ def MakeCdfFromHist(hist, name=''):
     return MakeCdfFromItems(hist.Items(), name)
 
 
-def MakeCdfFromPmf(pmf, name=''):
+def MakeCdfFromPmf(pmf, name=None):
     """Makes a CDF from a Pmf object.
 
     Args:
@@ -214,6 +214,8 @@ def MakeCdfFromPmf(pmf, name=''):
     Returns:
         Cdf object
     """
+    if name == None:
+        name = pmf.name
     return MakeCdfFromItems(pmf.Items(), name)
 
 
