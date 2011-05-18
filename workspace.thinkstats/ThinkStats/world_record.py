@@ -171,7 +171,6 @@ def PlotTimes(distances, plot_gender='male'):
 
 def PlotSpeeds(distances, plot_gender='male', special=False):
 
-    pyplot.rcdefaults()
     pyplot.rc('figure', figsize=(5, 10))
     pyplot.rc('font', size=9.0)
     pyplot.rc('xtick.major', size=0)
@@ -239,7 +238,7 @@ def PlotCdfs():
     """
     cdfs = []
     for n in [50, 10, 5, 1]:
-        pmf, data = WorldRecord(m=100000, n=n)
+        pmf, data = WorldRecord(m=10000, n=n)
         cdf = Cdf.MakeCdfFromPmf(pmf, name='n=%d' % n)
         print n, max(cdf.Values())
         cdfs.append(cdf)
@@ -247,7 +246,12 @@ def PlotCdfs():
     options = dict(linewidth=2)
     plot_options = [options] * len(cdfs)
 
-    myplot.Cdfs(cdfs, root='world_record_cdfs', plot_options=plot_options)
+    myplot.Cdfs(cdfs, 
+                root='world_record_cdfs',
+                plot_options=plot_options,
+                title='Distribution of potential',
+                xlabel='potential',
+                ylabel='CDF')
 
 
 def PlotSimulations():
@@ -260,12 +264,32 @@ def PlotSimulations():
                            right=0.95, left=0.1,
                            top=0.95, bottom=0.05)
 
+    pyplot.title('Simulated world records')
+
     for i in range(1, 5):
         pyplot.subplot(2, 2, i)
+        pyplot.xscale('log')
         PlotSimulation(100000)
 
-    myplot.Plot(root='world_record_sim')
+    myplot.Plot(root='world_record_sim2')
     pyplot.rcdefaults()
+
+
+def PlotOneSimulation(xscale='linear'):
+    pyplot.clf()
+    PlotSimulation(100000)
+    
+    if xscale == 'linear':
+        pyplot.axis([-0.1, 1.1, 0.0, 0.7])
+        pyplot.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    else:
+        pyplot.subplots_adjust(bottom=0.15)
+        pyplot.xscale(xscale)
+
+    myplot.Plot(root='world_record_sim_%s' % xscale,
+                title='Simulated world record progression',
+                xlabel='Fraction of population tested',
+                ylabel='Max potential seen')
 
 
 
@@ -276,10 +300,9 @@ def PlotSimulation(m=100000):
     # extend to the present
     last_x = xs[-1]
     last_y = ys[-1]
-    pyplot.plot([last_x, 1.0], [last_y, last_y], 'b:')
+    pyplot.plot([last_x, 1.0], [last_y, last_y], 'b-')
 
-    pyplot.plot(xs, ys, 'o:')
-    pyplot.xscale('log')
+    pyplot.plot(xs, ys, 'o-')
 
 
 def PlotMarathon(data):
@@ -306,7 +329,7 @@ def PlotMarathon(data):
     pyplot.xticks(xticks)
 
     myplot.Plot(root='world_record_predict',
-                title='marathon record projection',
+                title='Marathon record projection',
                 ylabel='mph')
 
 
@@ -317,16 +340,20 @@ def MakeLine(inter, slope, xs):
 """There are six billion ways not to be the fastest marathoner in the world."""
 
 def main(script):
+    random.seed(1)
+
     #distances = ReadData(speed=False)
     #PlotTimes(distances)
 
     distances = ReadData(speed=True)
     PlotSpeeds(distances, special=True)
+    #PlotMarathon(distances['marathon', 'male'])
 
     #PlotCdfs()
-    #PlotSimulations()
+    #PlotOneSimulation()
+    PlotOneSimulation('log')
+    #PlotCdfs()
 
-    #PlotMarathon(distances['marathon', 'male'])
 
 if __name__ == '__main__':
     main(*sys.argv)
