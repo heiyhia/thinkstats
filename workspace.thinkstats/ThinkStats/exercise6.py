@@ -56,10 +56,9 @@ def GenerateNormalVariates(mu, sigma, n):
 def PlotSimulatedData(mu, sigma, n):
     """Generates a sample with the given parameters and plots it
     versus a list of normal variates."""
-
-    # FILL IN THE BODY OF THIS FUNCTION
-    # use pyplot.plot to draw a line.  See below for an example
-    # don't call myplot.Plot, which makes the figure.
+    ys = GenerateNormalVariates(mu, sigma, n)
+    xs = GenerateNormalVariates(0, 1, n)
+    pyplot.plot(sorted(xs), sorted(ys), '-', markersize=3, color='0.5')
 
 
 def MakeNormalPlot(values):

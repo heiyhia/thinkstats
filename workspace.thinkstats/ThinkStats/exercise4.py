@@ -28,12 +28,12 @@ def BiasPmf(pmf, name):
     new_pmf.name = name
 
     for x, p in pmf.Items():
-        print x, p
+        new_pmf.Mult(x, x)
 
         # NOTE: this function is incomplete; you need to finish it!
         # See http://greenteapress.com/thinkstats/Pmf.html for information
         # about Pmf operations.
-
+    new_pmf.Normalize()
     return new_pmf
 
 
@@ -58,8 +58,12 @@ def ClassSizes():
     print 'mean', pmf.Mean()
     print 'var', pmf.Var()
     
+    biased = BiasPmf(pmf, name='biased')
+    print 'mean', biased.Mean()
+    print 'var', biased.Var()
+
     # plot the actual pmf
-    myplot.Pmf(pmf, 
+    myplot.Pmfs([pmf, biased], 
                show=True, 
                xlabel='Class size',
                ylabel='PMF')
