@@ -363,8 +363,6 @@ def MakePercentiles(shelf, n=50):
         ys = [cdf.Percentile(x) for x in [5, 25, 50, 75, 95]]
         x = thinkstats.Mean(halfs)
 
-        print x, ys
-
         xs.append(x)
         plists.append(ys)
 

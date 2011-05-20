@@ -6,7 +6,6 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import relay
-import Cdf
 import Pmf
 import myplot
 
@@ -39,30 +38,21 @@ def main():
 
     # plot the distribution of actual speeds
     pmf = Pmf.MakePmfFromList(speeds, 'actual speeds')
-    #myplot.Hist(pmf,
-    #           show=True,
-    #           title='PMF of running speed',
-    #           xlabel='speed (mph)',
-    #           ylabel='probability')
+    myplot.Hist(pmf,
+               root='actual_speeds',
+               title='PMF of running speed',
+               xlabel='speed (mph)',
+               ylabel='probability')
 
     # plot the biased distribution seen by the observer
     biased = BiasPmf(pmf, 7.5, name='observed speeds')
-
     myplot.Hist(biased, 
                root='observed_speeds',
                title='PMF of running speed',
                xlabel='speed (mph)',
                ylabel='probability',
-               show=False)
-
-    cdf = Cdf.MakeCdfFromPmf(biased)
-    myplot.Cdf(cdf,
-               root='observed_speeds_cdf',
-               title='CDF of running speed',
-               xlabel='speed (mph)',
-               ylabel='cumulative probability',
                show=True)
-    
+
 
 if __name__ == '__main__':
     main()

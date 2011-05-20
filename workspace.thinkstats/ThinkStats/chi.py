@@ -117,7 +117,7 @@ def Test(pool, firsts, others, num_trials=1000):
     threshold = ChiSquared(expected, observed)
     print threshold
 
-    print 'simulated %d trials' % num_trials
+    print 'simulated'
     chi2s = []
     count = 0
     for _ in range(num_trials):
