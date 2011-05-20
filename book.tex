@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.4.6}
+\newcommand{\theversion}{1.5}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -538,6 +538,8 @@ and Molly spotted several typos.
 \item Many thanks to Kevin Smith and Tim Arnold for their work on
 plasTeX, which I used to convert this book to DocBook.
 
+\item George Caplan sent several suggestions for improving clarity.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -889,13 +891,14 @@ will be stored.  Most of the time I use the name from the
 NSFG codebook, converted to all lower case.
 
 \item[start:] The index of the starting column for this
-field.  You can look up these indices in the NSFG codebook
+field.
+For example, the start index for {\tt caseid} is 1.
+You can look up these indices in the NSFG codebook
 at \url{http://nsfg.icpsr.umich.edu/cocoon/WebDocs/NSFG/public/index.htm}.
-For example, the indices for {\tt caseid} are
-1--12.
 
 \item[end:] The index of the ending column for this
-field.  Unlike in Python, the end index is {\em inclusive}.
+field; for example, the end index for {\tt caseid} is 12.
+Unlike in Python, the end index is {\em inclusive}.
 
 \item[conversion function:] A function that takes a string
 and converts it to an appropriate type.  You can use built-in
@@ -3679,11 +3682,11 @@ with Door A is only 1/3; if you switch, your chances are 2/3.
 I will explain why, but I don't expect you to believe me.
 
 The key is to realize that there are three possible scenarios:
-the car is either behind Door A, B or C.  Since the prizes are
+the car is behind Door A, B or C.  Since the prizes are
 arranged at random, the probability of each scenario is 1/3.
 
-If your strategy is to stick with Door A, then you will only
-win in Scenario A, which has probability 1/3.
+If your strategy is to stick with Door A, then you will
+win only in Scenario A, which has probability 1/3.
 
 If your strategy is to switch, you will win in either Scenario
 B or Scenario C, so the total probability of winning is 2/3.
@@ -6822,10 +6825,10 @@ You can download a solution from
 
 \section{Correlation}
 \index{correlation}
-\index{normal score}
+\index{standard score}
 
 One solution to this problem is to divide the deviations by \mysigma,
-which yields normal scores, and compute the product of normal scores:
+which yields standard scores, and compute the product of standard scores:
 %
 \[ p_i = \frac{(x_i - \mu_X)}{\sigma_X} \frac{(y_i - \mu_Y)}{\sigma_Y} \]
 %
@@ -6835,7 +6838,7 @@ The mean of these products is
 %
 This value is called {\bf Pearson's correlation} after Karl Pearson,
 an influential early statistician.  It is easy to compute and easy to
-interpret.  Because normal scores are dimensionless, so is \myrho.
+interpret.  Because standard scores are dimensionless, so is \myrho.
 \index{Pearson, Karl}
 \index{Pearson coefficient of correlation}
 \index{coefficient!correlation}

@@ -26,7 +26,7 @@ type:xml
 </inlineequation>
 
 name: displaymath equation  equation*
-<informalfigure remap="equation" tal:attributes="id self/id">
+<informalequation remap="equation" tal:attributes="id self/id">
   <mediaobject remap="math" tal:condition="self/renderer/vectorImager/enabled">
     <imageobject>
       <imagedata role="math" format="SVG" tal:attributes="fileref self/vectorImage/url" />
@@ -43,7 +43,7 @@ name: displaymath equation  equation*
       <phrase tal:content="text self/source"></phrase>
     </textobject>
   </mediaobject>
-</informalfigure>
+</informalequation>
 
 name: eqnarray eqnarray* align align* gather gather* falign falign* \
       multiline multiline* alignat alignat* split multline multline*
