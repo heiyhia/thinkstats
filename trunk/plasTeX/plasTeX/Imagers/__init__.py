@@ -267,7 +267,7 @@ class Image(object):
             self.width, self.height = im.size
 
             # ABD: this line works for DocBook and will break other Renderers
-            upshift = 7
+            upshift = 0
             self.depth = (self.height + self.depth) / 4 + upshift
             if self.depth < 0:
                 self.depth = 0
