@@ -92,7 +92,7 @@ def ApplyLogistic(pmf, inter=-2.5, slope=10):
     for val, prob in sorted(pmf.Items()):
         z = inter + slope * StandardScore(val, mu, sigma)
         
-        prob_admit = Logistic(z)
+        prob_admit = bayes.Logistic(z)
         new.Incr(val, prob * prob_admit)
 
         print val, z, prob_admit
@@ -104,10 +104,6 @@ def ApplyLogistic(pmf, inter=-2.5, slope=10):
 
 def StandardScore(val, mu, sigma):
     return (val-mu) / sigma
-
-
-def Logistic(z):
-    return 1 / (1 + math.exp(-z))
 
 
 def SummarizeR(r, sigma):
@@ -124,15 +120,11 @@ def SummarizeR(r, sigma):
     print 'RMSE (reduction)', rmse_with, reduction
 
 
-def Logit(p):
-    return math.log10(p) - math.log10(1-p)
-
-
 def ApplyLogit(pmf, denom):
     new = Pmf.Pmf()
     for val, prob in pmf.Items():
         if val > 0 and val < denom:
-            x = Logit(val/denom)
+            x = bayes.Logit(val/denom)
             new.Incr(x, prob)
     return new
 
@@ -260,8 +252,8 @@ class Exam:
         raw = self.scale.Reverse(score) - self.shift
         evidence = raw, self.max_score-raw
 
-        updater = bayes.BinomialBayes()
-        posterior = updater.Update(self.prior, evidence)
+        updater = bayes.Binomial()
+        posterior = updater.Posterior(self.prior, evidence)
 
         return posterior
 

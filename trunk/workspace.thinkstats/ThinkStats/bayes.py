@@ -5,7 +5,7 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from math import pow
+import math
 
 import Cdf
 
@@ -17,18 +17,23 @@ class Bayes(object):
         Args:
             prior: Pmf that maps hypotheses to probabilities
             evidence: whatever kind of object Likelihood expects
-
-        Returns:
-            posterior: Pmf that maps hypotheses to probabilities
         """
-        posterior = prior.Copy()
-
         for hypo in prior.Values():
             likelihood = self.Likelihood(evidence, hypo)
             if verbose:
                 print hypo, likelihood
-            posterior.Mult(hypo, likelihood)
-        posterior.Normalize()
+            prior.Mult(hypo, likelihood)
+        prior.Normalize()
+
+    def Posterior(self, prior, evidence, verbose=False):
+        """Updates a prior based on evidence.
+
+        Args:
+            prior: Pmf that maps hypotheses to probabilities
+            evidence: whatever kind of object Likelihood expects
+        """
+        posterior = prior.Copy()
+        self.Update(posterior, evidence)
         return posterior
 
     def Likelihood(self, evidence, hypo):
@@ -44,7 +49,7 @@ class Bayes(object):
         raise Error('');
 
 
-class BinomialBayes(Bayes):
+class Binomial(Bayes):
 
     def Likelihood(self, evidence, hypo):
         """Computes the likelihood of the evidence assuming the hypothesis.
@@ -59,7 +64,7 @@ class BinomialBayes(Bayes):
         """
         heads, tails = evidence
         p = hypo
-        return pow(p, heads) * pow(1-p, tails)
+        return math.pow(p, heads) * math.pow(1-p, tails)
 
 
 def CredibleInterval(pmf, percentage):
@@ -78,6 +83,16 @@ def CredibleInterval(pmf, percentage):
     prob = (1 - percentage/100.0) / 2
     interval = [cdf.Value(p) for p in [prob, 1-prob]]
     return interval
+
+
+def Logistic(z):
+    """Converts from a z-value to a probability."""
+    return 1 / (1 + math.exp(-z))
+
+
+def Logit(p):
+    """Converts from a probability to a z-value."""
+    return math.log10(p) - math.log10(1-p)
 
 
 def main():
