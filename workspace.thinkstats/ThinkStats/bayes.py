@@ -11,19 +11,19 @@ import Cdf
 
 class Bayes(object):
 
-    def Update(self, prior, evidence, verbose=False):
-        """Updates a prior based on evidence.
+    def Update(self, suite, evidence, verbose=False):
+        """Updates a suite based on evidence.
 
         Args:
-            prior: Pmf that maps hypotheses to probabilities
+            suite: Pmf that maps hypotheses to probabilities
             evidence: whatever kind of object Likelihood expects
         """
-        for hypo in prior.Values():
+        for hypo in suite.Values():
             likelihood = self.Likelihood(evidence, hypo)
             if verbose:
                 print hypo, likelihood
-            prior.Mult(hypo, likelihood)
-        prior.Normalize()
+            suite.Mult(hypo, likelihood)
+        suite.Normalize()
 
     def Posterior(self, prior, evidence, verbose=False):
         """Updates a prior based on evidence.
