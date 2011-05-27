@@ -16,7 +16,7 @@ _DictWrapper: private parent class for Hist and Pmf.
 """
 
 import logging
-
+import random
 
 class _DictWrapper(object):
     """An object that contains a dictionary."""
@@ -187,6 +187,20 @@ class Pmf(_DictWrapper):
         for x, p in self.d.iteritems():
             self.d[x] = p / denom
     
+    def Random(self):
+        """Chooses a random element from this PMF.
+
+        Returns:
+            float mean
+        """
+        target = random.random()
+        total = 0.0
+        for x, p in self.d.iteritems():
+            total += p
+            if total >= target:
+                return x
+        return x
+
     def Mean(self):
         """Computes the mean of a PMF.
 
