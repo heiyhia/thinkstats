@@ -41,6 +41,14 @@ class Beta(object):
 
         return random.betavariate(self.alpha, self.beta)
 
+    def Render(self, steps=101):
+        """Returns a curve that represents the PDF of this distribution."""
+        ps = [i / (steps-1.0) for i in range(steps)]
+        probs = [math.pow(p, self.alpha-1) * math.pow(1-p, self.beta-1) 
+                 for p in ps]
+        pmf = Pmf.MakePmfFromDict(dict(zip(ps, probs)))
+        pmf.Normalize()
+
 
 class Census(object):
     """Represents a belief about the population of a sample.
@@ -231,9 +239,6 @@ class MetaHypo(object):
         return ''.join(taxons), curve
 
 
-
-
-
 def PlotPmfs(pmfs):
     myplot.Pmfs(pmfs, show=True,
                 xlabel='Prevalence',
@@ -248,6 +253,16 @@ def MakeCurve(sample):
     for i, taxon in enumerate(sample):
         s.add(taxon)
         curve.append((i+1, len(s)))
+    return curve
+
+
+def JitterCurve(curve, dx=0.2, dy=0.3):
+    """Adds random noise to the pairs in a curve.
+
+    dx and dy control the amplitude of the noise in each dimension.
+    """
+    curve = [(x+random.uniform(-dx, dx), 
+              y+random.uniform(-dy, dy)) for x, y in curve]
     return curve
 
 
@@ -268,20 +283,9 @@ def PlotCurves(curves, color='b'):
                 )
 
 
-def JitterCurve(curve, dx=0.2, dy=0.3):
-    """Adds random noise to the pairs in a curve.
-
-    dx and dy control the amplitude of the noise in each dimension.
-    """
-    curve = [(x+random.uniform(-dx, dx), 
-              y+random.uniform(-dy, dy)) for x, y in curve]
-    return curve
-
-
 def main():
     sample = 'aaaaaaaaabbbbb'
     sample = 'aaaaaabbbbcdef'
-    sample = 'a'
 
     prior = Pmf.MakePmfFromList(range(1, 21))
     meta = MetaHypo(prior)
