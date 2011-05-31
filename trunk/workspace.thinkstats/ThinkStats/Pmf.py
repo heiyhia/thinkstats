@@ -174,18 +174,20 @@ class Pmf(_DictWrapper):
         """
         return self.d.get(x, 0)
 
-    def Normalize(self, denom=0.0):
+    def Normalize(self, fraction=1.0):
         """Normalizes this PMF so the sum of all probs is 1.
 
         Args:
-            denom: float divisor; if None, computes the total of all probs
+            fraction: what the total should be after normalization
         """
-        denom = float(denom) or float(self.Total())
-        if denom == 0.0:
-            logging.warning('Pmf.Normalize: total probability is zero')
-
-        for x, p in self.d.iteritems():
-            self.d[x] = p / denom
+        total = self.Total()
+        if total == 0.0:
+            logging.warning('Normalize: total probability is zero.')
+            return
+        
+        factor = float(fraction) / total
+        for x in self.d:
+            self.d[x] *= factor
     
     def Random(self):
         """Chooses a random element from this PMF.
@@ -276,8 +278,6 @@ def MakePmfFromList(t, name=''):
 def MakePmfFromDict(d, name=''):
     """Makes a PMF from a map from values to probabilities.
 
-    Result is not necessarily normalized.
-
     Args:
         d: dictionary that maps values to probabilities
         name: string name for this PMF
@@ -285,7 +285,9 @@ def MakePmfFromDict(d, name=''):
     Returns:
         Pmf object
     """
-    return Pmf(d, name)
+    pmf = Pmf(d, name)
+    pmf.Normalize()
+    return pmf
 
 
 def MakePmfFromHist(hist, name=None):
@@ -328,3 +330,17 @@ def MakePmfFromCdf(cdf, name=None):
         prev = prob
 
     return pmf
+
+
+def MakeMixture(pmfs):
+    """Make a mixture distribution.
+
+    mix is a Pmf that maps from Pmfs to probs.
+
+    Result is a Pmf object.
+    """
+    mix = Pmf()
+    for pmf, prob in pmfs.Items():
+        for x, p in pmf.Items():
+            mix.Incr(x, p * prob)
+    return mix
