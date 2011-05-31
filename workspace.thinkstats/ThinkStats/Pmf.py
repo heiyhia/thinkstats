@@ -339,7 +339,7 @@ def MakeMixture(pmfs):
 
     Result is a Pmf object.
     """
-    mix = Pmf()
+    mix = Pmf(name='mix')
     for pmf, prob in pmfs.Items():
         for x, p in pmf.Items():
             mix.Incr(x, p * prob)
