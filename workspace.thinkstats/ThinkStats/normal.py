@@ -19,14 +19,12 @@ def RenderPdf(mu, sigma, n=1001):
 def MakeFigure():
     xs, ys = RenderPdf(1170, 179)
     pmf1 = Pmf.MakePmfFromDict(dict(zip(xs, ys)), name='blue')
-    total = pmf1.Total()
-    pmf1.Normalize(total / 0.9)
+    pmf1.Normalize(0.9)
     print pmf1.Total()
 
     xs, ys = RenderPdf(995, 167)
     pmf2 = Pmf.MakePmfFromDict(dict(zip(xs, ys)), name='green')
-    total = pmf2.Total()
-    pmf2.Normalize(total / 0.1)
+    pmf2.Normalize(0.1)
     print pmf2.Total()
 
     #myplot.Pmfs([pmf1, pmf2], show=True)

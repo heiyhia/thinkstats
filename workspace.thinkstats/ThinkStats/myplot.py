@@ -194,7 +194,7 @@ def Cdf(cdf, clf=True, root=None, plot_options=dict(linewidth=2), **options):
       bar_options: dictionary of options passed to pylot.plot
       options: dictionary of options
     """
-    Cdfs([cdf], root=root, plot_options=[plot_options], **options)
+    Cdfs([cdf], clf=clf, root=root, plot_options=[plot_options], **options)
 
 
 def Cdfs(cdfs,

@@ -54,7 +54,6 @@ def ClassSizes():
 
     # form the pmf
     pmf = Pmf.MakePmfFromDict(d, 'actual')
-    pmf.Normalize()
     print 'mean', pmf.Mean()
     print 'var', pmf.Var()
     
