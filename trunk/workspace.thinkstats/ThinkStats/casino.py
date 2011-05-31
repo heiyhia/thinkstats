@@ -116,7 +116,7 @@ def main():
     # compute the chi-squared statistic
     print ChiSquared(expected, observed)
 
-    # Test(expected, observed, num_trials=1000)
+    Test(expected, observed, num_trials=1000)
 
 
 if __name__ == "__main__":
