@@ -86,8 +86,9 @@ class Respondents(survey.Table):
         """Print summary statistics for male and female height."""
 
         # make a dictionary that maps from gender code to list of heights
-        d = {1:[], 2:[]}
+        d = {1:[], 2:[], 'all':[]}
         [d[r.sex].append(r.htm3) for r in self.records if r.htm3 != 'NA']
+        [d['all'].append(r.htm3) for r in self.records if r.htm3 != 'NA']
         
         for key, t in d.iteritems():
             mu, var = thinkstats.TrimmedMeanVar(t)
