@@ -332,14 +332,14 @@ def MakePmfFromCdf(cdf, name=None):
     return pmf
 
 
-def MakeMixture(pmfs):
+def MakeMixture(pmfs, name='mix'):
     """Make a mixture distribution.
 
     mix is a Pmf that maps from Pmfs to probs.
 
     Result is a Pmf object.
     """
-    mix = Pmf(name='mix')
+    mix = Pmf(name=name)
     for pmf, prob in pmfs.Items():
         for x, p in pmf.Items():
             mix.Incr(x, p * prob)

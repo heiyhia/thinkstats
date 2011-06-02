@@ -6,6 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import myplot
+import matplotlib.pyplot as pyplot
 import Pmf
 import math
 import random
@@ -19,6 +20,14 @@ def Entropy(suite):
         if p:
             term = -p * log2(p)
             total += term
+    return total
+
+def EntropyOfP(suite):
+    total = 0
+    mu = suite.Mean()
+    for p in [mu, 1-mu]:
+        term = -p * log2(p)
+        total += term
     return total
 
 def RelativeEntropy(prior, posterior):
@@ -83,36 +92,66 @@ def Likelihood(evidence, hypo):
     p = hypo
     return math.pow(p, blue) * math.pow(1-p, green)
 
-def main():
-    suite = Pmf.MakePmfFromList([0, 1.0/3, 2.0/3, 1])
-    print 'entropy', Entropy(suite)
+
+def MakeCurves(suite, sequence):
+    suite = suite.Copy()
 
     d = dict(b=(1,0), g=(0,1))
 
     total = 0
-    sequence = list('bbbbbbbbbbbbbbbbbggg')
-    random.shuffle(sequence)
+    
+    e1 = []
+    e2 = []
 
-    for x in sequence:
-        prior = suite.Copy()
+    for i, x in enumerate(sequence):
+        entropy = Entropy(suite)
+        entropyOfP = EntropyOfP(suite)
+        print entropy, entropyOfP
+
         evidence = d[x]
         nc, ic = Update(suite, evidence)
         total += ic
-        entropy = Entropy(suite)
-        relative = RelativeEntropy(prior, suite)
-        print x, 'info, total, entropy', ic, total, entropy
+        print x, ic, total
 
-    print 'total', total
+        e1.append((i, entropy))
+        e2.append((i, entropyOfP))
 
-    return
+    return e1, e2
+
+
+def PlotCurves(curves, root):
+    pyplot.clf()
+    
+    for i, curve in enumerate(curves):
+        alpha = 1 if i==0 else 0.2
+        color = 'red' if i==0 else 'blue'
+        xs, ys = zip(*curve)
+        pyplot.plot(xs, ys, color=color, alpha=alpha)
+
+    myplot.Plot(root=root,
+                xlabel='# observations',
+                ylabel='entropy (bits)')
+
+
+def main():
+    suite = Pmf.MakePmfFromList([0, 1.0/3, 2.0/3, 1])
+    print 'entropy', Entropy(suite)
+
+    e1s = []
+    e2s = []
+
+    sequence = list('bbbbbbbbbbbbbbbbbggg')
+
+    for i in range(20):
+        e1, e2 = MakeCurves(suite, sequence)
+        e1s.append(e1)
+        e2s.append(e2)
+        random.shuffle(sequence)
+
+    PlotCurves(e1s, root='entropy1')
+    PlotCurves(e2s, root='entropy2')
 
     suite.Print()
-
-    # plot the posterior distributions
-    myplot.Pmf(suite, 
-               xlabel='P(urn i)',
-               ylabel='Posterior probability',
-               show=True)
 
 if __name__ == '__main__':
     main()
