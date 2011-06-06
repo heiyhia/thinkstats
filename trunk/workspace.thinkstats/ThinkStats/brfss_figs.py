@@ -45,7 +45,7 @@ class Respondents(brfss.Respondents):
         xs, ps = cdf.Render()
         pyplot.plot(xs, ps, label='data', linewidth=2, color='blue')
      
-        myplot.Plot(root,
+        myplot.Save(root,
                   title = 'Adult weight',
                   xlabel = xlabel,
                   ylabel = 'CDF',

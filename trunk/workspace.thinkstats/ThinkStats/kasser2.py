@@ -43,6 +43,17 @@ def RelativeEntropy(prior, posterior):
             total += term
     return total
 
+def CrossEntropy(prior, posterior):
+    total = 0
+    for x, p in prior.Items():
+        q = posterior.Prob(x)
+        if q == 0:
+            total = float('inf')
+        else:
+            term = -p * log2(q)
+            total += term
+    return total
+
 def MakeUniformSuite(low, high, steps):
     """Makes a PMF that represents a suite of hypotheses with equal p.
     
@@ -100,23 +111,26 @@ def MakeCurves(suite, sequence):
 
     total = 0
     
+    e0 = []
     e1 = []
     e2 = []
 
     for i, x in enumerate(sequence):
         entropy = Entropy(suite)
         entropyOfP = EntropyOfP(suite)
-        print entropy, entropyOfP
 
         evidence = d[x]
         nc, ic = Update(suite, evidence)
+        new_entropy = Entropy(suite)
         total += ic
-        print x, ic, total
 
+        print x, ic, 2 * log2(entropy/new_entropy)
+
+        e0.append((i, ic))
         e1.append((i, entropy))
         e2.append((i, entropyOfP))
 
-    return e1, e2
+    return e0, e1, e2
 
 
 def PlotCurves(curves, root):
@@ -128,22 +142,26 @@ def PlotCurves(curves, root):
         xs, ys = zip(*curve)
         pyplot.plot(xs, ys, color=color, alpha=alpha)
 
-    myplot.Plot(root=root,
+    myplot.Save(root=root,
                 xlabel='# observations',
                 ylabel='entropy (bits)')
 
 
 def main():
     suite = Pmf.MakePmfFromList([0, 1.0/3, 2.0/3, 1])
-    print 'entropy', Entropy(suite)
 
+    sequence = list('bbbbbbbbbbbbbbbbbggg')
+    random.shuffle(sequence)
+    e0, e1, e2 = MakeCurves(suite, sequence)
+
+    #MakeEntropyPlots(suite)
+
+def MakeEntropyPlots(suite):
     e1s = []
     e2s = []
 
-    sequence = list('bbbbbbbbbbbbbbbbbggg')
-
     for i in range(20):
-        e1, e2 = MakeCurves(suite, sequence)
+        e0, e1, e2 = MakeCurves(suite, sequence)
         e1s.append(e1)
         e2s.append(e2)
         random.shuffle(sequence)
@@ -151,7 +169,6 @@ def main():
     PlotCurves(e1s, root='entropy1')
     PlotCurves(e2s, root='entropy2')
 
-    suite.Print()
 
 if __name__ == '__main__':
     main()

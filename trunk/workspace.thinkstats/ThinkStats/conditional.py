@@ -74,7 +74,7 @@ def MakeFigure(firsts, others):
         pyplot.plot(weeks, ps, label=name)
         print name, ps
         
-    myplot.Plot('conditional',
+    myplot.Save('conditional',
                 xlabel='weeks',
                 ylabel=r'Prob{x $=$ weeks | x $\geq$ weeks}',
                 title='Conditional Probability',

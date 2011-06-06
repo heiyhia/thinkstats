@@ -171,7 +171,7 @@ def MakeFigures(pool, firsts, others):
     pyplot.clf()
     #pyplot.scatter(ages, weights, alpha=0.2)
     pyplot.hexbin(ages, weights, cmap=matplotlib.cm.gray_r)
-    myplot.Plot(root='age_scatter',
+    myplot.Save(root='age_scatter',
                 xlabel='Age (years)',
                 ylabel='Birth weight (oz)',
                 legend=False)

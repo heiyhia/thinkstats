@@ -161,7 +161,7 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
     Args:
         ys: sequence of values
         lineoptions: dictionary of options for pyplot.plot        
-        options: dictionary of options for myplot.Plot
+        options: dictionary of options for myplot.Save
     """
     n = len(ys)
     ys.sort()
@@ -177,7 +177,7 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
     pyplot.plot(x_fit, y_fit, 'r-')
     pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=2, **lineoptions)
  
-    myplot.Plot(root,
+    myplot.Save(root,
                 xlabel = 'Standard normal values',
                 legend=False,
                 **options)

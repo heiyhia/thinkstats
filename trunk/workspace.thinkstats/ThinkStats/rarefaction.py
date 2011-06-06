@@ -46,7 +46,6 @@ class Beta(object):
 
         self.alpha = yes+1
         self.beta = no+1
-        self.name = name
 
     def Update(self, yes, no):
         """Updates a Beta distribution."""
@@ -72,13 +71,13 @@ class Beta(object):
         pmf = Pmf.MakePmfFromDict(dict(zip(ps, probs)))
         return pmf
 
-    def Cdf(self, steps=101):
+    def Cdf(self, steps=1001):
         """Returns the CDF of this distribution."""
-        pmf = self.Pmf()
+        pmf = self.Pmf(steps=steps)
         cdf = Cdf.MakeCdfFromPmf(pmf)
         return cdf
 
-    def ConditionalCdf(self, fraction, steps=101):
+    def ConditionalCdf(self, fraction, steps=1001):
         """Generates a CDF conditioned on p <= fraction."""
         ps = [fraction * i / (steps-1.0) for i in xrange(steps)]
         probs = [self.Pdf(p) for p in ps]
@@ -103,10 +102,10 @@ class Census(object):
     """
     ZeroPrevalence = Beta(-1, 0)
 
-    def __init__(self, n):
-        self.n = n
-        self.multiplier = n
-        self.taxa = dict(other=Beta(yes=0, no=n-2))
+    def __init__(self, k):
+        self.k = k
+        self.multiplier = k
+        self.taxa = dict(other=Beta(yes=0, no=k-2))
 
     def GetTaxa(self):
         return self.taxa
@@ -115,7 +114,7 @@ class Census(object):
         """Looks up the distribution for a given taxon (or None)."""
         if taxon in self.taxa:
             return self.taxa[taxon]
-        if taxon in lowercase[:self.n]:
+        if taxon in lowercase[:self.k]:
             return self.Other()
         return self.ZeroPrevalence
 
@@ -198,7 +197,9 @@ class Census(object):
             else:
                 prob = dist.Random()
             pmf.Incr(taxon, prob)
-        pmf.Normalize(fraction)
+
+        if rest:
+            pmf.Normalize(fraction)
         return pmf
 
     def Update(self, evidence):
@@ -218,18 +219,6 @@ class Census(object):
             else:
                 dist.Update(0, 1)
 
-    def Plot(self):
-        """
-        """
-        for taxon, dist in sorted(self.taxa.iteritems()):
-            print taxon, bayes.CredibleInterval(dist, 90)
-
-    def PlotPmfs(self):
-        """Plots the PMFs for each distribution."""
-        # TODO: add labels
-        pmfs = self.taxa.values()
-        PlotPmfs(pmfs)
-
 
 class MetaHypo(object):
     """Represents a belief about the number of taxa in a population.
@@ -248,20 +237,6 @@ class MetaHypo(object):
 
     def GetHypos(self):
         return self.hypos
-
-    def PlotHypos(self, n=6):
-        """Looks up the PMFs for a given taxon and plots them."""
-        cdfs = []
-        for taxon in lowercase[:n]:
-            pmf = self.GetPrevalence(taxon)
-            cdf = Cdf.MakeCdfFromPmf(pmf)
-            cdfs.append(cdf)
-
-        myplot.Cdfs(cdfs,
-                    clf=False,
-                    #show=True,
-                    xlabel='prevalence',
-                    ylabel='prob')
 
     def GetPrevalence(self, taxon):
         """Gets the prevalence PMF for this taxon."""
@@ -296,7 +271,7 @@ class MetaHypo(object):
 
     def Pmf(self, name=''):
         """Returns the PMF for number of taxa."""
-        t = [(hypo.n, prob) for hypo, prob in self.hypos.Items()]
+        t = [(hypo.k, prob) for hypo, prob in self.hypos.Items()]
         return Pmf.MakePmfFromDict(dict(t), name=name)
 
     def Cdf(self, name=''):
@@ -348,12 +323,37 @@ class MetaHypo(object):
             pmf.Incr(taxon, prob)
         return pmf.Random()
 
+    def PlotPosterior(self, root=None, clf=False):
+        if root: clf = True
 
-def PlotPmfs(pmfs):
-    myplot.Pmfs(pmfs, show=True,
-                xlabel='prevalence',
-                ylabel='prob',
-                )
+        posterior = self.Cdf()
+        myplot.Cdf(posterior,
+                   root=root,
+                   clf=clf,
+                   xlabel='# of taxa',
+                   ylabel='prob',
+                   legend=False)
+
+    def PlotPrevalence(self, root=None, clf=False, n=6):
+        """Looks up the PMFs for a given taxon and plots them."""
+        if root: clf = True
+
+        cdfs = []
+        for taxon in lowercase[:n]:
+            pmf = self.GetPrevalence(taxon)
+            cdf = Cdf.MakeCdfFromPmf(pmf)
+            cdfs.append(cdf)
+
+            median = cdf.Percentile(50)
+            ci = cdf.Percentile(5), cdf.Percentile(95)
+            print taxon, median, ci
+
+        myplot.Cdfs(cdfs,
+                    root=root,
+                    clf=clf,
+                    xlabel='prevalence',
+                    ylabel='prob')
+
 
 def PlotMixture(pmfs, show=False):
     for dist in pmfs.Values():
@@ -364,7 +364,7 @@ def PlotMixture(pmfs, show=False):
     xs, ys = mix.Render()
     pyplot.plot(xs, ys, color='blue', alpha=0.9, linewidth=2)
 
-    myplot.Plot(show=show, clf=False,
+    myplot.Save(show=show, clf=False,
                 xlabel='prevalence',
                 ylabel='prob',
                 legend=False)
@@ -404,31 +404,42 @@ def OffsetCurve(curve, i, n, dx=0.3, dy=0.3):
     return curve
 
 
-def PlotCurves(curves, show=False):
+def PlotCurves(curves, root=None, clf=False):
     """Plots a set of curves.
 
     curves is a list of curves; each curve is a list of (x, y) pairs.
     """
+    if root: 
+        pyplot.clf()
+
     n = len(curves)
     for i, curve in enumerate(curves):
         curve = OffsetCurve(curve, i, n)
         xs, ys = zip(*curve)
         pyplot.plot(xs, ys, color='blue', alpha=0.2)
 
-    myplot.Plot(show=show,
-                clf=False,
-                #title='Rarefaction curve',
+    myplot.Save(root=root,
+                clf=clf,
                 xlabel='# samples',
                 ylabel='# taxa',
                 legend=False)
 
 
 def ProbCurve(curves, n, m):
+    """Computes the probability of finding more taxons.
+
+    n is the number you've already seen
+    m is the number of additional samples
+
+    returns a list of ms and a list of probabilities
+    """
     ms = range(1, m+1)
     ps = []
     for m in ms:
         p = MoreTaxons(curves, n, m)
         ps.append(p)
+
+        print m, p
     return ms, ps
 
 
@@ -464,12 +475,59 @@ def MakeMeta(sample):
     return meta
 
 
+def MakeSubplots(root, sample, meta):
+    pyplot.figure(1, figsize=(12, 8))
+
+    # plot posterior on # taxa
+    pyplot.subplot(2, 2, 1)
+    meta.PlotPosterior()
+
+    # plot prevalence of 'a'
+    pyplot.subplot(2, 2, 2)
+    meta.PlotPrevalence()
+
+    # generate curves
+    pyplot.subplot(2, 2, 3)
+    curves = meta.GenerateCurves(sample, m=15, iters=10)
+    PlotCurves(curves)
+
+    # plot prob of finding more taxa
+    pyplot.subplot(2, 2, 4)
+
+    ms, ps = ProbCurve(curves, n=len(sample), m=15)
+    pyplot.plot(ms, ps)
+    myplot.Save(xlabel='# samples', 
+                ylabel='prob of more taxa')
+
+    #pyplot.show()
+
+    myplot.Save(root=root)
+
+
+def MakeFigures(root, sample, meta, m=15, iters=100):
+    # plot posterior on # taxa
+    meta.PlotPosterior(root + '.1')
+
+    # plot prevalence of 'a'
+    meta.PlotPrevalence(root + '.2')
+
+    # generate curves
+    curves = meta.GenerateCurves(sample, m=m, iters=iters)
+    PlotCurves(curves, root + '.3')
+
+    # plot prob of finding more taxa
+    ms, ps = ProbCurve(curves, n=len(sample), m=m)
+    myplot.Plot(ms, ps,
+                root=root + '.4',
+                xlabel='# samples', 
+                ylabel='prob of more taxa')
+
+
 def main(script, flag=1, *args):
     flag = int(flag)
 
-    pyplot.rc('figure', figsize=(12, 8))
-
     d = {
+        0: [1],
         1: [9, 6],
         2: [6, 4, 1, 1, 1, 1],
         3: [11, 4, 2],
@@ -480,38 +538,14 @@ def main(script, flag=1, *args):
     meta = MakeMeta(sample)
 
     meta.Print()
-    posterior = meta.Cdf()
 
-    # plot posterior on # taxa
-    pyplot.subplot(2, 2, 1)
-    myplot.Cdf(posterior,
-               clf=False,
-               xlabel='# of taxa',
-               ylabel='prob',
-               legend=False)
+    root='rare%d' % flag
+    MakeFigures(root, sample, meta)
 
-    # plot prevalence of 'a'
-    pyplot.subplot(2, 2, 2)
-    meta.PlotHypos()
-
-    # generate curves
-    pyplot.subplot(2, 2, 3)
-    curves = meta.GenerateCurves(sample, m=15, iters=100)
-    PlotCurves(curves)
-
-    # plot prob of finding more taxa
-    pyplot.subplot(2, 2, 4)
-
-    ms, ps = ProbCurve(curves, n=len(sample), m=15)
-    pyplot.plot(ms, ps)
-    myplot.Plot(xlabel='# samples', 
-                ylabel='prob of more taxa')
-
-    #pyplot.show()
-
-    myplot.Plot(root='rare%d' % flag)
 
 if __name__ == '__main__':
+    random.seed(17)
+
     profile = False
     if profile:
         import cProfile

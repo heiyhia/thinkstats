@@ -45,7 +45,7 @@ def Underride(d, **options):
     return d
 
 
-def Pmf(pmf, clf=True, root=None, line_options=None, **options):
+def Plot(xs, ys, clf=True, root=None, line_options=None, **options):
     """Plots a Pmf or Hist as a line.
 
     Args:
@@ -58,14 +58,26 @@ def Pmf(pmf, clf=True, root=None, line_options=None, **options):
     if clf:
         pyplot.clf()
 
+    line_options = Underride(line_options, linewidth=2)
+
+    pyplot.plot(xs, ys, **line_options)
+    Save(root=root, **options)
+
+
+def Pmf(pmf, clf=True, root=None, line_options=None, **options):
+    """Plots a Pmf or Hist as a line.
+
+    Args:
+      pmf: Hist or Pmf object
+      clf: boolean, whether to clear the figure      
+      root: string filename root
+      line_options: dictionary of options passed to pylot.plot
+      options: dictionary of options
+    """
     xs, ps = pmf.Render()
+    line_options = Underride(line_options, label=pmf.name)
 
-    line_options = Underride(line_options, 
-                             label=pmf.name,
-                             linewidth=2)
-
-    pyplot.plot(xs, ps, **line_options)
-    Plot(root=root, **options)
+    Plot(xs, ps, clf, root, line_options, **options)
 
 
 def Pmfs(pmfs,
@@ -80,7 +92,7 @@ def Pmfs(pmfs,
       clf: boolean, whether to clear the figure
       root: string root of the filename to write
       plot_options: sequence of option dictionaries
-      options: dictionary of keyword options passed along to Plot
+      options: dictionary of keyword options passed along to Save
     """
     if clf:
         pyplot.clf()
@@ -99,7 +111,7 @@ def Pmfs(pmfs,
                            **plot_options[i]
                            )
 
-    Plot(root, **options)
+    Save(root, **options)
 
 
 def Hist(hist, clf=True, root=None, bar_options=None, **options):
@@ -126,7 +138,7 @@ def Hist(hist, clf=True, root=None, bar_options=None, **options):
                             width=width)
 
     pyplot.bar(xs, fs, **bar_options)
-    Plot(root=root, **options)
+    Save(root=root, **options)
 
 
 def Hists(hists, 
@@ -154,7 +166,7 @@ def Hists(hists,
         xs = Shift(xs, shifts[i])
         pyplot.bar(xs, fs, label=hist.name, width=width, **bar_options[i])
 
-    Plot(root=root, **options)
+    Save(root=root, **options)
 
 
 def Shift(xs, shift):
@@ -212,7 +224,7 @@ def Cdfs(cdfs,
       root: string root of the filename to write
       plot_options: sequence of option dictionaries
       complement: boolean, whether to plot the complementary CDF
-      options: dictionary of keyword options passed along to Plot
+      options: dictionary of keyword options passed along to Save
     """
     if clf:
         pyplot.clf()
@@ -251,10 +263,10 @@ def Cdfs(cdfs,
                            **plot_options[i]
                            )
 
-    Plot(root, **options)
+    Save(root, **options)
 
 
-def Plot(root=None, formats=None, **options):
+def Save(root=None, formats=None, **options):
     """Generate plots in the given formats.
 
     Pulls options out of the option dictionary and passes them to
@@ -293,14 +305,14 @@ def Plot(root=None, formats=None, **options):
 
     if root:
         for format in formats:
-            Save(root, format)
+            SaveFormat(root, format)
 
     show = options.get('show', False)
     if show:
         pyplot.show()
 
 
-def Save(root, format='eps'):
+def SaveFormat(root, format='eps'):
     """Writes the current figure to a file in the given format.
 
     Args:

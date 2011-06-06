@@ -43,7 +43,7 @@ def MakeExpoCdf():
 
     pyplot.clf()
     pyplot.plot(xs, ps, linewidth=2)
-    myplot.Plot('expo_cdf',
+    myplot.Save('expo_cdf',
                 title = 'Exponential CDF',
                 xlabel = 'x',
                 ylabel = 'CDF',
@@ -62,7 +62,7 @@ def MakeParetoCdf():
     
     pyplot.clf()
     pyplot.plot(xs, ps, linewidth=2)
-    myplot.Plot('pareto_cdf',
+    myplot.Save('pareto_cdf',
                 title = 'Pareto CDF',
                 xlabel = 'x',
                 ylabel = 'CDF',
@@ -81,7 +81,7 @@ def MakeParetoCdf2():
     
     pyplot.clf()
     pyplot.plot(xs, ps, linewidth=2)
-    myplot.Plot('pareto_height',
+    myplot.Save('pareto_height',
                 title = 'Pareto CDF',
                 xlabel = 'height (cm)',
                 ylabel = 'CDF',
@@ -102,7 +102,7 @@ def MakeNormalCdf():
     
     pyplot.clf()
     pyplot.plot(xs, ps, linewidth=2)
-    myplot.Plot('normal_cdf',
+    myplot.Save('normal_cdf',
               title = 'Normal CDF',
               xlabel = 'x',
               ylabel = 'CDF',
@@ -129,7 +129,7 @@ def MakeNormalModel(weights):
     xs, ps = cdf.Render()
     pyplot.plot(xs, ps, label='data', linewidth=2, color='blue')
  
-    myplot.Plot('nsfg_birthwgt_model',
+    myplot.Save('nsfg_birthwgt_model',
                 title = 'Birth weights',
                 xlabel = 'birth weight (oz)',
                 ylabel = 'CDF')

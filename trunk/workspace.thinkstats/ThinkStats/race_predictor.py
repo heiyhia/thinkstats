@@ -292,7 +292,7 @@ def ScatterPlot(root, xs, ys, fit=None, log_flag=False, alpha=1.0):
         xlabel = 'Half marathon (min)'
         ylabel = 'Marathon (min)'
 
-    myplot.Plot(root=root,
+    myplot.Save(root=root,
                 xlabel=xlabel,
                 ylabel=ylabel,
                 title='Boston vs New Bedford',
@@ -387,7 +387,7 @@ def MakePercentiles(shelf, n=50):
     for ys, d in zip(ylists, plot_options):
         pyplot.plot(xs, ys, linewidth=3, **d)
 
-    myplot.Plot(root='race_predictor4',
+    myplot.Save(root='race_predictor4',
                 xlabel='Half marathon (min)',
                 ylabel='Marathon (min)',
                 show=True)
