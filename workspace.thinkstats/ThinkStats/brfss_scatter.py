@@ -42,7 +42,7 @@ class Respondents(brfss.Respondents):
 
     def ScatterPlot(self, root, heights, weights, alpha=1.0):
         pyplot.scatter(heights, weights, alpha=alpha, edgecolors='none')
-        myplot.Plot(root=root,
+        myplot.Save(root=root,
                     xlabel='Height (cm)',
                     ylabel='Weight (kg)',
                     axis=[140, 210, 20, 200],
@@ -50,7 +50,7 @@ class Respondents(brfss.Respondents):
         
     def HexBin(self, root, heights, weights, cmap=matplotlib.cm.Blues):
         pyplot.hexbin(heights, weights, cmap=cmap)
-        myplot.Plot(root=root,
+        myplot.Save(root=root,
                     xlabel='Height (cm)',
                     ylabel='Weight (kg)',
                     axis=[140, 210, 20, 200],

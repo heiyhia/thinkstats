@@ -43,7 +43,7 @@ def MakeNormalModel(values):
     xs, ps = cdf.Render()
     pyplot.plot(xs, ps, label='data', linewidth=2, color='red')
  
-    myplot.Plot(show=True,
+    myplot.Save(show=True,
                 ylabel = 'CDF')
 
 
@@ -67,7 +67,7 @@ def MakeNormalPlot(values):
     Args:
         values: sequence of values
         lineoptions: dictionary of options for pyplot.plot        
-        options: dictionary of options for myplot.Plot
+        options: dictionary of options for myplot.Save
     """
     # TODO: when n is small, generate a larger sample and desample
     pyplot.clf()
@@ -84,7 +84,7 @@ def MakeNormalPlot(values):
     xs = GenerateNormalVariates(0, 1, n)
     pyplot.plot(sorted(xs), sorted(values), 'r.', markersize=3)
  
-    myplot.Plot(show=True,
+    myplot.Save(show=True,
                 xlabel='Standard normal values',
                 legend=False)
 

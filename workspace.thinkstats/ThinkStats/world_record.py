@@ -164,7 +164,7 @@ def PlotTimes(distances, plot_gender='male'):
         pyplot.plot(xs, ys, 'o:')
 
         root = 'world_record_%s' % distance
-        myplot.Plot(root=root,
+        myplot.Save(root=root,
                     xlabel='year',
                     ylabel='minutes',
                     title='%s world record progression' % distance)
@@ -221,8 +221,7 @@ def PlotSpeeds(distances, plot_gender='male', special=False):
         pyplot.title(distance)
 
     root = 'world_record_speed'
-    myplot.Save(root=root, format='eps')
-    myplot.Save(root=root, format='png')
+    myplot.Save(root=root)
     pyplot.rcdefaults()
 
 def PlotCdfs():
@@ -271,7 +270,7 @@ def PlotSimulations():
         pyplot.xscale('log')
         PlotSimulation(100000)
 
-    myplot.Plot(root='world_record_sim2')
+    myplot.Save(root='world_record_sim2')
     pyplot.rcdefaults()
 
 
@@ -286,7 +285,7 @@ def PlotOneSimulation(xscale='linear'):
         pyplot.subplots_adjust(bottom=0.15)
         pyplot.xscale(xscale)
 
-    myplot.Plot(root='world_record_sim_%s' % xscale,
+    myplot.Save(root='world_record_sim_%s' % xscale,
                 title='Simulated world record progression',
                 xlabel='Fraction of population tested',
                 ylabel='Max potential seen')
@@ -328,7 +327,7 @@ def PlotMarathon(data):
     xticks = range(1980, 2060, 20)
     pyplot.xticks(xticks)
 
-    myplot.Plot(root='world_record_predict',
+    myplot.Save(root='world_record_predict',
                 title='Marathon record projection',
                 ylabel='mph')
 

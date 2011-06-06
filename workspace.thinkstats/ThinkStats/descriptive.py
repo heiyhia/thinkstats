@@ -132,7 +132,7 @@ def MakeDiffFigure(firsts, others):
 
     pyplot.clf()
     pyplot.bar(weeks, diffs, align='center')
-    myplot.Plot('nsfg_diffs',
+    myplot.Save('nsfg_diffs',
               title='Difference in PMFs',
               xlabel='weeks',
               ylabel='100 (PMF$_{first}$ - PMF$_{other}$)',

@@ -251,7 +251,7 @@ def PlotConditionalSurvival(ts, ps):
     p5s, p10s = zip(*ps)
     pyplot.plot(ts, p5s, linewidth=2, color='blue', label='5 years')
     pyplot.plot(ts, p10s, linewidth=2, color='green', label='10 years')
-    myplot.Plot(root='seer5',
+    myplot.Save(root='seer5',
                 title='',
                 xlabel='Survival time (years)',
                 ylabel='Probability')
@@ -265,7 +265,7 @@ def PlotSurvivalCurve(ts, lams, ss):
                line_options=dict(linewidth=2, linestyle='dashed', color='0.7'))
 
     pyplot.plot(ts, ss, linewidth=2, color='blue', label='survival')
-    myplot.Plot(root='seer1',
+    myplot.Save(root='seer1',
                 title='',
                 xlabel='Survival time (years)',
                 ylabel='Probability')
@@ -276,7 +276,7 @@ def PlotDiagDates(ts, tables):
     pyplot.clf()
     mus = [table.MeanDiagDate() for table in tables]
     pyplot.plot(ts, mus, linewidth=2, color='green')
-    myplot.Plot(root='seer2',
+    myplot.Save(root='seer2',
                 title='',
                 xlabel='Survival time (years)',
                 ylabel='Mean diagnosis date')
@@ -294,7 +294,7 @@ def PartitionByAge(table):
         _, ts, lams, ss = part.ComputeSurvivalCurve()
         pyplot.plot(ts, ss, linewidth=2, label=str(age))
 
-    myplot.Plot(root='seer3',
+    myplot.Save(root='seer3',
                 xlabel='Survival time (years)',
                 ylabel='Probability')
 
@@ -307,7 +307,7 @@ def PartitionByDate(table):
         _, ts, lams, ss = part.ComputeSurvivalCurve()
         pyplot.plot(ts, ss, linewidth=2, label=str(date))
 
-    myplot.Plot(root='seer4',
+    myplot.Save(root='seer4',
                 xlabel='Survival time (years)',
                 ylabel='Probability')
 

@@ -49,7 +49,7 @@ def SummarizeWeight(rows, input_limit=None):
     print numpy.corrcoef(weights, changes)
 
     pyplot.hexbin(weights, changes, cmap=matplotlib.cm.gray_r)
-    myplot.Plot('nlsy_scatter',
+    myplot.Save('nlsy_scatter',
                 title = 'Weight change vs. weight',
                 xlabel = 'Current weight (pounds)',
                 ylabel = 'Weight change (pounds)',

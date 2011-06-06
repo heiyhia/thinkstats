@@ -164,7 +164,7 @@ def PlotCdf(root, cdf, delta):
     xs, ys = cdf.Render()    
     pyplot.plot(xs, ys, linewidth=2, color='blue')
     
-    myplot.Plot(root,
+    myplot.Save(root,
                 title='Resampled differences',
                 xlabel='difference in means (weeks)',
                 ylabel='CDF(x)',

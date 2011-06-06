@@ -418,7 +418,7 @@ def RunFairStandard(root,
 
         pyplot.plot(gaps, fractions, **line_options)
 
-    myplot.Plot(root=root,
+    myplot.Save(root=root,
                 title='',
                 xlabel='Gender gap (minutes)',
                 ylabel='Diff in % contenders qualified')

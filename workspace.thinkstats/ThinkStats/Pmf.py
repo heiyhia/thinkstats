@@ -182,6 +182,7 @@ class Pmf(_DictWrapper):
         """
         total = self.Total()
         if total == 0.0:
+            raise ValueError('total probability is zero.')
             logging.warning('Normalize: total probability is zero.')
             return
         
