@@ -61,8 +61,6 @@ class Respondents(brfss.Respondents):
                               title='Adult weight',
                               ylabel='Weight (kg)')
         
-        return
-
         log_weights = [math.log(weight) for weight in weights]
         xmax = math.log(175.0)
         axis = [3.5, 5.2, 0, 1]

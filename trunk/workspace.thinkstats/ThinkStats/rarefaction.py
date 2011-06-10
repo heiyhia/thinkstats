@@ -470,7 +470,7 @@ def MakeMeta(sample):
     return meta
 
 
-def MakeSubplots(root, sample, meta):
+def MakeSubplots(root, sample, meta, m=15, iters=100):
     pyplot.figure(1, figsize=(12, 8))
 
     # plot posterior on # taxa
@@ -483,13 +483,13 @@ def MakeSubplots(root, sample, meta):
 
     # generate curves
     pyplot.subplot(2, 2, 3)
-    curves = meta.GenerateCurves(sample, m=15, iters=10)
+    curves = meta.GenerateCurves(sample, m=m, iters=iters)
     PlotCurves(curves)
 
     # plot prob of finding more taxa
     pyplot.subplot(2, 2, 4)
 
-    ms, ps = ProbCurve(curves, n=len(sample), m=15)
+    ms, ps = ProbCurve(curves, n=len(sample), m=m)
     pyplot.plot(ms, ps)
     myplot.Save(xlabel='# samples', 
                 ylabel='prob of more taxa')
@@ -535,7 +535,7 @@ def main(script, flag=1, *args):
     meta.Print()
 
     root='rare%d' % flag
-    MakeFigures(root, sample, meta)
+    MakeSubplots(root, sample, meta)
 
 
 if __name__ == '__main__':

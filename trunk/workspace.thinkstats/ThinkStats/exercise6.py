@@ -56,9 +56,10 @@ def GenerateNormalVariates(mu, sigma, n):
 def PlotSimulatedData(mu, sigma, n):
     """Generates a sample with the given parameters and plots it
     versus a list of normal variates."""
-    ys = GenerateNormalVariates(mu, sigma, n)
-    xs = GenerateNormalVariates(0, 1, n)
-    pyplot.plot(sorted(xs), sorted(ys), '-', markersize=3, color='0.5')
+    for i in range(1000):
+        ys = GenerateNormalVariates(mu, sigma, n)
+        xs = GenerateNormalVariates(0, 1, n)
+        pyplot.plot(sorted(xs), sorted(ys), '-', markersize=3, color='0.5')
 
 
 def MakeNormalPlot(values):
@@ -107,7 +108,7 @@ def main():
     
     t = GetWeights(live_births)
 
-    MakeNormalModel(t)
+    MakeNormalPlot(t)
 
     
 if __name__ == "__main__":
