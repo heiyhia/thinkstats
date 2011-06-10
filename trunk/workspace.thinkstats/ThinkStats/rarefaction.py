@@ -16,24 +16,9 @@ import math
 import random
 import sys
 
-
 lowercase = string.ascii_lowercase
-uppercase = string.ascii_uppercase
 
-def NameGenerator():
-    """Generates names for unobserved taxa."""
-    for name in lowercase:
-        yield name
 
-    for name in uppercase:
-        yield name
-
-    i = 0
-    while True:
-        yield 's%d' % i
-        i += 1
-    
-        
 class Beta(object):
     """Represents a Beta distribution.
 
@@ -45,13 +30,15 @@ class Beta(object):
     def __init__(self, yes, no, name=''):
         """Initializes a Beta distribution.
 
+        x, -1 yields a distribution always near 1
+
         yes and no are the number of successful/unsuccessful trials.
         """
+        if yes == -1:
+            yes, no = 0, 999999
+
         self.alpha = yes+1
         self.beta = no+1
-
-    def Print(self):
-        print self.alpha, self.beta
 
     def Update(self, yes, no):
         """Updates a Beta distribution."""
@@ -70,20 +57,20 @@ class Beta(object):
         """Computes the PDF at p."""
         return math.pow(p, self.alpha-1) * math.pow(1-p, self.beta-1)
         
-    def Pmf(self, steps=101):
+    def Pmf(self, steps=1001):
         """Returns the PDF of this distribution."""
         ps = [i / (steps-1.0) for i in xrange(steps)]
         probs = [self.Pdf(p) for p in ps]
         pmf = Pmf.MakePmfFromDict(dict(zip(ps, probs)))
         return pmf
 
-    def Cdf(self, steps=101):
+    def Cdf(self, steps=1001):
         """Returns the CDF of this distribution."""
         pmf = self.Pmf(steps=steps)
         cdf = Cdf.MakeCdfFromPmf(pmf)
         return cdf
 
-    def ConditionalCdf(self, fraction, steps=101):
+    def ConditionalCdf(self, fraction, steps=1001):
         """Generates a CDF conditioned on p <= fraction."""
         ps = [fraction * i / (steps-1.0) for i in xrange(steps)]
         probs = [self.Pdf(p) for p in ps]
@@ -106,23 +93,12 @@ class Census(object):
 
     When all taxa are accounted for, taxa['other'] is removed.
     """
-    def __init__(self, k, taxa):
+    ZeroPrevalence = Beta(-1, 0)
+
+    def __init__(self, k):
         self.k = k
-
-        self.taxa = {}
-        for taxon in taxa:
-            self.taxa[taxon] = Beta(yes=0, no=k-2)
-
         self.multiplier = k
-        if self.multiplier > 0:
-            self.taxa['other'] = Beta(yes=0, no=k-2)
-
-
-    def Print(self):
-        print self.multiplier
-        for taxon, dist in sorted(self.taxa.iteritems()):
-            print taxon,
-            dist.Print()
+        self.taxa = dict(other=Beta(yes=0, no=k-2))
 
     def GetTaxa(self):
         return self.taxa
@@ -133,7 +109,7 @@ class Census(object):
             return self.taxa[taxon]
         if taxon in lowercase[:self.k]:
             return self.Other()
-        return None
+        return self.ZeroPrevalence
 
     def Other(self):
         """Returns the distribution for 'other', or None."""
@@ -144,22 +120,21 @@ class Census(object):
         dist = self.Get(taxon)
         return dist.Mean() if dist else 0
 
-    def Likelihood(self, taxon, seen):
+    def Likelihood(self, evidence):
         """Computes the likelihood of seeing a given taxon."""
-        if seen:
+        taxon = evidence
+        if taxon in self.taxa:
             return self.GetMean(taxon)
         else:
             # if we haven't see this taxon before, we have to consider
             # multiple copies of the 'other' dist
-            likelihood = self.multiplier * self.GetMean(taxon)
-            self.multiplier -= 1
-            return likelihood
+            return self.multiplier * self.GetMean('other')
 
     def AddTaxon(self, taxon):
         """The first time we see a new taxon, add it to the census."""
         
         # make a copy of the 'other' dist
-        dist = copy.copy(self.Other())
+        dist = copy.deepcopy(self.Other())
         if dist is None:
             raise Exception('All taxa are accounted for.')
         self.taxa[taxon] = dist 
@@ -169,6 +144,8 @@ class Census(object):
         self.multiplier -= 1
         if self.multiplier == 0:
             del self.taxa['other']
+
+        return dist
 
     def GenerateTaxon(self):
         """Choose a random taxon from this census."""
@@ -210,8 +187,6 @@ class Census(object):
         pmf = Pmf.Pmf(name='sample census')
         for taxon in rest:
             dist = self.Get(taxon)
-            if dist is None:
-                continue
             if taxon == 'other':
                 prob = sum(dist.Random() for i in xrange(self.multiplier))
             else:
@@ -222,14 +197,22 @@ class Census(object):
             pmf.Normalize(fraction)
         return pmf
 
-    def Update(self, taxon):
-        """Updates each dist with new evidence."""
-        dist = self.taxa[taxon]
-        dist.alpha += 1
-        dist.beta -= 1
+    def Update(self, evidence):
+        """Updates each dist with new evidence.
 
-        for dist in self.taxa.itervalues():
-            dist.beta += 1
+        evidence is a taxon
+        """
+        seen_taxon = evidence
+
+        # if we haven't seen this taxon before, add it
+        if seen_taxon not in self.taxa:
+            self.AddTaxon(seen_taxon)
+
+        for taxon, dist in self.taxa.iteritems():
+            if taxon == seen_taxon:
+                dist.Update(1, 0)
+            else:
+                dist.Update(0, 1)
 
 
 class MetaHypo(object):
@@ -237,25 +220,15 @@ class MetaHypo(object):
 
     Maps from a hypothesis to a probability.
     """
-    def __init__(self, prior, sample):
+    def __init__(self, prior):
         """Makes a meta hypothesis with the given prior.
 
         prior maps from number of taxa to probability.
         """
-        self.sample = sample
-        taxa = set(sample)
-        self.seen = set()
-
         self.hypos = Pmf.Pmf()
         for n, prob in prior.Items():
-            if n >= len(taxa):
-                hypo = Census(n, taxa)
-                self.hypos.Incr(hypo, prob)
-
-    def Print(self):
-        for hypo, prob in self.hypos.Items():
-            print hypo.k, prob
-            hypo.Print()
+            hypo = Census(n)
+            self.hypos.Incr(hypo, prob)
 
     def GetHypos(self):
         return self.hypos
@@ -271,12 +244,10 @@ class MetaHypo(object):
         mix = Pmf.MakeMixture(pmfs, name=taxon)
         return mix
 
-    def Update(self, taxon):
+    def Update(self, evidence):
         """Updates based on observing a given taxon."""
-        seen = True if taxon in self.seen else self.seen.add(taxon)
-
         for hypo, prob in self.hypos.Items():
-            likelihood = hypo.Likelihood(taxon, seen)
+            likelihood = hypo.Likelihood(evidence)
             if likelihood:
                 self.hypos.Mult(hypo, likelihood)
             else:
@@ -287,9 +258,9 @@ class MetaHypo(object):
 
         # update the hypotheses
         for hypo, prob in self.hypos.Items():
-            hypo.Update(taxon)
+            hypo.Update(evidence)
 
-    def PrintPmf(self):
+    def Print(self):
         """Prints the PMF for number of taxa."""
         self.Pmf().Print()
 
@@ -326,7 +297,7 @@ class MetaHypo(object):
         names = NextNameGenerator(skip=len(set(sample)))
 
         meta = copy.deepcopy(self)
-        taxons = copy.copy(sample)
+        taxons = list(sample)
         random.shuffle(taxons)
 
         for i in xrange(m):
@@ -485,27 +456,21 @@ def MakeSample(freqs):
     """
     t = []
     freqs.sort(reverse=True)
-    names = NameGenerator()
-    for taxon, freq in zip(names, freqs):
+    for taxon, freq in zip(lowercase, freqs):
         t.extend([taxon] * freq)
-    return t
+    return ''.join(t)
 
 
-def MakeMeta(counts, n=21):
-    sample = MakeSample(counts)
-    print 'Number of samples', len(sample)
-    print 'Number of species', len(set(sample))
-
-    prior = Pmf.MakePmfFromList(range(2, n), name='prior')
-    meta = MetaHypo(prior, sample)
-
+def MakeMeta(sample):
+    prior = Pmf.MakePmfFromList(range(2, 21), name='prior')
+    meta = MetaHypo(prior)
     for taxon in sample:
         meta.Update(taxon)
 
     return meta
 
 
-def MakeSubplots(root, meta):
+def MakeSubplots(root, sample, meta):
     pyplot.figure(1, figsize=(12, 8))
 
     # plot posterior on # taxa
@@ -518,13 +483,13 @@ def MakeSubplots(root, meta):
 
     # generate curves
     pyplot.subplot(2, 2, 3)
-    curves = meta.GenerateCurves(meta.sample, m=15, iters=10)
+    curves = meta.GenerateCurves(sample, m=15, iters=10)
     PlotCurves(curves)
 
     # plot prob of finding more taxa
     pyplot.subplot(2, 2, 4)
 
-    ms, ps = ProbCurve(curves, n=len(meta.sample), m=15)
+    ms, ps = ProbCurve(curves, n=len(sample), m=15)
     pyplot.plot(ms, ps)
     myplot.Save(xlabel='# samples', 
                 ylabel='prob of more taxa')
@@ -534,21 +499,19 @@ def MakeSubplots(root, meta):
     myplot.Save(root=root)
 
 
-def MakeFigures(root, meta, m=15, iters=100):
+def MakeFigures(root, sample, meta, m=15, iters=100):
     # plot posterior on # taxa
     meta.PlotPosterior(root + '.1')
 
     # plot prevalence of 'a'
     meta.PlotPrevalence(root + '.2')
 
-    return
-
     # generate curves
-    curves = meta.GenerateCurves(meta.sample, m=m, iters=iters)
+    curves = meta.GenerateCurves(sample, m=m, iters=iters)
     PlotCurves(curves, root + '.3')
 
     # plot prob of finding more taxa
-    ms, ps = ProbCurve(curves, n=len(meta.sample), m=m)
+    ms, ps = ProbCurve(curves, n=len(sample), m=m)
     myplot.Plot(ms, ps,
                 root=root + '.4',
                 xlabel='# samples', 
@@ -558,41 +521,21 @@ def MakeFigures(root, meta, m=15, iters=100):
 def main(script, flag=1, *args):
     flag = int(flag)
 
-    if flag == -1:
-        d = {
-            1: 451,
-            2: 268,
-            3: 116,
-            4: 61,
-            5: 35,
-            6: 16,
-            7: 5,
-            8: 7,
-            9: 2,
-            10: 3,
-            11: 1,
-            }
-        counts = []
-        for x, count in d.iteritems():
-            counts.extend([x] * count)
-        n = 2001
+    d = {
+        0: [1],
+        1: [9, 6],
+        2: [6, 4, 1, 1, 1, 1],
+        3: [11, 4, 2],
+        }
+    freqs = d[flag]
 
-    else:
-        d = {
-            0: [1],
-            1: [9, 6],
-            2: [6, 4, 1, 1, 1, 1],
-            3: [11, 4, 2],
-            }
-        counts = d[flag]
-        n = 21
+    sample = MakeSample(freqs)
+    meta = MakeMeta(sample)
 
-    meta = MakeMeta(counts, n=n)
     meta.Print()
-    return
 
     root='rare%d' % flag
-    MakeFigures(root, meta)
+    MakeFigures(root, sample, meta)
 
 
 if __name__ == '__main__':
