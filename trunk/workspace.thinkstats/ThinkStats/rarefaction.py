@@ -318,6 +318,26 @@ class MetaHypo(object):
             pmf.Incr(taxon, prob)
         return pmf.Random()
 
+    def PlotPosteriorPmf(self, root=None, clf=False):
+        if root: clf = True
+        if clf: pyplot.clf()
+
+        posterior = self.Pmf()
+
+        cdf = self.Cdf()
+        low, high = cdf.Percentile(5), cdf.Percentile(95)
+
+        xs = [x for x in posterior.Values() if low <= x <= high]
+        ys = [posterior.Prob(x) for x in xs]
+        pyplot.fill_between(xs, ys, y2=0.0001, color='blue', alpha=0.2)
+
+        myplot.Pmf(posterior,
+                   root=root,
+                   clf=False,
+                   xlabel='# of taxa',
+                   ylabel='prob',
+                   legend=False)
+
     def PlotPosterior(self, root=None, clf=False):
         if root: clf = True
 
@@ -461,8 +481,8 @@ def MakeSample(freqs):
     return ''.join(t)
 
 
-def MakeMeta(sample):
-    prior = Pmf.MakePmfFromList(range(2, 21), name='prior')
+def MakeMeta(sample, n=31):
+    prior = Pmf.MakePmfFromList(range(2, n), name='prior')
     meta = MetaHypo(prior)
     for taxon in sample:
         meta.Update(taxon)
@@ -501,8 +521,8 @@ def MakeSubplots(root, sample, meta, m=15, iters=100):
 
 def MakeFigures(root, sample, meta, m=15, iters=100):
     # plot posterior on # taxa
-    meta.PlotPosterior(root + '.1')
-
+    meta.PlotPosteriorPmf(root + '.1')
+    return
     # plot prevalence of 'a'
     meta.PlotPrevalence(root + '.2')
 
@@ -524,18 +544,24 @@ def main(script, flag=1, *args):
     d = {
         0: [1],
         1: [9, 6],
-        2: [6, 4, 1, 1, 1, 1],
+        2: [8, 3],
         3: [11, 4, 2],
+        4: [3, 2, 2, 1],
+        5: [7, 3, 1, 1, 1, 1],
+        6: [7, 2, 1],
+        7: [4, 3, 9, 1, 1],
+        8: [14, 5, 2, 2, 1,1,1,1,1,1],
+        9: [11, 2, 1,1],
         }
     freqs = d[flag]
 
     sample = MakeSample(freqs)
-    meta = MakeMeta(sample)
+    meta = MakeMeta(sample, n=31)
 
     meta.Print()
 
     root='rare%d' % flag
-    MakeSubplots(root, sample, meta)
+    MakeFigures(root, sample, meta)
 
 
 if __name__ == '__main__':
