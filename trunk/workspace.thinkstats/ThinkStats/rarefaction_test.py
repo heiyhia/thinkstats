@@ -15,27 +15,29 @@ import myplot
 class Test(unittest.TestCase):
 
     def testMeta(self):
+        sample = 'a'
         prior = Pmf.MakePmfFromList(range(1, 4))
-        meta = rarefaction.MetaHypo(prior)
+        meta = rarefaction.MetaHypo(prior, sample)
 
         hypos = meta.GetHypos()
         for hypo, prob in hypos.Items():
             self.assertAlmostEquals(prob, 1.0/3.0)
             
-            if hypo.n != 3:
+            if hypo.k != 3:
                 continue
 
             taxa = hypo.GetTaxa()
             for taxon, dist in taxa.iteritems():
                 self.assertAlmostEquals(dist.Mean(), 1.0/3.0)
 
-        meta.Update('a')
+        meta.Update(sample)
 
         hypos = meta.GetHypos()
+
         for hypo, prob in hypos.Items():
             self.assertAlmostEquals(prob, 1.0/3.0)
             
-            if hypo.n != 2:
+            if hypo.k != 2:
                 continue
 
             taxa = hypo.GetTaxa()
@@ -46,22 +48,24 @@ class Test(unittest.TestCase):
 
 
     def testGeneratePrevalence(self):
+        sample = 'ab'
         prior = Pmf.MakePmfFromList(range(1, 4))
-        meta = rarefaction.MetaHypo(prior)
-        meta.Update('a')
-        meta.Update('b')
+        meta = rarefaction.MetaHypo(prior, sample)
 
-        n = 3
+        for taxon in sample:
+            meta.Update(taxon)
+
+        k = 3
         taxon = 'other'
         iters = 1000
         plot = False
 
         hypos = meta.GetHypos()
         for hypo, prob in hypos.Items():
-            self.assertAlmostEquals(prob, 0.4) if hypo.n==2 else 0
-            self.assertAlmostEquals(prob, 0.6) if hypo.n==3 else 0
+            self.assertAlmostEquals(prob, 0.4) if hypo.k==2 else 0
+            self.assertAlmostEquals(prob, 0.6) if hypo.k==3 else 0
 
-            if hypo.n != n or not plot:
+            if hypo.k != k or not plot:
                 continue
 
             # check the distribution of generated prevalences
