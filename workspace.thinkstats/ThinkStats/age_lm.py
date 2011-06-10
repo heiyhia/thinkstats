@@ -13,7 +13,7 @@ Coefficients:
 (Intercept) 117.7817     0.3408 345.562  < 2e-16 ***
 first        -2.2472     0.4909  -4.578 4.75e-06 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Residual standard error: 23.38 on 9082 degrees of freedom
 Multiple R-squared: 0.002302,	Adjusted R-squared: 0.002193 
@@ -26,7 +26,7 @@ Coefficients:
 (Intercept) 109.52288    1.12557  97.304  < 2e-16 ***
 ages          0.28773    0.04405   6.531 6.87e-11 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Residual standard error: 23.35 on 9082 degrees of freedom
 Multiple R-squared: 0.004675,	Adjusted R-squared: 0.004565 
@@ -43,7 +43,7 @@ Coefficients:
 first        -1.3599     0.5175  -2.628   0.0086 ** 
 ages          0.2485     0.0465   5.345 9.26e-08 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Residual standard error: 23.34 on 9081 degrees of freedom
 Multiple R-squared: 0.005432,	Adjusted R-squared: 0.005212 
@@ -59,7 +59,7 @@ Coefficients:
 ages         1.598195   0.357644   4.469 7.97e-06 ***
 ages2       -0.025098   0.006797  -3.692 0.000224 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Residual standard error: 23.33 on 9081 degrees of freedom
 Multiple R-squared: 0.006167,	Adjusted R-squared: 0.005948 
@@ -76,7 +76,7 @@ first       -1.118630   0.522119  -2.142 0.032181 *
 ages         1.460500   0.363303   4.020 5.87e-05 ***
 ages2       -0.023078   0.006861  -3.364 0.000772 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Residual standard error: 23.33 on 9080 degrees of freedom
 Multiple R-squared: 0.006669,	Adjusted R-squared: 0.006341 
@@ -142,6 +142,7 @@ def RunModel(model, print_flag=True):
         PrintSummary(res)
     return res
 
+
 def PrintSummary(res):
     """Prints results from r.lm (just the parts we want)."""
     flag = False
@@ -171,10 +172,10 @@ def main():
     robjects.globalEnv['first'] = robjects.FloatVector(first_bool)
 
     # run the models
-    RunModel('weights ~ first')
-    RunModel('weights ~ ages')
-    RunModel('weights ~ first + ages')
-    RunModel('weights ~ ages + ages2')
+    #RunModel('weights ~ first')
+    #RunModel('weights ~ ages')
+    #RunModel('weights ~ first + ages')
+    #RunModel('weights ~ ages + ages2')
     RunModel('weights ~ first + ages + ages2')
 
 
