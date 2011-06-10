@@ -147,8 +147,23 @@ def PlotCurves(curves, root):
                 ylabel='entropy (bits)')
 
 
+def quick(suite, sequence):
+    d = dict(b=(1,0), g=(0,1))
+
+    for i, x in enumerate(sequence):
+        nc, ic = Update(suite, d[x])
+
+    suite.Print()
+
+    suite.Mult(2.0/3, 0)
+    suite.Normalize()
+
+    suite.Print()
+    
 def main():
     suite = Pmf.MakePmfFromList([0, 1.0/3, 2.0/3, 1])
+    quick(suite, 'b')
+    return
 
     sequence = list('bbbbbbbbbbbbbbbbbggg')
     random.shuffle(sequence)
