@@ -12,7 +12,7 @@ import matplotlib.pyplot as pyplot
 # customize some matplotlib attributes
 #matplotlib.rc('figure', figsize=(4, 3))
 
-matplotlib.rc('font', size=18.0)
+matplotlib.rc('font', size=14.0)
 #matplotlib.rc('axes', labelsize=22.0, titlesize=22.0)
 #matplotlib.rc('legend', fontsize=20.0)
 
