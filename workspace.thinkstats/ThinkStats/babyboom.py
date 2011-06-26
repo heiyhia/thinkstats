@@ -9,7 +9,7 @@ import Cdf
 import myplot
 import random
 import thinkstats
-
+import matplotlib.pyplot as pyplot
 
 def MakeFigure():
     fp = open('babyboom.dat')
@@ -48,6 +48,14 @@ def MakeFigure():
               ylabel='CDF',
               legend=False)
 
+    myplot.Cdfs([cdf, model], root='interarrivals_model',
+              complement=True,
+              title='Time between births',
+              xlabel='minutes',
+              ylabel='Complementary CDF',
+              yscale='log')
+
+    pyplot.subplots_adjust(bottom=0.11)
     myplot.Cdf(cdf, root='interarrivals_logy',
               complement=True,
               title='Time between births',
@@ -55,13 +63,6 @@ def MakeFigure():
               ylabel='Complementary CDF',
               yscale='log',
               legend=False)
-
-    myplot.Cdfs([cdf, model], root='interarrivals_model',
-              complement=True,
-              title='Time between births',
-              xlabel='minutes',
-              ylabel='Complementary CDF',
-              yscale='log')
 
 def main():
     MakeFigure()

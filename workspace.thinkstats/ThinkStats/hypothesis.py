@@ -162,6 +162,7 @@ def PlotCdf(root, cdf, delta):
     VertLine(delta)
 
     xs, ys = cdf.Render()    
+    pyplot.subplots_adjust(bottom=0.11)
     pyplot.plot(xs, ys, linewidth=2, color='blue')
     
     myplot.Save(root,
