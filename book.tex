@@ -6769,7 +6769,7 @@ variance 1.
 
 If \X~is normally-distributed, so is \Z; but if \X~is skewed or has
 outliers, so does \Z.  In those cases it is more robust to use
-percentile ranks.  If each \R contains the percentile ranks the
+percentile ranks.  If \R contains the percentile ranks of the
 values in \X, the distribution of \R is uniform between 0 and 100,
 regardless of the distribution of \X.
 \index{uniform distribution}
@@ -7068,7 +7068,7 @@ outlier.  You can read more about it at
 
 Spearman's rank correlation is an alternative that mitigates the
 effect of outliers and skewed distributions.  To compute Spearman's
-correction, we have to compute the {\bf rank} of each value, which its
+correction, we have to compute the {\bf rank} of each value, which is its
 index in the sorted sample.  For example, in the sample \{7, 1, 2, 5\}
 the rank of the value 5 is 3, because it appears third if we sort
 the elements.  Then we compute Pearson's correlation for the ranks.
