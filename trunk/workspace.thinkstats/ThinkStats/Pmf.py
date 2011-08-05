@@ -41,10 +41,6 @@ class _DictWrapper(object):
         """
         return self.d.keys()
 
-    def Probs(self):
-        """Gets an unsorted sequence of probabilities."""
-        return self.d.values()
-
     def Items(self):
         """Gets an unsorted sequence of (value, freq/prob) pairs."""
         return self.d.items()
@@ -132,6 +128,10 @@ class Hist(_DictWrapper):
         """
         return self.d.get(x, 0)
 
+    def Freqs(self):
+        """Gets an unsorted sequence of frequencies."""
+        return self.d.values()
+
     def IsSubset(self, other):
         """Checks whether the values in this histogram are a subset of
         the values in the given histogram."""
@@ -173,6 +173,10 @@ class Pmf(_DictWrapper):
             float probability
         """
         return self.d.get(x, 0)
+
+    def Probs(self):
+        """Gets an unsorted sequence of probabilities."""
+        return self.d.values()
 
     def Normalize(self, fraction=1.0):
         """Normalizes this PMF so the sum of all probs is 1.
