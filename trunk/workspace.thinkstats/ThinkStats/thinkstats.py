@@ -66,7 +66,7 @@ def TrimmedMean(t, p=0.01):
 
 
 def TrimmedMeanVar(t, p=0.01):
-    """Computes the trimmed mean of a sequence of numbers.
+    """Computes the trimmed mean and variance of a sequence of numbers.
 
     Side effect: sorts the list.
 
@@ -83,7 +83,7 @@ def TrimmedMeanVar(t, p=0.01):
 
 
 def Var(t, mu=None):
-    """Computes the mean of a sequence of numbers.
+    """Computes the variance of a sequence of numbers.
 
     Args:
         t: sequence of numbers
