@@ -183,6 +183,7 @@ def main(name, data_dir='.'):
     preg = Pregnancies()
     preg.ReadRecords(data_dir)
     print 'Number of pregnancies', len(preg.records)
+
     
 if __name__ == '__main__':
     main(*sys.argv)

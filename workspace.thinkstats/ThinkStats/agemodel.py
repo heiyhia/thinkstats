@@ -92,9 +92,9 @@ def Process(table, name):
     table.age_cdf = Cdf.MakeCdfFromList(table.ages, table.name)
 
 
-def MakeTables():
+def MakeTables(data_dir):
     """Reads survey data and returns a tuple of Tables"""
-    table, firsts, others = first.MakeTables()
+    table, firsts, others = first.MakeTables(data_dir)
     pool = descriptive.PoolRecords(firsts, others)
 
     Process(pool, 'live births')
@@ -216,8 +216,8 @@ def ComputeLeastSquares(ages, weights):
     return inter, slope, R2
 
 
-def main():
-    pool, firsts, others = MakeTables()
+def main(name, data_dir=''):
+    pool, firsts, others = MakeTables(data_dir)
 
     # compute differences in mean age and weight
     age_diff = DifferenceInMeans(firsts, others, 'ages')
@@ -246,4 +246,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(*sys.argv)
