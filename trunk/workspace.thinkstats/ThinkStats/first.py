@@ -43,10 +43,10 @@ def Process(table):
     table.mu = thinkstats.Mean(table.lengths)
 
 
-def MakeTables():
+def MakeTables(data_dir):
     """Reads survey data and returns tables for first babies and others."""
     table = survey.Pregnancies()
-    table.ReadRecords()
+    table.ReadRecords(data_dir)
 
     firsts, others = PartitionRecords(table)
     
@@ -63,13 +63,13 @@ def ProcessTables(*tables):
         Process(table)
         
         
-def Summarize():
+def Summarize(data_dir):
     """Prints summary statistics for first babies and others.
     
     Returns:
         tuple of Tables
     """
-    table, firsts, others = MakeTables()
+    table, firsts, others = MakeTables(data_dir)
     ProcessTables(firsts, others)
         
     print 'Number of first babies', firsts.n
@@ -84,9 +84,10 @@ def Summarize():
     print 'Difference in days', (mu1 - mu2) * 7.0
 
 
-def main():
-    Summarize()
+def main(name, data_dir='.'):
+    Summarize(data_dir)
     
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(*sys.argv)

@@ -153,7 +153,7 @@ def WorldRecord(m=1000000, n=10, fast=False):
             
     return pmf, data
 
-def PlotTimes(distances, plot_gender='male'):
+def MakePlots(distances, plot_gender='male'):
 
     for (distance, gender), data in distances.iteritems():
         if gender != plot_gender:
@@ -161,15 +161,23 @@ def PlotTimes(distances, plot_gender='male'):
 
         pyplot.clf()
         xs, ys = zip(*data)
-        pyplot.plot(xs, ys, 'o:')
+
+        # extend the last record to the present
+        last_x = xs[-1]
+        last_y = ys[-1]
+        pyplot.plot([last_x, 2011.4], [last_y, last_y], 'b:')
+
+        # plot the data
+        pyplot.plot(xs, ys, 'bo-', markersize=8, linewidth=2)
 
         root = 'world_record_%s' % distance
         myplot.Save(root=root,
+                    formats=['png'],
                     xlabel='year',
-                    ylabel='minutes',
+                    ylabel='mph',
                     title='%s world record progression' % distance)
 
-def PlotSpeeds(distances, plot_gender='male', special=False):
+def MakeSubplots(distances, plot_gender='male', special=False):
 
     pyplot.rc('figure', figsize=(5, 10))
     pyplot.rc('font', size=9.0)
@@ -341,11 +349,12 @@ def MakeLine(inter, slope, xs):
 def main(script):
     random.seed(1)
 
-    #distances = ReadData(speed=False)
-    #PlotTimes(distances)
+    distances = ReadData(speed=True)
+    MakePlots(distances)
+    return
 
     distances = ReadData(speed=True)
-    PlotSpeeds(distances, special=True)
+    MakeSubplots(distances, special=True)
     #PlotMarathon(distances['marathon', 'male'])
 
     #PlotCdfs()

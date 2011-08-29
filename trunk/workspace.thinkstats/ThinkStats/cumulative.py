@@ -34,9 +34,9 @@ def Process(table, name):
     table.weight_cdf = Cdf.MakeCdfFromList(table.weights, table.name)
 
 
-def MakeTables():
+def MakeTables(data_dir):
     """Reads survey data and returns a tuple of Tables"""
-    table, firsts, others = first.MakeTables()
+    table, firsts, others = first.MakeTables(data_dir)
     pool = descriptive.PoolRecords(firsts, others)
 
     Process(pool, 'live births')
@@ -99,12 +99,13 @@ def MakeFigures(pool, firsts, others):
                ylabel='probability',
                axis=[0, 200, 0, 1])
 
-def main():
+def main(name, data_dir=''):
     MakeExample()
 
-    pool, firsts, others = MakeTables()
+    pool, firsts, others = MakeTables(data_dir)
     MakeFigures(pool, firsts, others)
     
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(*sys.argv)

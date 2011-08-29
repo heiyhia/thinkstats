@@ -44,9 +44,9 @@ def PoolRecords(*tables):
     return pool
 
 
-def MakeTables():
+def MakeTables(data_dir):
     """Reads survey data and returns a tuple of Tables"""
-    table, firsts, others = first.MakeTables()
+    table, firsts, others = first.MakeTables(data_dir)
     pool = PoolRecords(firsts, others)
 
     Process(pool, 'live births')
@@ -139,12 +139,13 @@ def MakeDiffFigure(firsts, others):
               legend=False)
 
 
-def main():
-    pool, firsts, others = MakeTables()
+def main(name, data_dir=''):
+    pool, firsts, others = MakeTables(data_dir)
     Summarize(pool, firsts, others)
     MakeFigures(firsts, others)
     MakeDiffFigure(firsts, others)
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(*sys.argv)
