@@ -234,15 +234,19 @@ def Cdfs(cdfs,
         styles = InfiniteList('-')
 
     for i, cdf in enumerate(cdfs):
-        
         xs, ps = cdf.Render()
-
-        if complement:
-            ps = [1.0-p for p in ps]
 
         if transform == 'exponential':
             complement = True
             options['yscale'] = 'log'
+
+        if transform == 'pareto':
+            complement = True
+            options['yscale'] = 'log'
+            options['xscale'] = 'log'
+
+        if complement:
+            ps = [1.0-p for p in ps]
 
         if transform == 'weibull':
             xs.pop()
@@ -290,7 +294,7 @@ def Save(root=None, formats=None, **options):
         pyplot.xscale(options['xscale'])
 
     if 'yscale' in options:
-        pyplot.xscale(options['yscale'])
+        pyplot.yscale(options['yscale'])
 
     if 'axis' in options:
         pyplot.axis(options['axis'])
