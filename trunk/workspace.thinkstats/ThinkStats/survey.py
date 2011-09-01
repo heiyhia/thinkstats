@@ -161,18 +161,24 @@ class Pregnancies(Table):
         for rec in self.records:
 
             # divide mother's age by 100
-            if rec.agepreg != 'NA':
-                rec.agepreg /= 100.0
+            try:
+                if rec.agepreg != 'NA':
+                    rec.agepreg /= 100.0
+            except AttributeError:
+                pass
 
             # convert weight at birth from lbs/oz to total ounces
             # note: there are some very low birthweights
             # that are almost certainly errors, but for now I am not
             # filtering
-            if (rec.birthwgt_lb != 'NA' and rec.birthwgt_lb < 20 and
-                rec.birthwgt_oz != 'NA' and rec.birthwgt_oz <= 16):
-                rec.totalwgt_oz = rec.birthwgt_lb * 16 + rec.birthwgt_oz
-            else:
-                rec.totalwgt_oz = 'NA'
+            try:
+                if (rec.birthwgt_lb != 'NA' and rec.birthwgt_lb < 20 and
+                    rec.birthwgt_oz != 'NA' and rec.birthwgt_oz <= 16):
+                    rec.totalwgt_oz = rec.birthwgt_lb * 16 + rec.birthwgt_oz
+                else:
+                    rec.totalwgt_oz = 'NA'
+            except AttributeError:
+                pass
 
 
 def main(name, data_dir='.'):

@@ -432,8 +432,28 @@ def main(script, num=1):
 
         all_sequences.extend(sequences)
 
+    FindQuints(all_sequences)
+    return
     ProcessSequences(all_sequences, 'all data')
 
+
+def FindQuints(t):
+    boy_hist = Pmf.Hist()
+    girl_hist = Pmf.Hist()
+
+    for x in t:
+        if len(x) < 5:
+            continue
+
+        s = ''.join(x)
+        if s.startswith('BBBB'): 
+            boy_hist.Incr(s[4])
+
+        if s.startswith('GGGG'): 
+            girl_hist.Incr(s[4])
+
+    print boy_hist.d
+    print girl_hist.d
 
 def ProcessSequences(sequences, name):
     
