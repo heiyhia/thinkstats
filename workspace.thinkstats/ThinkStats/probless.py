@@ -1,3 +1,21 @@
+def PmfProbLess(pmf1, pmf2):
+    """Probability that a value from pmf1 is less than a value from pmf2.
+
+    Args:
+        pmf1: Pmf object
+        pmf2: Pmf object
+
+    Returns:
+        float
+    """
+    total = 0.0
+    for v1, p1 in pmf1.Items():
+        for v2, p2 in pmf2.Items():
+            if v1 < v2:
+                total += p1 * p2
+    return total
+
+
 
 
 def CdfProbLess(cdf1, cdf2):
@@ -15,6 +33,7 @@ def CdfProbLess(cdf1, cdf2):
     Returns:
         float probability
     """
+    # NOTE: not tested; may not work
     total = 0.0
     i = 0
     j = 0

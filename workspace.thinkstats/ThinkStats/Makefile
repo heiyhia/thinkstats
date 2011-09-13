@@ -2,11 +2,13 @@ FILES = survey.py first.py risk.py Pmf.py Pmf_test.py \
 thinkstats.py thinkstats_test.py descriptive.py birthdays.py \
 populations.py populations_cdf.py brfss.py cumulative.py hypothesis.py \
 coin.py coin2.py rankit.py conditional.py class_size.py \
-decay.py Cdf.py Cdf_test.py locomotive.py myplot.py CDBRFS08.ASC.gz \
+decay.py Cdf.py Cdf_test.py locomotive.py myplot.py  \
 erf.py estimate.py gini.py 08in11si.csv irs.py brfss_scatter.py \
 brfss_corr.py agemodel.py age_lm.py hypothesis_analytic.py \
 score_example.py relay.py relay_soln.py relay_cdf.py relay_normal.py \
-brfss_figs.py chi.py correlation.py babyboom.dat
+brfss_figs.py chi.py correlation.py social.py
+
+DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat
 
 DOCS = survey.html first.html risk.html Pmf.html thinkstats.html \
 descriptive.html myplot.html brfss.html hypothesis.html cumulative.html \
@@ -83,7 +85,8 @@ FIGDEST = ../../figs
 	pydoc -w $<
 
 code:
-	rsync -a $(FILES) $(DEST)
+	zip -r thinkstats.code.zip $(FILES)
+	rsync -a thinkstats.code.zip $(FILES) $(DATA) $(DEST)
 	rsync -a $(DOCS) $(DEST)
 	chmod -R o+r $(DEST)/*
 
