@@ -14,6 +14,8 @@ import Pmf
 
 
 cdfs = []
+allbday = []
+
 for i in range(10):
     n = 30
     t = [random.randrange(365) for i in range(n)]
@@ -23,8 +25,11 @@ for i in range(10):
     for i in range(len(t)-1):
         x = t[i+1] - t[i]
         pmf.Incr(x)
+        allbday.append(x)
 
     cdf = Cdf.MakeCdfFromPmf(pmf)
     cdfs.append(cdf)
 
+cdf = Cdf.MakeCdfFromList(allbday, 'all')
+cdfs.append(cdf)
 myplot.Cdfs(cdfs, root='birthday', transform='exponential')
