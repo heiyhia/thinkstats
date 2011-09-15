@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.5}
+\newcommand{\theversion}{1.5.3}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -217,7 +217,7 @@
 \newtheoremstyle{exercise}% name of the style to be used
   {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
   {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
-  {\itshape}% name of font to use in the body of the theorem
+  {}% name of font to use in the body of the theorem
   {0pt}% measure of space to indent
   {\bfseries}% name of head font
   {}% punctuation between head and body
@@ -357,6 +357,17 @@ is at \url{http://flickr.com/photos/frielp/11999738/}.
 {\large Allen B. Downey}
 
 Version \theversion
+
+\vspace{0.25in}
+
+Copyright 2011 Allen B. Downey
+
+\vspace{0.25in}
+
+Permission is granted to copy, distribute, and/or modify this document
+under the terms of the Creative Commons Attribution-NonCommercial 3.0
+Unported License, which is available at
+\url{http://creativecommons.org/licenses/by-nc/3.0/}.
 
 \setcounter{chapter}{-1}
 
@@ -539,6 +550,11 @@ and Molly spotted several typos.
 plasTeX, which I used to convert this book to DocBook.
 
 \item George Caplan sent several suggestions for improving clarity.
+
+\item Julian Ceipek found an error.
+
+\item Stijn Debrouwere, Leo Marihart III, Jonathan Hammler, and Kent Johnson
+found errors in the first print edition.
 
 % ENDCONTRIB
 
@@ -2422,8 +2438,8 @@ If I am still running in 10 years (and I hope I am), I will be in
 the M5059 division.  Assuming that my percentile rank in my division
 is the same, how much slower should I expect to be?
 
-I maintain a friendly rivalry with a student of mine who is in the
-F2029 division.  How fast does she have to run her next 10K to
+I maintain a friendly rivalry with a student who is in the
+F2039 division.  How fast does she have to run her next 10K to
 ``beat'' me in terms of percentile ranks?
 
 \end{exercise}
@@ -3260,7 +3276,7 @@ can download it from \url{http://thinkstats.com/populations.py}.
 
 What conclusion do you draw about the distribution of sizes
 for cities and towns?  You can download a solution from
-\url{http://populations_cdf.py}.
+\url{http://thinkstats.com/populations_cdf.py}.
 \index{{\tt populations\_cdf.py}}
 
 \end{exercise}
@@ -3878,7 +3894,7 @@ and \kk~is the number of successes.
 The {\bf binomial coefficient} is pronounced ``n choose k'', and it
 can be computed directly like this:
 %
-\[ \binom{n}{k} = \frac{n!}{k!(n-k!)}  \]
+\[ \binom{n}{k} = \frac{n!}{k!(n-k)!}  \]
 %
 Or recursively like this
 %
@@ -4701,7 +4717,7 @@ See \url{http://wiktionary.org/wiki/booyah}!
 
 As an example, suppose \X~and \Y~are random variables with an
 exponential distribution with parameter \mylambda.  
-The distribution of \Z~=~\X~+~\Y is:
+The distribution of \Z~=~\X~+~\Y~is:
 %
 \[ \PDF_Z(z) = \infint \PDF_X(x)~\PDF_Y(z-x) \spa dx = 
 \infint \lambda e^{-\lambda x}~\lambda e^{\lambda (z-x)} \]
@@ -4795,8 +4811,8 @@ where the symbol \mysim~means ``is distributed'' and the script letter
 %\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
 %\sigma^2)$.
 
-A linear transformation of \X~is something like \X'~=~\mya \X~+~\myb, where \mya
-and \myb~are real numbers.\index{linear transformation}
+A linear transformation of \X~is something like \X'~=~\mya \X~+~\myb, where
+\mya~and \myb~are real numbers.\index{linear transformation}
 A family of distributions is closed under
 linear transformation if \X' is in the same family as \X.  The normal
 distribution has this property; if \X~\mysim~\mynormal (\mymu,
@@ -5421,8 +5437,8 @@ interpret the result of a hypothesis test:
   we saw the
   effect, \Prob(\E|\HH\sub{A}) is the probability of seeing \E, 
   assuming that
-  the effect is real, and \Prob(\E) is the probability of seeing \E
-  under any hypothesis.  Since the effect is either real or it's not,
+  the effect is real, and \Prob(\E) is the probability of seeing 
+  \E~under any hypothesis.  Since the effect is either real or it's not,
   
   \Eqn{ \Prob(\E) = \Prob(\E|\HH\sub{A}) \Prob(\HH\sub{A})~+~\Prob(\E|\HH\sub{0}) \Prob(\HH\sub{0}) }
 

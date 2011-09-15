@@ -22,17 +22,15 @@ all:	book.tex
 	mv book.pdf thinkstats.pdf
 	evince thinkstats.pdf
 
-html:	book.tex header.html footer.html
+hevea:
+	sed 's/\(figs\/[^.]*\).\(pdf\|png\)/\1.eps/' book.tex > thinkstats.tex
 	rm -rf html
 	mkdir html
-	hevea -O -e latexonly htmlonly book
-# the following line is a kludge to prevent imagen from seeing
-# the definitions in latexonly
-	#grep -v latexonly book.image.tex > a; mv a book.image.tex
-	imagen -png book
-	hacha book.html
+	hevea -O -e latexonly htmlonly thinkstats
+	imagen -png thinkstats
+	hacha thinkstats.html
 	cp up.png next.png back.png html
-	mv index.html book.css book*.html book*.png *motif.gif html
+	mv index.html thinkstats.css thinkstats*.html thinkstats*.png *motif.gif html
 
 DEST = /home/downey/public_html/greent/thinkstats
 
@@ -51,7 +49,9 @@ plastex:
 	rm -rf /home/downey/thinkstats/trunk/book/.svn
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
 	rm -rf /home/downey/thinkstats/trunk/book/.svn
-	#~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+
+xxe:
+	~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
 
 vector:
 	plastex --renderer=DocBook --theme=book --vector-imager=dvisvgm --filename=book.xml book.tex
