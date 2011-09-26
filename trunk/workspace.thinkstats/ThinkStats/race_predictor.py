@@ -26,7 +26,7 @@ class Browser(object):
         self.br = br
 
     def FindBostonResult(self, first, last):
-        """Looks up the given runner and make a record with runner's info."""
+        """Looks up the given runner and makes a record with runner's info."""
 
         base_url = 'http://registration.baa.org/2010/cf/Public/'
         starting_url = base_url + 'iframe_ResultsSearch.cfm'
