@@ -340,7 +340,7 @@ def MakePmfFromCdf(cdf, name=None):
 def MakeMixture(pmfs, name='mix'):
     """Make a mixture distribution.
 
-    mix is a Pmf that maps from Pmfs to probs.
+    pmfs: Pmf that maps from Pmfs to probs.
 
     Result is a Pmf object.
     """
