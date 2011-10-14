@@ -60,8 +60,7 @@ def Likelihood(evidence, hypo):
         hypo: float probability of heads
 
     Returns:
-        probability of tossing the given number of heads and tails with a
-        coin that has p probability of heads
+        probability of seeing a given train assuming that there are N trains
     """
     train_seen = evidence
     num_trains = hypo
