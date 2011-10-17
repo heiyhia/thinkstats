@@ -92,7 +92,7 @@ def Process(table, name):
     table.age_cdf = Cdf.MakeCdfFromList(table.ages, table.name)
 
 
-def MakeTables(data_dir):
+def MakeTables(data_dir='.'):
     """Reads survey data and returns a tuple of Tables"""
     table, firsts, others = first.MakeTables(data_dir)
     pool = descriptive.PoolRecords(firsts, others)
