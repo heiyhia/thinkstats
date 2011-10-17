@@ -158,7 +158,9 @@ def PrintSummary(res):
     print
 
 
-def main():
+def main(script, model_number=0):
+
+    model_number = int(model_number)
 
     # get the data
     pool, firsts, others = agemodel.MakeTables()
@@ -172,12 +174,17 @@ def main():
     robjects.globalEnv['first'] = robjects.FloatVector(first_bool)
 
     # run the models
-    #RunModel('weights ~ first')
-    #RunModel('weights ~ ages')
-    #RunModel('weights ~ first + ages')
-    #RunModel('weights ~ ages + ages2')
-    RunModel('weights ~ first + ages + ages2')
+    models = ['weights ~ first',
+              'weights ~ ages',
+              'weights ~ first + ages',
+              'weights ~ ages + ages2',
+              'weights ~ first + ages + ages2']
+
+    model = models[model_number]
+    print model
+    RunModel(model)
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(*sys.argv)

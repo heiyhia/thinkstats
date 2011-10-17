@@ -90,6 +90,25 @@ class Respondents(survey.Table):
         [d[r.sex].append(r.htm3) for r in self.records if r.htm3 != 'NA']
         [d['all'].append(r.htm3) for r in self.records if r.htm3 != 'NA']
         
+        print 'Height (cm):'
+        print 'key n     mean     var    sigma     cv'
+        for key, t in d.iteritems():
+            mu, var = thinkstats.TrimmedMeanVar(t)
+            sigma = math.sqrt(var)
+            cv = sigma / mu
+            print key, len(t), mu, var, sigma, cv
+
+
+    def SummarizeWeight(self):
+        """Print summary statistics for male and female weight."""
+
+        # make a dictionary that maps from gender code to list of weights
+        d = {1:[], 2:[], 'all':[]}
+        [d[r.sex].append(r.weight2) for r in self.records if r.weight2 != 'NA']
+        [d['all'].append(r.weight2) for r in self.records if r.weight2 != 'NA']
+
+        print 'Weight (kg):'
+        print 'key n     mean     var    sigma     cv'
         for key, t in d.iteritems():
             mu, var = thinkstats.TrimmedMeanVar(t)
             sigma = math.sqrt(var)
@@ -112,6 +131,7 @@ def main(name, data_dir=''):
     resp = Respondents()
     resp.ReadRecords(data_dir)
     resp.SummarizeHeight()
+    resp.SummarizeWeight()
     resp.SummarizeWeightChange()
     
 if __name__ == '__main__':
