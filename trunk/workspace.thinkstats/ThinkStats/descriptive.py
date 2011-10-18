@@ -44,7 +44,7 @@ def PoolRecords(*tables):
     return pool
 
 
-def MakeTables(data_dir):
+def MakeTables(data_dir='.'):
     """Reads survey data and returns a tuple of Tables"""
     table, firsts, others = first.MakeTables(data_dir)
     pool = PoolRecords(firsts, others)
