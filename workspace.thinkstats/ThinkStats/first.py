@@ -43,7 +43,7 @@ def Process(table):
     table.mu = thinkstats.Mean(table.lengths)
 
 
-def MakeTables(data_dir):
+def MakeTables(data_dir='.'):
     """Reads survey data and returns tables for first babies and others."""
     table = survey.Pregnancies()
     table.ReadRecords(data_dir)
