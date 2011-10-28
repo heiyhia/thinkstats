@@ -82,7 +82,7 @@ def Likelihood(evidence, hypo):
     return pow(p, heads) * pow(1-p, tails)
 
 def main():
-    suite = MakeUniformSuite(0.0, 1.0, 11)
+    suite = MakeUniformSuite(0.0, 1.0, 101)
     evidence = 140, 110
 
     Update(suite, evidence)
