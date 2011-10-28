@@ -10,7 +10,7 @@ import urllib
 import myplot
 import Pmf
 
-results = 'http://coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml'
+results = 'http://www.coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml'
 
 """
 Sample line.
