@@ -195,7 +195,7 @@ def MakeCdfFromHist(hist, name=''):
     """Makes a CDF from a Hist object.
 
     Args:
-       d: dictionary that maps values to frequencies.
+       hist: Pmf.Hist object
        name: string name for the data.
 
     Returns:
@@ -208,7 +208,7 @@ def MakeCdfFromPmf(pmf, name=None):
     """Makes a CDF from a Pmf object.
 
     Args:
-       d: dictionary that maps values to frequencies.
+       pmf: Pmf.Pmf object
        name: string name for the data.
 
     Returns:
