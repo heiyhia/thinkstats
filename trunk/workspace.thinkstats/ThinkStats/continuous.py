@@ -68,8 +68,9 @@ def MakeParetoCdf():
                 ylabel = 'CDF',
                 legend=False)
     
+
 def MakeParetoCdf2():
-    """Generates a plot of the exponential CDF."""
+    """Generates a plot of the CDF of height in Pareto World."""
     n = 50
     max = 1000.0
     xs = [max*i/n for i in range(n)]
