@@ -7,7 +7,7 @@ erf.py estimate.py gini.py 08in11si.csv irs.py brfss_scatter.py \
 brfss_corr.py agemodel.py age_lm.py hypothesis_analytic.py \
 score_example.py relay.py relay_soln.py relay_cdf.py relay_normal.py \
 brfss_figs.py chi.py correlation.py social.py pareto_world.py \
-khan.py blinky.py
+khan.py blinky.py continuous.py
 
 DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat
 
@@ -93,6 +93,9 @@ code:
 
 figs:
 	rsync -a $(FIGS) $(FIGDEST)
+
+red:
+	rsync -avp red.htm red.nb HTML* $(DEST)
 
 .PHONY: docs $(DOCPY)
 

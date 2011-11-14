@@ -19,7 +19,7 @@ import myplot
 import Pmf
 import thinkstats
 
-def ReadData(filename='Marathon_world_record_times.csv', speed=False):
+def ReadData(filename='Marathon world record times.csv', speed=False):
     """Reads a CSV file 
 
     Args:
@@ -93,7 +93,7 @@ miles = {
 }
 
 
-def ReadDistance(reader, speed, min_year=1950):
+def ReadDistance(reader, speed, min_year=1800):
     try:
         t = reader.next()
         distance, gender = t
@@ -165,7 +165,7 @@ def MakePlots(distances, plot_gender='male'):
         # extend the last record to the present
         last_x = xs[-1]
         last_y = ys[-1]
-        pyplot.plot([last_x, 2011.4], [last_y, last_y], 'b:')
+        pyplot.plot([last_x, 2012.4], [last_y, last_y], 'b:')
 
         # plot the data
         pyplot.plot(xs, ys, 'bo-', markersize=8, linewidth=2)
@@ -220,7 +220,7 @@ def MakeSubplots(distances, plot_gender='male', special=False):
 
         first_y = ys[0]
         last_y = ys[-1]
-        pyplot.plot([last_x, 2011.4], [last_y, last_y], 'b-')
+        pyplot.plot([last_x, 2012.4], [last_y, last_y], 'b-')
         if special:
             pyplot.plot([1950, first_x], [first_y, first_y], 'b-')
 
@@ -313,7 +313,9 @@ def PlotSimulation(m=100000):
 
 
 def PlotMarathon(data):
+    print len(data)
     xs, ys = zip(*data)
+    print xs, ys
 
     n = 29
     fxs, fys = xs[:n], ys[:n]
@@ -349,17 +351,16 @@ def MakeLine(inter, slope, xs):
 def main(script):
     random.seed(1)
 
-    distances = ReadData(speed=True)
-    MakePlots(distances)
-    return
+    #distances = ReadData(speed=True)
+    #MakePlots(distances)
 
     distances = ReadData(speed=True)
-    MakeSubplots(distances, special=True)
-    #PlotMarathon(distances['marathon', 'male'])
+    #MakeSubplots(distances, special=True)
+    PlotMarathon(distances['marathon', 'male'])
 
     #PlotCdfs()
     #PlotOneSimulation()
-    PlotOneSimulation('log')
+    #PlotOneSimulation('log')
     #PlotCdfs()
 
 
