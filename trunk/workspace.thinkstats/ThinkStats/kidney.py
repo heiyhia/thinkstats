@@ -256,13 +256,13 @@ def PlotSequences(ts, ss):
     ts: sequence of times
     ss: list of sequences of volumes
     """
+    pyplot.clf()
     for vs in ss:
         PlotSequence(ts, vs)
 
     myplot.Save(root='kidney4',
                 xlabel='years',
                 ylabel='log size cm')
-    pyplot.clf()
 
 
 def PlotBin(bin, color='blue'):
@@ -282,6 +282,7 @@ def PlotCache():
     colors = ['blue', 'green', 'red', 'cyan']
     cdfs = []
 
+    pyplot.clf()
     for bin, color in zip(bins, colors):
         PlotBin(bin, color)
 
@@ -313,7 +314,6 @@ def CdfCache():
     for bin, name in zip(bins, names):
         cdf = CdfBin(bin, name)
         cdfs.append(cdf)
-        print name, cdf.Percentile(50), cdf.Percentile(5), cdf.Percentile(95)
 
     myplot.Cdfs(cdfs,
                 root='kidney6',
@@ -321,18 +321,42 @@ def CdfCache():
                 ylabel='CDF')
 
 
+def ConfidenceIntervalCache():
+    """Plots the confidence interval for each bin."""
+    xs = []
+    ts = []
+    percentiles = [95, 75, 50, 25, 5]
+
+    for bin in sorted(cache.iterkeys()):
+        cm = BinToCm(bin)
+        if cm < 0.9 or cm > 20.0:
+            continue
+        xs.append(cm)
+        cdf = CdfBin(bin)      
+        ps = [cdf.Percentile(p) for p in percentiles]
+        ts.append(ps)
+
+    linewidths = [1, 2, 3, 2, 1]
+    alphas = [0.2, 0.5, 1, 0.5, 0.2]
+    labels = ['95th', '75th', '50th', '25th', '5th']
+
+    pyplot.clf()
+    yys = zip(*ts)
+    for ys, linewidth, alpha, label in zip(yys, linewidths, alphas, labels):
+        line_options = dict(color='blue', linewidth=linewidth, 
+                            alpha=alpha, label=label)
+        myplot.Plot(xs, ys,
+                    clf=False,
+                    line_options=line_options)
+
+    myplot.Save(root='kidney7',
+                title='Confidence interval for age vs size',
+                xlabel='size (cm)',
+                ylabel='age (years)')
+
+
 def main(script):
     random.seed(17)
-    ts, ss = MakeSequences(100)
-    PlotSequences(ts, ss)
-    PlotCache()
-
-    ts, ss = MakeSequences(900)
-    CdfCache()
-
-    #PrintCache()
-
-    return
 
     cdf = MakeCdf()
 
@@ -340,6 +364,18 @@ def main(script):
     fit = GenerateCdf(lam1=lam1)
     PlotCdf(cdf, fit)
     QQPlot(cdf, fit)
+
+    ts, ss = MakeSequences(100)
+    PlotSequences(ts, ss)
+    PlotCache()
+
+    ts, ss = MakeSequences(900)
+    CdfCache()
+
+    ConfidenceIntervalCache()
+    PrintCache()
+
+
 
     
 if __name__ == '__main__':
