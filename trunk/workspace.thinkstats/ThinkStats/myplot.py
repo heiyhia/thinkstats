@@ -45,7 +45,7 @@ def Underride(d, **options):
     return d
 
 
-def Plot(xs, ys, clf=True, root=None, line_options=None, **options):
+def Plot(xs, ys, style='', clf=True, root=None, line_options=None, **options):
     """Plots a Pmf or Hist as a line.
 
     Args:
@@ -60,7 +60,7 @@ def Plot(xs, ys, clf=True, root=None, line_options=None, **options):
 
     line_options = Underride(line_options, linewidth=2)
 
-    pyplot.plot(xs, ys, **line_options)
+    pyplot.plot(xs, ys, style, **line_options)
     Save(root=root, **options)
 
 
@@ -305,7 +305,7 @@ def Save(root=None, formats=None, **options):
         pyplot.legend(loc=loc)
 
     if formats is None:
-        formats = ['eps', 'png', 'pdf']
+        formats = ['png']
 
     if root:
         for format in formats:

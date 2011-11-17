@@ -22,8 +22,8 @@ class Cdf(object):
         name: string used as a graph label.
     """
     def __init__(self, xs=None, ps=None, name=''):
-        self.xs = xs or []
-        self.ps = ps or []
+        self.xs = [] if xs is None else xs
+        self.ps = [] if ps is None else ps
         self.name = name
 
     def Values(self):
