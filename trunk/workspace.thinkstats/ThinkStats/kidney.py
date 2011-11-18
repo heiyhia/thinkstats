@@ -336,17 +336,25 @@ def CdfCache():
                 ylabel='CDF',
                 loc=4)
 
-def PrintCI(cm, ps):
-    print '%0.1f, ' % round(cm, 1),
+def PrintCI(fp, cm, ps):
+    fp.write('%0.1f' % round(cm, 1))
     for p in reversed(ps):
-        print '%0.1f, ' % round(p, 1),
-    print
-        
-def PrintTable(xs, ts):
-    print r'V_0 & Percentiles of age &'
-    print r'    & 5th & 25th & 50th & 75th & 95th & \\'
-    for cm, ps in zip(xs, ts):
-        PrintCI(cm, ps)
+        fp.write(' & %0.1f ' % round(p, 1))
+    fp.write(r'\\' '\n')
+
+def PrintTable(fp, xs, ts):
+    fp.write(r'\begin{tabular}{|r||r|r|r|r|r|}' '\n')
+    fp.write(r'\hline' '\n')
+    fp.write(r'$V_0$  & \multicolumn{5}{c}{Percentiles of age} \\' '\n')
+    fp.write(r'(cm)   & 5th & 25th & 50th & 75th & 95th \\' '\n')
+    fp.write(r'\hline' '\n')
+
+    for i, (cm, ps) in enumerate(zip(xs, ts)):
+        if i % 2 == 0:
+            PrintCI(fp, cm, ps)
+
+    fp.write(r'\hline' '\n')
+    fp.write(r'\end{tabular}' '\n')
 
 def ConfidenceIntervalCache():
     """Plots the confidence interval for each bin."""
@@ -366,7 +374,9 @@ def ConfidenceIntervalCache():
         ps = [cdf.Percentile(p) for p in percentiles]
         ts.append(ps)
 
-    PrintTable(xs, ts)
+    fp = open('kidney_table.tex', 'w')
+    PrintTable(fp, xs, ts)
+    fp.close()
 
     linewidths = [1, 2, 3, 2, 1]
     alphas = [0.3, 0.5, 1, 0.5, 0.3]
@@ -411,11 +421,11 @@ def main(script):
     #QQPlot(cdf, fit)
 
     ss = MakeSequences(100)
-    PlotSequences(ss)
-    PlotCache()
+    #PlotSequences(ss)
+    #PlotCache()
 
     ss = MakeSequences(3900)
-    CdfCache()
+    #CdfCache()
 
     ConfidenceIntervalCache()
     #PrintCache()
