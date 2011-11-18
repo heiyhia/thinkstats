@@ -305,7 +305,7 @@ def Save(root=None, formats=None, **options):
         pyplot.legend(loc=loc)
 
     if formats is None:
-        formats = ['png']
+        formats = ['pdf', 'png']
 
     if root:
         for format in formats:

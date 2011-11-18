@@ -15,7 +15,10 @@ import correlation
 import myplot
 import matplotlib.pyplot as pyplot
 
+
 INTERVAL = 245/365.0
+FORMATS = ['png']
+
 
 def DoTheMath():
     interval = 3291.0
@@ -69,9 +72,10 @@ def PlotCdf(cdf, fit):
 
     # CCDF on logy scale: shows exponential behavior
     myplot.Plot(xs, cps, 'bo-',
-                root = 'kidney1',
+                root='kidney1',
+                formats=FORMATS,
                 xlabel='RDT',
-                ylabel='log CCDF',
+                ylabel='CCDF (log scale)',
                 yscale='log',
                 )
 
@@ -81,7 +85,8 @@ def PlotCdf(cdf, fit):
 
     myplot.Plot(xs, ps, 'gs',
                 clf=False,
-                root = 'kidney2',
+                root='kidney2',
+                formats=FORMATS,
                 xlabel='RDT',
                 ylabel='CDF',
                 axis=[-2, 7, 0, 1])
@@ -98,6 +103,7 @@ def QQPlot(cdf, fit):
     myplot.Plot(xs, fs, 'gs',
                 clf=False,
                 root = 'kidney3',
+                formats=FORMATS,
                 xlabel='Actual',
                 ylabel='Model')
     
@@ -199,7 +205,7 @@ def ExtendSequence(t, interval):
     
     return final, res
 
-def MakeSequence(n=60, v0=0.1, interval=INTERVAL):
+def MakeSequence(n=60, v0=0.1, interval=INTERVAL, vmax=20**3):
     """Simulate the growth of a tumor.
 
     n: number of time steps
@@ -207,26 +213,23 @@ def MakeSequence(n=60, v0=0.1, interval=INTERVAL):
     interval: timestep in years
     """
     vs = v0,
-    time = 0
-    times = [time]
 
     for i in range(n):
-        time += interval
-        times.append(time)
-
         final, vs = ExtendSequence(vs, interval)
+        if final > vmax:
+            break
 
-    return times, vs
+    return vs
 
 
 def MakeSequences(n=10):
     """Returns a sequence of times and a list of sequences of volumes."""
     sequences = []
     for i in range(n):
-        ts, vs = MakeSequence()
+        vs = MakeSequence()
         sequences.append(vs)
 
-    return ts, sequences
+    return sequences
 
 
 def PrintCache():
@@ -250,19 +253,25 @@ def PlotSequence(ts, vs, color='blue'):
                 yscale='log',
                 clf=False)
 
-def PlotSequences(ts, ss):
+def PlotSequences(ss):
     """Plots linear measurement vs time.
 
     ts: sequence of times
     ss: list of sequences of volumes
     """
     pyplot.clf()
+    line_options = dict(color='gray', linewidth=1)
+    myplot.Plot([0, 40], [2, 2], line_options=line_options)
     for vs in ss:
+        n = len(vs)
+        age = n * INTERVAL
+        ts = numpy.linspace(0, age, n)
         PlotSequence(ts, vs)
 
     myplot.Save(root='kidney4',
+                formats=FORMATS,
                 xlabel='years',
-                ylabel='log size cm')
+                ylabel='size (cm, log scale)')
 
 
 def PlotBin(bin, color='blue'):
@@ -277,8 +286,8 @@ def PlotBin(bin, color='blue'):
 
 def PlotCache():
     """Plots the set of sequences for each bin."""
-    # 2.01, 4.95 cm, 9.97 cm, 14.879 cm
-    bins = [7.0, 16.0, 23.0, 27.0]
+    # 2.01 cm
+    bins = [7.0]
     colors = ['blue', 'green', 'red', 'cyan']
     cdfs = []
 
@@ -287,8 +296,11 @@ def PlotCache():
         PlotBin(bin, color)
 
     myplot.Save(root='kidney5',
+                formats=FORMATS,
+                title='History of simulated tumors',
+                axis=[-20, 1, 0.35, 3],
                 xlabel='years',
-                ylabel='log size cm')
+                ylabel='size (cm, log scale)')
 
 
 def CdfBin(bin, name=''):
@@ -317,9 +329,14 @@ def CdfCache():
 
     myplot.Cdfs(cdfs,
                 root='kidney6',
+                title='Distribution of age for several sizes',
+                formats=FORMATS,
                 xlabel='years',
-                ylabel='CDF')
+                ylabel='CDF',
+                loc=4)
 
+def PrintCI(cm, ps):
+    print round(cm, 1)
 
 def ConfidenceIntervalCache():
     """Plots the confidence interval for each bin."""
@@ -327,32 +344,50 @@ def ConfidenceIntervalCache():
     ts = []
     percentiles = [95, 75, 50, 25, 5]
 
+    # loop through the bins, accumulate
+    # xs: sequence of sizes in cm
+    # ts: sequence of percentile tuples
     for bin in sorted(cache.iterkeys()):
         cm = BinToCm(bin)
-        if cm < 0.9 or cm > 20.0:
+        if cm < 0.5 or cm > 20.0:
             continue
         xs.append(cm)
         cdf = CdfBin(bin)      
         ps = [cdf.Percentile(p) for p in percentiles]
         ts.append(ps)
 
+        PrintCI(cm, ps)
+
     linewidths = [1, 2, 3, 2, 1]
-    alphas = [0.2, 0.5, 1, 0.5, 0.2]
+    alphas = [0.3, 0.5, 1, 0.5, 0.3]
     labels = ['95th', '75th', '50th', '25th', '5th']
 
+    # transpose the ts so we have sequences for each percentile rank
     pyplot.clf()
     yys = zip(*ts)
+
     for ys, linewidth, alpha, label in zip(yys, linewidths, alphas, labels):
         line_options = dict(color='blue', linewidth=linewidth, 
                             alpha=alpha, label=label)
+
+        # plot the lines
         myplot.Plot(xs, ys,
                     clf=False,
-                    line_options=line_options)
+                    line_options=line_options,
+                    legend=False)
+
+        # put a label at the end of each line
+        x, y = xs[-1], ys[-1]
+        pyplot.text(x+0.1, y, label, 
+                    horizontalalignment='left',
+                    verticalalignment='center')
 
     myplot.Save(root='kidney7',
+                formats=FORMATS,
                 title='Confidence interval for age vs size',
                 xlabel='size (cm)',
-                ylabel='age (years)')
+                ylabel='age (years)',
+                legend=False)
 
 
 def main(script):
@@ -362,18 +397,18 @@ def main(script):
 
     lam1 = FitCdf(cdf)
     fit = GenerateCdf(lam1=lam1)
-    PlotCdf(cdf, fit)
-    QQPlot(cdf, fit)
+    #PlotCdf(cdf, fit)
+    #QQPlot(cdf, fit)
 
-    ts, ss = MakeSequences(100)
-    PlotSequences(ts, ss)
+    ss = MakeSequences(100)
+    PlotSequences(ss)
     PlotCache()
 
-    ts, ss = MakeSequences(900)
+    ss = MakeSequences(3900)
     CdfCache()
 
     ConfidenceIntervalCache()
-    PrintCache()
+    #PrintCache()
 
 
 
