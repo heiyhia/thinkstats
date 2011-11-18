@@ -260,8 +260,8 @@ def PlotSequences(ss):
     ss: list of sequences of volumes
     """
     pyplot.clf()
-    line_options = dict(color='gray', linewidth=1)
-    myplot.Plot([0, 40], [2, 2], line_options=line_options)
+    line_options = dict(color='gray', linewidth=1, linestyle='dashed')
+    myplot.Plot([0, 40], [10, 10], line_options=line_options)
     for vs in ss:
         n = len(vs)
         age = n * INTERVAL
@@ -270,6 +270,7 @@ def PlotSequences(ss):
 
     myplot.Save(root='kidney4',
                 formats=FORMATS,
+                axis=[0, 40, 0.3, 20],
                 xlabel='years',
                 ylabel='size (cm, log scale)')
 
@@ -286,8 +287,8 @@ def PlotBin(bin, color='blue'):
 
 def PlotCache():
     """Plots the set of sequences for each bin."""
-    # 2.01 cm
-    bins = [7.0]
+    # 9.97 cm
+    bins = [23.0]
     colors = ['blue', 'green', 'red', 'cyan']
     cdfs = []
 
@@ -298,7 +299,7 @@ def PlotCache():
     myplot.Save(root='kidney5',
                 formats=FORMATS,
                 title='History of simulated tumors',
-                axis=[-20, 1, 0.35, 3],
+                axis=[-40, 1, 0.3, 20],
                 xlabel='years',
                 ylabel='size (cm, log scale)')
 
@@ -336,7 +337,16 @@ def CdfCache():
                 loc=4)
 
 def PrintCI(cm, ps):
-    print round(cm, 1)
+    print '%0.1f, ' % round(cm, 1),
+    for p in reversed(ps):
+        print '%0.1f, ' % round(p, 1),
+    print
+        
+def PrintTable(xs, ts):
+    print r'V_0 & Percentiles of age &'
+    print r'    & 5th & 25th & 50th & 75th & 95th & \\'
+    for cm, ps in zip(xs, ts):
+        PrintCI(cm, ps)
 
 def ConfidenceIntervalCache():
     """Plots the confidence interval for each bin."""
@@ -347,7 +357,7 @@ def ConfidenceIntervalCache():
     # loop through the bins, accumulate
     # xs: sequence of sizes in cm
     # ts: sequence of percentile tuples
-    for bin in sorted(cache.iterkeys()):
+    for i, bin in enumerate(sorted(cache)):
         cm = BinToCm(bin)
         if cm < 0.5 or cm > 20.0:
             continue
@@ -356,7 +366,7 @@ def ConfidenceIntervalCache():
         ps = [cdf.Percentile(p) for p in percentiles]
         ts.append(ps)
 
-        PrintCI(cm, ps)
+    PrintTable(xs, ts)
 
     linewidths = [1, 2, 3, 2, 1]
     alphas = [0.3, 0.5, 1, 0.5, 0.3]
