@@ -293,8 +293,14 @@ def Save(root=None, formats=None, **options):
     if 'xscale' in options:
         pyplot.xscale(options['xscale'])
 
+    if 'xticks' in options:
+        pyplot.xticks(*options['xticks'])
+
     if 'yscale' in options:
         pyplot.yscale(options['yscale'])
+
+    if 'yticks' in options:
+        pyplot.yticks(*options['yticks'])
 
     if 'axis' in options:
         pyplot.axis(options['axis'])

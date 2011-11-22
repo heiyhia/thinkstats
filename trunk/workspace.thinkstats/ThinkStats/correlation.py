@@ -50,6 +50,11 @@ def Corr(xs, ys):
     return corr
 
 
+def SerialCorr(xs):
+    """Computes the serial correlation of a sequence."""
+    return Corr(xs[:-1], xs[1:])
+
+
 def SpearmanCorr(xs, ys):
     """Computes Spearman's rank correlation.
 
