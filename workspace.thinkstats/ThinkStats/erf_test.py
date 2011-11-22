@@ -14,6 +14,22 @@ class Test(unittest.TestCase):
         y = erf.erf(0.0)
         self.assertAlmostEquals(y, 0.0)
 
+        y = erf.erf(0.1)
+        self.assertAlmostEquals(y, 0.11246296562219549)
+
+        y = erf.erf(-0.1)
+        self.assertAlmostEquals(y, -0.11246296562219549)
+
+    def testErfinv(self):
+        x = erf.erfinv(0.0)
+        self.assertAlmostEquals(x, 0.0)
+
+        x = erf.erfinv(0.11246296562219549)
+        self.assertAlmostEquals(x, 0.1)
+
+        x = erf.erfinv(-0.11246296562219549)
+        self.assertAlmostEquals(x, -0.1)
+
 
 if __name__ == "__main__":
     unittest.main()
