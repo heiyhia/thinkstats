@@ -21,7 +21,7 @@ import cProfile
 
 INTERVAL = 245/365.0
 FORMATS = ['png', 'pdf']
-
+MINSIZE = 0.2
 
 def DoTheMath():
     interval = 3291.0
@@ -130,51 +130,42 @@ def FitCdf(cdf):
     return -slope
 
 
-def NormalCorrelate(mu, sigma, x, rho):
-    """Generates a variate from a Gaussian distribution, correlated with x.
-
-    mu: mean
-    sigma: standard deviation
-    x: previous value in the series
-    rho: target coefficient of correlation
-    """
-    mu2 = mu + rho * (x - mu);
-    sigma2 = math.sqrt(sigma**2 * (1 - rho**2));
-    return random.gauss(mu2, sigma2)
-
-
-def GenerateCorrelatedProbs(n, rho):
-    """Generates a sequence of cumulative probabilities with correlation.
+def CorrelatedGenerator(cdf, rho):
+    """Generates a sequence of values from cdf with correlation.
 
     Generates a correlated standard normal series, then transforms to
-    cumulative probabilities.
+    values from cdf
 
-    n: sequence length
+    cdf: distribution to choose from
     rho: target coefficient of correlation
     """
+    def Transform(x):
+        p = erf.NormalCdf(x)
+        y = cdf.Value(p)
+        return y
+
     x = random.gauss(0, 1)
-    xs = [x]
-    sigma = math.sqrt(1 - rho**2);
-    
-    for i in xrange(n):
+    yield Transform(x)
+
+    sigma = math.sqrt(1 - rho**2);    
+    while True:
         x = random.gauss(x * rho, sigma)
-        xs.append(x)
+        yield Transform(x)
 
-    ps = [erf.NormalCdf(x) for x in xs]
-    return ps
-    
 
-def GenerateCorrelatedSequence(n, rho, cdf):
-    """Generates a sample from a distribution, with correlation.
+def UncorrelatedGenerator(cdf, rho):
+    """Generates a sequence of values from cdf with correlation.
 
-    n: sequence length
+    Generates a correlated standard normal series, then transforms to
+    values from cdf
+
+    cdf: distribution to choose from
     rho: target coefficient of correlation
-    cdf: Cdf object
     """
-    ps = GenerateCorrelatedProbs(n, rho)
-    xs = [cdf.Value(p) for p in ps]
-    return xs
-    
+    while True:
+        x = cdf.Random()
+        yield x
+
 
 def RdtGenerator(n, rho, cdf):
     """Returns an iterator with n values from cdf and the given correlation.
@@ -184,12 +175,9 @@ def RdtGenerator(n, rho, cdf):
     cdf: Cdf object
     """
     if rho == 0.0:
-        xs = cdf.Sample(n)
+        return UncorrelatedGenerator(cdf, rho)
     else:
-        xs = GenerateCorrelatedSequence(n, rho, cdf)
-        
-    for x in xs:
-        yield x
+        return CorrelatedGenerator(cdf, rho)
 
 
 def GenerateRdt(pc, lam1, lam2):
@@ -234,9 +222,20 @@ def CmToBin(x, factor=10):
     return factor * math.log(x)
 
 
-def LinearMeasure(volume, exp=1.0/3.0):
-    """Converts a colume to a linear measure."""
-    return volume ** exp
+def Diameter(volume, factor=3/math.pi/4, exp=1/3.0):
+    """Converts a volume to a diameter.
+
+    d = 2r = 2 * (3/4/pi V)^1/3
+    """
+    return 2 * (factor * volume) ** exp
+
+
+def Volume(diameter, factor=4*math.pi/3):
+    """Converts a diameter to a volume.
+
+    V = 4/3 pi (d/2)^3
+    """
+    return factor * (diameter/2.0)**3
 
 
 class Cache(object):
@@ -257,7 +256,7 @@ class Cache(object):
 
     def Add(self, rdt, initial, final, seq):
         """Adds a sequence to the bin the corresponds to final."""
-        cm = LinearMeasure(final)
+        cm = Diameter(final)
         bin = round(CmToBin(cm))
         self.cache.setdefault(bin, []).append(seq)
         self.initial_rdt.append((initial, rdt))
@@ -266,8 +265,8 @@ class Cache(object):
         """Prints the size (cm) for each bin, and the number of sequences."""
         for bin in sorted(cache.GetKeys()):
             ss = cache.GetBin(bin)
-            size = BinToCm(bin)
-            print bin, size, len(ss)
+            diameter = BinToCm(bin)
+            print diameter, len(ss)
         
     def Correlation(self):
         vs, rdts = zip(*self.initial_rdt)
@@ -296,7 +295,7 @@ def ExtendSequence(t, rdt, interval):
     return final, res
 
 
-def MakeSequence(iterator, v0=0.1, interval=INTERVAL, vmax=20**3):
+def MakeSequence(iterator, v0=0.01, interval=INTERVAL, vmax=Volume(20.0)):
     """Simulate the growth of a tumor.
 
     n: number of time steps
@@ -335,7 +334,7 @@ def PlotSequence(ts, vs, color='blue'):
     color: color string
     """
     line_options = dict(color=color, linewidth=1, alpha=0.2)
-    xs = [v**(1.0/3) for v in vs]
+    xs = [Diameter(v) for v in vs]
     myplot.Plot(ts, xs,
                 line_options=line_options,
                 yscale='log',
@@ -358,11 +357,11 @@ def PlotSequences(ss):
 
     myplot.Save(root='kidney4',
                 formats=FORMATS,
-                axis=[0, 40, 0.3, 20],
+                axis=[0, 40, MINSIZE, 20],
                 title='Simulations of tumor growth',
                 xlabel='tumor age (years)',
-                yticks=MakeTicks([0.5, 1, 2, 5, 10, 20]),
-                ylabel='size (cm, log scale)')
+                yticks=MakeTicks([0.2, 0.5, 1, 2, 5, 10, 20]),
+                ylabel='diameter (cm, log scale)')
 
 
 def PlotBin(bin, color='blue'):
@@ -389,9 +388,9 @@ def PlotCache():
     myplot.Save(root='kidney5',
                 formats=FORMATS,
                 title='History of simulated tumors',
-                axis=[-40, 1, 0.3, 20],
+                axis=[-40, 1, MINSIZE, 20],
                 xlabel='years',
-                ylabel='size (cm, log scale)')
+                ylabel='diameter (cm, log scale)')
 
 
 def CdfBin(bin, name=''):
@@ -420,27 +419,42 @@ def CdfCache():
 
     myplot.Cdfs(cdfs,
                 root='kidney6',
-                title='Distribution of age for several sizes',
+                title='Distribution of age for several diameters',
                 formats=FORMATS,
-                xlabel='years',
+                xlabel='tumor age (years)',
                 ylabel='CDF',
                 loc=4)
 
+
 def PrintCI(fp, cm, ps):
+    """Writes a line in the LaTeX table.
+
+    fp: file pointer
+    cm: diameter in cm
+    ts: tuples of percentiles
+    """
     fp.write('%0.1f' % round(cm, 1))
     for p in reversed(ps):
         fp.write(' & %0.1f ' % round(p, 1))
     fp.write(r'\\' '\n')
 
+
 def PrintTable(fp, xs, ts):
+    """Writes the data in a LaTeX table.
+
+    fp: file pointer
+    xs: diameters in cm
+    ts: sequence of tuples of percentiles
+    """
     fp.write(r'\begin{tabular}{|r||r|r|r|r|r|}' '\n')
     fp.write(r'\hline' '\n')
-    fp.write(r'$V_0$  & \multicolumn{5}{c}{Percentiles of age} \\' '\n')
+    fp.write(r'Diameter   & \multicolumn{5}{c|}{Percentiles of age} \\' '\n')
     fp.write(r'(cm)   & 5th & 25th & 50th & 75th & 95th \\' '\n')
     fp.write(r'\hline' '\n')
 
     for i, (cm, ps) in enumerate(zip(xs, ts)):
-        if i % 2 == 0:
+        #print cm, ps
+        if i % 3 == 0:
             PrintCI(fp, cm, ps)
 
     fp.write(r'\hline' '\n')
@@ -448,6 +462,14 @@ def PrintTable(fp, xs, ts):
 
 
 def FitLine(xs, ys, fxs):
+    """Fits a line to the xs and ys, and returns fitted values for fxs.
+
+    Applies a log transform to the xs.
+
+    xs: diameter in cm
+    ys: age in years
+    fxs: diameter in cm
+    """
     lxs = [math.log(x) for x in xs]
     inter, slope = correlation.LeastSquares(lxs, ys)
     res = correlation.Residuals(lxs, ys, inter, slope)
@@ -457,28 +479,32 @@ def FitLine(xs, ys, fxs):
     fys = [inter + slope * x for x in lfxs]
     return fys
 
-def ConfidenceIntervalCache(xscale='linear'):
+
+def ConfidenceIntervalFigure(xscale='linear'):
     """Plots the confidence interval for each bin."""
     xs = []
     ts = []
     percentiles = [95, 75, 50, 25, 5]
-
+    min_size = 0.3
+    
     # loop through the bins, accumulate
     # xs: sequence of sizes in cm
     # ts: sequence of percentile tuples
     for i, bin in enumerate(sorted(cache.GetKeys())):
         cm = BinToCm(bin)
-        if cm < 0.5 or cm > 20.0:
+        if cm < min_size or cm > 20.0:
             continue
         xs.append(cm)
         cdf = CdfBin(bin)      
         ps = [cdf.Percentile(p) for p in percentiles]
         ts.append(ps)
 
+    # dump the results into a table
     fp = open('kidney_table.tex', 'w')
     PrintTable(fp, xs, ts)
     fp.close()
 
+    # make the figure
     linewidths = [1, 2, 3, 2, 1]
     alphas = [0.3, 0.5, 1, 0.5, 0.3]
     labels = ['95th', '75th', '50th', '25th', '5th']
@@ -491,15 +517,16 @@ def ConfidenceIntervalCache(xscale='linear'):
         line_options = dict(color='blue', linewidth=linewidth, 
                             alpha=alpha, label=label, markersize=2)
 
+        # plot the data points
         myplot.Plot(xs, ys, 'bo',
                     line_options=line_options,
                     clf=False,
                     legend=False)
 
-        fxs = [0.5, 20.0]
+        # plot the fit lines
+        fxs = [min_size, 20.0]
         fys = FitLine(xs, ys, fxs)
 
-        # plot the lines
         myplot.Plot(fxs, fys,
                     clf=False,
                     line_options=line_options,
@@ -511,24 +538,39 @@ def ConfidenceIntervalCache(xscale='linear'):
                     horizontalalignment='left',
                     verticalalignment='center')
 
+    # make the figure
     myplot.Save(root='kidney7',
                 formats=FORMATS,
-                title='Confidence interval for age vs size',
-                xlabel='size (cm, log scale)',
+                title='Confidence interval for age vs diameter',
+                xlabel='diameter (cm, log scale)',
                 ylabel='tumor age (years)',
                 xscale=xscale,
                 xticks=MakeTicks([0.5, 1, 2, 5, 10, 20]),
-                axis=[0.4, 30, 0, 40],
+                axis=[0.25, 35, 0, 45],
                 legend=False)
 
+
 def MakeTicks(xs):
+    """Makes a pair of sequences for use as pyplot ticks.
+
+    xs: sequence of floats
+
+    Returns (xs, labels), where labels is a sequence of strings.
+    """
     labels = [str(x) for x in xs]
     return xs, labels
 
+
 def TestCorrelation(cdf):
-    n = 1000
+    """Tests the correlated generator.
+
+    Makes sure that the sequence has the right distribution and correlation.
+    """
+    n = 10000
     rho = 0.4
-    xs = GenerateCorrelatedSequence(n, rho, cdf)
+
+    iterator = CorrelatedGenerator(cdf, rho)
+    xs = [iterator.next() for i in range(n)]
     
     rho2 = correlation.SerialCorr(xs)
     print rho, rho2
@@ -546,8 +588,8 @@ def main(script):
     fit = GenerateCdf(lam1=lam1)
 
     #TestCorrelation(fit)
-    PlotCdf(cdf, fit)
 
+    PlotCdf(cdf, fit)
     QQPlot(cdf, fit)
 
     rho = 0.0
@@ -557,12 +599,12 @@ def main(script):
     PlotSequences(ss)
     PlotCache()
 
-    ss = MakeSequences(900, rho, fit)
+    ss = MakeSequences(1900, rho, fit)
     print 'V0-RDT correlation', cache.Correlation()
 
     CdfCache()
 
-    ConfidenceIntervalCache(xscale='log')
+    ConfidenceIntervalFigure(xscale='log')
     #cache.Print()
 
 
