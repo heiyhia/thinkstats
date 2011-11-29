@@ -88,8 +88,11 @@ def Process(table, name):
 
     table.ages = [p.agepreg for p in table.records
                   if p.agepreg != 'NA']
+    table.weights = [p.totalwgt_oz for p in table.records
+                     if p.totalwgt_oz != 'NA']
     table.age_pmf = Pmf.MakePmfFromList(table.ages, table.name)
     table.age_cdf = Cdf.MakeCdfFromList(table.ages, table.name)
+    table.weight_cdf = Cdf.MakeCdfFromList(table.weights, table.name)
 
 
 def MakeTables(data_dir='.'):
@@ -130,48 +133,72 @@ def GetAgeWeight(table, low=0.0, high=20.0):
     return ages, weights
 
 
-def Partition(ages, weights, bin_size=5):
+def Partition(ages, weights, bin_size=2):
+    """Break ages into bins.
+
+    Returns a map from age to list of weights.
+    """
     weight_dict = {}
     for age, weight in zip(ages, weights):
-        bin = math.floor(age / bin_size)
+        bin = bin_size * math.floor(age / bin_size) + bin_size/2.0
         weight_dict.setdefault(bin, []).append(weight)
 
-    print 'Bin', 'Mean weight (oz)'
     for bin, bin_weights in weight_dict.iteritems():
-        age = bin * bin_size
         try:
             mean = thinkstats.Mean(bin_weights)
-            print age, mean
         except ZeroDivisionError:
             continue
 
-    print
     return weight_dict
 
 
 def MakeFigures(pool, firsts, others):
     """Creates several figures for the book."""
 
+    # CDF of all ages
+    myplot.Cdf(pool.age_cdf, 
+               root='agemodel_age_cdf',
+               title="Distribution of mother's age",
+               xlabel='age (years)',
+               ylabel='CDF',
+               legend=False)
+
+    # CDF of all weights
+    myplot.Cdf(pool.weight_cdf, 
+               root='agemodel_weight_cdf',
+               title="Distribution of birth weight",
+               xlabel='birth weight (oz)',
+               ylabel='CDF',
+               legend=False)
 
     # plot CDFs of birth ages for first babies and others
     line_options = [
-                    dict(linewidth=0.5),
-                    dict(linewidth=0.5)
+                    dict(linewidth=2, alpha=0.7),
+                    dict(linewidth=2, alpha=0.7)
                     ]
 
     myplot.Cdfs([firsts.age_cdf, others.age_cdf], 
-                root='nsfg_age_cdf',
+                root='agemodel_age_cdfs',
                 line_options=line_options, 
-                title="Mother's age CDF",
+                title="Distribution of mother's age",
                 xlabel='age (years)',
-                ylabel='probability')
+                ylabel='CDF')
+
+    myplot.Cdfs([firsts.weight_cdf, others.weight_cdf], 
+                root='agemodel_weight_cdfs',
+                line_options=line_options, 
+                title="Distribution of birth weight",
+                xlabel='birth weight (oz)',
+                ylabel='CDF')
+
+    return
 
     # make a scatterplot of ages and weights
     ages, weights = GetAgeWeight(pool)
     pyplot.clf()
     #pyplot.scatter(ages, weights, alpha=0.2)
     pyplot.hexbin(ages, weights, cmap=matplotlib.cm.gray_r)
-    myplot.Save(root='age_scatter',
+    myplot.Save(root='agemodel_scatter',
                 xlabel='Age (years)',
                 ylabel='Birth weight (oz)',
                 legend=False)
@@ -182,10 +209,10 @@ def DifferenceInMeans(firsts, others, attr):
 
     Prints summary statistics.
     """
-    firsts_mean = thinkstats.TrimmedMean(getattr(firsts, attr))
+    firsts_mean = thinkstats.Mean(getattr(firsts, attr))
     print 'First babies, %s, trimmed mean:' % attr, firsts_mean
 
-    others_mean = thinkstats.TrimmedMean(getattr(others, attr))
+    others_mean = thinkstats.Mean(getattr(others, attr))
     print 'Other babies, %s, trimmed mean:' % attr, others_mean
 
     diff = others_mean - firsts_mean
@@ -219,6 +246,10 @@ def ComputeLeastSquares(ages, weights):
 def main(name, data_dir=''):
     pool, firsts, others = MakeTables(data_dir)
 
+    for table in [pool, firsts, others]:
+        print table.name, len(table.records),
+        print len(table.ages), len(table.weights)
+
     # compute differences in mean age and weight
     age_diff = DifferenceInMeans(firsts, others, 'ages')
     weight_diff = DifferenceInMeans(firsts, others, 'weights')
@@ -236,7 +267,8 @@ def main(name, data_dir=''):
     print
 
     # make a table of mean weight for 5-year age bins
-    Partition(ages, weights)
+    weight_dict = Partition(ages, weights)
+    MakeLinePlot(weight_dict)
 
     # the correlations are slightly higher if we trim outliers
     ages, weights = GetAgeWeight(pool, low=4, high=12)
@@ -244,6 +276,19 @@ def main(name, data_dir=''):
 
     MakeFigures(pool, firsts, others)
 
+
+def MakeLinePlot(age_bins):
+    xs = []
+    ys = []
+    for bin, weights in sorted(age_bins.iteritems()):
+        xs.append(bin)
+        ys.append(thinkstats.Mean(weights))
+
+    myplot.Plot(xs, ys, 'bs-',
+                root='agemodel_line',
+                xlabel="Mother's age (years)",
+                ylabel='Mean birthweight (oz)',
+                legend=False)
 
 if __name__ == '__main__':
     import sys
