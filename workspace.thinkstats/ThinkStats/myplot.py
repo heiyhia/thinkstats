@@ -77,7 +77,7 @@ def Pmf(pmf, clf=True, root=None, line_options=None, **options):
     xs, ps = pmf.Render()
     line_options = Underride(line_options, label=pmf.name)
 
-    Plot(xs, ps, clf, root, line_options, **options)
+    Plot(xs, ps, clf=clf, root=root, line_options=line_options, **options)
 
 
 def Pmfs(pmfs,
