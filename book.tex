@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.5.3}
+\newcommand{\theversion}{1.5.7}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -551,10 +551,12 @@ plasTeX, which I used to convert this book to DocBook.
 
 \item George Caplan sent several suggestions for improving clarity.
 
-\item Julian Ceipek found an error.
+\item Julian Ceipek found an error and a number of typos.
 
 \item Stijn Debrouwere, Leo Marihart III, Jonathan Hammler, and Kent Johnson
 found errors in the first print edition.
+
+\item Dan Kearney found a typo.
 
 % ENDCONTRIB
 
@@ -1551,7 +1553,7 @@ associated with a value:
 0.6
 \end{verbatim}
 
-Or you can multiple a probability by a factor:
+Or you can multiply a probability by a factor:
 %
 \begin{verbatim}
 >>> pmf.Mult(2, 0.5)
@@ -2792,7 +2794,7 @@ Taking the log of both sides yields:
 
 So if you plot log \y~versus log \x, it should look like a straight
 line with slope \minus\myalpha~and intercept
-\minus\myalpha~log \x\sub{m}.
+\myalpha~log \x\sub{m}.
 
 \begin{exercise}
 The {\tt random} module provides {\tt paretovariate},
@@ -3128,7 +3130,7 @@ data?  You can download a solution from
 If the logarithms of a set of values have a normal distribution, the
 values have a {\bf lognormal} distribution.  The CDF of the lognormal
 distribution is the same as the CDF of the normal distribution,
-with log \x substituted for \x.
+with log \x~substituted for \x.
 
 \Eqn{ CDF\sub{lognormal}(\x) = CDF\sub{normal}(log \x) }
  
@@ -3175,15 +3177,15 @@ demographics, health and health risks.
 Among the data they collected are the weights in kilograms of
 398,484 respondents.
 Figure~\ref{brfss_weight_log} shows the distribution
-of log \w, where \w is weight in kilograms, along with a normal
+of log \w, where \w~is weight in kilograms, along with a normal
 model.
 \index{respondent}
 \index{model}
 
 The normal model is a good fit for the data, although the highest
 weights exceed what we expect from the normal model even after the log
-transform.  Since the distribution of log \w fits a normal distribution, we
-conclude that \w fits a lognormal distribution.
+transform.  Since the distribution of log \w~fits a normal distribution, we
+conclude that \w~fits a lognormal distribution.
 \index{normal distribution}
 \index{distribution!normal}
 \index{Gaussian distribution}
@@ -3232,7 +3234,7 @@ it prints summary statistics for a few of the variables.
 \index{adult weight}
 
 Write a program that reads adult weights from the BRFSS and
-generates normal probability plots for \w and log \w.  You can
+generates normal probability plots for \w~and log \w.  You can
 download a solution from \url{http://thinkstats.com/brfss_figs.py}.
 
 \end{exercise}
@@ -3456,8 +3458,8 @@ qualitative notion that some things are more likely than others.
 \index{trial}
 
 The ``things'' we assign probabilities to are called {\bf events}.  If
-\E represents an event, then \Prob(\E) represents the probability that
-\E will occur.  A situation where \E might or might not happen is
+\E~represents an event, then \Prob(\E) represents the probability that
+\E~will occur.  A situation where \E~might or might not happen is
 called a {\bf trial}.
 \index{success}
 \index{failure}
@@ -4106,7 +4108,7 @@ hypothesis, \HH:
 \[ P(H|E) = P(H) \frac{P(E|H)}{P(E)} \]
 %
 In words, this equation says that the probability of \HH~after you
-have seen \E is the product of \Prob(\HH), which is the probability of
+have seen \E~is the product of \Prob(\HH), which is the probability of
 \HH~before you saw the evidence, and the ratio of \Prob(\E|\HH), the
 probability of seeing the evidence assuming that \HH~is true, and
 \Prob(\E), the probability of seeing the evidence under any circumstances
@@ -4217,7 +4219,7 @@ A friend of mine has two bags of M\&Ms, and he tells me
 that one is from 1994 and one from 1996.  He won't tell me which is
 which, but he gives me one M\&M from each bag.  One is yellow and
 one is green.  What is the probability that the yellow M\&M came
-from the 1994 bag?
+from the 1994 bag?<
   
 \end{exercise}
 
@@ -4720,7 +4722,7 @@ exponential distribution with parameter \mylambda.
 The distribution of \Z~=~\X~+~\Y~is:
 %
 \[ \PDF_Z(z) = \infint \PDF_X(x)~\PDF_Y(z-x) \spa dx = 
-\infint \lambda e^{-\lambda x}~\lambda e^{\lambda (z-x)} \]
+\infint \lambda e^{-\lambda x}~\lambda e^{\lambda (z-x)} dx \]
 %
 Now we have to remember that $PDF_{expo}$ is 0 for all negative
 values, but we can handle that by adjusting the limits of integration:
@@ -4818,7 +4820,7 @@ linear transformation if \X' is in the same family as \X.  The normal
 distribution has this property; if \X~\mysim~\mynormal (\mymu,
 \sigmasq),
 
-\Eqn{ \X'~\mysim~\mynormal (\mya \mymu~+~\myb, \mya\super{2} \mysigma) }
+\Eqn{ \X'~\mysim~\mynormal (\mya \mymu~+~\myb, \mya\super{2} \sigmasq) }
 
 Normal distributions are also closed under convolution.  
 If \Z~=~\X~+~\Y and
@@ -5404,7 +5406,7 @@ At the beginning of this chapter I said that the question we want to
 address is whether an apparent effect is real.  We started by defining
 the null hypothesis, denoted \HH\sub{0}, which is the hypothesis that
 the effect is not real.  Then we defined the p-value, which is
-\Prob(\E|\HH\sub{0}), where \E is an effect as big as or bigger
+\Prob(\E|\HH\sub{0}), where \E~is an effect as big as or bigger
 than the apparent effect.  Then we computed p-values and compared them
 to a threshold, \myalpha.
 
@@ -7045,7 +7047,7 @@ data points fall in it.  {\tt pyplot} provides a function called
 {\tt hexbin}:
 %
 \begin{verbatim}
-pyplot.scatter(heights, weights, cmap=matplotlib.cm.Blues)
+pyplot.hexbin(heights, weights, cmap=matplotlib.cm.Blues)
 \end{verbatim}
 %
 Figure~\ref{scatterplot4} shows the result with a blue colormap.
