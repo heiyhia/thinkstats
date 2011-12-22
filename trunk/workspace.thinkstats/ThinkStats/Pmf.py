@@ -167,16 +167,17 @@ class Pmf(_DictWrapper):
             name = self.name
         return Pmf(dict(self.d), name)
 
-    def Prob(self, x):
+    def Prob(self, x, default=0):
         """Gets the probability associated with the value x.
 
         Args:
             x: number value
+            default: value to return if the key is not there
 
         Returns:
             float probability
         """
-        return self.d.get(x, 0)
+        return self.d.get(x, default)
 
     def Probs(self):
         """Gets an unsorted sequence of probabilities."""
