@@ -34,25 +34,24 @@ class Test(unittest.TestCase):
 
     def testMakeNormalCdf(self):
         cdf = erf.MakeNormalCdf(digits=2)
-        #self.assertAlmostEquals(cdf.Prob(-3.0), 0.0013498980316301035)
-        #self.assertAlmostEquals(cdf.Prob(0.0), 0.5)
-        #self.assertAlmostEquals(cdf.Prob(3.0), 0.9986501019683699)
-        #self.assertAlmostEquals(cdf.Prob(5.0), 0.99996832875816688)
+        self.assertAlmostEquals(cdf.Prob(-3.0), 0.0013498980316301035)
+        self.assertAlmostEquals(cdf.Prob(0.0), 0.5)
+        self.assertAlmostEquals(cdf.Prob(3.0), 0.9986501019683699)
+        self.assertAlmostEquals(cdf.Prob(5.0), 0.99996832875816688)
 
     def testMakeNormalPmf(self):
         pmf = erf.MakeNormalPmf(digits=1)
 
-        #self.assertAlmostEquals(pmf.Prob(-3.0), 3.503234174478953e-05)
-        #self.assertAlmostEquals(pmf.Prob(0.0), 0.0031915042004636573)
-        #self.assertAlmostEquals(pmf.Prob(3.0), 0.9986501019683699)
-        
+        self.assertAlmostEquals(pmf.Prob(-3.0), 0.00038229481841173252)
+        self.assertAlmostEquals(pmf.Prob(0.0), 0.039827837277028821)
+        self.assertAlmostEquals(pmf.Prob(3.0), 0.00051591526875394145)
+       
     def testFixedPointNormalPmf(self):
         pmf = erf.FixedPointNormalPmf(spread=3, digits=1)
         
-        probber = pmf.Probber()
-        for x in [-1.01, 1.01]:
-            print x, probber(x)
-        #myplot.Hist(pmf, show=True)
+        self.assertAlmostEquals(pmf.NormalProb(-1.01), 0.9888250336816421)
+        self.assertAlmostEquals(pmf.NormalProb(0.0), 1.629618)
+        self.assertAlmostEquals(pmf.NormalProb( 1.01), 0.9888250336816421)
 
 
 if __name__ == "__main__":

@@ -97,14 +97,19 @@ class FixedPointNormalPmf(Pmf.Pmf):
             self.Set(x, p)
 
         self.default = p
+        total = self.Total()
         max_like = self.MaxLike()
 
-        self.Normalize(1 / max_like)
+        self.Normalize(1.629618 * total / max_like)
 
-    def Round(self, x):
-        return round(x, self.digits)
-    
-    def Probber(self):
-        return lambda x: self.d.get(round(x, self.digits), self.default)
+    def Calibrate(self):
+        prod = 1.0
+        for x, p in self.Items():
+            n = p
+            prod *= p**n
+        return prod
+
+    def NormalProb(self, x):
+        return self.d.get(round(x, self.digits), self.default)
 
 
