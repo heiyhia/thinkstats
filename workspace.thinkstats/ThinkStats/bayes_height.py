@@ -7,8 +7,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import math
 import numpy
+import cPickle
 import random
 
+import brfss
 import erf
 import myplot
 import Pmf
@@ -18,26 +20,27 @@ import matplotlib.pyplot as pyplot
 
 spread = 4
 digits = 2
-normal_pmf = erf.FixedPointNormalPmf(spread, digits)
+normal_pmf = erf.FixedPointNormalPmf(spread, digits, log=True)
 
 
-def MakeUniformSuite(low, high, steps):
-    """Makes a PMF that represents a suite of hypotheses with equal p.
-    
+def BatchUpdate(suite, t, batch_size=20):
+    """Updates a suite of hypotheses based on new evidence.
+
+    Modifies the suite directly; if you want to keep the original, make
+    a copy.
+
     Args:
-        low: low end of range
-        high: high end of range
-        steps: number of values
-
-    Returns:
-        Pmf object
+        suite: Pmf object
+        evidence: whatever kind of object Likelihood expects
+        batch_size: number of element to process before normalizing
     """
-    hypos = [low + (high-low) * i / (steps-1.0) for i in range(steps)]
-    pmf = Pmf.MakePmfFromList(hypos)
-    return pmf
+    for i in range(0, len(t), batch_size):
+        print i, i+batch_size
+        batch = t[i:i+batch_size]
+        Update(suite, batch)
 
 
-def Update(suite, evidence):
+def LogUpdate(suite, evidence):
     """Updates a suite of hypotheses based on new evidence.
 
     Modifies the suite directly; if you want to keep the original, make
@@ -48,12 +51,12 @@ def Update(suite, evidence):
         evidence: whatever kind of object Likelihood expects
     """
     for hypo in suite.Values():
-        likelihood = Likelihood(evidence, hypo)
-        suite.Mult(hypo, likelihood)
-    suite.Normalize()
+        likelihood = LogLikelihood(evidence, hypo)
+        suite.Incr(hypo, likelihood)
+    print suite.Total()
 
 
-def Likelihood(evidence, hypo):
+def LogLikelihood(evidence, hypo):
     """Computes the likelihood of the evidence assuming the hypothesis is true.
 
     Args:
@@ -66,31 +69,46 @@ def Likelihood(evidence, hypo):
     """
     t = evidence
     mu, sigma = hypo
-    return NormalLikelihood(t, mu, sigma)
+
+    total = Summation(t, mu)
+    return -len(t) * math.log(sigma) - total / 2 / sigma**2
 
 
-def NormalLikelihood(t, mu, sigma):
-    prod = 1.0
-    for x in t:
-        prod *= normal_pmf.NormalProb((x-mu) / sigma)
-    return prod
+def Summation(t, mu, cache={}):
+    try:
+        return cache[t, mu]
+    except KeyError:
+        total = sum((x-mu)**2 for x in t)
+        cache[t, mu] = total
+        return total
 
+def MakeUniformPrior(t, num_points, spread=3.0):
+    """Makes a prior distribution for mu and sigma based on a sample.
 
-def MakeUniformPrior(t, num_points):
+    t: sample
+    num_points: number of values in each dimension
+    spread: number of standard errors to include
+
+    Returns: Pmf that maps from (mu, sigma) to prob.
+    """
+    # estimate mean and stddev of t
     n = len(t)
     xbar, S2 = thinkstats.MeanVar(t)
     sighat = math.sqrt(S2)
 
+    print xbar, sighat
+
+    # compute standard error for mu and the range of ms
     stderr_xbar = sighat / math.sqrt(n)
-    spread = 2
     mspread = spread * stderr_xbar
     ms = numpy.linspace(xbar-mspread, xbar+mspread, num_points)
 
+    # compute standard error for sigma and the range of ss
     stderr_sighat = sighat / math.sqrt(2 * (n-1))
     sspread = spread * stderr_sighat
-    
     ss = numpy.linspace(sighat-sspread, sighat+sspread, num_points)
 
+    # populate the PMF
     pmf = Pmf.Pmf()
     for m in ms:
         for s in ss:
@@ -98,31 +116,71 @@ def MakeUniformPrior(t, num_points):
     return ms, ss, pmf
 
 
-def ContourPlot(xs, ys, suite):
+def PlotPosterior(xs, ys, suite, pcolor=True, contour=False):
+    """Makes a contour plot.
+    
+    xs: sequence of values
+    ys: sequence of values
+    suite: Pmf that maps (x, y) to z
+    """
     X, Y = numpy.meshgrid(xs, ys)
     func = lambda x, y: suite.Prob((x, y))
     prob = numpy.vectorize(func)
     Z = prob(X, Y)
 
-    pyplot.contour(X, Y, Z)
+    if pcolor:
+        pyplot.pcolor(X, Y, Z)
+    if contour:
+        pyplot.contour(X, Y, Z)
     pyplot.show()
 
 
+def DumpHeights(data_dir='.', n=10000):
+    resp = brfss.Respondents()
+    resp.ReadRecords(data_dir, n)
+
+    d = {1:[], 2:[]}
+    [d[r.sex].append(r.htm3) for r in resp.records if r.htm3 != 'NA']
+
+    fp = open('bayes_height_data.pkl', 'wb')
+    cPickle.dump(d, fp)
+    fp.close()
+
+
+def LoadHeights():
+    fp = open('bayes_height_data.pkl', 'r')
+    d = cPickle.load(fp)
+    fp.close()
+    return d
+
+
+def EstimateParameters(t, num_points=21):
+    xs, ys, suite = MakeUniformPrior(t, num_points)
+    suite.Log()
+
+    LogUpdate(suite, tuple(t))
+
+    suite.Exp()
+    suite.Normalize()
+
+    PlotPosterior(xs, ys, suite)
+
+
 def main():
-    random.seed(17)
-    t = [random.gauss(3, 4) for i in range(20)]
+    if False:
+        random.seed(16)
+        t = [random.gauss(3, 5) for i in range(100000)]
+        EstimateParameters(t)
+        return
 
-    xs, ys, suite = MakeUniformPrior(t, 11)
+    #DumpHeights(n=1000000)
+    d = LoadHeights()
 
-    Update(suite, t)
-    suite.name = 'posterior'
+    for key, t in d.iteritems():
+        print key, len(t)
+        EstimateParameters(t)
+        break
 
-    for hypo, p in suite.Items():
-        print hypo, p
-
-    print suite.Total()
-
-    ContourPlot(xs, ys, suite)
 
 if __name__ == '__main__':
     main()
