@@ -82,8 +82,18 @@ def MakeNormalPmf(low=-spread, high=spread, digits=2):
 
 
 class FixedPointNormalPmf(Pmf.Pmf):
+    """A Pmf that maps from normal scores to probabilities.
 
-    def __init__(self, spread=4, digits=2):
+    Values are rounded to the given number of digits.
+    """
+
+    def __init__(self, spread=4, digits=2, log=False):
+        """Initalizes a FixedPointNormalPmf.
+
+        spread: how many standard deviations in each direction.
+        digits: how many digits to round off to
+        log: whether to log-transform the probabilities
+        """
         Pmf.Pmf.__init__(self)
         self.spread = spread
         self.digits = digits
@@ -94,22 +104,19 @@ class FixedPointNormalPmf(Pmf.Pmf):
 
         for x in xs:
             p = StandardNormalCdf(x + gap) - StandardNormalCdf(x - gap)
-            self.Set(x, p)
+            self.Set(round(x, self.digits), p)
 
+        # save the last (smallest) probability as the default for
+        # values beyond the spread
         self.default = p
-        total = self.Total()
-        max_like = self.MaxLike()
 
-        self.Normalize(1.629618 * total / max_like)
-
-    def Calibrate(self):
-        prod = 1.0
-        for x, p in self.Items():
-            n = p
-            prod *= p**n
-        return prod
+        self.Normalize()
+        if log:
+            self.Log()
+            self.default = math.log(self.default)
 
     def NormalProb(self, x):
+        """Looks up the probability for the value closest to x."""
         return self.d.get(round(x, self.digits), self.default)
 
 

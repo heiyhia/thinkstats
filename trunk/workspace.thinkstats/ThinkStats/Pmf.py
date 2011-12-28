@@ -16,6 +16,7 @@ _DictWrapper: private parent class for Hist and Pmf.
 """
 
 import logging
+import math
 import random
 
 class _DictWrapper(object):
@@ -241,6 +242,18 @@ class Pmf(_DictWrapper):
         for x, p in self.d.iteritems():
             var += p * (x - mu)**2
         return var
+
+    def Log(self):
+        """Log transforms the probabilities."""
+        m = self.MaxLike()
+        for x, p in self.d.iteritems():
+            self.Set(x, math.log(p/m))
+
+    def Exp(self):
+        """Exponentiates the probabilities."""
+        m = self.MaxLike()
+        for x, p in self.d.iteritems():
+            self.Set(x, math.exp(p-m))
 
 
 def MakeHistFromList(t, name=''):

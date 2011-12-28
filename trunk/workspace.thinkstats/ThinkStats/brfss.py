@@ -98,6 +98,7 @@ class Respondents(survey.Table):
             cv = sigma / mu
             print key, len(t), mu, var, sigma, cv
 
+        return d
 
     def SummarizeWeight(self):
         """Print summary statistics for male and female weight."""
@@ -127,7 +128,7 @@ class Respondents(survey.Table):
         print 'Mean change', thinkstats.Mean(changes)
         
     
-def main(name, data_dir=''):
+def main(name, data_dir='.'):
     resp = Respondents()
     resp.ReadRecords(data_dir)
     resp.SummarizeHeight()
