@@ -173,7 +173,7 @@ def main():
         EstimateParameters(t)
         return
 
-    #DumpHeights(n=1000000)
+    DumpHeights(n=10000)
     d = LoadHeights()
 
     for key, t in d.iteritems():
