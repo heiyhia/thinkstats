@@ -351,6 +351,9 @@ def MakeFigures(shelf):
 def MakePercentiles(shelf, n=50):
     pairs = ReadShelf(shelf)
     pairs.sort()
+    for x, y in pairs:
+        print x, y
+    return
 
     xs = []
     plists = []
