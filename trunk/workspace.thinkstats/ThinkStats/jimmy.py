@@ -14,17 +14,24 @@ import random
 import thinkstats
 
 
-def SimulateSample(cdf, num_nuts):
+def SimulateSample(expected, cdf, num_nuts, factor=10, stir=-1):
     """Generates a Hist of simulated nuts.
     
     Args:
-      cdf: 
+      expected: Pmf of expected values
+      cdf: cdf of expected values
       num_nuts: number of times to nuts
 
     Returns:
       Hist object
     """
-    t = cdf.Sample(num_nuts)
+    if stir == -1:
+        t = cdf.Sample(num_nuts)
+    else:
+        vat = MakeVat(expected, num_nuts, factor=factor, stir=stir)
+        t = vat[:num_nuts]
+
+    #print stir, PercentAdjacent(t)
     hist = Pmf.MakeHistFromList(t)
     return hist
 
@@ -46,7 +53,7 @@ def ChiSquared(expected, observed):
     return total
 
 
-def Test(expected, observed, num_trials=1000):
+def Test(expected, observed, num_trials=1000, stir=-1):
     """Run a simulation to estimate the p-value of the observed values.
 
     Args:
@@ -64,12 +71,12 @@ def Test(expected, observed, num_trials=1000):
 
     print 'simulated %d trials' % num_trials
     chi2s = []
-    count = 0
+    count = 0.0
     num_nuts = observed.Total()
     cdf = Cdf.MakeCdfFromHist(expected)
 
     for _ in range(num_trials):
-        simulated = SimulateSample(cdf, num_nuts)
+        simulated = SimulateSample(expected, cdf, num_nuts, stir=stir)
         chi2 = ChiSquared(expected, simulated)
         chi2s.append(chi2)
         if chi2 >= threshold:
@@ -77,7 +84,7 @@ def Test(expected, observed, num_trials=1000):
             
     print 'max chi2', max(chi2s)
     
-    pvalue = 1.0 * count / num_trials
+    pvalue = count / num_trials
     print 'p-value', pvalue
 
     return pvalue
@@ -92,34 +99,41 @@ def ConvertToCount(sample, count_per):
     for value, count in sample.Items():
         sample.Mult(value, 16 * count_per[value])
 
+
 def MakeVat(expected, num_nuts, factor=10, stir=0.0):
+    """Makes a list of nuts with the given amount of stirring."""
     t = []
     for value, freq in expected.Items():
-        t.extend([value] * freq * factor)
+        t.extend([value] * int(freq * factor))
 
     if stir == -1:
         random.shuffle(t)
     else:
-        [RandomSwap(t) for i in xrange(int(num_nuts*stir))]
-
+        [RandomSwap(t) for i in xrange(int(num_nuts*factor*stir))]
     
     return t
 
+
 def RandomSwap(t):
-    i, j = [random.randint(len(t)) for i in range(2)]
+    """Chooses two random elements of the list and swaps them."""
+    i, j = [random.randrange(len(t)) for i in range(2)]
     t[i], t[j] = t[j], t[i]
 
+
 def PercentAdjacent(t):
+    """Computes the fraction of adjacent pairs that are the same."""
+    count = 0.0
     for i in range(len(t) - 1):
         if t[i] == t[i+1]:
+            count += 1
+    return count / len(t)
             
 
 def main():
     # make a Hist of observed values
     count_per = dict(cashew=17, brazil=7, almond=22, peanut=28)
-    count_per = dict(cashew=12, brazil=5, almond=18, peanut=24)
+    #count_per = dict(cashew=12, brazil=5, almond=18, peanut=24)
     sample = dict(cashew=6, brazil=3, almond=5, peanut=6)
-
 
     observed = Pmf.MakeHistFromDict(sample)
     ConvertToCount(observed, count_per)
@@ -133,10 +147,12 @@ def main():
         o = observed.Freq(value)
         print value, e, o, 100 * (o - e)/ e, '%'
 
-    # compute the chi-squared statistic
-    print ChiSquared(expected, observed)
+    num_nuts = observed.Total()
 
-    Test(expected, observed, num_trials=1000)
+    for stir in [1.1, 1.15, 1.2, 1.25, 1.3, -1]:
+        vat = MakeVat(expected, num_nuts, factor=10, stir=stir)
+        print stir, PercentAdjacent(vat)
+        Test(expected, observed, num_trials=100, stir=stir)
 
 if __name__ == "__main__":
     main()

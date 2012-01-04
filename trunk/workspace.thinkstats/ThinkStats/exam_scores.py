@@ -29,8 +29,7 @@ def fake_diff(pc, num_questions):
 def fake_diffs(pcs, num_questions):
     """Generates differences in exam scores for students with given
     values of pc."""
-    diffs = [fake_diff(pc, num_questions) for pc in pcs]
-    return diffs
+    return [fake_diff(pc, num_questions) for pc in pcs]
 
 def p_value(delta, pcs, num_questions, iterations=10000):
     """Computes the probability of seeing a mean difference in exam
