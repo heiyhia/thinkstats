@@ -46,6 +46,7 @@ class Respondents(survey.Table):
                 cast is a callable that converts the result to int, float, etc.
         """
         return [
+            ('age', 101, 102, int),
             ('weight2', 119, 122, int),
             ('wtyrago', 127, 130, int),
             ('wtkg2', 1254, 1258, int),
@@ -80,6 +81,10 @@ class Respondents(survey.Table):
             # recode htm3
             if rec.htm3 == 999:
                 rec.htm3 = 'NA'
+
+            # recode age
+            if rec.age in [7, 9]:
+                rec.age = 'NA'
 
 
     def SummarizeHeight(self):
