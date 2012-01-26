@@ -38,9 +38,7 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
     """
     # TODO: when n is small, generate a larger sample and desample
     n = len(ys)
-    ys.sort()
     xs = [random.normalvariate(0.0, 1.0) for i in range(n)]
-    xs.sort()
     
     pyplot.clf()
     pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=3, **lineoptions)

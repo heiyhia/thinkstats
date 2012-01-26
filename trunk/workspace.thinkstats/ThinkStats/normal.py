@@ -5,6 +5,17 @@ Copyright 2011 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+"""
+How many students would you have to see to have an 80% chance of
+seeing a stat.sig. difference between first-year students and juniors?
+
+Race   Before   After   Diff    Sigma (before)  Sample size
+White  1170     1211            179              118
+Black   995     1001            167             4790
+
+
+"""
+
 import math
 
 import Cdf

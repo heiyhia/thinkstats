@@ -89,6 +89,18 @@ def LeastSquares(xs, ys):
     return inter, slope
 
 
+def FitLine(xs, inter, slope):
+    """Returns the fitted line for the range of xs.
+
+    xs: x values use for the fit
+    slope: estimated slope
+    inter: estimated intercept
+    """
+    fxs = min(xs), max(xs)
+    fys = [x * slope + inter for x in fxs]
+    return fxs, fys
+
+
 def Residuals(xs, ys, inter, slope):
     """Computes residuals for a linear fit with parameters inter and slope.
 
