@@ -95,7 +95,8 @@ def RunFit(xs, ys):
     print 'Mean diff', thinkstats.Mean(ys)
     print 'Current rate:', fys[-1]
 
-    Regress(xs, ys)
+    Regress(model_number=0)
+    Regress(model_number=1)
 
 
 def PlotProbs(filename='p.heri.31'):
@@ -114,21 +115,6 @@ def PlotProbs(filename='p.heri.31'):
                 ylabel='cumulative probability',
                 axis=[1972, 2010, 0, 1])
 
-
-def Regress(ts, ys, model_number=0):
-
-    # put the data into the R environment
-    robjects.globalEnv['ts'] = robjects.FloatVector(ts)
-    robjects.globalEnv['ys'] = robjects.FloatVector(ys)
-
-    # run the models
-    models = ['ys ~ ts']
-    model = models[model_number]
-    print model
-    res = RunModel(model)
-
-    coeffs = GetCoefficients(res)
-    PlotRandomLinearFit(coeffs, ts)
 
 def PlotLinearFit(coeffs, ts):
     inter = GetEst(coeffs[0])
@@ -174,6 +160,26 @@ def RunModel(model, print_flag=True):
     if print_flag:
         PrintSummary(res)
     return res
+
+
+def Regress(filename='heri.1', model_number=0):
+    data = ReadData(filename)
+    ts, ys = zip(*data)
+    t2 = [t**2 for t in ts]
+
+    # put the data into the R environment
+    robjects.globalEnv['ts'] = robjects.FloatVector(ts)
+    robjects.globalEnv['t2'] = robjects.FloatVector(t2)
+    robjects.globalEnv['ys'] = robjects.FloatVector(ys)
+
+    # run the models
+    models = ['ys ~ ts',
+              'ys ~ ts + t2']
+    model = models[model_number]
+    res = RunModel(model)
+
+    coeffs = GetCoefficients(res)
+    PlotRandomLinearFit(coeffs, ts)
 
 
 def PrintSummary(res):
