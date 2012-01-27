@@ -9,7 +9,9 @@ import matplotlib.pyplot as pyplot
 import myplot
 import csv
 
+import Cdf
 import correlation
+import math
 import random
 import thinkstats
 
@@ -95,9 +97,6 @@ def RunFit(xs, ys):
     print 'Mean diff', thinkstats.Mean(ys)
     print 'Current rate:', fys[-1]
 
-    Regress(model_number=0)
-    Regress(model_number=1)
-
 
 def PlotProbs(filename='p.heri.31'):
     pyplot.clf()
@@ -108,7 +107,7 @@ def PlotProbs(filename='p.heri.31'):
 
     data = ReadData(filename)
     xs, ys = zip(*data)
-    pyplot.plot(xs, ys, 'bo-', color='blue', linewidth=2, markersize=10)
+    pyplot.plot(xs, ys, 'bo-', color='blue', linewidth=2, markersize=6)
     myplot.Save(root='heri2',
                 title='Location of changepoints',
                 xlabel='',
@@ -116,44 +115,7 @@ def PlotProbs(filename='p.heri.31'):
                 axis=[1972, 2010, 0, 1])
 
 
-def PlotLinearFit(coeffs, ts):
-    inter = GetEst(coeffs[0])
-    slope = GetEst(coeffs[1])
-    ys = [inter + slope * t for t in ts]
-    pyplot.plot(fts, fys, color='gray', linewidth=2)
-
-
-def PlotRandomLinearFit(coeffs, ts, n=10):
-    for i in range(n):
-        inter = RandomEst(coeffs[0])
-        slope = RandomEst(coeffs[1])
-        print inter, slope
-        ys = [inter + slope * t for t in ts]
-        pyplot.plot(ts, ys, color='gray', linewidth=2)
-
-
-def RandomEst(coeff):
-    name, est, stderr = coeff
-    print est, stderr
-    return random.gauss(est, stderr/100)
-
-
-def GetEst(coeff):
-    name, est, stderr = coeff
-    return est
-
-
-def EvalLinearModel(coeffs, ts):
-    inter = GetEst(coeffs[0])
-    slope = GetEst(coeffs[1])
-    print inter, slope
-    print type(slope)
-    ys = [inter + slope * t for t in ts]
-    return ts, ys
-
-    
-
-def RunModel(model, print_flag=True):
+def RunModel(model, print_flag=False):
     """Submits model to r.lm and returns the result."""
     model = r(model)
     res = r.lm(model)
@@ -162,24 +124,120 @@ def RunModel(model, print_flag=True):
     return res
 
 
-def Regress(filename='heri.1', model_number=0):
-    data = ReadData(filename)
-    ts, ys = zip(*data)
+def Regress(model, ys, ts, print_flag=False, drop=1):
     t2 = [t**2 for t in ts]
 
     # put the data into the R environment
-    robjects.globalEnv['ts'] = robjects.FloatVector(ts)
-    robjects.globalEnv['t2'] = robjects.FloatVector(t2)
-    robjects.globalEnv['ys'] = robjects.FloatVector(ys)
+    robjects.globalEnv['ts'] = robjects.FloatVector(ts[:-drop])
+    robjects.globalEnv['t2'] = robjects.FloatVector(t2[:-drop])
+    robjects.globalEnv['ys'] = robjects.FloatVector(ys[:-drop])
 
-    # run the models
-    models = ['ys ~ ts',
-              'ys ~ ts + t2']
-    model = models[model_number]
-    res = RunModel(model)
-
+    res = RunModel(model, print_flag)
     coeffs = GetCoefficients(res)
-    PlotRandomLinearFit(coeffs, ts)
+    return coeffs
+
+
+def EvalFit(coeffs, ts):
+    betas = [GetEst(coeff) for coeff in reversed(coeffs)]
+    fys = [Horner(betas, t) for t in ts]
+    return fys
+
+
+def MakeFit(model, ys, ts):
+    coeffs = Regress(model, ys, ts)
+    fys = EvalFit(coeffs, ts)
+    return fys
+
+
+def Residuals(model, ys, ts):
+    coeffs = Regress(model, ys, ts, print_flag=True)
+    fys = EvalFit(coeffs, ts)
+    residuals = [fy - y for fy, y in zip(fys, ys)]
+    return residuals
+
+
+def Horner(betas, t):
+    total = 0
+    for beta in betas:
+        total = total * t + beta
+    return total
+
+
+def MakeSampleError(model, ys, ts, n=100):
+    # make a model of the residuals
+    residuals = Residuals(model, ys, ts)
+    mu, var = thinkstats.MeanVar(residuals)
+    sig = math.sqrt(var)
+
+    # make the best fit
+    fys = MakeFit(model, ys, ts)
+
+    # resample residuals and generate fake fits
+    fits = []
+    for i in range(n):
+        fake_ys = [fy + random.gauss(mu, sig) for fy in fys]
+        fake_fys = MakeFit(model, fake_ys, ts)
+        fits.append(fake_fys)
+
+    # plot the 90% CI in each column
+    data = zip(*fits)
+    cdfs = [Cdf.MakeCdfFromList(ys) for ys in data]
+    max_fys = [cdf.Percentile(95) for cdf in cdfs]
+    min_fys = [cdf.Percentile(5) for cdf in cdfs]
+
+    return min_fys, max_fys
+
+
+def PlotData(ys, ts):
+    pyplot.plot(ts, ys, 'bo-', linewidth=2, markersize=10)
+
+
+def GetData(filename):
+    data = ReadData(filename)
+    ts, ys = zip(*data)
+    return ts, ys
+
+
+def MakePlot(filename='heri.1'):
+    # do the analysis without the last data point
+    ts, ys = GetData(filename)
+    shift = ts[0]
+    tshift = [t-shift for t in ts]
+
+    # plot sample error cone
+    model = 'ys ~ ts + t2'
+    min_fys, max_fys = MakeSampleError(model, ys, tshift)
+    pyplot.fill_between(ts, min_fys, max_fys, color='0.9')
+
+    # plot fit
+    fys = MakeFit(model, ys, tshift)
+    pyplot.plot(ts, fys, color='red', linewidth=2)
+
+    # plot data (including the last data point
+    PlotData(ys, ts)
+
+    myplot.Save(root='heri4',
+                title='',
+                xlabel='',
+                ylabel='Percent None',
+                axis=[1968, 2013, 0, 27])
+
+
+def PlotResiduals(ts, ys):
+    residuals = Residuals(ts, ys)
+    pyplot.clf()
+    pyplot.plot(ts, residuals, 'bo-', linewidth=2)
+    myplot.Save(root='heri5',
+                title='',
+                xlabel='',
+                ylabel='Residuals',
+                axis=[1968, 2012, -6, 6])
+
+
+
+def GetEst(coeff):
+    name, est, stderr = coeff
+    return est
 
 
 def PrintSummary(res):
@@ -222,7 +280,7 @@ def GetCoefficients(res):
 
 def main(script):
 
-    PlotDiffs(root='heri3', flag=True)
+    MakePlot()
 
 
 if __name__ == '__main__':
