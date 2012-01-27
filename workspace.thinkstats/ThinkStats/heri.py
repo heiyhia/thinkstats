@@ -180,13 +180,20 @@ def MakeSampleError(model, ys, ts, n=100):
         fits.append(fake_fys)
 
     # plot the 90% CI in each column
-    data = zip(*fits)
-    cdfs = [Cdf.MakeCdfFromList(ys) for ys in data]
+    columns = zip(*fits)
+    AddResidualError(columns, mu, sig)
+
+    cdfs = [Cdf.MakeCdfFromList(ys) for ys in columns]
     max_fys = [cdf.Percentile(95) for cdf in cdfs]
     min_fys = [cdf.Percentile(5) for cdf in cdfs]
 
     return min_fys, max_fys
 
+
+def AddResidualError(columns, mu, sig):
+    for col in columns:
+        for i in range(len(col)):
+            col[i] += random.gauss(mu, sig)
 
 def PlotData(ys, ts):
     pyplot.plot(ts, ys, 'bo-', linewidth=2, markersize=10)
