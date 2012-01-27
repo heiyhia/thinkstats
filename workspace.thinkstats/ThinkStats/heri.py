@@ -97,6 +97,7 @@ def RunFit(xs, ys):
 
     Regress(xs, ys)
 
+
 def PlotProbs(filename='p.heri.31'):
     pyplot.clf()
     for x in [1975.5, 1984.5, 1998.5, 2006.5]:
@@ -114,6 +115,58 @@ def PlotProbs(filename='p.heri.31'):
                 axis=[1972, 2010, 0, 1])
 
 
+def Regress(ts, ys, model_number=0):
+
+    # put the data into the R environment
+    robjects.globalEnv['ts'] = robjects.FloatVector(ts)
+    robjects.globalEnv['ys'] = robjects.FloatVector(ys)
+
+    # run the models
+    models = ['ys ~ ts']
+    model = models[model_number]
+    print model
+    res = RunModel(model)
+
+    coeffs = GetCoefficients(res)
+    PlotRandomLinearFit(coeffs, ts)
+
+def PlotLinearFit(coeffs, ts):
+    inter = GetEst(coeffs[0])
+    slope = GetEst(coeffs[1])
+    ys = [inter + slope * t for t in ts]
+    pyplot.plot(fts, fys, color='gray', linewidth=2)
+
+
+def PlotRandomLinearFit(coeffs, ts, n=10):
+    for i in range(n):
+        inter = RandomEst(coeffs[0])
+        slope = RandomEst(coeffs[1])
+        print inter, slope
+        ys = [inter + slope * t for t in ts]
+        pyplot.plot(ts, ys, color='gray', linewidth=2)
+
+
+def RandomEst(coeff):
+    name, est, stderr = coeff
+    print est, stderr
+    return random.gauss(est, stderr/100)
+
+
+def GetEst(coeff):
+    name, est, stderr = coeff
+    return est
+
+
+def EvalLinearModel(coeffs, ts):
+    inter = GetEst(coeffs[0])
+    slope = GetEst(coeffs[1])
+    print inter, slope
+    print type(slope)
+    ys = [inter + slope * t for t in ts]
+    return ts, ys
+
+    
+
 def RunModel(model, print_flag=True):
     """Submits model to r.lm and returns the result."""
     model = r(model)
@@ -121,19 +174,6 @@ def RunModel(model, print_flag=True):
     if print_flag:
         PrintSummary(res)
     return res
-
-
-def Regress(xs, ys, model_number=0):
-
-    # put the data into the R environment
-    robjects.globalEnv['xs'] = robjects.FloatVector(xs)
-    robjects.globalEnv['ys'] = robjects.FloatVector(ys)
-
-    # run the models
-    models = ['ys ~ xs']
-    model = models[model_number]
-    print model
-    RunModel(model)
 
 
 def PrintSummary(res):
@@ -149,6 +189,29 @@ def PrintSummary(res):
         if flag:
             print line
     print
+
+
+def GetCoefficients(res):
+    """Prints results from r.lm (just the parts we want)."""
+    flag = False
+    lines = r.summary(res)
+    lines = str(lines)
+
+    coeffs = []
+    for line in lines.split('\n'):
+        line = line.strip()
+        if flag:
+            t = line.split()
+            if len(t) < 5:
+                break
+            name, est, stderr = t[0], float(t[1]), float(t[2])
+            coeffs.append((name, est, stderr))
+
+        # skip everything until we get to the coefficients
+        if line.startswith('Estimate'):
+            flag = True
+
+    return coeffs
 
 
 def main(script):
