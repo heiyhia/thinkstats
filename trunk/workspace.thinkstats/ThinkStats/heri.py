@@ -117,7 +117,7 @@ def Horner(betas, t):
     return total
 
 
-def MakeErrorModel(model, ys, ts, n=300):
+def MakeErrorModel(model, ys, ts, n=100):
     """Makes a model that captures sample error and residual error.
 
     model: string representation of the regression model
@@ -145,15 +145,30 @@ def MakeErrorModel(model, ys, ts, n=300):
     # find the 90% CI in each column
     columns = zip(*fits)
 
-    sample_error = MakeIntervals(columns)
-    columns = AddResidualError(columns, mu, sig)
-    total_error = MakeIntervals(columns)
+    #sample_error = MakeIntervals(columns)
+    #columns = AddResidualError(columns, mu, sig)
+    #total_error = MakeIntervals(columns)
+
+    sample_error = MakeStddev(columns)
+    total_error = MakeStddev(columns, mu, var)
 
     return sample_error, total_error
 
 
+def MakeStddev(columns, mu2=0, var2=0):
+    """Finds a confidence interval for each column.
+
+    Returns two rows: the low end of the intervals and the high ends.
+    """
+    stats = [thinkstats.MeanVar(ys) for ys in columns]
+    
+    min_fys = [mu1 + mu2 - 2 * math.sqrt(var1 + var2) for mu1, var1 in stats]
+    max_fys = [mu1 + mu2 + 2 * math.sqrt(var1 + var2) for mu1, var1 in stats]
+    return min_fys, max_fys
+
+
 def MakeIntervals(columns, low=5, high=95):
-    """Find a confidence interval for each columns.
+    """Finds a confidence interval for each column.
 
     Returns two rows: the low end of the intervals and the high ends.
     """
@@ -196,7 +211,7 @@ def ReadData(filename):
     return res
 
 
-def MakePlot(filename, model, ylabel):
+def MakePlot(filename, model, ylabel, axis):
     """Generates a plot with the data, a fitted model, and error bars."""
     pyplot.clf()
 
@@ -218,13 +233,13 @@ def MakePlot(filename, model, ylabel):
     pyplot.plot(ts, fys, color='red', linewidth=2)
 
     # plot the data
-    pyplot.plot(ts, ys, 'bo-', linewidth=2, markersize=10)
+    pyplot.plot(ts, ys, 'bo-', linewidth=2, markersize=8)
 
     myplot.Save(root=filename,
                 title='',
                 xlabel='',
                 ylabel=ylabel,
-                axis=[1967, 2013, 0, 28])
+                axis=axis)
 
 
 def PlotResiduals(ts, ys):
@@ -254,8 +269,18 @@ def PrintSummary(res):
 
 
 def main(script):
-    MakePlot(filename='heri.1', model='ys ~ ts + t2', ylabel='Religion None')
-    MakePlot(filename='heri.2', model='ys ~ ts + t2', ylabel='Attendance None')
+    MakePlot(filename='heri.0', 
+             model='ys ~ ts', 
+             ylabel='Change in Religion None',
+             axis=[1967, 2013, -3, 3])
+    MakePlot(filename='heri.1',
+             model='ys ~ ts + t2',
+             ylabel='Religion None',
+             axis=[1967, 2013, 0, 28])
+    MakePlot(filename='heri.2',
+             model='ys ~ ts + t2',
+             ylabel='Attendance None',
+             axis=[1967, 2013, 0, 28])
 
 
 if __name__ == '__main__':
