@@ -19,7 +19,7 @@ import rpy2.robjects as robjects
 r = robjects.r
 
 
-def Regress(model, ys, ts, print_flag=False, drop=1):
+def Regress(model, ys, ts, print_flag=False):
     """Run a linear regression using rpy2.
 
     Returns a list of coefficients (which are rpy2.RVectors)
@@ -28,9 +28,9 @@ def Regress(model, ys, ts, print_flag=False, drop=1):
     t2 = [t**2 for t in ts]
 
     # put the data into the R environment
-    robjects.globalEnv['ts'] = robjects.FloatVector(ts[:-drop])
-    robjects.globalEnv['t2'] = robjects.FloatVector(t2[:-drop])
-    robjects.globalEnv['ys'] = robjects.FloatVector(ys[:-drop])
+    robjects.globalEnv['ts'] = robjects.FloatVector(ts)
+    robjects.globalEnv['t2'] = robjects.FloatVector(t2)
+    robjects.globalEnv['ys'] = robjects.FloatVector(ys)
 
     model = r(model)
     res = r.lm(model)
@@ -145,10 +145,6 @@ def MakeErrorModel(model, ys, ts, n=100):
     # find the 90% CI in each column
     columns = zip(*fits)
 
-    #sample_error = MakeIntervals(columns)
-    #columns = AddResidualError(columns, mu, sig)
-    #total_error = MakeIntervals(columns)
-
     sample_error = MakeStddev(columns)
     total_error = MakeStddev(columns, mu, var)
 
@@ -161,7 +157,7 @@ def MakeStddev(columns, mu2=0, var2=0):
     Returns two rows: the low end of the intervals and the high ends.
     """
     stats = [thinkstats.MeanVar(ys) for ys in columns]
-    
+
     min_fys = [mu1 + mu2 - 2 * math.sqrt(var1 + var2) for mu1, var1 in stats]
     max_fys = [mu1 + mu2 + 2 * math.sqrt(var1 + var2) for mu1, var1 in stats]
     return min_fys, max_fys
@@ -190,7 +186,7 @@ def AddResidualError(columns, mu, sig):
 
 
 def ReadData(filename):
-    """Reads a CSV file of SAT scores.
+    """Reads a CSV file of data from HERI scores.
 
     Args:
       filename: string filename
@@ -208,38 +204,26 @@ def ReadData(filename):
         except ValueError:
             pass
 
-    return res
+    return zip(*res)
 
 
-def MakePlot(filename, model, ylabel, axis):
+def MakePlot(ts, ys, model):
     """Generates a plot with the data, a fitted model, and error bars."""
     pyplot.clf()
 
-    # do the analysis without the last data point
-    data = ReadData(filename)
-    ts, ys = zip(*data)
-
     # shift the times to start at 0 (but use the originals for plots)
     shift = ts[0]
+    print 'shift', shift
     tshift = [t-shift for t in ts]
 
     # plot the error models
     sample_error, total_error = MakeErrorModel(model, ys, tshift)
-    pyplot.fill_between(ts, *total_error, color='0.9')
-    pyplot.fill_between(ts, *sample_error, color='0.7')
+    pyplot.fill_between(ts, *total_error, color='0.9', alpha=0.5, linewidth=0)
+    pyplot.fill_between(ts, *sample_error, color='0.7', alpha=0.5, linewidth=0)
 
     # plot the estimated fit
     fys = MakeFit(model, ys, tshift)
-    pyplot.plot(ts, fys, color='red', linewidth=2)
-
-    # plot the data
-    pyplot.plot(ts, ys, 'bo-', linewidth=2, markersize=8)
-
-    myplot.Save(root=filename,
-                title='',
-                xlabel='',
-                ylabel=ylabel,
-                axis=axis)
+    pyplot.plot(ts, fys, color='red', linewidth=2, alpha=0.5)
 
 
 def PlotResiduals(ts, ys):
@@ -269,19 +253,39 @@ def PrintSummary(res):
 
 
 def main(script):
-    MakePlot(filename='heri.0', 
-             model='ys ~ ts', 
-             ylabel='Change in Religion None',
-             axis=[1967, 2013, -3, 3])
-    MakePlot(filename='heri.1',
-             model='ys ~ ts + t2',
-             ylabel='Religion None',
-             axis=[1967, 2013, 0, 28])
-    MakePlot(filename='heri.2',
-             model='ys ~ ts + t2',
-             ylabel='Attendance None',
-             axis=[1967, 2013, 0, 28])
+    ts, ys = ReadData('heri.0')
+    MakePlot(ts, ys, model='ys ~ ts')
 
+    options = dict(linewidth=3, markersize=0, alpha=0.7)
+    pyplot.plot(ts, ys, color='purple', label='Change in no religion',
+                **options)
+
+    myplot.Save(root='heri.0',
+                ylabel='Percentage points',
+                loc=2,
+                axis=[1967, 2013, -3, 3])
+
+    ts, ys = ReadData('heri.1')
+    MakePlot(ts, ys, model='ys ~ ts + t2')
+
+    pyplot.plot(ts, ys, 'bs-', label='No religion', **options)
+
+    myplot.Save(root='heri.1',
+                ylabel='Percent',
+                loc=2,
+                axis=[1967, 2013, 0, 30])
+
+    ts, ys = ReadData('heri.2')
+    MakePlot(ts, ys, model='ys ~ ts + t2')
+
+    pyplot.plot(ts, ys, 'go-', label='No attendance', **options)
+
+    myplot.Save(root='heri.2',
+                ylabel='Percent',
+                loc=2,
+                axis=[1967, 2013, 0, 30])
+
+    print (2011 - 1973) * 0.03548 - 0.36036 
 
 if __name__ == '__main__':
     import sys
