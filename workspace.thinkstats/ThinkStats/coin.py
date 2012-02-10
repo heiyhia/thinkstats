@@ -50,6 +50,7 @@ def MakeUniformSuite(low, high, steps):
     pmf = Pmf.MakePmfFromList(hypos)
     return pmf
 
+
 def Update(suite, evidence):
     """Updates a suite of hypotheses based on new evidence.
 
@@ -66,6 +67,7 @@ def Update(suite, evidence):
         suite.Mult(hypo, likelihood)
     suite.Normalize()
 
+
 def Likelihood(evidence, hypo):
     """Computes the likelihood of the evidence assuming the hypothesis is true.
 
@@ -80,6 +82,7 @@ def Likelihood(evidence, hypo):
     heads, tails = evidence
     p = hypo
     return pow(p, heads) * pow(1-p, tails)
+
 
 def main():
     suite = MakeUniformSuite(0.0, 1.0, 101)
