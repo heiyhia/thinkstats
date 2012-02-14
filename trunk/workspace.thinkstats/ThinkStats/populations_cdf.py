@@ -32,7 +32,7 @@ import thinkstats
 
 
 def MakeFigures():
-    pops = populations.Process()
+    pops = populations.ReadData()
     print len(pops)
     
     cdf = Cdf.MakeCdfFromList(pops, 'populations')
