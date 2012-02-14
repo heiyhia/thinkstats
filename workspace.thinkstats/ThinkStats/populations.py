@@ -10,7 +10,7 @@ import sys
 import urllib
 
 
-def ReadData(filename='populations.csvx'):
+def ReadData(filename='populations.csv'):
     """Reads the previously-downloaded contents of (filename), parses
     it as CSV and extract all lines that seem to contain population
     information for a city or town.  For each line that is in the
