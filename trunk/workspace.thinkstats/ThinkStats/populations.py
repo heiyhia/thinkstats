@@ -10,31 +10,7 @@ import sys
 import urllib
 
 
-def Download(filename='populations.csv'):
-    """Downloads files from the U.S. Census Bureau.
-    
-    Concatenates the contents of these pages and stores them in (filename).
-    Files are numbered from 01 to 56, with a couple of gaps for future
-    expansion (just kidding -- they are for U.S. territories).
-    
-    Args:
-        filename: string name of file to store results
-    """
-    format = ('http://www.census.gov/popest/'
-              'cities/tables/SUB-EST2007-04-%2.2d.csv')
-
-    # loop through the state/territory codes
-    out = open(filename, 'w')
-    for i in range(1,57):
-        url = format % i
-
-        conn = urllib.urlopen(url)
-        for line in conn.fp:
-            out.write(line)
-            
-    out.close()
-
-def Process(filename='populations.csv'):
+def ReadData(filename='populations.csvx'):
     """Reads the previously-downloaded contents of (filename), parses
     it as CSV and extract all lines that seem to contain population
     information for a city or town.  For each line that is in the
@@ -43,7 +19,13 @@ def Process(filename='populations.csv'):
     Args:
         filename: string name of file to store results
     """
-    fp = open(filename)
+    try:
+        fp = open(filename)
+    except IOError:
+        print 'Did not find populations.csv.  You can download'
+        print 'it from http://thinkstats.com/populations.csv'
+        return []
+
     reader = csv.reader(fp)
     pops = []
 
@@ -68,8 +50,7 @@ def Process(filename='populations.csv'):
 
 
 def main(script, *args):
-    Download()
-    pops = Process()
+    pops = ReadData()
 
     for pop in pops:
         print pop
