@@ -98,6 +98,10 @@ figs:
 red:
 	rsync -avp red.htm red.nb HTML* $(DEST)
 
+bayes:
+	zip -r bayes_tutorial.zip bayes_tutorial
+	rsync -a bayes_tutorial.zip $(DEST)
+
 .PHONY: docs $(DOCPY)
 
 docs: $(DOCPY)
