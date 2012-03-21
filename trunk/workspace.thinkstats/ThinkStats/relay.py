@@ -21,7 +21,7 @@ Place Div/Tot  Div   Guntime Nettime  Pace  Name                   Ag S Race# Ci
 """
 
 def ConvertPaceToSpeed(pace):
-    """Converts pace in HH:MM:SS format to MPH."""
+    """Converts pace in MM:SS per mile to MPH."""
     m, s = [int(x) for x in pace.split(':')]
     secs = m*60 + s
     mph  = 1.0 / secs * 60 * 60 
