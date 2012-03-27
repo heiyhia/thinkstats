@@ -34,7 +34,7 @@ class Table(object):
             data_dir: string directory name
             filename: string name of the file to read
 
-            fields: sequence of (name, start, end, cast) tuples specifying 
+            fields: sequence of (name, start, end, case) tuples specifying 
             the fields to extract
 
             constructor: what kind of object to create

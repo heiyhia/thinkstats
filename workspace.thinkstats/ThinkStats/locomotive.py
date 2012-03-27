@@ -56,8 +56,8 @@ def Likelihood(evidence, hypo):
     """Computes the likelihood of the evidence assuming the hypothesis is true.
 
     Args:
-        evidence: a tuple of (number of heads, number of tails)
-        hypo: float probability of heads
+        evidence: the serial number of the observed train
+        hypo: int hypothetical number of trains
 
     Returns:
         probability of seeing a given train assuming that there are N trains

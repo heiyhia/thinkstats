@@ -66,12 +66,12 @@ def Likelihood(evidence, hypo):
     """Computes the likelihood of the evidence assuming the hypothesis is true.
 
     Args:
-        evidence: a tuple of (number of heads, number of tails)
-        hypo: float probability of heads
+        evidence: a tuple of (number of successes, number of failures)
+        hypo: float probability of success
 
     Returns:
-        probability of tossing the given number of heads and tails with a
-        coin that has p probability of heads
+        unnormalized likelihood of getting the given number of successes
+        and failures if the probability of success is p
     """
     heads, tails = evidence
     p = hypo
@@ -82,7 +82,9 @@ def TotalProbability(pmf1, pmf2, func):
     """Enumerates pairs from the Pmfs, calls the func, and returns
     the total probability.
 
-    func: takes a value from each Pmf and returns a probability.
+    pmf1: Pmf object
+    pmf2: Pmf object
+    func: a callable that takes a value from each Pmf and returns probability.
     """
     total = 0.0
     for x, px in pmf1.Items():

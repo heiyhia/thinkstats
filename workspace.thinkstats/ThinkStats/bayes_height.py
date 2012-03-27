@@ -26,6 +26,7 @@ def MakeUniformPrior(t, num_points, label, spread=3.0):
 
     t: sample
     num_points: number of values in each dimension
+    label: string label for the new Pmf
     spread: number of standard errors to include
 
     Returns: Pmf that maps from (mu, sigma) to prob.
@@ -247,14 +248,15 @@ def NormalProbPlot(samples):
                 ylabel='Reported height (cm)')
 
 
-def NormalPlot(ys, label, color='b', jitter=0.0, **lineoptions):
+def NormalPlot(ys, label, color='b', jitter=0.0, **line_options):
     """Makes a normal probability plot.
     
     Args:
         ys: sequence of values
-        label:
-        marker:
-        lineoptions: dictionary of options for pyplot.plot        
+        label: string label for the plotted line
+        color: color string passed along to pyplot.plot
+        jitter: float magnitude of jitter added to the ys 
+        line_options: dictionary of options for pyplot.plot        
     """
     n = len(ys)
     xs = [random.gauss(0.0, 1.0) for i in range(n)]
@@ -272,7 +274,7 @@ def NormalPlot(ys, label, color='b', jitter=0.0, **lineoptions):
                 label=label,
                 markersize=3,
                 alpha=0.1,
-                **lineoptions)
+                **line_options)
  
 
 def PlotMarginals(suite):

@@ -49,7 +49,7 @@ def Test(actual1, actual2, model, iters=1000):
     right = 1 - erf.NormalCdf(delta, mu, sigma)
     pvalue = left+right
     print 'Tails:', left, right
-    print 'P-value:', pvalue
+    print 'p-value:', pvalue
 
     # compare the mean and variance of resamples differences
     deltas = [hypothesis.Resample(model, model, n, m) for i in range(iters)]

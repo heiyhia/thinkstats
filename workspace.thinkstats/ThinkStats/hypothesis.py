@@ -114,7 +114,7 @@ def DifferenceInMean(actual1, actual2):
     return mu1, mu2, delta
 
 
-def PValue(model1, model2, n, m, delta, iters=1000, plot=False):
+def PValue(model1, model2, n, m, delta, iters=1000):
     """Computes the distribution of deltas with the model distributions.
 
     And the p-value of the observed delta.
@@ -126,7 +126,6 @@ def PValue(model1, model2, n, m, delta, iters=1000, plot=False):
         m: sample size from model2
         delta: the observed difference in the means
         iters: how many samples to generate
-        plot: boolean, whether to generate plots
     """
     deltas = [Resample(model1, model2, n, m) for i in range(iters)]
     mean_var = thinkstats.MeanVar(deltas)

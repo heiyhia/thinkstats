@@ -43,7 +43,7 @@ class Respondents(survey.Table):
 
                 field is the name of the variable
                 start and end are the indices as specified in the NSFG docs
-                cast is a callable that converts the result to int, float, etc.
+                case is a callable that converts the result to int, float, etc.
         """
         return [
             ('age', 101, 102, int),
@@ -74,7 +74,7 @@ class Respondents(survey.Table):
             else:
                 rec.wtkg2 /= 100.0
 
-            # record wtyrago
+            # recode wtyrago
             rec.weight2 = CleanWeight(rec.weight2)
             rec.wtyrago = CleanWeight(rec.wtyrago)
 

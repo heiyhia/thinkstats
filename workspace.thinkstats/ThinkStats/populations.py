@@ -12,12 +12,14 @@ import urllib
 
 def ReadData(filename='populations.csv'):
     """Reads the previously-downloaded contents of (filename), parses
-    it as CSV and extract all lines that seem to contain population
-    information for a city or town.  For each line that is in the
-    right format to be parsed, prints the population as of 2006.
+    it as CSV and extracts all lines that seem to contain population
+    information for a city or town.  
 
     Args:
-        filename: string name of file to store results
+        filename: string name of file to read
+
+    Returns:
+        list of int populations
     """
     try:
         fp = open(filename)
