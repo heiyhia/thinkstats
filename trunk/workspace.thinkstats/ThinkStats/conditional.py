@@ -18,9 +18,9 @@ def ConditionPmf(pmf, filter_func, name='conditional'):
     
     Args:
         pmf: Pmf object
-        
-        filter_func: function that takes a value from the Pmf and returns
+        filter_func: callable that takes a value from the Pmf and returns
                      a boolean
+        name: string name for the new pmf
         
     Returns:
         new Pmf object
@@ -39,9 +39,9 @@ def ConditionOnWeeks(pmf, week=39, name='conditional'):
     """Computes a PMF conditioned on the given number of weeks.
     
     Args:
-        pmf: Pmf object
-        
-        weeks: the current duration of the pregnancy
+        pmf: Pmf object        
+        week: the current duration of the pregnancy
+        name: string name for the new pmf
         
     Returns:
         new Pmf object
