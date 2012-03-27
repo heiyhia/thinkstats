@@ -12,8 +12,8 @@ def Cov(xs, ys, mux=None, muy=None):
     """Computes Cov(X, Y).
 
     Args:
-        xs: seqeuence of values
-        ys: seqeuence of values
+        xs: sequence of values
+        ys: sequence of values
         mux: optional float mean of xs
         muy: optional float mean of ys
 
@@ -33,11 +33,11 @@ def Cov(xs, ys, mux=None, muy=None):
 
 
 def Corr(xs, ys):
-    """Computes Cov(X, Y).
+    """Computes Corr(X, Y).
 
     Args:
-        xs: seqeuence of values
-        ys: seqeuence of values
+        xs: sequence of values
+        ys: sequence of values
 
     Returns:
         Corr(X, Y)
@@ -59,8 +59,8 @@ def SpearmanCorr(xs, ys):
     """Computes Spearman's rank correlation.
 
     Args:
-        xs: seqeuence of values
-        ys: seqeuence of values
+        xs: sequence of values
+        ys: sequence of values
 
     Returns:
         float Spearman's correlation
@@ -74,8 +74,8 @@ def LeastSquares(xs, ys):
     """Computes a linear least squares fit for ys as a function of xs.
 
     Args:
-        xs: seqeuence of values
-        ys: seqeuence of values
+        xs: sequence of values
+        ys: sequence of values
 
     Returns:
         tuple of (intercept, slope)
@@ -92,7 +92,7 @@ def LeastSquares(xs, ys):
 def FitLine(xs, inter, slope):
     """Returns the fitted line for the range of xs.
 
-    xs: x values use for the fit
+    xs: x values used for the fit
     slope: estimated slope
     inter: estimated intercept
     """

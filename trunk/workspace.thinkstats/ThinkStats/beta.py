@@ -5,9 +5,6 @@ Copyright 2011 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import bayes
-import copy
-import string
 import matplotlib.pyplot as pyplot
 import myplot
 import Pmf
@@ -15,8 +12,6 @@ import Cdf
 import math
 import random
 import sys
-
-lowercase = string.ascii_lowercase
 
 
 class Beta(object):
@@ -77,8 +72,25 @@ class Beta(object):
         cdf = Cdf.MakeCdfFromItems(zip(ps, probs))
         return cdf                                                    
 
+def UniformOdds(n=1000):
+    """Make a PMF with uniform odds from 1:n to n:1
+    """
+    pmf = Pmf.Pmf()
+    pmf.Incr(0.5)
+    for i in range(2,n+1):
+        o = float(1) / (i+1)
+        pmf.Incr(o)
+        o = float(i) / (i+1)
+        pmf.Incr(o)
+
+    return pmf
 
 def main(script, *args):
+    pmf = UniformOdds()
+    cdf = Cdf.MakeCdfFromPmf(pmf)
+    myplot.Cdf(cdf, show=True)
+    return
+
     beta = Beta(1, 0)
     pmf = beta.Pmf()
     myplot.Pmf(pmf, show=True,

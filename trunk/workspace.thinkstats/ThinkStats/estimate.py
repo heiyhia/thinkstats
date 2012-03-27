@@ -82,7 +82,7 @@ def EstimateParameter(prior, sample, name='posterior'):
     """Computes the posterior distribution for the parameter of an expo dist.
 
     Args:
-      prior: Pmf that maps values of lamdba to their prior prob
+      prior: Pmf that maps values of lambda to their prior prob
       sample: sequence of values drawn from expo dist
       name: string name for the posterior
 

@@ -31,8 +31,7 @@ might be the best choice.
 
 If we didn't know what transform to use, I would be more inclined to
 use Spearman's correlation, but I am less comfortable with it because
-MapToRanks to ranks is an information-losing transform, and Log is
-not.
+mapping to ranks is an information-losing transform, and Log is not.
 
 """
 

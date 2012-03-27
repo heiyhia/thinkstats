@@ -12,7 +12,7 @@ import myplot
 
 
 def BiasPmf(pmf, speed, name=None):
-    """Returns a new PDF representing speeds observed at a given speed.
+    """Returns a new Pmf representing speeds observed at a given speed.
 
     The chance of observing a runner is proportional to the difference
     in speed.

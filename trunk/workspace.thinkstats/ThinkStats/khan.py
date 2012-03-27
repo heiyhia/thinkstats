@@ -41,7 +41,10 @@ def Simulate(pa, q, n):
     q:  probability of success for both A and B
     n:  number of trials
     
-    Returns: Hist that maps (version, outcome) to frequency 
+    Returns: tuple of
+       diff_list: simulated differences
+       chi2_list: simulated chi-square values
+       pvalue_list: simulated p-values
     """
     hist = Pmf.Hist()
     diff_list = []
@@ -89,8 +92,13 @@ def ComputeRates(hist):
 def Expected(pa, q, n):
     """Makes a Pmf with the expected number of trials in each of four bins.
 
-    pa is the probability of offering version A
-    q is the probability of success for both A and B
+    pa: probability of offering version A
+    q:  probability of success for both A and B
+    n:  number of trials
+
+    Returns:
+      hist that maps (version, outcome) to expected number, where version
+      is string A or B and outcome is string Y or N.
     """
     versions = Pmf.MakePmfFromDict(dict(A=pa, B=1-pa))
     outcomes = Pmf.MakePmfFromDict(dict(Y=q, N=1-q))

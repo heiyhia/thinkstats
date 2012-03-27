@@ -52,7 +52,7 @@ def Plot(xs, ys, style='', clf=True, root=None, line_options=None, **options):
       pmf: Hist or Pmf object
       clf: boolean, whether to clear the figure      
       root: string filename root
-      line_options: dictionary of options passed to pylot.plot
+      line_options: dictionary of options passed to pyplot.plot
       options: dictionary of options
     """
     if clf:
@@ -71,7 +71,7 @@ def Pmf(pmf, clf=True, root=None, line_options=None, **options):
       pmf: Hist or Pmf object
       clf: boolean, whether to clear the figure      
       root: string filename root
-      line_options: dictionary of options passed to pylot.plot
+      line_options: dictionary of options passed to pyplot.plot
       options: dictionary of options
     """
     xs, ps = pmf.Render()
@@ -121,7 +121,7 @@ def Hist(hist, clf=True, root=None, bar_options=None, **options):
       hist: Hist or Pmf object
       clf: boolean, whether to clear the figure
       root: string filename root
-      bar_options: dictionary of options passed to pylot.bar
+      bar_options: dictionary of options passed to pyplot.bar
       options: dictionary of options
     """
     if clf:
@@ -203,7 +203,7 @@ def Cdf(cdf, clf=True, root=None, plot_options=dict(linewidth=2), **options):
       cdf: Cdf object
       clf: boolean, whether to clear the figure
       root: string filename root
-      bar_options: dictionary of options passed to pylot.plot
+      bar_options: dictionary of options passed to pyplot.plot
       options: dictionary of options
     """
     Cdfs([cdf], clf=clf, root=root, plot_options=[plot_options], **options)

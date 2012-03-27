@@ -28,12 +28,12 @@ def EstimateRankits(n=6, m=1000):
     return means
 
 
-def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
+def MakeNormalPlot(ys, root=None, line_options={}, **options):
     """Makes a normal probability plot.
     
     Args:
         ys: sequence of values
-        lineoptions: dictionary of options for pyplot.plot        
+        line_options: dictionary of options for pyplot.plot        
         options: dictionary of options for myplot.Save
     """
     # TODO: when n is small, generate a larger sample and desample
@@ -41,7 +41,7 @@ def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
     xs = [random.normalvariate(0.0, 1.0) for i in range(n)]
     
     pyplot.clf()
-    pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=3, **lineoptions)
+    pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=3, **line_options)
  
     myplot.Save(root,
                 xlabel = 'Standard normal values',

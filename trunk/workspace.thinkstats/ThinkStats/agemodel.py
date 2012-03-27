@@ -79,19 +79,21 @@ def Process(table, name):
     """Runs various analyses on this table.
 
     Creates instance variables:
-        ages: sequence of int total ages in ounces
+        ages: sequence of int ages in years
         age_pmf: Pmf object
         age_cdf: Cdf object
-        oz_pmf: Pmf of just the ounce field
+        weights: sequence of total weight in ounces
+        weight_cdf: Cdf object
     """
     cumulative.Process(table, name)
 
     table.ages = [p.agepreg for p in table.records
                   if p.agepreg != 'NA']
-    table.weights = [p.totalwgt_oz for p in table.records
-                     if p.totalwgt_oz != 'NA']
     table.age_pmf = Pmf.MakePmfFromList(table.ages, table.name)
     table.age_cdf = Cdf.MakeCdfFromList(table.ages, table.name)
+
+    table.weights = [p.totalwgt_oz for p in table.records
+                     if p.totalwgt_oz != 'NA']
     table.weight_cdf = Cdf.MakeCdfFromList(table.weights, table.name)
 
 

@@ -10,7 +10,7 @@ brfss_figs.py chi.py correlation.py social.py pareto_world.py \
 khan.py blinky.py continuous.py bayes_height.py
 
 DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat \
-sat_ranks.csv sat_scale.csv populations.csv
+sat_ranks.csv sat_scale.csv populations.csv birthdays.csv
 
 DOCS = survey.html first.html risk.html Pmf.html thinkstats.html \
 descriptive.html myplot.html brfss.html hypothesis.html cumulative.html \
