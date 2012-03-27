@@ -23,6 +23,7 @@ def BiasPmf(pmf, name, invert=False):
 
     Args:
       pmf: Pmf object.
+      name: string name for the new Pmf.
       invert: boolean
 
      Returns:
@@ -46,7 +47,7 @@ def UnbiasPmf(pmf, name):
 
     Args:
       pmf: Pmf object.
-      invert: boolean
+      name: string name for the new Pmf.
 
      Returns:
        Pmf object

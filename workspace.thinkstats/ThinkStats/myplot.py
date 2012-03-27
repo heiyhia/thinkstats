@@ -49,11 +49,13 @@ def Plot(xs, ys, style='', clf=True, root=None, line_options=None, **options):
     """Plots a Pmf or Hist as a line.
 
     Args:
-      pmf: Hist or Pmf object
+      xs: sequence of x values
+      ys: sequence of y values
+      style: style string passed along to pyplot.plot
       clf: boolean, whether to clear the figure      
       root: string filename root
       line_options: dictionary of options passed to pyplot.plot
-      options: dictionary of options
+      options: dictionary of options passed to myplot.Save
     """
     if clf:
         pyplot.clf()
@@ -72,7 +74,7 @@ def Pmf(pmf, clf=True, root=None, line_options=None, **options):
       clf: boolean, whether to clear the figure      
       root: string filename root
       line_options: dictionary of options passed to pyplot.plot
-      options: dictionary of options
+      options: dictionary of options passed to myplot.Save
     """
     xs, ps = pmf.Render()
     line_options = Underride(line_options, label=pmf.name)
@@ -122,7 +124,7 @@ def Hist(hist, clf=True, root=None, bar_options=None, **options):
       clf: boolean, whether to clear the figure
       root: string filename root
       bar_options: dictionary of options passed to pyplot.bar
-      options: dictionary of options
+      options: dictionary of options passed to myplot.Save
     """
     if clf:
         pyplot.clf()
@@ -153,7 +155,7 @@ def Hists(hists,
       clf: boolean, whether to clear the figure
       root: string filename root
       bar_options: sequence of option dictionaries
-      options: dictionary of options
+      options: dictionary of options passed to myplot.Save
     """
     if clf:
         pyplot.clf()
@@ -204,7 +206,7 @@ def Cdf(cdf, clf=True, root=None, plot_options=dict(linewidth=2), **options):
       clf: boolean, whether to clear the figure
       root: string filename root
       bar_options: dictionary of options passed to pyplot.plot
-      options: dictionary of options
+      options: dictionary of options passed to myplot.Save
     """
     Cdfs([cdf], clf=clf, root=root, plot_options=[plot_options], **options)
 
@@ -224,6 +226,7 @@ def Cdfs(cdfs,
       root: string root of the filename to write
       plot_options: sequence of option dictionaries
       complement: boolean, whether to plot the complementary CDF
+      transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
       options: dictionary of keyword options passed along to Save
     """
     if clf:
@@ -274,7 +277,8 @@ def Save(root=None, formats=None, **options):
     """Generate plots in the given formats.
 
     Pulls options out of the option dictionary and passes them to
-    title, xlabel, ylabel, xscale, yscale, axis and legend.
+    title, xlabel, ylabel, xscale, yscale, xticks, yticks, axis, legend,
+    and loc.
 
     Args:
       root: string filename root

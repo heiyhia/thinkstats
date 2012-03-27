@@ -204,7 +204,7 @@ class Pmf(_DictWrapper):
         """Chooses a random element from this PMF.
 
         Returns:
-            float mean
+            float value from the Pmf
         """
         target = random.random()
         total = 0.0
@@ -334,10 +334,11 @@ def MakePmfFromHist(hist, name=None):
 
 
 def MakePmfFromCdf(cdf, name=None):
-    """Makes a normalized PMF from a Cdf object.
+    """Makes a normalized Pmf from a Cdf object.
 
     Args:
         cdf: Cdf object
+        name: string name for the new Pmf
 
     Returns:
         Pmf object
@@ -358,9 +359,11 @@ def MakePmfFromCdf(cdf, name=None):
 def MakeMixture(pmfs, name='mix'):
     """Make a mixture distribution.
 
-    pmfs: Pmf that maps from Pmfs to probs.
+    Args:
+      pmfs: Pmf that maps from Pmfs to probs.
+      name: string name for the new Pmf.
 
-    Result is a Pmf object.
+    Returns: Pmf object.
     """
     mix = Pmf(name=name)
     for pmf, prob in pmfs.Items():

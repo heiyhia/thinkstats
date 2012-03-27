@@ -87,6 +87,8 @@ def Var(t, mu=None):
 
     Args:
         t: sequence of numbers
+        mu: value around which to compute the variance; by default,
+            computes the mean.
 
     Returns:
         float
