@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.5.7}
+\newcommand{\theversion}{1.5.9}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -558,6 +558,13 @@ found errors in the first print edition.
 
 \item Dan Kearney found a typo.
 
+\item Jeff Pickhardt found a broken link and a typo.
+
+\item J\"{o}rg Beyer found typos in the book and made many corrections
+in the docstrings of the accompanying code.
+
+\item Tommie Gannert sent a patch file with a number of corrections.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -783,6 +790,7 @@ to draw conclusions about the general population based on statistics
 from the survey.  We will come back to this point later.
 
 \begin{exercise}
+
 Although the NSFG has been conducted seven times, it is not a
 longitudinal study.  Read the Wikipedia pages
 \url{http://wikipedia.org/wiki/Cross-sectional_study}
@@ -793,6 +801,7 @@ to make sure you understand why not.
 \end{exercise}
 
 \begin{exercise}
+
 In this exercise, you will download data from the NSFG; we will use
 this data throughout the book.
 \index{National Survey of Family Growth}
@@ -810,7 +819,7 @@ use for this data and click ``I accept these terms'' (assuming that you do).
   respondent.
 
 \item Online documentation of the survey is at
-  \url{http://nsfg.icpsr.umich.edu/cocoon/WebDocs/NSFG/public/index.htm}.
+  \url{http://www.icpsr.umich.edu/nsfg6}.
   Browse the sections in the left navigation bar to get a sense of
   what data are included.  You can also read the questionnaires
   at \url{http://cdc.gov/nchs/data/nsfg/nsfg_2002_questionnaires.htm}.
@@ -2783,7 +2792,7 @@ with median 1 has 95th percentile of only 1.5.  \index{exponential
 There is a simple visual test that indicates whether an empirical
 distribution fits a Pareto distribution: on a log-log scale, the CCDF
 looks like a straight line.
-If you plot a the CCDF of a sample from a Pareto distribution on a
+If you plot the CCDF of a sample from a Pareto distribution on a
 linear scale, you expect to see a function like:
 %
 \[ y \approx \left( \frac{x}{x_m} \right) ^{-\alpha} \]
@@ -4053,7 +4062,7 @@ obligated to investigate.  According to their web page:
 \item Now imagine that you divide a population of 10000 people into 100
   cohorts and follow them for 10 years.  What is the chance that at
   least one of the cohorts will have a ``statistically significant''
-  cluster?  What if we require a p-value of 1\%.?
+  cluster?  What if we require a p-value of 1\%?
 
 \item Now imagine that you arrange 10000 people in a 100 \mytimes 100
   grid and follow them for 10 years.  What is the chance that there
@@ -4645,8 +4654,8 @@ class Sum(RandomVariable):
 \end{verbatim}
 
 Given any RandomVariables, \X~and \Y, we can create a Sum
-object that represents \Z.  Then we can use a sample from \Z
-to approximate CDF\sub{Z}.
+object that represents \Z.  Then we can use a sample from \Z~to
+approximate CDF\sub{Z}.
 
 This approach is simple and versatile, but not very efficient; we
 have to generate a large sample to estimate CDF\sub{Z} accurately, and
@@ -4803,7 +4812,7 @@ that means, it will help to introduce some notation.
 If the distribution of a random variable, \X, is
 normal with parameters \mymu~and \mysigma, you can write
 
-\Eqn{ \X~\mysim~\mynormal (\mymu, \mysigma) }
+\Eqn{ \X~\mysim~\mynormal (\mymu, \mysigma\super{2}) }
 
 where the symbol \mysim~means ``is distributed'' and the script letter
 \mynormal~stands for ``normal.''
@@ -6157,7 +6166,7 @@ so working backwards, we might choose
 It is common to use hat notation for estimators, so $\lamhat$ is an
 estimator of \mylambda.  And not just any estimator; it is also the
 MLE estimator\footnote{See
-\url{http://wikipedia.org/wiki/Exponential_distribution\#Maximum_likelihood}.}.
+\url{http://wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}.}.
 So if you want to maximize your chance of guessing \mylambda~exactly,
 $\lamhat$ is the way to go.
 \index{MLE}
@@ -6227,13 +6236,13 @@ distribution is
 %
 \[ \left( \lamhat \frac{\chi^2(2n, 1-\alpha/2)}{2n},
       \lamhat \frac{\chi^2(2n, \alpha/2)}{2n} \right) \]
-%
+% 
 where \n~is the sample size, $\lamhat$ is the mean-based estimator
-from the previous section, and \mychi\super{2}(\kk, \x) is the CDF of a
-chi-squared distribution with \kk~degrees of freedom, evaluated at \x
-(see \url{http://wikipedia.org/wiki/Chi-square_distribution}).
-\index{chi-square distribution}
-\index{distribution!chi-square}
+      from the previous section, and \mychi\super{2}(\kk, \x) is the
+      CDF of a chi-squared distribution with \kk~degrees of freedom,
+      evaluated at \x~(see
+      \url{http://wikipedia.org/wiki/Chi-square_distribution}).
+      \index{chi-square distribution} \index{distribution!chi-square}
 
 In general, confidence intervals are hard to compute analytically, but
 relatively easy to estimate using simulation.  But first we need
@@ -6301,7 +6310,7 @@ Since \mylambda~was drawn from a uniform distribution, the prior
 probability, \Prob(\HH\sub{i}), is the same for all \ii.
 
 \item For each hypothesis, we compute the likelihood, \Prob(\X|\HH\sub{i}),
-which is the chance of drawing the sample \X given \HH\sub{i}.
+which is the chance of drawing the sample \X~given \HH\sub{i}.
 %
 \[ P(X \given H_i) = \prod_j \mathrm{expo}(\lambda_i, x_j)  \]
 %
@@ -6318,7 +6327,7 @@ The symbol $\prod$ represents the product of a sequence (see
 
 \Eqn{ \Prob(\HH\sub{i}|\X) =  \Prob(\HH\sub{i}) \Prob(\X|\HH\sub{i}) /\f }
 
-where \f is the normalization factor
+where \f~is the normalization factor
 %
 \[ f = \sum_i P(H_i) P(X \given H_i) \]
 %
@@ -7086,7 +7095,7 @@ outlier.  You can read more about it at
 
 Spearman's rank correlation is an alternative that mitigates the
 effect of outliers and skewed distributions.  To compute Spearman's
-correction, we have to compute the {\bf rank} of each value, which is its
+correlation, we have to compute the {\bf rank} of each value, which is its
 index in the sorted sample.  For example, in the sample \{7, 1, 2, 5\}
 the rank of the value 5 is 3, because it appears third if we sort
 the elements.  Then we compute Pearson's correlation for the ranks.
@@ -7122,7 +7131,7 @@ from \url{http://thinkstats.com/correlation.py}.
 \begin{exercise}
 Download \url{http://thinkstats.com/brfss.py} and
 \url{http://thinkstats.com/brfss_scatter.py}.  Run them and confirm that you
-can read the BFRSS data and generate scatterplots.
+can read the BRFSS data and generate scatterplots.
 \index{Behavioral Risk Factor Surveillance System}
 \index{BRFSS}
 \index{{\tt brfss.py}}

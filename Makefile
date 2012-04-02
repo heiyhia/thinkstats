@@ -46,6 +46,8 @@ distrib:
 	chmod -R o+r $(DEST)/*
 
 plastex:
+	# Before running plastex, we need the current directory in PYTHONPATH
+	# export PYTHONPATH=$PYTHONPATH:.
 	rm -rf /home/downey/thinkstats/trunk/book/.svn
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
 	rm -rf /home/downey/thinkstats/trunk/book/.svn
