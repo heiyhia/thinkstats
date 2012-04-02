@@ -6,7 +6,21 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import survey
-import thinkstats
+
+# copying Mean from thinkstats.py so we don't have to deal with
+# importing anything in Chapter 1
+
+def Mean(t):
+    """Computes the mean of a sequence of numbers.
+
+    Args:
+        t: sequence of numbers
+
+    Returns:
+        float
+    """
+    return float(sum(t)) / len(t)
+
 
 def PartitionRecords(table):
     """Divides records into two lists: first babies and others.
@@ -40,7 +54,7 @@ def Process(table):
     """
     table.lengths = [p.prglength for p in table.records]
     table.n = len(table.lengths)
-    table.mu = thinkstats.Mean(table.lengths)
+    table.mu = Mean(table.lengths)
 
 
 def MakeTables(data_dir='.'):
