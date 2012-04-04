@@ -85,7 +85,7 @@ def Likelihood(evidence, hypo):
 
 
 def main():
-    suite = MakeUniformSuite(0.0, 1.0, 101)
+    suite = MakeUniformSuite(0.0, 1.0, 1001)
     evidence = 140, 110
 
     Update(suite, evidence)
