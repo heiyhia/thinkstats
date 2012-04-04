@@ -33,7 +33,7 @@ def NormalCdf(x, mu=0, sigma=1):
     Returns:
         float
     """
-    return StandardNormalCdf((x - mu) / sigma)
+    return StandardNormalCdf(float(x - mu) / sigma)
 
 
 def NormalCdfInverse(p, mu=0, sigma=1):
