@@ -252,7 +252,120 @@ def PrintSummary(res):
     print
 
 
+def PlotReligious(filename):
+    """Make plots showing percentage None broken down by college type.
+
+    filename: string filename
+    """
+    fp = open(filename)
+    reader = csv.reader(fp)
+
+    header = reader.next()
+
+    years = []
+    rows = []
+    for t in reader:
+        year = int(t[0])
+        data = t[1:6]
+        try:
+            data = [float(x) for x in data]
+        except ValueError:
+            continue
+        years.append(year)
+        rows.append(data)
+
+    cols = zip(*rows)
+    labels = header[1:]
+
+    PlotReligiousSubset(years, cols, labels, 0, 3)
+    PlotReligiousSubset(years, cols, labels, 3, 5)
+
+
+def PlotReligiousSubset(years, cols, labels, i, j):
+    """Helper function that factors out common plotting code.
+
+    years: sequence of years
+    cols: list of columns to plot
+    labels: list of labels (corresponding to cols)
+    i,j: slice indices of the columns to plot
+    """
+    pyplot.clf()
+    options = dict(linewidth=3, markersize=0, alpha=0.7)
+    for col, label in zip(cols[i:j], labels[i:j]):
+        pyplot.plot(years, col, label=label, **options)
+
+    root = 'heri.religious.%d.%d' % (i, j)
+    myplot.Save(root=root,
+                xlabel='Year',
+                ylabel='% None',
+                title='Religious preference')
+
+
+def PlotReligious2(filename):
+    """Makes a plot of the number/fraction of students at religious colleges.
+
+    filename: string filename
+    """
+    fp = open(filename)
+    reader = csv.reader(fp)
+
+    header = reader.next()
+
+    years = [int(x) for x in header[1:]]
+
+    labels = []
+    cols = []
+    for t in reader:
+        label = t[0]
+        if label == '':
+            break
+        col = [float(x)/1000000.0 for x in t[1:]]
+        labels.append(label)
+        cols.append(col)
+
+    #PlotReligiousScale2(years, cols, labels, ylabel='Enrollment (millions)')
+
+    cols = PercentTotal(cols)
+    PlotReligiousScale2(years, cols, labels, ylabel='Enrollment (percentage)')
+
+
+def PercentTotal(cols):
+    """Converts the data in cols to percentages of total.
+    """
+    totals = []
+    for row in zip(*cols):
+        print row
+        total = sum(row)
+        totals.append(total)
+    
+    return cols
+
+
+def PlotReligiousScale2(years, cols, labels, ylabel):
+    """Helper function that factors out common plotting code.
+
+    years: sequence of years
+    cols: list of columns to plot
+    labels: list of labels (corresponding to cols)
+    ylabel: string label for y axis
+    """
+    pyplot.clf()
+    options = dict(linewidth=3, markersize=0, alpha=0.7)
+    for col, label in zip(cols, labels):
+        pyplot.plot(years, col, label=label, **options)
+
+    root = 'heri.religious2'
+    myplot.Save(show=True,
+                yscale=yscale,
+                xlabel='Year',
+                ylabel=ylabel,
+                title=title)
+
+
 def main(script):
+    PlotReligious2('heri.religious2.csv')
+    return
+
     ts, ys = ReadData('heri.0')
     MakePlot(ts, ys, model='ys ~ ts')
 
