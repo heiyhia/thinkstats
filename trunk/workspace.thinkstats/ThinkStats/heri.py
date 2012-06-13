@@ -323,43 +323,56 @@ def PlotReligious2(filename):
         labels.append(label)
         cols.append(col)
 
-    #PlotReligiousScale2(years, cols, labels, ylabel='Enrollment (millions)')
+    PlotReligiousScale2(years, cols, labels, flag='raw')
 
     cols = PercentTotal(cols)
-    PlotReligiousScale2(years, cols, labels, ylabel='Enrollment (percentage)')
+    PlotReligiousScale2(years, cols, labels, flag='percent')
 
 
 def PercentTotal(cols):
     """Converts the data in cols to percentages of total.
+
+    Modifies the columns.
+
+    cols: sequence of columns
     """
     totals = []
     for row in zip(*cols):
         print row
         total = sum(row)
         totals.append(total)
+
+    for col in cols:
+        for i in range(len(col)):
+            col[i] /= totals[i] / 100
     
     return cols
 
 
-def PlotReligiousScale2(years, cols, labels, ylabel):
+def PlotReligiousScale2(years, cols, labels, flag):
     """Helper function that factors out common plotting code.
 
     years: sequence of years
     cols: list of columns to plot
     labels: list of labels (corresponding to cols)
-    ylabel: string label for y axis
+    flag: string 'raw' or 'percent'
     """
     pyplot.clf()
     options = dict(linewidth=3, markersize=0, alpha=0.7)
     for col, label in zip(cols, labels):
         pyplot.plot(years, col, label=label, **options)
 
-    root = 'heri.religious2'
-    myplot.Save(show=True,
-                yscale=yscale,
+    root = 'heri.religious2.%s' % flag
+    ylabel = dict(raw='Enrollment (millions)',
+                  percent='Enrollment (percent of total)')[flag]
+    axis = dict(raw=[1977, 2010, 0, 16],
+                  percent=[1977, 2010, 0, 100])[flag]
+
+    myplot.Save(root=root,
                 xlabel='Year',
                 ylabel=ylabel,
-                title=title)
+                title='Enrollment by college type',
+                axis=axis)
 
 
 def main(script):
