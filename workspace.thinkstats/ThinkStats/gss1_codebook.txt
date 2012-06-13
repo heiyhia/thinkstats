@@ -1,0 +1,993 @@
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                      CODEBOOK
+
+
+                         GSS 1972-2010 Cumulative Datafile
+                                          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page i
+
+
+                                      CONTENTS
+
+
+      item                                                                page
+
+      CASEID             CASE IDENTIFICATION NUMBER                          1
+      COMPWT             Composite weight =  WTSSALL * OVERSAMP * FORMWT     1
+      RELIG              RS RELIGIOUS PREFERENCE                             2
+      DENOM              SPECIFIC DENOMINATION                               3
+      OTHER              OTHER PROTESTANT DENOMINATIONS                      4
+      FUND               HOW FUNDAMENTALIST IS R CURRENTLY                   4
+      RELIG16            RELIGION IN WHICH RAISED                            5
+      DENOM16            DENOMINATION IN WHICH R WAS RAISED                  6
+      OTH16              OTHER PROTESTANT DENOMINATIONS                      7
+      FUND16             HOW FUNDAMENTALIST WAS R AT AGE 16                  7
+      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE               8
+      PADEN              WHAT WAS FATHERS RELIGIOUS DENOMINATION             9
+      PAOTH              OTHER PROTESTANT DENOMINATION FOR FATHER           10
+      PAATTEND           HOW OFTEN PA ATTENDED RELIGIOUS SERVICES           10
+      PAFUND             HOW FUNDAMENTALIST WAS RS FATHER                   11
+      PARELKID           FATHER'S RELIGION WHEN R WAS CHILD                 11
+      PADENKID           IF PROTESTANT, FATHER'S DENOMINATION               11
+      MARELIG            WHAT WAS MOTHERS RELIGIOUS PREFERENCE              12
+      MADEN              WHAT WAS MOTHERS RELIGIOUS DENOMINATION            13
+      MAOTH              OTHER PROTESTANT DENOMINATION FOR MOTHER           14
+      MAATTEND           HOW OFTEN MA ATTENDED RELIGIOUS SERVICES           14
+      MAFUND             HOW FUNDAMENTALIST WAS RS MOTHER                   15
+      MARELKID           MOTHERS RELIGION WHEN R WAS CHILD                  15
+      MADENKID           IF PROTESTANT, MOTHER'S DENOMINATION               15
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 1
+
+
+      CASEID             CASE IDENTIFICATION NUMBER
+
+           Data type: numeric
+           Record/columns: 1/1-5
+
+      ________________________________________________________________________
+
+      COMPWT             Composite weight =  WTSSALL * OVERSAMP * FORMWT
+
+
+           Created by COMPUTE version 3.5
+           on Mar 22, 2011  (Tue 11:54 AM PDT)
+
+           compwt = WTSSALL * OVERSAMP * FORMWT
+
+           Input variables:
+
+           FORMWT: Weight deal with experimental randomization
+
+           OVERSAMP: WEIGHTS FOR BLACK OVERSAMPLES
+
+           WTSSALL: WEIGHT VARIABLE
+           From study: /html/D3/GSS10
+
+           Data type: numeric
+           Record/columns: 1/7-29
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 2
+
+
+      RELIG              RS RELIGIOUS PREFERENCE
+
+           104. What is your religous preference? Is it Protestant,
+           Catholic, Jewish, some other religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/31-32
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 3
+
+
+      DENOM              SPECIFIC DENOMINATION
+
+           104a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN US
+              42  OTHER PRESBYTERIAN
+              43  PRESBYTERIAN, MERGED
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER-SPECIFY
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/34-35
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 4
+
+
+      OTHER              OTHER PROTESTANT DENOMINATIONS
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/37-39
+
+      ________________________________________________________________________
+
+      FUND               HOW FUNDAMENTALIST IS R CURRENTLY
+
+           104c. Fundamentalism/liberalism of respondent's religion.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/41
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 5
+
+
+      RELIG16            RELIGION IN WHICH RAISED
+
+           115. In what religion were you raised?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/43-44
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 6
+
+
+      DENOM16            DENOMINATION IN WHICH R WAS RAISED
+
+           115a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN US
+              42  OTHER PRESBYTERIAN
+              43  PRESBYTERIAN, MERGED
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/46-47
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 7
+
+
+      OTH16              OTHER PROTESTANT DENOMINATIONS
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/49-51
+
+      ________________________________________________________________________
+
+      FUND16             HOW FUNDAMENTALIST WAS R AT AGE 16
+
+           115c. Fundamentalism/liberalism of religion respondent raised
+           in.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/53
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 8
+
+
+      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE
+
+           360. What was your father's religious preference when you were
+           growing up? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  Protestant
+               2  Catholic
+               3  Jewish
+               4  None
+               5  OTHER
+               8  DONT KNOW
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/55
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 9
+
+
+      PADEN              WHAT WAS FATHERS RELIGIOUS DENOMINATION
+
+           360a. What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN USA
+              42  OTHER PRESBYTERIAN
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/57-58
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 10
+
+
+      PAOTH              OTHER PROTESTANT DENOMINATION FOR FATHER
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/60-62
+
+      ________________________________________________________________________
+
+      PAATTEND           HOW OFTEN PA ATTENDED RELIGIOUS SERVICES
+
+           106b. When you were growing up, how often did your
+           [father/FATHER SUBSTITUTE] attend religious services?
+
+           VALUE  LABEL
+              -1  IAP
+               0  NEVER
+               1  LT ONCE A YEAR
+               2  ONCE A YEAR
+               3  SEVRL TIMES A YR
+               4  ONCE A MONTH
+               5  2-3X A MONTH
+               6  NRLY EVERY  WEEK
+               7  EVERY WEEK
+               8  MORE THN ONCE WK
+               9  DK,NA
+
+           Data type: numeric
+           Missing-data codes: -1,9
+           Record/column: 1/64
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 11
+
+
+      PAFUND             HOW FUNDAMENTALIST WAS RS FATHER
+
+           360c. Fundamentalism/liberalism fo father's religion.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/66
+
+      ________________________________________________________________________
+
+      PARELKID           FATHER'S RELIGION WHEN R WAS CHILD
+
+           1387. What was your father's religious preference when you were
+           a child? Was it Protestant, Catholic, Jewish, some other"
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  ORTHODOX GREEK, RUSSIAN, ETC
+               5  MOSLEM
+               6  OTHER -SPECIFY
+               7  NO RELIGION
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/68
+
+      ________________________________________________________________________
+
+      PADENKID           IF PROTESTANT, FATHER'S DENOMINATION
+
+           1387a. If Protestant, what specific denomination was that?
+
+           Data type: numeric
+           Missing-data codes: 0,99998,99999
+           Record/columns: 1/70-74
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 12
+
+
+      MARELIG            WHAT WAS MOTHERS RELIGIOUS PREFERENCE
+
+           359. What was your mother's religious preference when you were
+           growing up? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/76
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 13
+
+
+      MADEN              WHAT WAS MOTHERS RELIGIOUS DENOMINATION
+
+           359a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN US
+              42  OTHER PRESBYTERIAN
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/78-79
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 14
+
+
+      MAOTH              OTHER PROTESTANT DENOMINATION FOR MOTHER
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/81-83
+
+      ________________________________________________________________________
+
+      MAATTEND           HOW OFTEN MA ATTENDED RELIGIOUS SERVICES
+
+           106a. When you were growing up, how often did your
+           [mother/MOTHER SUBSTITUTE] attend religious services?
+
+           VALUE  LABEL
+              -1  IAP
+               0  NEVER
+               1  LT ONCE A YEAR
+               2  ONCE A YEAR
+               3  SEVRL TIMES A YR
+               4  ONCE A MONTH
+               5  2-3X A MONTH
+               6  NRLY EVERY  WEEK
+               7  EVERY WEEK
+               8  MORE THN ONCE WK
+               9  DK,NA
+
+           Data type: numeric
+           Missing-data codes: -1,9
+           Record/column: 1/85
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    May 25, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 15
+
+
+      MAFUND             HOW FUNDAMENTALIST WAS RS MOTHER
+
+           359c. Fundamentalism/liberalism of mother's religion.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/87
+
+      ________________________________________________________________________
+
+      MARELKID           MOTHERS RELIGION WHEN R WAS CHILD
+
+           1386. What was your mother's religious preference when you were
+           a child? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  ORTHODOX GREEK, RUSSIAN, ETC
+               5  MOSLEM
+               6  OTHER -SPECIFY
+               7  NO RELIGION
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/89
+
+      ________________________________________________________________________
+
+      MADENKID           IF PROTESTANT, MOTHER'S DENOMINATION
+
+           1386a. If Protestant, what specific denomination was that?
+
+           Data type: numeric
+           Missing-data codes: 0,99998,99999
+           Record/columns: 1/91-95
+
+
+
+
+                                    May 25, 2012
