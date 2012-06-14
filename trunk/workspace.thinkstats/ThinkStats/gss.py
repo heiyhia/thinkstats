@@ -230,7 +230,72 @@ def step(matrix, vector):
     return new
 
 
+def normalize_vector(vector, total=1.0):
+    vector *= total / np.sum(vector)
+
+
+def run_nonlinear(matrix, vector, order):
+    conversions = matrix / vector
+
+    state = vector
+    print_vector(state, order, True)
+
+    for i in range(10):
+        trans = conversions * state
+        state = step(trans, state)
+        normalize_vector(state)
+        print_vector(state, order, False)
+
+
+def run_linear(matrix, vector, order):
+    print_vector(vector, order, True)
+
+    for i in range(2):
+        vector = step(matrix, vector)
+        print_vector(vector, order, False)
+
+
+def read_time_series(filename='GSS_relig_time_series.csv'):
+    fp = open(filename)
+    reader = csv.reader(fp)
+
+    header1 = reader.next()[1:]
+    header2 = reader.next()[1:]
+    print header2
+
+    series = {}
+    for t in reader:
+        year = int(t[0])
+        total = float(t[-1])
+        row = [float(x)/total for x in t[1:-1]]
+        pmf = combine_row(row, header2)
+        print year, total
+        for name, prob in pmf.Items():
+            print name, prob
+
+        # normalizing shouldn't be necessary, but the totals tend
+        # to be off in the third decimal place, so I'm cleaning that up
+        pmf.Normalize()
+
+        series[year] = pmf
+
+    fp.close()
+
+    return series
+
+
+def combine_row(row, header2):
+    pmf = Pmf.Pmf()
+    pmf.Incr('NA', 0)
+    for name, prob in zip(header2, row):
+        pmf.Incr(name, prob)
+    return pmf
+
+
 def main(script):
+    read_time_series()
+    return
+
     order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
     long_order = []
 
@@ -240,18 +305,13 @@ def main(script):
 
     vector = pmf_to_vector(pmf, order)
 
-
     trans = make_trans(objs, 'marelig_name', 'relig_name')
     print_trans(trans, order)
 
     matrix = trans_to_matrix(trans, order)
 
-    print_vector(vector, order, True)
-
-    for i in range(2):
-        vector = step(matrix, vector)
-        print_vector(vector, order, False)
-
+    print
+    run_linear(matrix, vector, order)
 
 if __name__ == '__main__':
     import sys
