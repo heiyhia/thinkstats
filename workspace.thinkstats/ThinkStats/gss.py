@@ -231,37 +231,155 @@ def step(matrix, vector):
 
 
 def normalize_vector(vector, total=1.0):
+    """Normalizes a numpy array to add to total.
+
+    Modifies the array.
+
+    vector: numpy array
+    total: float
+    """
     vector *= total / np.sum(vector)
 
 
-def run_nonlinear(matrix, vector, order):
-    conversions = matrix / vector
+class Model(object):
+    
+    def __init__(self, order):
+        self.order = order
 
-    state = vector
-    print_vector(state, order, True)
+    def run_nonlinear(self, matrix, vector):
+        """Runs the nonlinear model where the number of conversions depends
+        on the prevalance of each category.
 
-    for i in range(10):
-        trans = conversions * state
-        state = step(trans, state)
-        normalize_vector(state)
-        print_vector(state, order, False)
+        matrix: numpy transition matrix
+        vector: numpy state vector
+        """
+        conversions = matrix / vector
+
+        state = vector
+        print_vector(state, self.order, True)
+
+        for i in range(10):
+            trans = conversions * state
+            state = step(trans, state)
+            normalize_vector(state)
+            print_vector(state, self.order, False)
 
 
-def run_linear(matrix, vector, order):
-    print_vector(vector, order, True)
+    def run_linear(self, matrix, vector, steps=1):
+        """Runs the linear model where the rate of conversions is constant.
 
-    for i in range(2):
-        vector = step(matrix, vector)
-        print_vector(vector, order, False)
+        matrix: numpy transition matrix
+        vector: numpy state vector
+        """
+        print_vector(vector, self.order, True)
 
+        for i in range(steps):
+            vector = step(matrix, vector)
+            print_vector(vector, self.order, False)
+
+        return vector
+
+
+    def display_time_series(self, series):
+        years = series.keys()
+        years.sort()
+
+        ys = np.zeros(len(years))
+
+        rows = []
+        for name in self.order:
+            if name == 'NA':
+                continue
+
+            for i, year in enumerate(years):
+                percent = series[year].Prob(name) * 100
+                ys[i] += percent
+
+            print name, ys
+            rows.append(np.copy(ys))
+
+        colors = ['orange', 'green', 'blue', 'yellow', 'red', '', '', ]
+
+        for i in range(len(rows)-1, -1, -1):
+            ys = rows[i]
+            if i == 0:
+                prev = np.zeros(len(years))
+            else:
+                prev = rows[i-1]
+
+            pyplot.fill_between(years, prev, ys, 
+                                color=colors[i],
+                                alpha=0.2)
+
+        myplot.Save(show=True,
+                    legend=True,
+                    axis=[1972, 2010, 0, 100.5])
+            
+
+    def display_changes(self, series,
+                        low, high, 
+                        change_flag=True,
+                        predictions=None):
+        years = series.keys()
+        years.sort()
+        years = [year for year in years if low <= year <= high]
+
+        ys = np.zeros(len(years))
+
+        rows = []
+        for name in self.order:
+            if name == 'NA':
+                continue
+
+            ys = [series[year].Prob(name) * 100  for year in years]
+            rows.append(ys)
+
+        colors = ['orange', 'green', 'blue', 'yellow', 'red']
+        alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
+        markers = ['o', 'o', 'o', 'o', 'o']
+
+        for i in range(len(rows)):
+            ys = rows[i]
+            if change_flag:
+                baseline = ys[0]
+                ys = [100.0 * y / baseline for y in ys]
+                axis = [low-1, high+1, 50, 260]
+            else:
+                axis = [low-1, high+1, 0, 90]
+
+            pyplot.plot(years, ys,
+                        label=self.order[i],
+                        linewidth=3,
+                        color=colors[i],
+                        alpha=alphas[i])
+
+            if predictions is not None:
+                pred = 100.0 * 100.0 * predictions[i] / baseline
+                print high, pred
+                pyplot.plot(high, pred, 
+                            marker=markers[i],
+                            linewidth=3,
+                            markersize=10,
+                            color=colors[i],
+                            alpha=alphas[i])
+                            
+
+
+        myplot.Save(show=True,
+                    legend=True,
+                    axis=axis)
+            
 
 def read_time_series(filename='GSS_relig_time_series.csv'):
+    """Reads data from CSV file and returns map from year to Pmf of relig.
+
+    filename: string
+    """
     fp = open(filename)
     reader = csv.reader(fp)
 
     header1 = reader.next()[1:]
     header2 = reader.next()[1:]
-    print header2
 
     series = {}
     for t in reader:
@@ -269,9 +387,6 @@ def read_time_series(filename='GSS_relig_time_series.csv'):
         total = float(t[-1])
         row = [float(x)/total for x in t[1:-1]]
         pmf = combine_row(row, header2)
-        print year, total
-        for name, prob in pmf.Items():
-            print name, prob
 
         # normalizing shouldn't be necessary, but the totals tend
         # to be off in the third decimal place, so I'm cleaning that up
@@ -284,20 +399,31 @@ def read_time_series(filename='GSS_relig_time_series.csv'):
     return series
 
 
-def combine_row(row, header2):
+def combine_row(row, header):
+    """Makes a row into a PMF.
+
+    row: list of float data
+    header: category each datum should be added to
+
+    Returns: Pmf that maps categories to probs (or fraction of pop)
+    """
     pmf = Pmf.Pmf()
     pmf.Incr('NA', 0)
-    for name, prob in zip(header2, row):
+    for name, prob in zip(header, row):
         pmf.Incr(name, prob)
     return pmf
 
 
 def main(script):
-    read_time_series()
-    return
-
     order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
-    long_order = []
+
+    series = read_time_series()
+    model = Model(order)
+
+    for year, pmf in sorted(series.iteritems()):
+        print year
+        for name, prob in pmf.Items():
+            print name, prob
 
     objs = columns.read_csv('gss1.csv', Respondent)
     pmf = make_pmf(objs, 'relig_name')
@@ -311,7 +437,15 @@ def main(script):
     matrix = trans_to_matrix(trans, order)
 
     print
-    run_linear(matrix, vector, order)
+    model = Model(order)
+
+    predictions = model.run_linear(matrix, vector, steps=1)
+
+    #model.display_time_series(series)
+    #model.display_changes(series, 1972, 1988)
+    model.display_changes(series, 1988, 2010, predictions=predictions)
+    return
+                             
 
 if __name__ == '__main__':
     import sys
