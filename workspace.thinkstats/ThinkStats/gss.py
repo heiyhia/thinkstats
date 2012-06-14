@@ -22,16 +22,19 @@ import thinkstats
 import rpy2.robjects as robjects
 r = robjects.r
 
-order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
-long_order = []
-
 
 class Respondent(object):
+    """Represents a survey respondent.
 
-    divide_prot = False
-
+    Attributes are set in columns.read_csv.
+    """ 
+    # map from field name to conversion function
     convert = dict(compwt=float)
 
+    # divide Protestants into denominations?
+    divide_prot = False
+
+    # code table for relig and related attributes
     religions = {
         0:'NA',
         1:'prot',
@@ -44,6 +47,7 @@ class Respondent(object):
         99:'NA'
         }
 
+    # code table for Protestant denominations
     denoms = dict(
         bap = range(10, 20),
         meth = range(20, 30),
@@ -53,6 +57,10 @@ class Respondent(object):
         )
 
     def clean(self):
+        """Recodes some attributes.
+
+        Invoked on each object in columns.read_csv
+        """
         self.compwt = float(self.compwt)
         self.relig_name = self.lookup_religion(self.relig, self.denom)
         self.parelig_name = self.lookup_religion(self.parelig, self.paden)
@@ -60,6 +68,13 @@ class Respondent(object):
         self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
 
     def lookup_religion(self, relig, denom):
+        """Converts religion codes to string names.
+
+        relig: code from relig and related fields
+        denom: code from denom and related fields
+
+        Returns: string
+        """
         relname = relig
 
         if relig in self.religions:
@@ -74,6 +89,14 @@ class Respondent(object):
 
 
 def make_trans(objs, attr1, attr2):
+    """Makes a transition table.
+
+    Returns map from attr1 to normalized Pmf of outcomes.
+
+    objs: list of objects
+    attr1: explanatory variable
+    attr2: dependent variable
+    """
     trans = {}
 
     for obj in objs:
@@ -90,6 +113,11 @@ def make_trans(objs, attr1, attr2):
 
 
 def print_trans(trans, order):
+    """Prints a transition table.
+
+    trans: map from explanatory values to Pmf of outcomes.
+    order: string category names in desired order
+    """
     print '\t',
     for y in order:
         print y, '\t',
@@ -102,8 +130,15 @@ def print_trans(trans, order):
             print '%0.1f\t' % percent,
         print
 
-def trans_to_matrix(trans, order):
 
+def trans_to_matrix(trans, order):
+    """Converts a transition table to a matrix.
+
+    trans: map from explanatory values to Pmf of outcomes.
+    order: string category names in desired order.
+
+    Returns: numpy array of float
+    """
     n = len(order)
     matrix = np.empty(shape=(n, n), dtype=np.float)
 
@@ -116,6 +151,13 @@ def trans_to_matrix(trans, order):
 
 
 def make_pmf(objs, attr):
+    """Make a PMF for an attribute.  Uses compwt to weight respondents.
+
+    objs: list of Respondents
+    attr: string attr name
+
+    Returns: normalized PMF
+    """
     pmf = Pmf.Pmf()
     for obj in objs:
         val = getattr(obj, attr)
@@ -126,27 +168,50 @@ def make_pmf(objs, attr):
 
 
 def print_pmf_sorted(pmf):
+    """Prints the values in the Pmf in descending order of prob.
+
+    pmf: Pmf object
+    """
     pvs = [(prob, val) for val, prob in pmf.Items()]
     pvs.sort(reverse=True)
     for prob, val in pvs:
         print val, prob * 100
 
 
-def print_pmf(pmf):
+def print_pmf(pmf, order):
+    """Prints the Pmf with values in the given order.
+
+    pmf: Pmf object
+    order: string category names in desired order.
+    """
     for x in order:
         print '%s\t%0.1f' % (x, pmf.Prob(x) * 100)
 
 
-def pmf_to_vector(pmf):
+def pmf_to_vector(pmf, order):
+    """Converts a Pmf to a vector of probabilites.
+
+    pmf: Pmf object
+    order: string category names in desired order.
+
+    Returns: numpy array of float
+    """
     t = [pmf.Prob(x) for x in order]
     return np.array(t)
 
 
-def print_vector(vector):
-    for x in order:
-        print x, '\t',
-    
-    print
+def print_vector(vector, order, head_flag=True):
+    """Prints a 1-D numpy array.
+
+    vector: numpy array
+    order: string category names
+    head_flag: boolean whether to print a header line
+    """
+    if head_flag:
+        for x in order:
+            print x, '\t',
+        print
+
     for i, x in enumerate(order):
         percent = vector[i] * 100
         print '%0.1f\t' % percent,
@@ -154,16 +219,26 @@ def print_vector(vector):
 
 
 def step(matrix, vector):
+    """Advance the simulation by one generation.
+
+    matrix: numpy transition matrix
+    vector: numpy state vector
+
+    Returns: new numpy vector
+    """
     new = np.dot(matrix, vector)
     return new
 
 
 def main(script):
+    order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
+    long_order = []
+
     objs = columns.read_csv('gss1.csv', Respondent)
     pmf = make_pmf(objs, 'relig_name')
     #print_pmf(pmf)
 
-    vector = pmf_to_vector(pmf)
+    vector = pmf_to_vector(pmf, order)
 
 
     trans = make_trans(objs, 'marelig_name', 'relig_name')
@@ -171,11 +246,11 @@ def main(script):
 
     matrix = trans_to_matrix(trans, order)
 
-    print_vector(vector)
+    print_vector(vector, order, True)
 
-    for i in range(10):
+    for i in range(2):
         vector = step(matrix, vector)
-        print_vector(vector)
+        print_vector(vector, order, False)
 
 
 if __name__ == '__main__':
