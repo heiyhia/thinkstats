@@ -425,7 +425,7 @@ def main(script):
         for name, prob in pmf.Items():
             print name, prob
 
-    objs = columns.read_csv('gss1.csv', Respondent)
+    objs = columns.read_csv('gss1988.csv', Respondent)
     pmf = make_pmf(objs, 'relig_name')
     #print_pmf(pmf)
 
