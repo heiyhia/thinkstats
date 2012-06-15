@@ -1,0 +1,1757 @@
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                      CODEBOOK
+
+
+                         GSS 1972-2010 Cumulative Datafile
+                                          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page i
+
+
+                                      CONTENTS
+
+
+      item                                                                page
+
+      CASEID             CASE IDENTIFICATION NUMBER                          1
+      YEAR               GSS YEAR FOR THIS RESPONDENT                        1
+      COMPWT             Composite weight =  WTSSALL * OVERSAMP * FORMWT     1
+      AGE                AGE OF RESPONDENT                                   1
+      RACE               RACE OF RESPONDENT                                  2
+      BORN               WAS R BORN IN THIS COUNTRY                          2
+      PARBORN            WERE RS PARENTS BORN IN THIS COUNTRY                3
+      GRANBORN           HOW MANY GRANDPARENTS BORN OUTSIDE U.S.             3
+      CHILDS             NUMBER OF CHILDREN                                  4
+      RELIG              RS RELIGIOUS PREFERENCE                             4
+      DENOM              SPECIFIC DENOMINATION                               5
+      OTHER              OTHER PROTESTANT DENOMINATIONS                      6
+      FUND               HOW FUNDAMENTALIST IS R CURRENTLY                   6
+      RELIG16            RELIGION IN WHICH RAISED                            7
+      DENOM16            DENOMINATION IN WHICH R WAS RAISED                  8
+      OTH16              OTHER PROTESTANT DENOMINATIONS                      9
+      FUND16             HOW FUNDAMENTALIST WAS R AT AGE 16                  9
+      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE              10
+      PADEN              WHAT WAS FATHERS RELIGIOUS DENOMINATION            11
+      PAOTH              OTHER PROTESTANT DENOMINATION FOR FATHER           12
+      PAATTEND           HOW OFTEN PA ATTENDED RELIGIOUS SERVICES           12
+      PAFUND             HOW FUNDAMENTALIST WAS RS FATHER                   13
+      PARELKID           FATHER'S RELIGION WHEN R WAS CHILD                 13
+      PADENKID           IF PROTESTANT, FATHER'S DENOMINATION               13
+      MARELIG            WHAT WAS MOTHERS RELIGIOUS PREFERENCE              14
+      MADEN              WHAT WAS MOTHERS RELIGIOUS DENOMINATION            15
+      MAOTH              OTHER PROTESTANT DENOMINATION FOR MOTHER           16
+      MAATTEND           HOW OFTEN MA ATTENDED RELIGIOUS SERVICES           16
+      MAFUND             HOW FUNDAMENTALIST WAS RS MOTHER                   17
+      MARELKID           MOTHERS RELIGION WHEN R WAS CHILD                  17
+      MADENKID           IF PROTESTANT, MOTHER'S DENOMINATION               17
+      SPREL              SPOUSES RELIGIOUS PREFERENCE                       18
+      SPDEN              SPECIFIC DENOMINATION, SPOUSE                      19
+      SPOTHER            OTHER PROTESTANT DENOMINATIONS                     20
+      SPATTEND           HOW OFTEN SP ATTENDS RELIGIOUS SERVICES            20
+      SPFUND             HOW FUNDAMENTALIST IS SPOUSE CURRENTLY             21
+      SPREL16            RELIGION IN WHICH SPOUSE RAISED                    21
+      SPDEN16            DENOMINATION IN WHICH SPOUSE RAISED                22
+      KDYRBRN1           BIRTH YEAR OF R 1ST CHILD                          23
+      KDYRBRN2           BIRTH YEAR OF R 2ND CHILD                          23
+      KDYRBRN3           BIRTH YEAR OF R 3RD CHILD                          24
+      KDYRBRN4           BIRTH YEAR OF R 4TH CHILD                          24
+      KDYRBRN5           BIRTH YEAR OF R 5TH CHILD                          25
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page ii
+
+
+      item                                                                page
+
+      KDYRBRN6           BIRTH YEAR OF R 6TH CHILD                          25
+      KDYRBRN7           BIRTH YEAR OF R 7TH CHILD                          26
+      KDYRBRN8           BIRTH YEAR OF R 8TH CHILD                          26
+      KDYRBRN9           BIRTH YEAR OF R 9TH CHILD                          27
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 1
+
+
+      CASEID             CASE IDENTIFICATION NUMBER
+
+           Data type: numeric
+           Record/columns: 1/1-5
+
+      ________________________________________________________________________
+
+      YEAR               GSS YEAR FOR THIS RESPONDENT
+
+           Data type: numeric
+           Record/columns: 1/7-10
+
+      ________________________________________________________________________
+
+      COMPWT             Composite weight =  WTSSALL * OVERSAMP * FORMWT
+
+
+           Created by COMPUTE version 3.5
+           on Mar 22, 2011  (Tue 11:54 AM PDT)
+
+           compwt = WTSSALL * OVERSAMP * FORMWT
+
+           Input variables:
+
+           FORMWT: Weight deal with experimental randomization
+
+           OVERSAMP: WEIGHTS FOR BLACK OVERSAMPLES
+
+           WTSSALL: WEIGHT VARIABLE
+           From study: /html/D3/GSS10
+
+           Data type: numeric
+           Record/columns: 1/12-34
+
+      ________________________________________________________________________
+
+      AGE                AGE OF RESPONDENT
+
+           13. Respondent's age
+
+           VALUE  LABEL
+              89  89 OR OLDER
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/36-37
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 2
+
+
+      RACE               RACE OF RESPONDENT
+
+           24. What race do you consider yourself?
+
+           VALUE  LABEL
+               0  IAP
+               1  WHITE
+               2  BLACK
+               3  OTHER
+
+           Data type: numeric
+           Missing-data code: 0
+           Record/column: 1/39
+
+      ________________________________________________________________________
+
+      BORN               WAS R BORN IN THIS COUNTRY
+
+           31. Were you born in this country?
+
+           VALUE  LABEL
+               0  IAP
+               1  YES
+               2  NO
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/41
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 3
+
+
+      PARBORN            WERE RS PARENTS BORN IN THIS COUNTRY
+
+           32. Were both your parents born in this country?
+
+           VALUE  LABEL
+              -1  IAP
+               0  BOTH IN U.S
+               1  MOTHER ONLY
+               2  FATHER ONLY
+               3  MOTHER; FA. DK
+               4  NOT MOTHER;FA.DK
+               5  FATHER; MO.DK
+               6  NOT FATHER;MO.DK
+               7  DK FOR BOTH
+               8  NEITHER IN U.S
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: -1,9
+           Record/column: 1/43
+
+      ________________________________________________________________________
+
+      GRANBORN           HOW MANY GRANDPARENTS BORN OUTSIDE U.S.
+
+           33. Were all of your four grandparents born in this country? a.
+           How many were born outside the United States?
+
+           VALUE  LABEL
+              -1  IAP
+               0  ALL IN U.S
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: -1,8,9
+           Record/column: 1/45
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 4
+
+
+      CHILDS             NUMBER OF CHILDREN
+
+           12. How many children have you ever had? Please count all that
+           were born alive at any time (including any you had from a
+           previous marriage).
+
+           VALUE  LABEL
+               8  EIGHT OR MORE
+               9  DK NA
+
+           Data type: numeric
+           Missing-data code: 9
+           Record/column: 1/47
+
+      ________________________________________________________________________
+
+      RELIG              RS RELIGIOUS PREFERENCE
+
+           104. What is your religous preference? Is it Protestant,
+           Catholic, Jewish, some other religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/49-50
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 5
+
+
+      DENOM              SPECIFIC DENOMINATION
+
+           104a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN US
+              42  OTHER PRESBYTERIAN
+              43  PRESBYTERIAN, MERGED
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER-SPECIFY
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/52-53
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 6
+
+
+      OTHER              OTHER PROTESTANT DENOMINATIONS
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/55-57
+
+      ________________________________________________________________________
+
+      FUND               HOW FUNDAMENTALIST IS R CURRENTLY
+
+           104c. Fundamentalism/liberalism of respondent's religion.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/59
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 7
+
+
+      RELIG16            RELIGION IN WHICH RAISED
+
+           115. In what religion were you raised?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/61-62
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 8
+
+
+      DENOM16            DENOMINATION IN WHICH R WAS RAISED
+
+           115a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN US
+              42  OTHER PRESBYTERIAN
+              43  PRESBYTERIAN, MERGED
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/64-65
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 9
+
+
+      OTH16              OTHER PROTESTANT DENOMINATIONS
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/67-69
+
+      ________________________________________________________________________
+
+      FUND16             HOW FUNDAMENTALIST WAS R AT AGE 16
+
+           115c. Fundamentalism/liberalism of religion respondent raised
+           in.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/71
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 10
+
+
+      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE
+
+           360. What was your father's religious preference when you were
+           growing up? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  Protestant
+               2  Catholic
+               3  Jewish
+               4  None
+               5  OTHER
+               8  DONT KNOW
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/73
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 11
+
+
+      PADEN              WHAT WAS FATHERS RELIGIOUS DENOMINATION
+
+           360a. What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN USA
+              42  OTHER PRESBYTERIAN
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/75-76
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 12
+
+
+      PAOTH              OTHER PROTESTANT DENOMINATION FOR FATHER
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/78-80
+
+      ________________________________________________________________________
+
+      PAATTEND           HOW OFTEN PA ATTENDED RELIGIOUS SERVICES
+
+           106b. When you were growing up, how often did your
+           [father/FATHER SUBSTITUTE] attend religious services?
+
+           VALUE  LABEL
+              -1  IAP
+               0  NEVER
+               1  LT ONCE A YEAR
+               2  ONCE A YEAR
+               3  SEVRL TIMES A YR
+               4  ONCE A MONTH
+               5  2-3X A MONTH
+               6  NRLY EVERY  WEEK
+               7  EVERY WEEK
+               8  MORE THN ONCE WK
+               9  DK,NA
+
+           Data type: numeric
+           Missing-data codes: -1,9
+           Record/column: 1/82
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 13
+
+
+      PAFUND             HOW FUNDAMENTALIST WAS RS FATHER
+
+           360c. Fundamentalism/liberalism fo father's religion.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/84
+
+      ________________________________________________________________________
+
+      PARELKID           FATHER'S RELIGION WHEN R WAS CHILD
+
+           1387. What was your father's religious preference when you were
+           a child? Was it Protestant, Catholic, Jewish, some other"
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  ORTHODOX GREEK, RUSSIAN, ETC
+               5  MOSLEM
+               6  OTHER -SPECIFY
+               7  NO RELIGION
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/86
+
+      ________________________________________________________________________
+
+      PADENKID           IF PROTESTANT, FATHER'S DENOMINATION
+
+           1387a. If Protestant, what specific denomination was that?
+
+           Data type: numeric
+           Missing-data codes: 0,99998,99999
+           Record/columns: 1/88-92
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 14
+
+
+      MARELIG            WHAT WAS MOTHERS RELIGIOUS PREFERENCE
+
+           359. What was your mother's religious preference when you were
+           growing up? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/94
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 15
+
+
+      MADEN              WHAT WAS MOTHERS RELIGIOUS DENOMINATION
+
+           359a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN US
+              42  OTHER PRESBYTERIAN
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/96-97
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 16
+
+
+      MAOTH              OTHER PROTESTANT DENOMINATION FOR MOTHER
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/99-101
+
+      ________________________________________________________________________
+
+      MAATTEND           HOW OFTEN MA ATTENDED RELIGIOUS SERVICES
+
+           106a. When you were growing up, how often did your
+           [mother/MOTHER SUBSTITUTE] attend religious services?
+
+           VALUE  LABEL
+              -1  IAP
+               0  NEVER
+               1  LT ONCE A YEAR
+               2  ONCE A YEAR
+               3  SEVRL TIMES A YR
+               4  ONCE A MONTH
+               5  2-3X A MONTH
+               6  NRLY EVERY  WEEK
+               7  EVERY WEEK
+               8  MORE THN ONCE WK
+               9  DK,NA
+
+           Data type: numeric
+           Missing-data codes: -1,9
+           Record/column: 1/103
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 17
+
+
+      MAFUND             HOW FUNDAMENTALIST WAS RS MOTHER
+
+           359c. Fundamentalism/liberalism of mother's religion.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/105
+
+      ________________________________________________________________________
+
+      MARELKID           MOTHERS RELIGION WHEN R WAS CHILD
+
+           1386. What was your mother's religious preference when you were
+           a child? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  ORTHODOX GREEK, RUSSIAN, ETC
+               5  MOSLEM
+               6  OTHER -SPECIFY
+               7  NO RELIGION
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/107
+
+      ________________________________________________________________________
+
+      MADENKID           IF PROTESTANT, MOTHER'S DENOMINATION
+
+           1386a. If Protestant, what specific denomination was that?
+
+           Data type: numeric
+           Missing-data codes: 0,99998,99999
+           Record/columns: 1/109-113
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 18
+
+
+      SPREL              SPOUSES RELIGIOUS PREFERENCE
+
+           115. In what religion were you raised?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/115-116
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 19
+
+
+      SPDEN              SPECIFIC DENOMINATION, SPOUSE
+
+           116. What is your [SPOUSE]'s religious preference? Is it
+           Protestant, Catholic, Jewish, some other religion, or no
+           religion?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELICAL LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN US
+              42  OTHER PRESBYTERIAN
+              43  PRESBYTERIAN, MERGED
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/118-119
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 20
+
+
+      SPOTHER            OTHER PROTESTANT DENOMINATIONS
+
+           116a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+             998  DK
+             999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,998,999
+           Record/columns: 1/121-123
+
+      ________________________________________________________________________
+
+      SPATTEND           HOW OFTEN SP ATTENDS RELIGIOUS SERVICES
+
+           106c. How often does your [husband/wife] attend religious
+           services?
+
+           VALUE  LABEL
+              -1  IAP
+               0  NEVER
+               1  LT ONCE A YEAR
+               2  ONCE A YEAR
+               3  SEVRL TIMES A YR
+               4  ONCE A MONTH
+               5  2-3X A MONTH
+               6  NRLY EVERY  WEEK
+               7  EVERY WEEK
+               8  MORE THN ONCE WK
+               9  DK,NA
+
+           Data type: numeric
+           Missing-data codes: -1,9
+           Record/column: 1/125
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 21
+
+
+      SPFUND             HOW FUNDAMENTALIST IS SPOUSE CURRENTLY
+
+           116c. Fundamentalism/liberalism of religion of spouse.
+
+           VALUE  LABEL
+               0  IAP
+               1  FUNDAMENTALIST
+               2  MODERATE
+               3  LIBERAL
+               8  DK
+               9  NA-EXCLUDED
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/127
+
+      ________________________________________________________________________
+
+      SPREL16            RELIGION IN WHICH SPOUSE RAISED
+
+           117. In what religion was your (husband/wife) raised?
+
+           VALUE  LABEL
+               0  IAP
+               1  Protestant
+               2  Catholic
+               3  Jewish
+               4  None
+               5  OTHER
+               8  DONT KNOW
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/129
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 22
+
+
+      SPDEN16            DENOMINATION IN WHICH SPOUSE RAISED
+
+           117a. If Protestant: What specific denomination is that, if any?
+
+           VALUE  LABEL
+               0  IAP
+              10  AM BAPTIST ASSO
+              11  AM BAPT CH IN USA
+              12  NAT BAPT CONV OF AM
+              13  NAT BAPT CONV USA
+              14  SOUTHERN BAPTIST
+              15  OTHER BAPTISTS
+              18  BAPTIST-DK WHICH
+              20  AFR METH EPISCOPAL
+              21  AFR METH EP ZION
+              22  UNITED METHODIST
+              23  OTHER METHODIST
+              28  METHODIST-DK WHICH
+              30  AM LUTHERAN
+              31  LUTH CH IN AMERICA
+              32  LUTHERAN-MO SYNOD
+              33  WI EVAN LUTH SYNOD
+              34  OTHER LUTHERAN
+              35  EVANGELIC LUTH
+              38  LUTHERAN-DK WHICH
+              40  PRESBYTERIAN C IN US
+              41  UNITED PRES CH IN USA
+              42  OTHER PRESBYTERIAN
+              43  PRESBYTERIAN, MERGED
+              48  PRESBYTERIAN-DK WH
+              50  EPISCOPAL
+              60  OTHER
+              70  NO DENOMINATION
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/131-132
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 23
+
+
+      KDYRBRN1           BIRTH YEAR OF R 1ST CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/134-137
+
+      ________________________________________________________________________
+
+      KDYRBRN2           BIRTH YEAR OF R 2ND CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/139-142
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 24
+
+
+      KDYRBRN3           BIRTH YEAR OF R 3RD CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/144-147
+
+      ________________________________________________________________________
+
+      KDYRBRN4           BIRTH YEAR OF R 4TH CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/149-152
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 25
+
+
+      KDYRBRN5           BIRTH YEAR OF R 5TH CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/154-157
+
+      ________________________________________________________________________
+
+      KDYRBRN6           BIRTH YEAR OF R 6TH CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/159-162
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 26
+
+
+      KDYRBRN7           BIRTH YEAR OF R 7TH CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/164-167
+
+      ________________________________________________________________________
+
+      KDYRBRN8           BIRTH YEAR OF R 8TH CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/169-172
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 27
+
+
+      KDYRBRN9           BIRTH YEAR OF R 9TH CHILD
+
+           503. Now I have some questions about your children. These
+           include your biological, adopted, or step children. Let's start
+           with the oldest and work down to the youngest. c. In what year
+           was [CHILD] born?
+
+           VALUE  LABEL
+               0  IAP
+            9996  BEFORE 1976
+            9998  DK
+            9999  NA
+
+           Data type: numeric
+           Missing-data codes: 0,9998,9999
+           Record/columns: 1/174-177
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 15, 2012
