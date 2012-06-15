@@ -13,6 +13,7 @@ import csv
 import Pmf
 import Cdf
 import columns
+import glm
 
 import correlation
 import math
@@ -67,6 +68,11 @@ class Respondent(object):
         self.marelig_name = self.lookup_religion(self.marelig, self.maden)
         self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
 
+        if self.age > 89:
+            self.yrborn = 'NA'
+        else:
+            self.yrborn = self.year - self.age
+
     def lookup_religion(self, relig, denom):
         """Converts religion codes to string names.
 
@@ -88,21 +94,296 @@ class Respondent(object):
         return relname
 
 
-def make_trans(objs, attr1, attr2):
+class Survey(object):
+    def __init__(self, rs=None):
+        if rs is None:
+            self.rs = {}
+        else:
+            self.rs = rs
+        self.cdf = None
+
+    def len(self):
+        return len(self.rs)
+
+    def respondents(self):
+        return self.rs.itervalues()
+
+    def lookup(self, caseid):
+        return self.rs[caseid]
+
+    def read_csv(self, filename, constructor):
+        """Reads a CSV file, return the header line and a list of objects.
+
+        filename: string filename
+        """
+        objs = columns.read_csv(filename, constructor)
+        for obj in objs:
+            self.rs[obj.caseid] = obj
+
+    def make_pmf(self, attr):
+        """Make a PMF for an attribute.  Uses compwt to weight respondents.
+
+        attr: string attr name
+
+        Returns: normalized PMF
+        """
+        pmf = Pmf.Pmf()
+        for r in self.respondents():
+            val = getattr(r, attr)
+            wt = r.compwt
+            pmf.Incr(val, wt)
+        pmf.Normalize()
+        return pmf
+
+    def make_cdf(self):
+        """Makes a CDF with caseids and weights.
+
+        Cdf.Random() selects from this CDF in proportion to compwt
+        """
+        items = [(caseid, r.compwt) for caseid, r in self.rs.iteritems()]
+        self.cdf = Cdf.MakeCdfFromItems(items)
+
+    def resample(self, n=None):
+        """Form a new cohort by resampling from this survey.
+
+        n: number of respondents in new sample
+        """
+        if self.cdf is None:
+            self.make_cdf()
+
+        n = n or len(self.rs)
+        ids = self.cdf.Sample(n)
+        rs = dict((i, self.rs[caseid]) for i, caseid in enumerate(ids))
+        return Survey(rs)
+
+    def partition_by_yrborn(self, attr, bin_size=10):
+        """Partition the sample by binning birthyear.
+
+        attr: which attribute to collect
+        bin_size: number of years in each bin
+
+        Returns: map from index year to Pmf of values
+        """
+        d = {}
+        for r in self.respondents():
+            if r.yrborn == 'NA':
+                continue
+
+            index = int(r.yrborn / bin_size) * bin_size
+            if index not in d:
+                d[index] = Pmf.Pmf()
+            val = getattr(r, attr)
+            d[index].Incr(val, r.compwt)
+
+        for pmf in d.itervalues():
+            pmf.Normalize()
+
+        return d
+
+    def count_partition(self, d, val):
+        """Returns a time series of probabilities for the given value.
+
+        d: map from index year to Pmf of values
+        val: which value to select
+        """
+        rows = []
+        for year, pmf in sorted(d.iteritems()):
+            p = pmf.Prob(val)
+            rows.append((year, p))
+        return rows
+
+    def regress_by_yrborn(self, attr, val):
+        rows = []
+
+        for r in self.respondents():
+            if r.yrborn == 'NA':
+                continue
+
+            y = 1 if getattr(r, attr) == val else 0
+            x = r.yrborn - 1900
+
+            rows.append((y, x))
+
+        ys, xs = zip(*rows)
+        x2s = [x**2 for x in xs]
+        col_dict = dict(y=ys, x=xs, x2=x2s)
+        glm.inject_col_dict(col_dict)
+
+        return xs
+
+    def linear_model(self, xs, print_flag=False):
+        res = glm.run_model('y ~ x', print_flag=print_flag)
+        estimates = glm.get_coeffs(res)
+
+        inter = estimates['(Intercept)'][0]
+        slope = estimates['x'][0]
+
+        xs = np.array(sorted(set(xs)))
+        log_odds = inter + slope * xs
+        odds = np.exp(log_odds)
+        ps = odds / (1 + odds)
+
+        fit = []
+        for x, p in zip(xs, ps):
+            fit.append((x+1900, p))
+
+        return slope, inter, fit
+
+    def quadratic_model(self, xs, print_flag=False):
+        res = glm.run_model('y ~ x + x2', print_flag=print_flag)
+        estimates = glm.get_coeffs(res)
+
+        inter = estimates['(Intercept)'][0]
+        slope = estimates['x'][0]
+        slope2 = estimates['x2'][0]
+
+        xs = np.array(sorted(set(xs)))
+        log_odds = inter + slope * xs + slope2 * xs**2
+        odds = np.exp(log_odds)
+        ps = odds / (1 + odds)
+
+        fit = []
+        for x, p in zip(xs, ps):
+            fit.append((x+1900, p))
+
+        return slope, inter, fit
+
+    def age_cohort(self, val, start, end):
+        resampled = self.resample()
+        xs = resampled.regress_by_yrborn('relig_name', val)
+        slope, inter, fit = resampled.linear_model(xs)
+
+        cohort = self.resample()
+
+        series = []
+        for delta in range(start, end+1):
+
+            total = 0
+            count = 0
+            for r in cohort.respondents():
+                year = r.year + delta
+                fake_yrborn = year - r.age
+                p = fit_prob(fake_yrborn, slope, inter)
+
+                total += 1
+                if random.random() <= p:
+                    count += 1
+
+            fraction = float(count) / total
+            series.append((year, fraction))
+
+        return series
+
+    def simulate_aging_cohort(self, val, start, end, n=20):
+        pyplot.clf()
+        random.seed(17)
+
+        # run the simulation
+        all_ps = {}
+        for i in range(n):
+            series = self.age_cohort(val, start, end)
+            for x, p in series:
+                all_ps.setdefault(x, []).append(p)
+
+        # plot the simulated data
+        xs, means = plot_interval(all_ps, color='0.9')
+        pyplot.plot(xs, means, color='blue', lw=3, alpha=0.5)
+
+        # plot the real data
+        series = read_time_series()
+        data = get_series_for_val(series, val)
+        xs, ps = zip(*data)
+        pyplot.plot(xs, ps, color='red', lw=3, alpha=0.5)
+
+        axes = dict(
+            none=[1968, 2011, 0, 0.16],
+            prot=[1968, 2011, 0, 1],
+            cath=[1968, 2011, 0, 0.5],
+            jew=[1968, 2011, 0, 0.2],
+            other=[1968, 2011, 0, 0.2],
+            )
+
+        myplot.Save(root='gss2',
+                    xlabel='Year of survey',
+                    ylabel='Fraction with relig=%s' % val,
+                    axis=axes[val]
+                    )
+
+    def plot_relig_vs_yrborn(self, val): 
+        random.seed(19)
+
+        # plot some resampled fits
+        all_ps = {}
+        all_rows = {}
+        for i in range(40):
+            resampled = self.resample()
+
+            # collect the partitioned estimates
+            d = resampled.partition_by_yrborn('relig_name')
+            rows = resampled.count_partition(d, val)
+            for x, p in rows:
+                all_rows.setdefault(x, []).append(p)
+
+            # collect the resampled values
+            xs = resampled.regress_by_yrborn('relig_name', val)
+            slope, inter, fit = resampled.linear_model(xs)
+            for x, p in fit:
+                all_ps.setdefault(x, []).append(p)
+
+        plot_interval(all_ps, color='0.9')
+
+        # plot the real fit
+        xs = self.regress_by_yrborn('relig_name', val)
+        slope, inter, fit = self.linear_model(xs)
+        xs, ps = zip(*fit)
+        pyplot.plot(xs, ps, lw=3, color='blue', alpha=0.5)
+
+        # plot the real data with error bars
+        d = self.partition_by_yrborn('relig_name')
+        rows = self.count_partition(d, val)
+        xs, ps = zip(*rows[1:-1])
+
+        plot_errorbars(all_rows, lw=1, color='red', alpha=0.5)
+        pyplot.plot(xs, ps, marker='s', markersize=8, 
+                    lw=0, color='red', alpha=0.5)
+
+        axes = dict(
+            none=[1895, 1965, 0, 0.16],
+            prot=[1895, 1965, 0, 1],
+            cath=[1895, 1965, 0, 0.5],
+            jew=[1895, 1965, 0, 0.2],
+            other=[1895, 1965, 0, 0.2],
+            )
+
+        # make the figure
+        myplot.Save(root='gss1',
+                    xlabel='Year born',
+                    ylabel='Prob of relig=%s' % val,
+                    axis=axes[val])
+
+
+def fit_prob(x, slope, inter):
+    log_odds = inter + slope * (x-1900)
+    odds = math.exp(log_odds)
+    p = odds / (1 + odds)
+    return p
+    
+
+def make_trans(rs, attr1, attr2):
     """Makes a transition table.
 
     Returns map from attr1 to normalized Pmf of outcomes.
 
-    objs: list of objects
+    rs: list of rects
     attr1: explanatory variable
     attr2: dependent variable
     """
     trans = {}
 
-    for obj in objs:
-        x = getattr(obj, attr1)
-        y = getattr(obj, attr2)
-        wt = obj.compwt
+    for r in rs:
+        x = getattr(r, attr1)
+        y = getattr(r, attr2)
+        wt = r.compwt
 
         trans.setdefault(x, Pmf.Pmf()).Incr(y, wt)
 
@@ -148,23 +429,6 @@ def trans_to_matrix(trans, order):
             matrix[i][j] = percent
 
     return np.transpose(matrix)
-
-
-def make_pmf(objs, attr):
-    """Make a PMF for an attribute.  Uses compwt to weight respondents.
-
-    objs: list of Respondents
-    attr: string attr name
-
-    Returns: normalized PMF
-    """
-    pmf = Pmf.Pmf()
-    for obj in objs:
-        val = getattr(obj, attr)
-        wt = obj.compwt
-        pmf.Incr(val, wt)
-    pmf.Normalize()
-    return pmf
 
 
 def print_pmf_sorted(pmf):
@@ -362,18 +626,18 @@ class Model(object):
                             markersize=10,
                             color=colors[i],
                             alpha=alphas[i])
-                            
-
 
         myplot.Save(show=True,
                     legend=True,
                     axis=axis)
-            
+
 
 def read_time_series(filename='GSS_relig_time_series.csv'):
     """Reads data from CSV file and returns map from year to Pmf of relig.
 
     filename: string
+
+    Returns: map from year to Pmf of outcomes
     """
     fp = open(filename)
     reader = csv.reader(fp)
@@ -398,6 +662,13 @@ def read_time_series(filename='GSS_relig_time_series.csv'):
 
     return series
 
+def get_series_for_val(series, val):
+    res = []
+    for year, pmf in sorted(series.iteritems()):
+        p = pmf.Prob(val)
+        res.append((year, p))
+    return res
+
 
 def combine_row(row, header):
     """Makes a row into a PMF.
@@ -414,9 +685,7 @@ def combine_row(row, header):
     return pmf
 
 
-def main(script):
-    order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
-
+def make_time_series():
     series = read_time_series()
     model = Model(order)
 
@@ -425,13 +694,17 @@ def main(script):
         for name, prob in pmf.Items():
             print name, prob
 
-    objs = columns.read_csv('gss1988.csv', Respondent)
-    pmf = make_pmf(objs, 'relig_name')
+
+def make_model():
+    rs = columns.read_csv('gss1988.csv', Respondent)
+    pmf = make_pmf(rs, 'relig_name')
     #print_pmf(pmf)
+
+    order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
 
     vector = pmf_to_vector(pmf, order)
 
-    trans = make_trans(objs, 'marelig_name', 'relig_name')
+    trans = make_trans(rs, 'marelig_name', 'relig_name')
     print_trans(trans, order)
 
     matrix = trans_to_matrix(trans, order)
@@ -445,7 +718,51 @@ def main(script):
     #model.display_changes(series, 1972, 1988)
     model.display_changes(series, 1988, 2010, predictions=predictions)
     return
-                             
+
+
+def plot_interval(all_ps, **options):
+    xs = all_ps.keys()
+    xs.sort()
+    columns = [all_ps[x] for x in xs]
+    stats = [thinkstats.MeanVar(ys) for ys in columns]
+    min_ps = [mu - 2 * math.sqrt(var) for mu, var in stats]
+    max_ps = [mu + 2 * math.sqrt(var) for mu, var in stats]
+    mean_ps = [mu for mu, var in stats]
+
+    pyplot.fill_between(xs, min_ps, max_ps, linewidth=0, **options)
+    return xs, mean_ps
+
+
+def plot_errorbars(all_ps, **options):
+    xs = all_ps.keys()
+    xs.sort()
+
+    lows = []
+    highs = []
+    for x in xs:
+        col = all_ps[x]
+        col.sort()
+        low = col[1]
+        high = col[-2]
+        lows.append(low)
+        highs.append(high)
+
+    for x, low, high in zip(xs, lows, highs):
+        pyplot.plot([x, x], [low, high], **options)
+
+
+def main(script):
+    survey = Survey()
+    survey.read_csv('gss1988.csv', Respondent)
+
+    val = 'none'
+
+    xs = survey.regress_by_yrborn('relig_name', val)
+    slope, inter, fit = survey.linear_model(xs, True)
+    #slope, inter, fit = survey.quadratic_model(xs, True)
+
+    survey.plot_relig_vs_yrborn(val)
+    survey.simulate_aging_cohort(val, -16, 23)
 
 if __name__ == '__main__':
     import sys
