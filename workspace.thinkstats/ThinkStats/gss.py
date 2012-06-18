@@ -95,6 +95,8 @@ class Respondent(object):
 
 
 class Survey(object):
+    """Represents a set of respondents as a map from caseid to Respondent."""
+
     def __init__(self, rs=None):
         if rs is None:
             self.rs = {}
@@ -103,12 +105,15 @@ class Survey(object):
         self.cdf = None
 
     def len(self):
+        """Number of respondents."""
         return len(self.rs)
 
     def respondents(self):
+        """Returns an iterator over the respondents."""
         return self.rs.itervalues()
 
     def lookup(self, caseid):
+        """Looks up a caseid and returns the Respondent object."""
         return self.rs[caseid]
 
     def read_csv(self, filename, constructor):
@@ -193,6 +198,16 @@ class Survey(object):
         return rows
 
     def regress_by_yrborn(self, attr, val):
+        """Performs a regression on a variable vs year born.
+
+        Logistic regression of the fraction where the given
+        attribute has the given value.
+
+        attr: dependent variable
+        val: value of the variable
+
+        Returns a Regression object.
+        """
         rows = []
 
         for r in self.respondents():
@@ -209,52 +224,26 @@ class Survey(object):
         col_dict = dict(y=ys, x=xs, x2=x2s)
         glm.inject_col_dict(col_dict)
 
-        return xs
-
-    def linear_model(self, xs, print_flag=False):
-        res = glm.run_model('y ~ x', print_flag=print_flag)
-        estimates = glm.get_coeffs(res)
-
-        inter = estimates['(Intercept)'][0]
-        slope = estimates['x'][0]
-
-        xs = np.array(sorted(set(xs)))
-        log_odds = inter + slope * xs
-        odds = np.exp(log_odds)
-        ps = odds / (1 + odds)
-
-        fit = []
-        for x, p in zip(xs, ps):
-            fit.append((x+1900, p))
-
-        return slope, inter, fit
-
-    def quadratic_model(self, xs, print_flag=False):
-        res = glm.run_model('y ~ x + x2', print_flag=print_flag)
-        estimates = glm.get_coeffs(res)
-
-        inter = estimates['(Intercept)'][0]
-        slope = estimates['x'][0]
-        slope2 = estimates['x2'][0]
-
-        xs = np.array(sorted(set(xs)))
-        log_odds = inter + slope * xs + slope2 * xs**2
-        odds = np.exp(log_odds)
-        ps = odds / (1 + odds)
-
-        fit = []
-        for x, p in zip(xs, ps):
-            fit.append((x+1900, p))
-
-        return slope, inter, fit
+        return Regression(xs)
 
     def age_cohort(self, val, start, end):
-        resampled = self.resample()
-        xs = resampled.regress_by_yrborn('relig_name', val)
-        slope, inter, fit = resampled.linear_model(xs)
+        """Runs one simulation of the aging cohort.
 
+        val: which religion name to track
+        start: low end of the range of year to age by
+        end: high end of the range of year to age by
+
+        Returns: a time series of (year, fraction) pairs
+        """
+        # resample and estimate a linear model
+        resampled = self.resample()
+        reg = resampled.regress_by_yrborn('relig_name', val)
+        fit = reg.linear_model()
+
+        # resample again before aging
         cohort = self.resample()
 
+        # loop through the years and accumulate results
         series = []
         for delta in range(start, end+1):
 
@@ -263,7 +252,7 @@ class Survey(object):
             for r in cohort.respondents():
                 year = r.year + delta
                 fake_yrborn = year - r.age
-                p = fit_prob(fake_yrborn, slope, inter)
+                p = reg.fit_prob(fake_yrborn)
 
                 total += 1
                 if random.random() <= p:
@@ -275,6 +264,15 @@ class Survey(object):
         return series
 
     def simulate_aging_cohort(self, val, start, end, n=20):
+        """Simulates the aging of the cohort for one year
+ 
+        Generates a plot of the results.
+
+        val: which religion name to track
+        start: low end of the range of year to age by
+        end: high end of the range of year to age by
+        n: how many simulations to run
+        """
         pyplot.clf()
         random.seed(17)
 
@@ -309,7 +307,11 @@ class Survey(object):
                     axis=axes[val]
                     )
 
-    def plot_relig_vs_yrborn(self, val): 
+    def plot_relig_vs_yrborn(self, val):
+        """Makes a plot of religious preference by year.
+
+        val: string, which religion name to track.
+        """
         random.seed(19)
 
         # plot some resampled fits
@@ -325,16 +327,16 @@ class Survey(object):
                 all_rows.setdefault(x, []).append(p)
 
             # collect the resampled values
-            xs = resampled.regress_by_yrborn('relig_name', val)
-            slope, inter, fit = resampled.linear_model(xs)
+            reg = resampled.regress_by_yrborn('relig_name', val)
+            fit = reg.linear_model()
             for x, p in fit:
                 all_ps.setdefault(x, []).append(p)
 
         plot_interval(all_ps, color='0.9')
 
         # plot the real fit
-        xs = self.regress_by_yrborn('relig_name', val)
-        slope, inter, fit = self.linear_model(xs)
+        reg = self.regress_by_yrborn('relig_name', val)
+        fit = reg.linear_model()
         xs, ps = zip(*fit)
         pyplot.plot(xs, ps, lw=3, color='blue', alpha=0.5)
 
@@ -362,11 +364,75 @@ class Survey(object):
                     axis=axes[val])
 
 
-def fit_prob(x, slope, inter):
-    log_odds = inter + slope * (x-1900)
-    odds = math.exp(log_odds)
-    p = odds / (1 + odds)
-    return p
+class Regression(object):
+    """Represents the result of a regression."""
+    def __init__(self, xs):
+        self.xs = xs
+
+    def linear_model(self, print_flag=False):
+        """Runs a linear model and returns fitted values.
+
+        print_flag: boolean, whether to print the R results
+
+        Returns a list of (x, fitted y) pairs
+        """
+        res = glm.run_model('y ~ x', print_flag=print_flag)
+        estimates = glm.get_coeffs(res)
+
+        self.inter = estimates['(Intercept)'][0]
+        self.slope = estimates['x'][0]
+
+        xs = np.array(sorted(set(self.xs)))
+        log_odds = self.inter + self.slope * xs
+        odds = np.exp(log_odds)
+        ps = odds / (1 + odds)
+
+        fit = []
+        for x, p in zip(xs, ps):
+            fit.append((x+1900, p))
+
+        self.fit = fit
+        return fit
+
+    def quadratic_model(self, print_flag=False):
+        """Runs a quadratic model and returns fitted values.
+
+        print_flag: boolean, whether to print the R results
+
+        Returns a list of (x, fitted y) pairs
+        """
+        res = glm.run_model('y ~ x + x2', print_flag=print_flag)
+        estimates = glm.get_coeffs(res)
+
+        self.inter = estimates['(Intercept)'][0]
+        self.slope = estimates['x'][0]
+        self.slope2 = estimates['x2'][0]
+
+        xs = np.array(sorted(set(xs)))
+        log_odds = self.inter + self.slope * xs + self.slope2 * xs**2
+        odds = np.exp(log_odds)
+        ps = odds / (1 + odds)
+
+        fit = []
+        for x, p in zip(xs, ps):
+            fit.append((x+1900, p))
+
+        self.fit = fit
+        return fit
+
+    def fit_prob(self, x):
+        """Computes the fitted value of y for a given x.
+
+        Only works with the linear model.
+
+        x: float value of x
+
+        Returns: float value of y
+        """
+        log_odds = self.inter + self.slope * (x-1900)
+        odds = math.exp(log_odds)
+        p = odds / (1 + odds)
+        return p
     
 
 def make_trans(rs, attr1, attr2):
@@ -545,6 +611,10 @@ class Model(object):
 
 
     def display_time_series(self, series):
+        """Makes a plot of the actual data and the model predictions.
+
+        series: map from year to Pmf of religious preference.
+        """
         years = series.keys()
         years.sort()
 
@@ -584,6 +654,14 @@ class Model(object):
                         low, high, 
                         change_flag=True,
                         predictions=None):
+        """Makes a plot of changes in religious preference.
+
+        series: map from year to Pmf of religious preference
+        low, high: range of years to plot
+        change_flag: boolean: whether to normalize by first year value
+        predictions: vector of predicted values (should only be used
+                     with change_flag=True)
+        """
         years = series.keys()
         years.sort()
         years = [year for year in years if low <= year <= high]
@@ -663,6 +741,13 @@ def read_time_series(filename='GSS_relig_time_series.csv'):
     return series
 
 def get_series_for_val(series, val):
+    """Gets the time series for a particular value.
+
+    series: map from year to Pmf of religious preference.
+    val: string religion name to track
+
+    Returns: list of (year, fraction) pairs
+    """
     res = []
     for year, pmf in sorted(series.iteritems()):
         p = pmf.Prob(val)
@@ -685,17 +770,8 @@ def combine_row(row, header):
     return pmf
 
 
-def make_time_series():
-    series = read_time_series()
-    model = Model(order)
-
-    for year, pmf in sorted(series.iteritems()):
-        print year
-        for name, prob in pmf.Items():
-            print name, prob
-
-
 def make_model():
+    """Run the transition matrix model."""
     rs = columns.read_csv('gss1988.csv', Respondent)
     pmf = make_pmf(rs, 'relig_name')
     #print_pmf(pmf)
@@ -721,6 +797,11 @@ def make_model():
 
 
 def plot_interval(all_ps, **options):
+    """Plot a 2-standard error interval.
+
+    all_ps: map from x value to list of y values
+    options: keyword options passed along to pyplot.fill_between
+    """
     xs = all_ps.keys()
     xs.sort()
     columns = [all_ps[x] for x in xs]
@@ -733,7 +814,12 @@ def plot_interval(all_ps, **options):
     return xs, mean_ps
 
 
-def plot_errorbars(all_ps, **options):
+def plot_errorbars(all_ps, n=1, **options):
+    """Plot error bars spanning all but n values from the top and bottom.
+
+    all_ps: map from x value to list of y values
+    options: keyword options passed along to pyplot.fill_between
+    """
     xs = all_ps.keys()
     xs.sort()
 
@@ -742,8 +828,8 @@ def plot_errorbars(all_ps, **options):
     for x in xs:
         col = all_ps[x]
         col.sort()
-        low = col[1]
-        high = col[-2]
+        low = col[n]
+        high = col[-(n+1)]
         lows.append(low)
         highs.append(high)
 
@@ -757,12 +843,13 @@ def main(script):
 
     val = 'none'
 
-    xs = survey.regress_by_yrborn('relig_name', val)
-    slope, inter, fit = survey.linear_model(xs, True)
+    reg = survey.regress_by_yrborn('relig_name', val)
+    fit = reg.linear_model(True)
     #slope, inter, fit = survey.quadratic_model(xs, True)
 
     survey.plot_relig_vs_yrborn(val)
     survey.simulate_aging_cohort(val, -16, 23)
+
 
 if __name__ == '__main__':
     import sys
