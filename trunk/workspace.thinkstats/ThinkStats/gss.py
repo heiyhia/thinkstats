@@ -21,7 +21,7 @@ import random
 import thinkstats
 
 import rpy2.robjects as robjects
-r = robjects.r
+# r = robjects.r
 
 
 class Respondent(object):
@@ -70,8 +70,16 @@ class Respondent(object):
 
         if self.age > 89:
             self.yrborn = 'NA'
+            self.decade = 'NA'
         else:
             self.yrborn = self.year - self.age
+            self.decade = int(self.yrborn / 10) * 10
+
+        for i in range(1, 10):
+            attr = 'kdyrbrn%d' % i
+            year = getattr(self, attr)
+            if year == 0 or year > 9995:
+                setattr(self, attr, 'NA')
 
     def lookup_religion(self, relig, denom):
         """Converts religion codes to string names.
@@ -92,6 +100,19 @@ class Respondent(object):
                     relname = denom_name
 
         return relname
+
+    def ages_when_child_born(self):
+        ages = []
+        for i in range(1, self.childs+1):
+            attr = 'kdyrbrn%d' % i
+            child_born = getattr(self, attr)
+            if child_born == 'NA':
+                return 'NA'
+            age_when_born = child_born - self.yrborn
+            ages.append(age_when_born)
+
+        return ages
+
 
 
 class Survey(object):
@@ -167,18 +188,18 @@ class Survey(object):
         attr: which attribute to collect
         bin_size: number of years in each bin
 
-        Returns: map from index year to Pmf of values
+        Returns: map from decade year to Pmf of values
         """
         d = {}
         for r in self.respondents():
             if r.yrborn == 'NA':
                 continue
 
-            index = int(r.yrborn / bin_size) * bin_size
-            if index not in d:
-                d[index] = Pmf.Pmf()
+            decade = r.decade
+            if decade not in d:
+                d[decade] = Pmf.Pmf()
             val = getattr(r, attr)
-            d[index].Incr(val, r.compwt)
+            d[decade].Incr(val, r.compwt)
 
         for pmf in d.itervalues():
             pmf.Normalize()
@@ -188,7 +209,7 @@ class Survey(object):
     def count_partition(self, d, val):
         """Returns a time series of probabilities for the given value.
 
-        d: map from index year to Pmf of values
+        d: map from decade year to Pmf of values
         val: which value to select
         """
         rows = []
@@ -225,6 +246,94 @@ class Survey(object):
         glm.inject_col_dict(col_dict)
 
         return Regression(xs)
+
+    def iterate_respondent_child_ages(self):
+        """Loops through respondents and generates (respondent, ages) pairs.
+        
+        Where ages is the list of ages at which this parent had children.
+
+        Skips parents with unknown year of birth or any children with
+        unknown year of birth.
+        """
+        for r in self.respondents():
+            if r.yrborn == 'NA':
+                continue
+
+            ages = r.ages_when_child_born()
+            if ages == 'NA':
+                continue
+
+            yield r, ages
+
+    def plot_child_curves(self):
+        """Makes a plot showing child curves for parent's decade of birth."""
+        d = {}
+        for r, ages in self.iterate_respondent_child_ages():
+            for age in range(13, r.age):
+                if (r.decade, age) not in d:
+                    d[r.decade, age] = Pmf.Hist()
+                # record whether this person had a child at this age
+                d[r.decade, age].Incr(age in ages)
+
+        table = np.zeros(shape=(8,90), dtype=np.float)
+        for (decade, age), hist in sorted(d.iteritems()):
+            index = (decade-1900)/10
+            yes, no = hist.Freq(True), hist.Freq(False)
+            table[index, age] = float(yes) / (yes+no)
+
+        self.child_table = table
+
+        decades, all_ages = zip(*d.iterkeys())
+        decades = set(decades)
+        ages = [age for age in set(all_ages) if age < 50]
+        ages.sort()
+
+        options = dict(lw=3, alpha=0.5)
+
+        for decade in sorted(decades):
+            if decade < 1930:
+                continue
+            label = str(decade)
+            index = (decade-1900)/10
+            ys = np.cumsum([table[index, age] for age in ages])
+            pyplot.plot(ages, ys, label=label, **options)
+
+        myplot.Save(root='gss4',
+                    xlabel='Age of parent',
+                    ylabel='Cumulative number of children',
+                    )
+
+    def plot_child_curve(self):
+        """Makes a plot showing child curves for parent's decade of birth
+        and the aggregated model."""
+        d = {}
+        for r, ages in self.iterate_respondent_child_ages():
+            if r.decade < 1940:
+                continue
+
+            # loop through the ages we know about for this respondent
+            for age in range(13, r.age):
+                if age not in d:
+                    d[age] = Pmf.Hist()
+                # record whether this person had a child at this age
+                d[age].Incr(age in ages)
+
+        table = np.zeros(shape=(90), dtype=np.float)
+        for age, hist in sorted(d.iteritems()):
+            yes, no = hist.Freq(True), hist.Freq(False)
+            table[age] = float(yes) / (yes+no)
+
+        all_ages = d.iterkeys()
+        ages = [age for age in set(all_ages) if age < 50]
+        ages.sort()
+        ys = np.cumsum([table[age] for age in ages])
+        pyplot.plot(ages, ys, color='purple', 
+                    lw=3, alpha=0.5, linestyle='dashed', label='model')
+
+        myplot.Save(root='gss5',
+                    xlabel='Age of parent',
+                    ylabel='Cumulative number of children',
+                    )
 
     def age_cohort(self, val, start, end):
         """Runs one simulation of the aging cohort.
@@ -594,7 +703,6 @@ class Model(object):
             normalize_vector(state)
             print_vector(state, self.order, False)
 
-
     def run_linear(self, matrix, vector, steps=1):
         """Runs the linear model where the rate of conversions is constant.
 
@@ -609,8 +717,7 @@ class Model(object):
 
         return vector
 
-
-    def display_time_series(self, series):
+    def display_stack_time_series(self, series):
         """Makes a plot of the actual data and the model predictions.
 
         series: map from year to Pmf of religious preference.
@@ -645,11 +752,12 @@ class Model(object):
                                 color=colors[i],
                                 alpha=0.2)
 
-        myplot.Save(show=True,
+        myplot.Save(root='gss0',
+                    xlabel='Year of survey',
+                    ylabel='Fraction of population',
                     legend=True,
                     axis=[1972, 2010, 0, 100.5])
             
-
     def display_changes(self, series,
                         low, high, 
                         change_flag=True,
@@ -678,7 +786,6 @@ class Model(object):
 
         colors = ['orange', 'green', 'blue', 'yellow', 'red']
         alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
-        markers = ['o', 'o', 'o', 'o', 'o']
 
         for i in range(len(rows)):
             ys = rows[i]
@@ -705,7 +812,14 @@ class Model(object):
                             color=colors[i],
                             alpha=alphas[i])
 
-        myplot.Save(show=True,
+        if change_flag:
+            root = 'gss.stack.%d-%d' % (low, high)
+        else:
+            root = 'gss.%d-%d' % (low, high)
+
+        myplot.Save(root=root,
+                    xlabel='',
+                    ylabel='',
                     legend=True,
                     axis=axis)
 
@@ -790,10 +904,22 @@ def make_model():
 
     predictions = model.run_linear(matrix, vector, steps=1)
 
-    #model.display_time_series(series)
-    #model.display_changes(series, 1972, 1988)
+    model.display_stack_time_series(series)
+    model.display_changes(series, 1972, 1988)
     model.display_changes(series, 1988, 2010, predictions=predictions)
     return
+
+
+def plot_time_series():
+    """Run the transition matrix model."""
+    order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
+    model = Model(order)
+
+    series = read_time_series()
+    #model.display_time_series(series)
+    model.display_changes(series, 1972, 2010, change_flag=False)
+    #model.display_changes(series, 1972, 1988)
+    #model.display_changes(series, 1988, 2010, predictions=predictions)
 
 
 def plot_interval(all_ps, **options):
@@ -838,8 +964,20 @@ def plot_errorbars(all_ps, n=1, **options):
 
 
 def main(script):
+    plot_time_series()
+    return
+    
     survey = Survey()
-    survey.read_csv('gss1988.csv', Respondent)
+    survey.read_csv('gss1994.csv', Respondent)
+    survey.plot_child_curves()
+    survey.plot_child_curve()
+    return
+    
+    pmf = survey.make_pmf('kdyrbrn4')
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    return
 
     val = 'none'
 
