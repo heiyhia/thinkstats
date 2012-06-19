@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as pyplot
 import myplot
 import csv
+import re
 
 import Pmf
 import Cdf
@@ -66,7 +67,37 @@ class Respondent(object):
         self.relig_name = self.lookup_religion(self.relig, self.denom)
         self.parelig_name = self.lookup_religion(self.parelig, self.paden)
         self.marelig_name = self.lookup_religion(self.marelig, self.maden)
+        self.sprelig_name = self.lookup_religion(self.sprel, self.spden)
         self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
+
+        #for name in ['prot', 'cath', 'jew', 'other', 'none']:
+        #    prefixes = ['', 'pa_', 'ma_']
+        #    names = self.relig_name, self.parelig_name, self.marelig_name
+        #    for prefix, relig_name in zip(prefixes, names):
+        #        attr = prefix + name
+        #        val = 1 if relig_name == name else 0
+        #        setattr(self, attr, val)
+
+        self.has_relig = 0 if self.relig_name=='none' else 1
+        self.pa_has = 0 if self.parelig_name=='none' else 1
+        self.ma_has = 0 if self.marelig_name=='none' else 1
+        self.sp_has = 0 if self.sprelig_name=='none' else 1
+
+        # do the parents have the same religion?
+        if self.pa_has and self.parelig_name==self.marelig_name:
+            self.par_same = 1
+        else:
+            self.par_same = 0
+
+        if ((self.pa_has and self.parelig_name==self.relig16_name) or
+            (self.ma_has and self.marelig_name==self.relig16_name)):
+            self.raised = 1
+        else:
+            self.raised = 0
+
+        self.lib = self.code_lib(self.relig_name, self.fund)
+        self.pa_lib = self.code_lib(self.parelig_name, self.pafund)
+        self.ma_lib = self.code_lib(self.marelig_name, self.mafund)
 
         if self.age > 89:
             self.yrborn = 'NA'
@@ -81,6 +112,14 @@ class Respondent(object):
             if year == 0 or year > 9995:
                 setattr(self, attr, 'NA')
 
+    def code_lib(self, relig_name, fund):
+        if relig_name == 'none':
+            return 4
+        if fund in [1,2,3]:
+            return fund
+        else:
+            return 'NA'
+                
     def lookup_religion(self, relig, denom):
         """Converts religion codes to string names.
 
@@ -102,6 +141,7 @@ class Respondent(object):
         return relname
 
     def ages_when_child_born(self):
+        """Returns a list of the respondent's age when children were born."""
         ages = []
         for i in range(1, self.childs+1):
             attr = 'kdyrbrn%d' % i
@@ -113,6 +153,51 @@ class Respondent(object):
 
         return ages
 
+    def simulate_all_children(self, birth_model):
+        # collect the actual children
+        years_born = []
+        for i in range(1, self.childs+1):
+            attr = 'kdyrbrn%d' % i
+            child_born = getattr(self, attr)
+            if child_born == 'NA':
+                continue
+            years_born.append(child_born)
+
+        # simulate fake children
+        for i, age in enumerate(range(self.age, 50)):
+            p = birth_model.prob(age)
+            if random.random() < p:
+                child_born = self.year+i
+                years_born.append(child_born)
+
+        children = [self.make_child(yb) for yb in years_born]
+        return children
+
+    def make_child(self, year_born):
+        child = Respondent()
+        child.get_next_id()
+        child.compwt = self.compwt
+        child.year_born = year_born
+        
+        # TODO: model the spouse's religion to fill in missing data
+        if self.sex == 1:
+            child.pa_has = self.has_relig
+            child.ma_has = self.sp_has
+        else:
+            child.ma_has = self.has_relig
+            child.pa_has = self.sp_has
+            
+        # do the parents have the same religion?
+        if child.pa_has and self.relig_name==self.sprelig_name:
+            child.par_same = 1
+        else:
+            child.par_same = 0
+
+        return child
+
+    def get_next_id(self, t=[90000]):
+        self.caseid = t[0]
+        t[0] += 1
 
 
 class Survey(object):
@@ -247,6 +332,35 @@ class Survey(object):
 
         return Regression(xs)
 
+    def regress_relig(self, model, print_flag=True):
+        """Performs a regression 
+
+        """
+        def clean(attr):
+            m = re.match('as.factor\((.*)\)', attr)
+            if m:
+                return m.group(1)
+            return attr
+                
+        rows = []
+        t = model.split()
+        attrs = [clean(attr) for attr in model.split() if len(attr)>1]
+        print attrs
+
+        for r in self.respondents():
+            row = [getattr(r, attr) for attr in attrs]
+            rows.append(row)
+
+        rows = [row for row in rows if 'NA' not in row]
+
+        col_dict = dict(zip(attrs, zip(*rows)))
+        glm.inject_col_dict(col_dict)
+
+        res = glm.run_model(model, print_flag=print_flag)
+        estimates = glm.get_coeffs(res)
+
+        return LogRegression(res, estimates)
+
     def iterate_respondent_child_ages(self):
         """Loops through respondents and generates (respondent, ages) pairs.
         
@@ -304,6 +418,22 @@ class Survey(object):
                     )
 
     def plot_child_curve(self):
+        model = self.make_birth_model()
+        ages = [age for age in model.all_ages if age < 50]
+        ages.sort()
+
+        table = model.table
+        ps = [table[age] for age in ages]
+        ys = np.cumsum(ps)
+        pyplot.plot(ages, ys, color='purple', 
+                    lw=3, alpha=0.5, linestyle='dashed', label='model')
+
+        myplot.Save(root='gss5',
+                    xlabel='Age of parent',
+                    ylabel='Cumulative number of children',
+                    )
+
+    def make_birth_model(self):
         """Makes a plot showing child curves for parent's decade of birth
         and the aggregated model."""
         d = {}
@@ -323,17 +453,19 @@ class Survey(object):
             yes, no = hist.Freq(True), hist.Freq(False)
             table[age] = float(yes) / (yes+no)
 
-        all_ages = d.iterkeys()
-        ages = [age for age in set(all_ages) if age < 50]
-        ages.sort()
-        ys = np.cumsum([table[age] for age in ages])
-        pyplot.plot(ages, ys, color='purple', 
-                    lw=3, alpha=0.5, linestyle='dashed', label='model')
+        all_ages = set(d.iterkeys())
+        return BirthModel(all_ages, table)
 
-        myplot.Save(root='gss5',
-                    xlabel='Age of parent',
-                    ylabel='Cumulative number of children',
-                    )
+    def simulate_generation(self, birth_model):
+        all_children = {}
+        for r in self.respondents():
+            children = r.simulate_all_children(birth_model)
+            for child in children:
+                print child
+                all_children[child.caseid] = child
+
+        next_gen = Survey(all_children)
+        return next_gen
 
     def age_cohort(self, val, start, end):
         """Runs one simulation of the aging cohort.
@@ -473,6 +605,16 @@ class Survey(object):
                     axis=axes[val])
 
 
+class BirthModel(object):
+    """Model of the probability of having a child at a given age."""
+    def __init__(self, all_ages, table):
+        self.all_ages = all_ages
+        self.table = table
+
+    def prob(self, age):
+        return self.table[age]
+
+
 class Regression(object):
     """Represents the result of a regression."""
     def __init__(self, xs):
@@ -543,6 +685,34 @@ class Regression(object):
         p = odds / (1 + odds)
         return p
     
+
+class LogRegression(object):
+    def __init__(self, res, estimates):
+        self.res = res
+        self.estimates = estimates
+
+    def fit_prob(self, r):
+        log_odds = 0
+        for attr, t in self.estimates.iteritems():
+            coef = t[0] 
+            if attr == '(Intercept)':
+                log_odds += coef
+            else:
+                x = getattr(r, attr)
+                if x == 'NA':
+                    return 'NA'
+                log_odds += coef * x
+
+        odds = math.exp(log_odds)
+        p = odds / (1 + odds)
+        return p
+
+    def validate(self, respondents, attr):
+        for r in respondents:
+            dv = getattr(r, attr)
+            p = self.fit_prob(r)
+            #print r.caseid, dv, p
+
 
 def make_trans(rs, attr1, attr2):
     """Makes a transition table.
@@ -770,6 +940,7 @@ class Model(object):
         predictions: vector of predicted values (should only be used
                      with change_flag=True)
         """
+        pyplot.clf()
         years = series.keys()
         years.sort()
         years = [year for year in years if low <= year <= high]
@@ -813,13 +984,15 @@ class Model(object):
                             alpha=alphas[i])
 
         if change_flag:
-            root = 'gss.stack.%d-%d' % (low, high)
+            root = 'gss.change.%d-%d' % (low, high)
+            ylabel = '%% change since %d' % low
         else:
             root = 'gss.%d-%d' % (low, high)
+            ylabel = '% of respondents'
 
         myplot.Save(root=root,
-                    xlabel='',
-                    ylabel='',
+                    xlabel='Survey year',
+                    ylabel=ylabel,
                     legend=True,
                     axis=axis)
 
@@ -918,8 +1091,8 @@ def plot_time_series():
     series = read_time_series()
     #model.display_time_series(series)
     model.display_changes(series, 1972, 2010, change_flag=False)
-    #model.display_changes(series, 1972, 1988)
-    #model.display_changes(series, 1988, 2010, predictions=predictions)
+    model.display_changes(series, 1972, 1988)
+    model.display_changes(series, 1988, 2010)
 
 
 def plot_interval(all_ps, **options):
@@ -964,21 +1137,32 @@ def plot_errorbars(all_ps, n=1, **options):
 
 
 def main(script):
-    plot_time_series()
+    survey94 = Survey()
+    survey94.read_csv('gss1994.csv', Respondent)
+    #survey94.plot_child_curves()
+    #survey94.plot_child_curve()
+    birth_model = survey94.make_birth_model()
+
+    survey88 = Survey()
+    survey88.read_csv('gss1988.csv', Respondent)
+    next_gen = survey88.simulate_generation(birth_model)
+    for r in next_gen.respondents():
+        print r.caseid, r.compwt
     return
     
-    survey = Survey()
-    survey.read_csv('gss1994.csv', Respondent)
-    survey.plot_child_curves()
-    survey.plot_child_curve()
-    return
-    
-    pmf = survey.make_pmf('kdyrbrn4')
+    model = 'has_relig ~ pa_has + ma_has + par_same + raised'
+    logit = survey88.regress_relig(model)
+    logit.validate(survey88.respondents(), 'has_relig')
+
+    pmf = survey88.make_pmf('sprelig_name')
     for val, prob in sorted(pmf.Items()):
         print val, prob
 
     return
 
+    plot_time_series()
+    return
+    
     val = 'none'
 
     reg = survey.regress_by_yrborn('relig_name', val)
