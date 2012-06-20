@@ -71,6 +71,7 @@
       COMPWT             Composite weight =  WTSSALL * OVERSAMP * FORMWT     1
       AGE                AGE OF RESPONDENT                                   1
       RACE               RACE OF RESPONDENT                                  2
+      SEX                RESPONDENTS SEX                                     2
       BORN               WAS R BORN IN THIS COUNTRY                          2
       PARBORN            WERE RS PARENTS BORN IN THIS COUNTRY                3
       GRANBORN           HOW MANY GRANDPARENTS BORN OUTSIDE U.S.             3
@@ -108,10 +109,9 @@
       KDYRBRN2           BIRTH YEAR OF R 2ND CHILD                          23
       KDYRBRN3           BIRTH YEAR OF R 3RD CHILD                          24
       KDYRBRN4           BIRTH YEAR OF R 4TH CHILD                          24
-      KDYRBRN5           BIRTH YEAR OF R 5TH CHILD                          25
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -120,10 +120,18 @@
 
       item                                                                page
 
+      KDYRBRN5           BIRTH YEAR OF R 5TH CHILD                          25
       KDYRBRN6           BIRTH YEAR OF R 6TH CHILD                          25
       KDYRBRN7           BIRTH YEAR OF R 7TH CHILD                          26
       KDYRBRN8           BIRTH YEAR OF R 8TH CHILD                          26
       KDYRBRN9           BIRTH YEAR OF R 9TH CHILD                          27
+      SWITCH1            WHAT WAS RS FIRST RELIGIOUS PREFERENCE             28
+      SWITCH2            WHAT WAS RS SECOND RELIGIOUS PREFERENCE            29
+      SWITCH3            WHAT WAS RS THIRD RELIGIOUS PREFERENCE             30
+      SWITAGE1           HOW OLD WAS R WHEN FIRST SWITCHED                  31
+      SWITAGE2           HOW OLD WAS R WHEN SECOND SWITCH                   31
+      SWITWHY1           WHY DID R MAKE FIRST SWITCH                        32
+      SWITWHY2           WHY DID R MAKE SECOND SWITCH                       33
 
 
 
@@ -160,15 +168,7 @@
 
 
 
-
-
-
-
-
-
-
-
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -229,7 +229,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -252,6 +252,20 @@
 
       ________________________________________________________________________
 
+      SEX                RESPONDENTS SEX
+
+           23. Code respondent's sex
+
+           VALUE  LABEL
+               1  MALE
+               2  FEMALE
+
+           Data type: numeric
+           Missing-data code: 0
+           Record/column: 1/41
+
+      ________________________________________________________________________
+
       BORN               WAS R BORN IN THIS COUNTRY
 
            31. Were you born in this country?
@@ -265,7 +279,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/41
+           Record/column: 1/43
 
 
 
@@ -275,20 +289,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -314,7 +315,7 @@
 
            Data type: numeric
            Missing-data codes: -1,9
-           Record/column: 1/43
+           Record/column: 1/45
 
       ________________________________________________________________________
 
@@ -331,7 +332,7 @@
 
            Data type: numeric
            Missing-data codes: -1,8,9
-           Record/column: 1/45
+           Record/column: 1/47
 
 
 
@@ -347,7 +348,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -366,7 +367,7 @@
 
            Data type: numeric
            Missing-data code: 9
-           Record/column: 1/47
+           Record/column: 1/49
 
       ________________________________________________________________________
 
@@ -395,7 +396,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/49-50
+           Record/columns: 1/51-52
 
 
 
@@ -406,7 +407,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -451,7 +452,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/52-53
+           Record/columns: 1/54-55
 
 
 
@@ -464,7 +465,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -480,7 +481,7 @@
 
            Data type: numeric
            Missing-data codes: 0,998,999
-           Record/columns: 1/55-57
+           Record/columns: 1/57-59
 
       ________________________________________________________________________
 
@@ -498,7 +499,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/59
+           Record/column: 1/61
 
 
 
@@ -523,7 +524,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -554,7 +555,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/61-62
+           Record/columns: 1/63-64
 
 
 
@@ -581,7 +582,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -626,7 +627,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/64-65
+           Record/columns: 1/66-67
 
 
 
@@ -639,7 +640,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -655,7 +656,7 @@
 
            Data type: numeric
            Missing-data codes: 0,998,999
-           Record/columns: 1/67-69
+           Record/columns: 1/69-71
 
       ________________________________________________________________________
 
@@ -671,55 +672,6 @@
                3  LIBERAL
                8  DK
                9  NA-EXCLUDED
-
-           Data type: numeric
-           Missing-data codes: 0,8,9
-           Record/column: 1/71
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                   June 15, 2012
-
-
-
-      GSS 1972-2010 Cumulative Datafile                                Page 10
-
-
-      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE
-
-           360. What was your father's religious preference when you were
-           growing up? Was it Protestant, Catholic, Jewish, some other
-           religion, or no religion?
-
-           VALUE  LABEL
-               0  IAP
-               1  Protestant
-               2  Catholic
-               3  Jewish
-               4  None
-               5  OTHER
-               8  DONT KNOW
-               9  NA
 
            Data type: numeric
            Missing-data codes: 0,8,9
@@ -747,6 +699,32 @@
 
 
 
+                                   June 20, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 10
+
+
+      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE
+
+           360. What was your father's religious preference when you were
+           growing up? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  Protestant
+               2  Catholic
+               3  Jewish
+               4  None
+               5  OTHER
+               8  DONT KNOW
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/75
 
 
 
@@ -756,7 +734,30 @@
 
 
 
-                                   June 15, 2012
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 20, 2012
 
 
 
@@ -800,7 +801,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/75-76
+           Record/columns: 1/77-78
 
 
 
@@ -814,7 +815,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -830,7 +831,7 @@
 
            Data type: numeric
            Missing-data codes: 0,998,999
-           Record/columns: 1/78-80
+           Record/columns: 1/80-82
 
       ________________________________________________________________________
 
@@ -854,7 +855,7 @@
 
            Data type: numeric
            Missing-data codes: -1,9
-           Record/column: 1/82
+           Record/column: 1/84
 
 
 
@@ -873,7 +874,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -894,7 +895,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/84
+           Record/column: 1/86
 
       ________________________________________________________________________
 
@@ -918,7 +919,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/86
+           Record/column: 1/88
 
       ________________________________________________________________________
 
@@ -928,12 +929,12 @@
 
            Data type: numeric
            Missing-data codes: 0,99998,99999
-           Record/columns: 1/88-92
+           Record/columns: 1/90-94
 
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -958,7 +959,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/94
+           Record/column: 1/96
 
 
 
@@ -991,7 +992,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1035,7 +1036,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/96-97
+           Record/columns: 1/98-99
 
 
 
@@ -1049,7 +1050,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1065,7 +1066,7 @@
 
            Data type: numeric
            Missing-data codes: 0,998,999
-           Record/columns: 1/99-101
+           Record/columns: 1/101-103
 
       ________________________________________________________________________
 
@@ -1089,7 +1090,7 @@
 
            Data type: numeric
            Missing-data codes: -1,9
-           Record/column: 1/103
+           Record/column: 1/105
 
 
 
@@ -1108,7 +1109,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1129,7 +1130,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/105
+           Record/column: 1/107
 
       ________________________________________________________________________
 
@@ -1153,7 +1154,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/107
+           Record/column: 1/109
 
       ________________________________________________________________________
 
@@ -1163,12 +1164,12 @@
 
            Data type: numeric
            Missing-data codes: 0,99998,99999
-           Record/columns: 1/109-113
+           Record/columns: 1/111-115
 
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1199,7 +1200,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/115-116
+           Record/columns: 1/117-118
 
 
 
@@ -1226,7 +1227,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1273,7 +1274,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/118-119
+           Record/columns: 1/120-121
 
 
 
@@ -1284,7 +1285,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1302,7 +1303,7 @@
 
            Data type: numeric
            Missing-data codes: 0,998,999
-           Record/columns: 1/121-123
+           Record/columns: 1/123-125
 
       ________________________________________________________________________
 
@@ -1326,7 +1327,7 @@
 
            Data type: numeric
            Missing-data codes: -1,9
-           Record/column: 1/125
+           Record/column: 1/127
 
 
 
@@ -1343,7 +1344,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1364,7 +1365,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/127
+           Record/column: 1/129
 
       ________________________________________________________________________
 
@@ -1384,7 +1385,7 @@
 
            Data type: numeric
            Missing-data codes: 0,8,9
-           Record/column: 1/129
+           Record/column: 1/131
 
 
 
@@ -1402,7 +1403,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1447,7 +1448,7 @@
 
            Data type: numeric
            Missing-data codes: 0,98,99
-           Record/columns: 1/131-132
+           Record/columns: 1/133-134
 
 
 
@@ -1460,7 +1461,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1482,7 +1483,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/134-137
+           Record/columns: 1/136-139
 
       ________________________________________________________________________
 
@@ -1501,7 +1502,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/139-142
+           Record/columns: 1/141-144
 
 
 
@@ -1519,7 +1520,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1541,7 +1542,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/144-147
+           Record/columns: 1/146-149
 
       ________________________________________________________________________
 
@@ -1560,7 +1561,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/149-152
+           Record/columns: 1/151-154
 
 
 
@@ -1578,7 +1579,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1600,7 +1601,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/154-157
+           Record/columns: 1/156-159
 
       ________________________________________________________________________
 
@@ -1619,7 +1620,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/159-162
+           Record/columns: 1/161-164
 
 
 
@@ -1637,7 +1638,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1659,7 +1660,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/164-167
+           Record/columns: 1/166-169
 
       ________________________________________________________________________
 
@@ -1678,7 +1679,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/169-172
+           Record/columns: 1/171-174
 
 
 
@@ -1696,7 +1697,7 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
 
 
 
@@ -1718,7 +1719,7 @@
 
            Data type: numeric
            Missing-data codes: 0,9998,9999
-           Record/columns: 1/174-177
+           Record/columns: 1/176-179
 
 
 
@@ -1754,4 +1755,353 @@
 
 
 
-                                   June 15, 2012
+                                   June 20, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 28
+
+
+      SWITCH1            WHAT WAS RS FIRST RELIGIOUS PREFERENCE
+
+           358a. If yes: Starting when you were 16 years old, what other
+           religious preferences have you had? Please mention your earliest
+           preference first. Any others?
+
+            VALUE  LABEL
+           110000  AMER BAPTIST ASSOC
+           111000  AMER BAPT CH IN US
+           112000  NATL BAPT CON OF AM
+           113000  NATL BAPT CON, USA
+           114000  SOUTHERN BAPT CON
+           115000  OTHER BAPTIST CHURCH
+           118000  BAPTIST, DK WHICH
+           120000  AFRCN METH EPIS CH
+           121000  AFRCN METH EPIS ZION
+           122000  UNITED METHODIST CH
+           123000  OTHER METHODIST CH
+           128000  METHODIST, DK WHICH
+           130000  AMER LUTHERAN CHURCH
+           131000  LUTHERAN CH IN AMER
+           132000  LUTH CH-MISSOURI SYN
+           133000  WISCONSIN EV LUTH SN
+           134000  OTHER LUTHERAN CHURC
+           135000  EVANGELICAL LUTHERAN
+           138000  LUTHERAN, DK WHICH
+           140000  PRESBYTERIAN CH N US
+           141000  UNITED PRES CH IN US
+           142000  OTHER PRESBYTERIAN
+           148000  PRESBYTERIAN, DK WHI
+           150000  EPISCOPAL CHURCH
+           160000  OTHER PROTESTANT
+           170000  NO DENOMINATION
+           200000  CATHOLIC
+           300000  JEWISH
+           400000  NONE
+           500000  OTHER RELIGION
+           999999  MISSING
+
+           Data type: numeric
+           Missing-data codes: 0,999999
+           Record/columns: 1/181-186
+
+
+
+
+
+
+
+
+
+                                   June 20, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 29
+
+
+      SWITCH2            WHAT WAS RS SECOND RELIGIOUS PREFERENCE
+
+           358a. If yes: Starting when you were 16 years old, what other
+           religious preferences have you had? Please mention your earliest
+           preference first. Any others?
+
+            VALUE  LABEL
+           110000  AMER BAPTIST ASSOC
+           111000  AMER BAPT CH IN US
+           112000  NATL BAPT CON OF AM
+           113000  NATL BAPT CON, USA
+           114000  SOUTHERN BAPT CON
+           115000  OTHER BAPTIST CHURCH
+           118000  BAPTIST, DK WHICH
+           120000  AFRCN METH EPIS CH
+           121000  AFRCN METH EPIS ZION
+           122000  UNITED METHODIST CH
+           123000  OTHER METHODIST CH
+           128000  METHODIST, DK WHICH
+           130000  AMER LUTHERAN CHURCH
+           131000  LUTHERAN CH IN AMER
+           132000  LUTH CH-MISSOURI SYN
+           133000  WISCONSIN EV LUTH SN
+           134000  OTHER LUTHERAN CHURC
+           135000  EVANGELICAL LUTHERAN
+           138000  LUTHERAN, DK WHICH
+           140000  PRESBYTERIAN CH N US
+           141000  UNITED PRES CH IN US
+           142000  OTHER PRESBYTERIAN
+           148000  PRESBYTERIAN, DK WHI
+           150000  EPISCOPAL CHURCH
+           160000  OTHER PROTESTANT
+           170000  NO DENOMINATION
+           200000  CATHOLIC
+           300000  JEWISH
+           400000  NONE
+           500000  OTHER RELIGION
+           999999  MISSING
+
+           Data type: numeric
+           Missing-data codes: 0,999999
+           Record/columns: 1/188-193
+
+
+
+
+
+
+
+
+
+                                   June 20, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 30
+
+
+      SWITCH3            WHAT WAS RS THIRD RELIGIOUS PREFERENCE
+
+           358a. If yes: Starting when you were 16 years old, what other
+           religious preferences have you had? Please mention your earliest
+           preference first. Any others?
+
+            VALUE  LABEL
+           110000  AMER BAPTIST ASSOC
+           111000  AMER BAPT CH IN US
+           112000  NATL BAPT CON OF AM
+           113000  NATL BAPT CON, USA
+           114000  SOUTHERN BAPT CON
+           115000  OTHER BAPTIST CHURCH
+           118000  BAPTIST, DK WHICH
+           120000  AFRCN METH EPIS CH
+           121000  AFRCN METH EPIS ZION
+           122000  UNITED METHODIST CH
+           123000  OTHER METHODIST CH
+           128000  METHODIST, DK WHICH
+           130000  AMER LUTHERAN CHURCH
+           131000  LUTHERAN CH IN AMER
+           132000  LUTH CH-MISSOURI SYN
+           133000  WISCONSIN EV LUTH SN
+           134000  OTHER LUTHERAN CHURC
+           135000  EVANGELICAL LUTHERAN
+           138000  LUTHERAN, DK WHICH
+           140000  PRESBYTERIAN CH N US
+           141000  UNITED PRES CH IN US
+           142000  OTHER PRESBYTERIAN
+           148000  PRESBYTERIAN, DK WHI
+           150000  EPISCOPAL CHURCH
+           160000  OTHER PROTESTANT
+           170000  NO DENOMINATION
+           200000  CATHOLIC
+           300000  JEWISH
+           400000  NONE
+           500000  OTHER RELIGION
+           999999  MISSING
+
+           Data type: numeric
+           Missing-data codes: 0,999999
+           Record/columns: 1/195-200
+
+
+
+
+
+
+
+
+
+                                   June 20, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 31
+
+
+      SWITAGE1           HOW OLD WAS R WHEN FIRST SWITCHED
+
+           358c1. How old were you when you switched to [RELIGION]?
+
+           VALUE  LABEL
+              -1  IAP
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: -1,98,99
+           Record/columns: 1/202-203
+
+      ________________________________________________________________________
+
+      SWITAGE2           HOW OLD WAS R WHEN SECOND SWITCH
+
+           358c1. How old were you when you switched to [RELIGION]?
+
+           VALUE  LABEL
+              -1  IAP
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: -1,98,99
+           Record/columns: 1/205-206
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 20, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 32
+
+
+      SWITWHY1           WHY DID R MAKE FIRST SWITCH
+
+           358c2. Why did you become a [RELIGION]?
+
+           VALUE  LABEL
+               0  NA
+              10  MARRIAGE
+              14  MARR & LOCATION
+              15  MARR & THEOLOGY
+              16  MARR. & CLERGY
+              17  MARR & POSITIVE BLF
+              20  FRIENDS
+              23  FRNDS & FAMILY
+              24  FRNDS & LOCATION
+              25  FRNDS & THEO DIS
+              26  FRNDS & CLERGY
+              28  FRNDS & OTHER POS
+              30  FAMILY
+              34  FAM & LOCATION
+              35  FAM & THEO DISS
+              37  FAM & POSITIVE BLF
+              39  FAM & MISC
+              40  LOCATION
+              41  LOC & TO CHANGE
+              45  LOC & THEO DISSAT
+              46  LOC AND CLERGY
+              47  LOC & POSITIVE BLF
+              50  THEOLOGICAL DISS
+              56  THEO DISS & CLERGY
+              60  CLERGY
+              68  CLERGY & OTH POS
+              69  CLERGY & MISSING
+              70  TO CHANGE
+              71  OTHER, TO CHANGE
+              76  OTHER, MISC
+              77  OTHER, POS BLFS
+              78  OTHER,  POS OTHER
+              79  OTHER,  MISSING
+              85  LOC, THEO & CLRGY
+              86  FRNDS,FAM,LOCATION
+              87  MARR,LOC,THEO DIS
+              99  MISSING VALUES
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/208-209
+
+
+
+
+
+                                   June 20, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                Page 33
+
+
+      SWITWHY2           WHY DID R MAKE SECOND SWITCH
+
+           358c2. Why did you become a [RELIGION]?
+
+           VALUE  LABEL
+               0  NA
+              10  MARRIAGE
+              14  MARR & LOCATION
+              15  MARR & THEOLOGY
+              16  MARR. & CLERGY
+              17  MARR & POSITIVE BLF
+              20  FRIENDS
+              23  FRNDS & FAMILY
+              24  FRNDS & LOCATION
+              25  FRNDS & THEO DIS
+              26  FRNDS & CLERGY
+              28  FRNDS & OTHER POS
+              30  FAMILY
+              34  FAM & LOCATION
+              35  FAM & THEO DISS
+              37  FAM & POSITIVE BLF
+              39  FAM & MISC
+              40  LOCATION
+              41  LOC & TO CHANGE
+              45  LOC & THEO DISSAT
+              46  LOC AND CLERGY
+              47  LOC & POSITIVE BLF
+              50  THEOLOGICAL DISS
+              56  THEO DISS & CLERGY
+              60  CLERGY
+              68  CLERGY & OTH POS
+              69  CLERGY & MISSING
+              70  TO CHANGE
+              71  OTHER, TO CHANGE
+              76  OTHER, MISC
+              77  OTHER, POS BLFS
+              78  OTHER,  POS OTHER
+              79  OTHER,  MISSING
+              85  LOC, THEO & CLRGY
+              86  FRNDS,FAM,LOCATION
+              87  MARR,LOC,THEO DIS
+              99  MISSING VALUES
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/211-212
+
+
+
+
+
+                                   June 20, 2012
