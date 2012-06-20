@@ -8,6 +8,15 @@ import rpy2.robjects as robjects
 r = robjects.r
 
 
+def linear_model(model, print_flag=True):
+    """Submits model to r.lm and returns the result."""
+    model = r(model)
+    res = r.lm(model)
+    if print_flag:
+        print_summary(res)
+    return res
+
+
 def run_model(model, family=robjects.r.binomial(), print_flag=True):
     """Submits model to r.lm and returns the result."""
     model = r(model)

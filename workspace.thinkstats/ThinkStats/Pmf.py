@@ -206,13 +206,18 @@ class Pmf(_DictWrapper):
         Returns:
             float value from the Pmf
         """
+        if len(self.d) == 0:
+            raise ValueError('Pmf contains no values.')
+            
         target = random.random()
         total = 0.0
         for x, p in self.d.iteritems():
             total += p
             if total >= target:
                 return x
-        return x
+
+        # we shouldn't get here
+        assert False
 
     def Mean(self):
         """Computes the mean of a PMF.

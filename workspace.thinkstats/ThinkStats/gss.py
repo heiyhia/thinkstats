@@ -5,6 +5,7 @@ Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import copy
 import numpy as np
 import matplotlib.pyplot as pyplot
 import myplot
@@ -58,6 +59,14 @@ class Respondent(object):
         episc = range(50, 60),
         )
 
+    switches = dict(
+        prot = (100000, 200000),
+        cath = (200000, 300000),
+        jew = (300000, 400000),
+        none = (400000, 500000),
+        other = (500000, 600000),
+        )
+
     def clean(self):
         """Recodes some attributes.
 
@@ -69,6 +78,10 @@ class Respondent(object):
         self.marelig_name = self.lookup_religion(self.marelig, self.maden)
         self.sprelig_name = self.lookup_religion(self.sprel, self.spden)
         self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
+
+        self.switch1 = self.lookup_switch(self.switch1)
+        self.switch2 = self.lookup_switch(self.switch2)
+        self.switch3 = self.lookup_switch(self.switch3)
 
         #for name in ['prot', 'cath', 'jew', 'other', 'none']:
         #    prefixes = ['', 'pa_', 'ma_']
@@ -120,7 +133,7 @@ class Respondent(object):
         else:
             return 'NA'
                 
-    def lookup_religion(self, relig, denom):
+    def lookup_religion(self, relig, denom=None):
         """Converts religion codes to string names.
 
         relig: code from relig and related fields
@@ -139,6 +152,22 @@ class Respondent(object):
                     relname = denom_name
 
         return relname
+
+    def lookup_switch(self, switch):
+        """Converts religion codes to string names.
+
+        switch: code from one of the switch fields
+
+        Returns: string
+        """
+        if switch in [0, 999999]:
+            return 'NA'
+
+        for name, (low, high) in self.switches.iteritems():
+            if low <= switch < high:
+                return name
+
+        return '?'
 
     def ages_when_child_born(self):
         """Returns a list of the respondent's age when children were born."""
@@ -266,6 +295,34 @@ class Survey(object):
         ids = self.cdf.Sample(n)
         rs = dict((i, self.rs[caseid]) for i, caseid in enumerate(ids))
         return Survey(rs)
+
+    def investigate_conversions(self, old, new):
+        switches = []
+
+        for r in self.respondents():
+            if r.relig16_name != old or r.relig_name != new:
+                continue
+            
+            print r.switch1, r.switch2, r.switch3
+
+    def investigate_switches(self, old, new):
+        switches = []
+
+        for r in self.respondents():
+            switch1 = Switch(r.switch1, r.switch2,
+                             r.switage1, r.switwhy1)
+            switch2 = Switch(r.switch2, r.switch3,
+                             r.switage2, r.switwhy2)
+
+            if switch1.match(old, new):
+                switches.append(switch1)
+
+            if switch2.match(old, new):
+                switches.append(switch2)
+
+        for switch in switches:
+            print switch.age, switch.why
+
 
     def partition_by_yrborn(self, attr, bin_size=10):
         """Partition the sample by binning birthyear.
@@ -605,6 +662,17 @@ class Survey(object):
                     axis=axes[val])
 
 
+class Switch(object):
+    def __init__(self, old, new, age, why):
+        self.old = old
+        self.new = new
+        self.age = age
+        self.why = why
+
+    def match(self, old, new):
+        return self.old==old and self.new==new
+
+
 class BirthModel(object):
     """Model of the probability of having a child at a given age."""
     def __init__(self, all_ages, table):
@@ -712,49 +780,6 @@ class LogRegression(object):
             dv = getattr(r, attr)
             p = self.fit_prob(r)
             #print r.caseid, dv, p
-
-
-def make_trans(rs, attr1, attr2):
-    """Makes a transition table.
-
-    Returns map from attr1 to normalized Pmf of outcomes.
-
-    rs: list of rects
-    attr1: explanatory variable
-    attr2: dependent variable
-    """
-    trans = {}
-
-    for r in rs:
-        x = getattr(r, attr1)
-        y = getattr(r, attr2)
-        wt = r.compwt
-
-        trans.setdefault(x, Pmf.Pmf()).Incr(y, wt)
-
-    for x, pmf in trans.iteritems():
-        pmf.Normalize()
-
-    return trans
-
-
-def print_trans(trans, order):
-    """Prints a transition table.
-
-    trans: map from explanatory values to Pmf of outcomes.
-    order: string category names in desired order
-    """
-    print '\t',
-    for y in order:
-        print y, '\t',
-    print
-
-    for x in order:
-        print x, '\t', 
-        for y in order:
-            percent = trans[x].Prob(y) * 100
-            print '%0.1f\t' % percent,
-        print
 
 
 def trans_to_matrix(trans, order):
@@ -928,10 +953,9 @@ class Model(object):
                     legend=True,
                     axis=[1972, 2010, 0, 100.5])
             
-    def display_changes(self, series,
-                        low, high, 
-                        change_flag=True,
-                        predictions=None):
+    def plot_changes(self, series, low, high, 
+                     change_flag=True,
+                     predictions=None):
         """Makes a plot of changes in religious preference.
 
         series: map from year to Pmf of religious preference
@@ -975,16 +999,20 @@ class Model(object):
 
             if predictions is not None:
                 pred = 100.0 * 100.0 * predictions[i] / baseline
-                print high, pred
-                pyplot.plot(high, pred, 
-                            marker=markers[i],
+                print self.order[i], pred
+                pyplot.plot(high+(i-2)/5.0, pred, 
+                            marker='o',
                             linewidth=3,
                             markersize=10,
                             color=colors[i],
                             alpha=alphas[i])
 
         if change_flag:
-            root = 'gss.change.%d-%d' % (low, high)
+            if predictions is None:
+                root = 'gss.change.%d-%d' % (low, high)
+            else:
+                root = 'gss.pred.%d-%d' % (low, high)
+                
             ylabel = '%% change since %d' % low
         else:
             root = 'gss.%d-%d' % (low, high)
@@ -995,6 +1023,26 @@ class Model(object):
                     ylabel=ylabel,
                     legend=True,
                     axis=axis)
+
+
+def test_significance(series, relig_name):
+    """Run a linear regression on market share vs year.
+
+    Prints the results
+
+    series: map from year to Pmf of religions
+    relig_name: string, which religion to test
+    """
+    years = series.keys()
+    years.sort()
+    years = [year for year in years if year >= 1988]
+
+    ys = [series[year].Prob(relig_name) * 100  for year in years]
+    print ys
+
+    d = dict(years=years, ys=ys)
+    glm.inject_col_dict(d)
+    glm.linear_model('ys ~ years')
 
 
 def read_time_series(filename='GSS_relig_time_series.csv'):
@@ -1057,30 +1105,258 @@ def combine_row(row, header):
     return pmf
 
 
-def make_model():
-    """Run the transition matrix model."""
-    rs = columns.read_csv('gss1988.csv', Respondent)
-    pmf = make_pmf(rs, 'relig_name')
-    #print_pmf(pmf)
+class SpouseTable(object):
+    def __init__(self, survey, order,
+                 attr1='marelig_name', attr2='parelig_name'):
+        self.order = order
+        self.ma_table = {}
+        self.pa_table = {}
 
+        for name in self.order:
+            self.ma_table[name] = Pmf.Pmf()
+            self.pa_table[name] = Pmf.Pmf()
+
+        for r in survey.respondents():
+            ma = getattr(r, attr1)
+            pa = getattr(r, attr2)
+            if ma=='NA' or pa=='NA':
+                continue
+            self.ma_table[ma].Incr(pa, r.compwt)
+            self.pa_table[pa].Incr(ma, r.compwt)
+
+        normalize_table(self.ma_table)
+        normalize_table(self.pa_table)
+
+    def print_table(self, attr='ma_table'):
+        table = getattr(self, attr)
+        print_table(table, self.order)
+
+    def print_pmf(self, pmf):
+        for name in self.order:
+            percent = pmf.Prob(name) * 100
+            print '%s %0.0f\t' % (name, percent)
+
+    def generate_spouse(self, r):
+        if r.sex == 1:
+            pmf = self.pa_table[r.relig_name]
+        else:
+            pmf = self.ma_table[r.relig_name]
+        return pmf.Random()
+
+
+class ParentTable(object):
+    def __init__(self, survey, order):
+        """Makes a 
+
+        Returns map from (marelig, parelig) to normalized Pmf of which
+        religion the child is raised in.
+
+        order: string list of relig_names
+        """
+        self.order = order
+        self.table = {}
+
+        for ma in self.order:
+            for pa in self.order:
+                self.table[ma, pa] = Pmf.Pmf()
+
+        for r in survey.respondents():
+            ma = r.marelig_name
+            pa = r.parelig_name
+            if ma=='NA' or pa=='NA':
+                continue
+            raised = r.relig16_name
+
+            self.table[ma, pa].Incr(raised, r.compwt)
+
+        normalize_table(self.table)
+
+    def print_table(self, name):
+        """Prints a 
+
+        """
+        print '\t',
+        for y in self.order:
+            print y, '\t',
+        print
+
+        none = 'none'
+        pmf = Pmf.Pmf()
+        for ma in self.order:
+            print ma, '\t', 
+            for pa in self.order:
+                pmf = self.table[ma, pa]
+                relig_name = locals()[name]
+                percent = pmf.Prob(relig_name) * 100
+                print '%0.0f\t' % percent,
+            print
+
+    def generate_raised(self, ma, pa):
+        """Chooses a random religion to raise a child in.
+
+        ma: mother's religion
+        pa: father's religion
+
+        Returns: string religion name
+        """
+        pmf = self.table[ma, pa]
+        return pmf.Random()
+
+
+class TransitionTable(object):
+    def __init__(self, survey, order,
+                 attr1='relig16_name', attr2='relig_name'):
+        """Makes a transition table.
+
+        Returns map from attr1 to normalized Pmf of outcomes.
+
+        attr1: explanatory variable
+        attr2: dependent variable
+        """
+        self.attr1 = attr1
+        self.attr2 = attr2
+        self.order = order
+
+        self.table = {}
+        for name in self.order:
+            self.table[name] = Pmf.Pmf()
+
+        for r in survey.respondents():
+            x = getattr(r, attr1)
+            y = getattr(r, attr2)
+
+            self.table[x].Incr(y, r.compwt)
+
+        normalize_table(self.table)
+
+    def print_table(self):
+        print_table(self.table, self.order)
+
+    def generate_relig(self, raised):
+        """Chooses a random religious preference.
+
+        raised: string religion raised in
+
+        Returns: string religion name
+        """
+        pmf = self.table[raised]
+        return pmf.Random()
+
+
+def print_table(table, order):
+    """Prints a transition table.
+
+    table: map from explanatory values to Pmf of outcomes.
+    order: string category names in desired order
+    """
+    print '\t',
+    for y in order:
+        print y, '\t',
+    print
+
+    pmf = Pmf.Pmf()
+    for x in order:
+        print x, '\t', 
+        for y in order:
+            percent = table[x].Prob(y) * 100
+            print '%0.0f\t' % percent,
+        print
+
+
+def normalize_table(table):
+    for pmf in table.itervalues():
+        if pmf.Total():
+            pmf.Normalize()
+
+
+def make_transition_model():
+    """Run the transition matrix model."""
     order = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
 
+    survey88 = Survey()
+    survey88.read_csv('gss1988.csv', Respondent)
+
+    # generate the spouse table
+    spouse_table = SpouseTable(survey88, order)
+    for attr in ['ma_table', 'pa_table']:
+        print attr
+        spouse_table.print_table(attr)
+
+    print 'spouse table for f none'
+    pmf = spouse_table.ma_table['none']
+    print_pmf(pmf, order)
+
+    # generate the parent table
+    par_table = ParentTable(survey88, order)
+    print 'parent table (ma)'
+    par_table.print_table('ma')
+    print 'parent table (pa)'
+    par_table.print_table('pa')
+    print 'parent table (none)'
+    par_table.print_table('none')
+
+    # generate the transition table
+    trans_table = TransitionTable(survey88, order)
+    print 'trans table'
+    trans_table.print_table()
+
+    # investigate the strange behavior of the none-none parents
+    print 'none-none'
+    pmf = par_table.table['none', 'none']
+    for name in order:
+        print name, pmf.Prob(name) * 100
+
+    next_gen = simulate_transition(survey88, 
+                                   spouse_table, par_table, trans_table)
+
+    gen_table = TransitionTable(next_gen, order, 
+                                'fake_parent_relig_name', 'relig_name')
+    print 'gen table'
+    gen_table.print_table()
+
+
+def simulate_transition(survey, spouse_table, par_table, trans_table):
+    next_gen = {}
+
+    for r in survey.respondents():
+        if r.relig_name == 'NA':
+            continue
+
+        sprelig_name = spouse_table.generate_spouse(r)
+        if r.sex == 1:
+            raised = par_table.generate_raised(sprelig_name, r.relig_name)
+        else:
+            raised = par_table.generate_raised(r.relig_name, sprelig_name)
+
+        relig_name = trans_table.generate_relig(raised)
+
+        child = copy.copy(r)
+        child.fake_parent_relig_name = r.relig_name
+        child.relig16_name = raised 
+        child.relig_name = relig_name
+
+        next_gen[child.caseid] = child
+
+    return Survey(next_gen)
+
+
+def make_matrix_model():
+    pmf = survey88.make_pmf('relig_name')
     vector = pmf_to_vector(pmf, order)
 
-    trans = make_trans(rs, 'marelig_name', 'relig_name')
+    print 'relig16_name'
+    trans = survey88.make_trans('relig16_name', 'relig_name', order)
     print_trans(trans, order)
 
     matrix = trans_to_matrix(trans, order)
 
     print
     model = Model(order)
-
     predictions = model.run_linear(matrix, vector, steps=1)
 
-    model.display_stack_time_series(series)
-    model.display_changes(series, 1972, 1988)
-    model.display_changes(series, 1988, 2010, predictions=predictions)
-    return
+    series = read_time_series()
+    model.plot_changes(series, 1988, 2010, predictions=predictions)
+
 
 
 def plot_time_series():
@@ -1089,10 +1365,11 @@ def plot_time_series():
     model = Model(order)
 
     series = read_time_series()
+    test_significance(series, 'cath')
     #model.display_time_series(series)
-    model.display_changes(series, 1972, 2010, change_flag=False)
-    model.display_changes(series, 1972, 1988)
-    model.display_changes(series, 1988, 2010)
+    model.plot_changes(series, 1972, 2010, change_flag=False)
+    model.plot_changes(series, 1972, 1988)
+    model.plot_changes(series, 1988, 2010)
 
 
 def plot_interval(all_ps, **options):
@@ -1137,6 +1414,27 @@ def plot_errorbars(all_ps, n=1, **options):
 
 
 def main(script):
+    make_transition_model()
+    return
+
+    survey88 = Survey()
+    survey88.read_csv('gss1988.csv', Respondent)
+
+    pmf = survey88.make_pmf('switch1')
+    pmf.Set('NA', 0)
+    pmf.Normalize()
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    survey88.investigate_switches('prot', 'none')
+    return
+
+    series = read_time_series()
+    test_significance(series, 'none')
+    return
+
+
+
     survey94 = Survey()
     survey94.read_csv('gss1994.csv', Respondent)
     #survey94.plot_child_curves()
