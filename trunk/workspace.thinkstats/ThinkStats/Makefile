@@ -108,3 +108,6 @@ docs: $(DOCPY)
 
 $(DOCPY):
 	pydoc -w ./$@
+
+gss-table:
+	cat gss.sp_male.html gss.sp_female.html gss.parent.html gss.transition.table.html gss.generation.table.html > gss.all_tables.html
