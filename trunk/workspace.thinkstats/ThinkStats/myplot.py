@@ -45,130 +45,76 @@ def Underride(d, **options):
     return d
 
 
-def Plot(xs, ys, style='', clf=True, root=None, line_options=None, **options):
-    """Plots a Pmf or Hist as a line.
+def Clf():
+    """Clears the figure."""
+    pyplot.Clf()
+
+
+def Plot(xs, ys, style='', **options):
+    """Plots a line.
 
     Args:
       xs: sequence of x values
       ys: sequence of y values
       style: style string passed along to pyplot.plot
-      clf: boolean, whether to clear the figure      
-      root: string filename root
-      line_options: dictionary of options passed to pyplot.plot
-      options: dictionary of options passed to myplot.Save
     """
-    if clf:
-        pyplot.clf()
-
-    line_options = Underride(line_options, linewidth=2)
-
-    pyplot.plot(xs, ys, style, **line_options)
-    Save(root=root, **options)
+    options = Underride(options, linewidth=3, alpha=0.5)
+    pyplot.plot(xs, ys, style, **options)
 
 
-def Pmf(pmf, clf=True, root=None, line_options=None, **options):
+def Pmf(pmf, **options):
     """Plots a Pmf or Hist as a line.
 
     Args:
       pmf: Hist or Pmf object
-      clf: boolean, whether to clear the figure      
-      root: string filename root
-      line_options: dictionary of options passed to pyplot.plot
-      options: dictionary of options passed to myplot.Save
     """
     xs, ps = pmf.Render()
-    line_options = Underride(line_options, label=pmf.name)
+    options = Underride(options, label=pmf.name)
+    Plot(xs, ps, **options)
 
-    Plot(xs, ps, clf=clf, root=root, line_options=line_options, **options)
 
-
-def Pmfs(pmfs,
-         clf=True,
-         root=None, 
-         plot_options=InfiniteList(dict(linewidth=2)), 
-         **options):
+def Pmfs(pmfs, **options):
     """Plots a sequence of PMFs.
     
     Args:
       pmfs: sequence of PMF objects
-      clf: boolean, whether to clear the figure
-      root: string root of the filename to write
-      plot_options: sequence of option dictionaries
-      options: dictionary of keyword options passed along to Save
     """
-    if clf:
-        pyplot.clf()
-
-    styles = options.get('styles', None)
-    if styles is None:
-        styles = InfiniteList('-')
-
     for i, pmf in enumerate(pmfs):
-        
-        xs, ps = pmf.Render()
-
-        line = pyplot.plot(xs, ps,
-                           styles[i],
-                           label=pmf.name,
-                           **plot_options[i]
-                           )
-
-    Save(root, **options)
+        Pmf(pmf, **options)
 
 
-def Hist(hist, clf=True, root=None, bar_options=None, **options):
+def Hist(hist, **options):
     """Plots a Pmf or Hist with a bar plot.
 
     Args:
       hist: Hist or Pmf object
-      clf: boolean, whether to clear the figure
-      root: string filename root
-      bar_options: dictionary of options passed to pyplot.bar
-      options: dictionary of options passed to myplot.Save
     """
-    if clf:
-        pyplot.clf()
-
     # find the minimum distance between adjacent values
     xs, fs = hist.Render()
     width = min(Diff(xs))
 
-    bar_options = Underride(bar_options, 
-                            label=hist.name,
-                            align='center',
-                            edgecolor='blue',
-                            width=width)
+    options = Underride(options, 
+                        label=hist.name,
+                        align='center',
+                        edgecolor='blue',
+                        width=width)
 
     pyplot.bar(xs, fs, **bar_options)
-    Save(root=root, **options)
 
 
-def Hists(hists, 
-          clf=True,
-          root=None,
-          bar_options=InfiniteList(dict()),
-          **options):
+def Hists(hists, **options):
     """Plots two histograms as interleaved bar plots.
 
     Args:
       hists: list of two Hist or Pmf objects
-      clf: boolean, whether to clear the figure
-      root: string filename root
-      bar_options: sequence of option dictionaries
-      options: dictionary of options passed to myplot.Save
     """
-    if clf:
-        pyplot.clf()
-
     width = 0.4
     shifts = [-width, 0.0]
 
     for i, hist in enumerate(hists):
         xs, fs = hist.Render()
         xs = Shift(xs, shifts[i])
-        pyplot.bar(xs, fs, label=hist.name, width=width, **bar_options[i])
-
-    Save(root=root, **options)
+        pyplot.bar(xs, fs, label=hist.name, width=width, **options)
 
 
 def Shift(xs, shift):
@@ -198,92 +144,62 @@ def Diff(t):
     return diffs
 
 
-def Cdf(cdf, clf=True, root=None, plot_options=dict(linewidth=2), **options):
+def Cdf(cdf, complement=False, transform=None, **options):
     """Plots a CDF as a line.
 
     Args:
       cdf: Cdf object
-      clf: boolean, whether to clear the figure
-      root: string filename root
-      bar_options: dictionary of options passed to pyplot.plot
-      options: dictionary of options passed to myplot.Save
+      complement: boolean, whether to plot the complementary CDF
+      transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
     """
-    Cdfs([cdf], clf=clf, root=root, plot_options=[plot_options], **options)
+    xs, ps = cdf.Render()
+
+    if transform == 'exponential':
+        complement = True
+        options['yscale'] = 'log'
+
+    if transform == 'pareto':
+        complement = True
+        options['yscale'] = 'log'
+        options['xscale'] = 'log'
+
+    if complement:
+        ps = [1.0-p for p in ps]
+
+    if transform == 'weibull':
+        xs.pop()
+        ps.pop()
+        ps = [-math.log(1.0-p) for p in ps]
+        options['xscale'] = 'log'
+        options['yscale'] = 'log'
+
+    if transform == 'gumbel':
+        xs.pop(0)
+        ps.pop(0)
+        ps = [-math.log(p) for p in ps]
+        options['yscale'] = 'log'
+
+    line = pyplot.plot(xs, ps, label=cdf.name, **options)
 
 
-def Cdfs(cdfs,
-         clf=True,
-         root=None, 
-         plot_options=InfiniteList(dict(linewidth=2)), 
-         complement=False,
-         transform=None,
-         **options):
+def Cdfs(cdfs, complement=False, transform=None, **options):
     """Plots a sequence of CDFs.
     
     Args:
       cdfs: sequence of CDF objects
-      clf: boolean, whether to clear the figure
-      root: string root of the filename to write
-      plot_options: sequence of option dictionaries
       complement: boolean, whether to plot the complementary CDF
       transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
-      options: dictionary of keyword options passed along to Save
     """
-    if clf:
-        pyplot.clf()
-
-    styles = options.get('styles', None)
-    if styles is None:
-        styles = InfiniteList('-')
-
     for i, cdf in enumerate(cdfs):
-        xs, ps = cdf.Render()
-
-        if transform == 'exponential':
-            complement = True
-            options['yscale'] = 'log'
-
-        if transform == 'pareto':
-            complement = True
-            options['yscale'] = 'log'
-            options['xscale'] = 'log'
-
-        if complement:
-            ps = [1.0-p for p in ps]
-
-        if transform == 'weibull':
-            xs.pop()
-            ps.pop()
-            ps = [-math.log(1.0-p) for p in ps]
-            options['xscale'] = 'log'
-            options['yscale'] = 'log'
-
-        if transform == 'gumbel':
-            xs.pop(0)
-            ps.pop(0)
-            ps = [-math.log(p) for p in ps]
-            options['yscale'] = 'log'
-
-        line = pyplot.plot(xs, ps,
-                           styles[i],
-                           label=cdf.name,
-                           **plot_options[i]
-                           )
-
-    Save(root, **options)
+        Cdf(cdf, complement, transform, **options)
 
 
-def Save(root=None, formats=None, **options):
-    """Generate plots in the given formats.
+def Config(**options):
+    """Configures the plot.
 
     Pulls options out of the option dictionary and passes them to
     title, xlabel, ylabel, xscale, yscale, xticks, yticks, axis, legend,
     and loc.
-
-    Args:
-      root: string filename root
-      formats: list of string formats
-      options: dictionary of options
     """
     title = options.get('title', '')
     pyplot.title(title)
@@ -314,16 +230,30 @@ def Save(root=None, formats=None, **options):
     if legend:
         pyplot.legend(loc=loc)
 
+
+def Show(**options):
+    """Shows the plot."""
+    # TODO: figure out how to show more than one plot
+    Config(**options)
+    pyplot.show()
+
+
+def Save(root=None, formats=None, **options):
+    """Saves the plot in the given formats.
+
+    Args:
+      root: string filename root
+      formats: list of string formats
+      options: dictionary of options
+    """
+    Config(**options)
+
     if formats is None:
         formats = ['pdf', 'png']
 
     if root:
         for format in formats:
             SaveFormat(root, format)
-
-    show = options.get('show', False)
-    if show:
-        pyplot.show()
 
 
 def SaveFormat(root, format='eps'):

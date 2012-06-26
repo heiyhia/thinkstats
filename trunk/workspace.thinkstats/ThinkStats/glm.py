@@ -44,7 +44,12 @@ def print_summary(res):
 
 
 def get_coeffs(res):
-    """Gets just the lines that contain the estimates."""
+    """Gets just the lines that contain the estimates.
+
+    res: R glm result object
+
+    Returns: map from coefficient name to (estimate, error, z-value) tuple
+    """
     flag = False
     lines = r.summary(res)
     lines = str(lines)
