@@ -84,11 +84,8 @@ class Respondent(object):
         Invoked on each object in columns.read_csv
         """
         self.compwt = float(self.compwt)
-        self.relig_name = self.lookup_religion(self.relig, self.denom)
-        self.parelig_name = self.lookup_religion(self.parelig, self.paden)
-        self.marelig_name = self.lookup_religion(self.marelig, self.maden)
-        self.sprelig_name = self.lookup_religion(self.sprel, self.spden)
-        self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
+
+        self.clean_relig()
 
         self.switch1 = self.lookup_switch(self.switch1)
         self.switch2 = self.lookup_switch(self.switch2)
@@ -101,23 +98,6 @@ class Respondent(object):
         #        attr = prefix + name
         #        val = 1 if relig_name == name else 0
         #        setattr(self, attr, val)
-
-        self.has_relig = 0 if self.relig_name=='none' else 1
-        self.pa_has = 0 if self.parelig_name=='none' else 1
-        self.ma_has = 0 if self.marelig_name=='none' else 1
-        self.sp_has = 0 if self.sprelig_name=='none' else 1
-
-        # do the parents have the same religion?
-        if self.pa_has and self.parelig_name==self.marelig_name:
-            self.par_same = 1
-        else:
-            self.par_same = 0
-
-        if ((self.pa_has and self.parelig_name==self.relig16_name) or
-            (self.ma_has and self.marelig_name==self.relig16_name)):
-            self.raised = 1
-        else:
-            self.raised = 0
 
         self.lib = self.code_lib(self.relig_name, self.fund)
         self.pa_lib = self.code_lib(self.parelig_name, self.pafund)
@@ -135,6 +115,31 @@ class Respondent(object):
             year = getattr(self, attr)
             if year == 0 or year > 9995:
                 setattr(self, attr, 'NA')
+
+    def clean_relig(self):
+        self.relig_name = self.lookup_religion(self.relig, self.denom)
+        self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
+        self.parelig_name = self.lookup_religion(self.parelig, self.paden)
+        self.marelig_name = self.lookup_religion(self.marelig, self.maden)
+        self.sprelig_name = self.lookup_religion(self.sprel, self.spden)
+
+        self.has_relig = 0 if self.relig_name=='none' else 1
+        self.pa_has = 0 if self.parelig_name=='none' else 1
+        self.ma_has = 0 if self.marelig_name=='none' else 1
+        self.sp_has = 0 if self.sprelig_name=='none' else 1
+
+        # do the parents have the same religion?
+        if self.pa_has and self.parelig_name==self.marelig_name:
+            self.par_same = 1
+        else:
+            self.par_same = 0
+
+        # raised in one of the parents' religions?
+        if ((self.pa_has and self.parelig_name==self.relig16_name) or
+            (self.ma_has and self.marelig_name==self.relig16_name)):
+            self.raised = 1
+        else:
+            self.raised = 0
 
     def code_lib(self, relig_name, fund):
         if relig_name == 'none':
@@ -307,6 +312,15 @@ class Survey(object):
         rs = dict((i, self.rs[caseid]) for i, caseid in enumerate(ids))
         return Survey(rs)
 
+    def subsample(self, filter_func):
+        """Form a new cohort by filtering respondents
+
+        filter_func: function that takes a respondent and returns boolean
+        """
+        pairs = [(r.caseid, r) for r in self.respondents() if filter_func(r)]
+        rs = dict(pairs)
+        return Survey(rs)
+
     def investigate_conversions(self, old, new):
         switches = []
 
@@ -401,8 +415,12 @@ class Survey(object):
         return Regression(xs)
 
     def regress_relig(self, model, print_flag=True):
-        """Performs a regression 
+        """Performs a regression.
 
+        model: string model in r format
+        print_flag: boolean, whether to print results
+
+        Returns: LogRegression object
         """
         def clean(attr):
             m = re.match('as.factor\((.*)\)', attr)
@@ -410,10 +428,10 @@ class Survey(object):
                 return m.group(1)
             return attr
                 
+        # pull out the attributes in the model
         rows = []
         t = model.split()
         attrs = [clean(attr) for attr in model.split() if len(attr)>1]
-        print attrs
 
         for r in self.respondents():
             row = [getattr(r, attr) for attr in attrs]
@@ -421,6 +439,7 @@ class Survey(object):
 
         rows = [row for row in rows if 'NA' not in row]
 
+        # inject the data and runs the model
         col_dict = dict(zip(attrs, zip(*rows)))
         glm.inject_col_dict(col_dict)
 
@@ -460,8 +479,7 @@ class Survey(object):
         table = np.zeros(shape=(8,90), dtype=np.float)
         for (decade, age), hist in sorted(d.iteritems()):
             index = (decade-1900)/10
-            yes, no = hist.Freq(True), hist.Freq(False)
-            table[index, age] = float(yes) / (yes+no)
+            table[index, age] = fraction_true(hist)
 
         self.child_table = table
 
@@ -478,7 +496,7 @@ class Survey(object):
             label = str(decade)
             index = (decade-1900)/10
             ys = np.cumsum([table[index, age] for age in ages])
-            pyplot.plot(ages, ys, label=label, **options)
+            myplot.Plot(ages, ys, label=label, **options)
 
         myplot.Save(root='gss4',
                     xlabel='Age of parent',
@@ -493,7 +511,7 @@ class Survey(object):
         table = model.table
         ps = [table[age] for age in ages]
         ys = np.cumsum(ps)
-        pyplot.plot(ages, ys, color='purple', 
+        myplot.Plot(ages, ys, color='purple', 
                     lw=3, alpha=0.5, linestyle='dashed', label='model')
 
         myplot.Save(root='gss5',
@@ -594,13 +612,13 @@ class Survey(object):
 
         # plot the simulated data
         xs, means = plot_interval(all_ps, color='0.9')
-        pyplot.plot(xs, means, color='blue', lw=3, alpha=0.5)
+        myplot.Plot(xs, means, color='blue', lw=3, alpha=0.5)
 
         # plot the real data
         series = Series()
         data = get_series_for_val(series, val)
         xs, ps = zip(*data)
-        pyplot.plot(xs, ps, color='red', lw=3, alpha=0.5)
+        myplot.Plot(xs, ps, color='red', lw=3, alpha=0.5)
 
         axes = dict(
             none=[1968, 2011, 0, 0.16],
@@ -626,7 +644,8 @@ class Survey(object):
         # plot some resampled fits
         all_ps = {}
         all_rows = {}
-        for i in range(40):
+        for i in range(4):
+            print i
             resampled = self.resample()
 
             # collect the partitioned estimates
@@ -647,7 +666,7 @@ class Survey(object):
         reg = self.regress_by_yrborn('relig_name', val)
         fit = reg.linear_model()
         xs, ps = zip(*fit)
-        pyplot.plot(xs, ps, lw=3, color='blue', alpha=0.5)
+        myplot.Plot(xs, ps, lw=3, color='blue', alpha=0.5)
 
         # plot the real data with error bars
         d = self.partition_by_yrborn('relig_name')
@@ -655,15 +674,15 @@ class Survey(object):
         xs, ps = zip(*rows[1:-1])
 
         plot_errorbars(all_rows, lw=1, color='red', alpha=0.5)
-        pyplot.plot(xs, ps, marker='s', markersize=8, 
+        myplot.Plot(xs, ps, marker='s', markersize=8, 
                     lw=0, color='red', alpha=0.5)
 
         axes = dict(
-            none=[1895, 1965, 0, 0.16],
+            none=[1875, 1995, 0, 0.4],
             prot=[1895, 1965, 0, 1],
             cath=[1895, 1965, 0, 0.5],
             jew=[1895, 1965, 0, 0.2],
-            other=[1895, 1965, 0, 0.2],
+            other=[1865, 1995, 0, 0.5],
             )
 
         # make the figure
@@ -672,91 +691,35 @@ class Survey(object):
                     ylabel='Prob of relig=%s' % val,
                     axis=axes[val])
 
-    def run_transition_simulations(self, n=20):
-        before = self.print_state_vector()
+    def run_transition_simulations(self, n=20,
+                                   parent_flag=True,
+                                   spouse_table=None):
+        #before = self.print_state_vector()
 
         data = []
         for i in range(n):
-            next_gen = self.make_transition_model(resample=True)
+            trans_model = TransitionModel(self,
+                                          resample_flag=True,
+                                          parent_flag=parent_flag)
+            if spouse_table:
+                trans_model.spouse_table = spouse_table
+
+            next_gen = trans_model.next_gen(self, resample_flag=True)
             after = next_gen.print_state_vector(head_flag=False)
             data.append(after)
 
         cols = zip(*data)
 
-        predictions = []
+        preds = []
         for col in cols:
             mean = thinkstats.Mean(col)
             col = list(col)
             col.sort()
             span = col[1], col[-2]
-            predictions.append((mean, span))
+            preds.append((mean, span))
 
-        return predictions
+        return preds
             
-    def make_transition_model(self, resample=False, print_flag=False):
-        """Makes and runs the transition model.
-
-        Returns a vector of predictions.
-
-        resample: boolean, whether to resample
-        print_flag: boolean, whether to print the tables
-        """
-        if resample:
-            survey = self.resample()
-        else:
-            survey = self
-
-        # generate the spouse table
-        spouse_table = SpouseTable(survey)
-        if print_flag:
-            for attr in ['sp_female', 'sp_male']:
-                print attr
-                spouse_table.print_table(attr)
-                spouse_table.write_html_table(attr)
-
-        #print 'spouse table for f none'
-        #pmf = spouse_table.sp_female['none']
-        #print_pmf(pmf)
-
-        # generate the parent table
-        par_table = ParentTable(survey)
-        if print_flag:
-            par_table.write_combined_table()
-            for name in ORDER[:-1]:
-                print 'parent table (%s)' % name
-                par_table.print_table(name)
-                par_table.write_html_table(name)
-
-        # generate the transition table
-        trans_table = TransitionTable(survey, 'Transition table')
-        if print_flag:
-            print 'trans table'
-            trans_table.print_table()
-            trans_table.write_html_table()
-
-        # investigate the strange behavior of the none-none parents
-        if print_flag:
-            print 'none-none'
-            pmf = par_table.table['none', 'none']
-            for name in ORDER:
-                print name, pmf.Prob(name) * 100
-
-        # generate the next generation
-        next_gen = survey.simulate_transition(resample,
-                                              spouse_table,
-                                              par_table, 
-                                              trans_table)
-
-        # compute the generation table (from parent to child religion)
-        gen_table = TransitionTable(next_gen, 'Generation table',
-                                    'fake_parent_relig_name', 'relig_name')
-        if print_flag:
-            print 'gen table'
-            gen_table.print_table()
-            gen_table.write_html_table()
-
-        return next_gen
-
     def print_state_vector(self, attr='relig_name', head_flag=True):
         """Prints the state of the given attribute.
 
@@ -770,8 +733,36 @@ class Survey(object):
         print_vector(vector, head_flag)
         return vector
 
-    def simulate_transition(self, resample, 
-                            spouse_table, par_table, trans_table):
+
+class TransitionModel(object):
+    def __init__(self, survey, resample_flag=False, parent_flag=False):
+        """Makes and runs the transition model.
+
+        Returns a vector of predictions.
+
+        survey: Survey object
+        resample_flag: boolean, whether to resample
+        parent_flag: whether to use data from parents
+        """
+        if resample_flag:
+            survey = survey.resample()
+
+        self.spouse_table = SpouseTable(survey, parent_flag)
+        self.par_table = ParentTable(survey)
+        self.trans_table = TransitionTable(survey, 'Transition table')
+
+
+    def next_gen(self, survey, resample_flag=False):
+        # generate the next generation
+        next_gen = self.simulate_transition(survey, resample_flag)
+
+        # compute the generation table (from parent to child religion)
+        self.gen_table = TransitionTable(next_gen, 'Generation table',
+                                    'fake_parent_relig_name', 'relig_name')
+
+        return next_gen
+
+    def simulate_transition(self, survey, resample_flag):
         """Simulates one generation.
 
         resample: boolean, whether to resample
@@ -781,10 +772,8 @@ class Survey(object):
 
         Returns: Survey object with next generation
         """
-        if resample:
-            survey = self.resample()
-        else:
-            survey = self
+        if resample_flag:
+            survey = survey.resample()
 
         next_gen = {}
 
@@ -793,16 +782,18 @@ class Survey(object):
                 continue
 
             # choose a random spouse
-            sprelig_name = spouse_table.generate_spouse(r)
+            sprelig_name = self.spouse_table.generate_spouse(r)
 
             # choose how to raise the child
             if r.sex == 1:
-                raised = par_table.generate_raised(sprelig_name, r.relig_name)
+                raised = self.par_table.generate_raised(sprelig_name, 
+                                                        r.relig_name)
             else:
-                raised = par_table.generate_raised(r.relig_name, sprelig_name)
+                raised = self.par_table.generate_raised(r.relig_name, 
+                                                        sprelig_name)
 
             # determine the child's religion
-            relig_name = trans_table.generate_relig(raised)
+            relig_name = self.trans_table.generate_relig(raised)
 
             # make a Respondent object for the child
             child = copy.copy(r)
@@ -812,6 +803,25 @@ class Survey(object):
             next_gen[child.caseid] = child
 
         return Survey(next_gen)
+
+    def print_model(self):
+        print 'prob same', self.spouse_table.prob_same()
+        self.spouse_table.print_table()
+        self.spouse_table.write_html_table()
+
+        self.par_table.write_combined_table()
+        for name in ORDER[:-1]:
+            print 'parent table (%s)' % name
+            self.par_table.print_table(name)
+            self.par_table.write_html_table(name)
+
+        print 'trans table'
+        self.trans_table.print_table()
+        self.trans_table.write_html_table()
+
+        print 'gen table'
+        self.gen_table.print_table()
+        self.gen_table.write_html_table()
 
 
 class SeriesRespondent(Respondent):
@@ -825,6 +835,13 @@ class SeriesRespondent(Respondent):
             self.married_in = 'NA'
         else:
             self.married_in = 1 if self.relig_name == self.sprelig_name else 0
+
+        if self.age > 89:
+            self.yrborn = 'NA'
+            self.decade = 'NA'
+        else:
+            self.yrborn = self.year - self.age
+            self.decade = int(self.yrborn / 10) * 10
 
 
 class SeriesSurvey(Survey):
@@ -862,21 +879,39 @@ class Series(object):
             if yes + no:
                 percent = yes / (yes + no) * 100
                 rows.append((year, percent))
+            else:
+                rows.append((year, None))                
 
         return rows
 
     def plot_series(self, rows):
         year, ys = zip(*rows)
-        pyplot.plot(year, ys)
-        myplot.Save(show=True)
+        myplot.Plot(year, ys, lw=3, alpha=0.5)
+        myplot.Save(root='gss.spouse.series',
+            title='Spouses with same religion',
+            xlabel='Survey year',
+            ylabel='% of respondents')
 
 
-def run_series_survey():
+def make_spouse_series():
     survey = SeriesSurvey()
     survey.read_csv('gss.series.csv', SeriesRespondent)
+    
     series = survey.make_series('married_in')
     rows = series.get_ratios(1, 0)
     series.plot_series(rows)
+
+
+def make_spouse_table(low=1972, high=2010):
+    def filter_func(r):
+        return low <= r.year <= high
+
+    survey = SeriesSurvey()
+    survey.read_csv('gss.series.csv', SeriesRespondent)
+    subsample = survey.subsample(filter_func)
+    spouse_table = SpouseTable(subsample)
+
+    return spouse_table
 
 
 class Switch(object):
@@ -999,6 +1034,94 @@ class LogRegression(object):
             #print r.caseid, dv, p
 
 
+class RegressRespondent(Respondent):
+    # map from field name to conversion function
+    convert = dict(compwt=float, sei=float, masei=float, pasei=float)
+
+    # codes for marelkid and parelkid
+    relkid_dict = {
+        0: 'NA',
+        1: 'prot',
+        2: 'cath',
+        3: 'jew',
+        4: 'other',
+        5: 'other',
+        6: 'other',
+        7: 'none',
+        8: 'NA',
+        9: 'NA',
+        }
+    
+    def clean(self):
+        def clean_var(var, na_codes):
+            if var in na_codes:
+                return 'NA'
+            else:
+                return var
+
+        self.compwt = float(self.compwt)
+        for attr in ['denom', 'denom16', 'paden', 'maden', 'spden']:
+            setattr(self, attr, None)
+        self.clean_relig()
+
+        self.parelkid_name = self.relkid_dict[self.parelkid]
+        self.marelkid_name = self.relkid_dict[self.marelkid]
+
+        self.pa_has = 0 if self.parelkid_name=='none' else 1
+        self.ma_has = 0 if self.marelkid_name=='none' else 1
+
+        # did the parents have the same religion?
+        if (self.parelkid_name != 'none' and 
+            self.parelkid_name==self.marelkid_name):
+            self.par_same = 1
+        else:
+            self.par_same = 0
+
+        self.attendpa = clean_var(self.attendpa, [0, 10, 98, 99])
+        self.attendma = clean_var(self.attendma, [0, 10, 98, 99])
+        self.attendkid = (1 if self.attendpa >= 7 or self.attendma >= 7
+                          else 0)
+
+        self.educ = clean_var(self.educ, [97, 98, 99])
+        self.college = 1 if self.educ >= 16 else 0
+        self.paeduc = clean_var(self.paeduc, [97, 98, 99])
+        self.maeduc = clean_var(self.maeduc, [97, 98, 99])
+
+        self.sei = clean_var(self.sei, [-1, 99.8, 99.9])
+        self.pasei = clean_var(self.pasei, [-1, 99.8, 99.9])
+        self.masei = clean_var(self.masei, [-1, 99.8, 99.9])
+
+        vars = [self.parelkid_name, self.marelkid_name, 
+                self.attendpa, self.attendma,
+                self.paeduc, self.maeduc, 
+                self.pasei, self.masei]
+        self.complete = ('NA' not in vars)
+
+
+def make_regression_model():
+    survey = Survey()
+    survey.read_csv('gss2008.csv', RegressRespondent)
+
+    complete = survey.subsample(lambda r: r.complete)
+    
+    attr = 'attendkid'
+    print '\nall'
+    pmf = survey.make_pmf(attr)
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    print '\ncomplete'
+    pmf = complete.make_pmf(attr)
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    model = 'has_relig ~ pa_has + ma_has + attendkid'
+    reg = complete.regress_relig(model, print_flag=True)
+
+    for est, t in reg.estimates.iteritems():
+        print est, math.exp(t[0])
+
+
 def trans_to_matrix(trans):
     """Converts a transition table to a matrix.
 
@@ -1015,6 +1138,11 @@ def trans_to_matrix(trans):
             matrix[i][j] = percent
 
     return np.transpose(matrix)
+
+
+def fraction_true(hist):
+    yes, no = hist.Freq(True), hist.Freq(False)
+    return float(yes) / (yes+no)
 
 
 def print_pmf_sorted(pmf):
@@ -1191,13 +1319,13 @@ class ReligSeries(object):
             
     def plot_changes(self, low, high, 
                      change_flag=True,
-                     predictions=None,
+                     preds=None,
                      spans=None):
         """Makes a plot of changes in religious preference.
 
         low, high: range of years to plot
         change_flag: boolean: whether to normalize by first year value
-        predictions: vector of predicted values (should only be used
+        preds: vector of predicted values (should only be used
                      with change_flag=True)
         spans: error ranges for the predictions
         """
@@ -1215,7 +1343,7 @@ class ReligSeries(object):
 
         colors = ['orange', 'green', 'blue', 'yellow', 'red']
         alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
-        stretch = 4 if predictions else 1
+        stretch = 4 if preds else 1
 
         for i in range(len(rows)):
             ys = rows[i]
@@ -1226,7 +1354,7 @@ class ReligSeries(object):
             else:
                 axis = [low-1, high+stretch, 0, 90]
 
-            pyplot.plot(years, ys,
+            myplot.Plot(years, ys,
                         label=ORDER[i],
                         linewidth=3,
                         color=colors[i],
@@ -1237,16 +1365,14 @@ class ReligSeries(object):
             if spans is not None:
                 low_span = 100.0 * 100.0 * spans[i][0] / baseline
                 high_span = 100.0 * 100.0 * spans[i][1] / baseline
-                print ORDER[i], low_span, high_span
-                pyplot.plot([xloc, xloc], [low_span, high_span],
+                myplot.Plot([xloc, xloc], [low_span, high_span],
                             linewidth=3,
                             color=colors[i],
                             alpha=alphas[i])
 
-            if predictions is not None:
-                pred = 100.0 * 100.0 * predictions[i] / baseline
-                print ORDER[i], pred
-                pyplot.plot(xloc, pred, 
+            if preds is not None:
+                pred = 100.0 * 100.0 * preds[i] / baseline
+                myplot.Plot(xloc, pred, 
                             marker='s',
                             markersize=10,
                             markeredgewidth=0,
@@ -1254,7 +1380,7 @@ class ReligSeries(object):
                             alpha=alphas[i])
 
         if change_flag:
-            if predictions is None:
+            if preds is None:
                 root = 'gss.change.%d-%d' % (low, high)
             else:
                 root = 'gss.pred.%d-%d' % (low, high)
@@ -1321,34 +1447,57 @@ def combine_row(row, header):
 
 
 class SpouseTable(object):
-    def __init__(self, survey, attr1='marelig_name', attr2='parelig_name'):
+    def __init__(self, survey, parent_flag=False):
+
         self.sp_female = {}
         self.sp_male = {}
+        self.sp_same = {1:Pmf.Hist(), 2:Pmf.Hist()}
 
         for name in ORDER:
             self.sp_female[name] = Pmf.Pmf()
             self.sp_male[name] = Pmf.Pmf()
 
         for r in survey.respondents():
+            if parent_flag:
+                attr1='marelig_name'
+                attr2='parelig_name'
+            elif r.sex == 1:
+                attr1='sprelig_name'
+                attr2='relig_name'
+            else:
+                attr1='relig_name'
+                attr2='sprelig_name'
+
             ma = getattr(r, attr1)
             pa = getattr(r, attr2)
             if ma=='NA' or pa=='NA':
                 continue
+
+            self.sp_same[r.sex].Incr(ma==pa)
             self.sp_female[ma].Incr(pa, r.compwt)
             self.sp_male[pa].Incr(ma, r.compwt)
 
         normalize_table(self.sp_female)
         normalize_table(self.sp_male)
 
-    def print_table(self, attr='sp_female'):
-        table = getattr(self, attr)
-        print_table(table)
+    def print_table(self):
+        print 'prob same', self.prob_same()
 
-    def write_html_table(self, attr):
-        table = getattr(self, attr)
-        rows, header_row = get_table_rows(table)
-        filename = 'gss.%s.html' % attr
-        write_html_table(filename, rows, header_row, 'Spouse Table')
+        for attr in ['sp_male', 'sp_female']:
+            print attr
+            table = getattr(self, attr)
+            print_table(table)
+
+    def prob_same(self):
+        t = [fraction_true(self.sp_same[sex]) for sex in [1, 2]]
+        return t
+
+    def write_html_table(self):
+        for attr in ['sp_male', 'sp_female']:
+            table = getattr(self, attr)
+            rows, header_row = get_table_rows(table)
+            filename = 'gss.%s.html' % attr
+            write_html_table(filename, rows, header_row, 'Spouse Table')
 
     def print_pmf(self, pmf):
         for name in ORDER:
@@ -1469,7 +1618,10 @@ class ParentTable(object):
         Returns: string religion name
         """
         pmf = self.table[ma, pa]
-        return pmf.Random()
+        if pmf.Total():
+            return pmf.Random()
+        else:
+            return random.choice([ma, pa])
 
 
 class TransitionTable(object):
@@ -1589,10 +1741,10 @@ def make_matrix_model():
 
     print
     model = Model()
-    predictions = model.run_linear(matrix, vector, steps=1)
+    preds = model.run_linear(matrix, vector, steps=1)
 
     series = ReligSeries()
-    series.plot_changes(1988, 2010, predictions=predictions)
+    series.plot_changes(1988, 2010, preds=preds)
 
 
 def plot_time_series():
@@ -1658,48 +1810,54 @@ def plot_errorbars(all_ps, n=1, **options):
         highs.append(high)
 
     for x, low, high in zip(xs, lows, highs):
-        pyplot.plot([x, x], [low, high], **options)
+        myplot.Plot([x, x], [low, high], **options)
 
 
 def print_transition_model():
     survey88 = Survey()
     survey88.read_csv('gss1988.csv', Respondent)
-    next_gen = survey88.make_transition_model(print_flag=True)
+    trans_model = TransitionModel(survey88, parent_flag=True)
+    next_gen = trans_model.next_gen(survey88)
+    trans_model.print_model()
 
 
-def run_transition_model():
+def run_transition_model(spouse_flag=False):
     """
+    
+    spouse_flag: boolean, whether to use 2004-2010 spouse tables
     """
     random.seed(17)
 
     survey88 = Survey()
     survey88.read_csv('gss1988.csv', Respondent)    
-    res = survey88.run_transition_simulations()
 
-    predictions, spans = zip(*res)
-    series = ReligSeries()
-    series.plot_changes(1988, 2010, predictions=predictions, spans=spans)
-
-
-def main(script):
-    run_series_survey()
-    return
+    if spouse_flag:
+        spouse_table = make_spouse_table(2004, 2010)
+        spouse_table.print_table()
+        res = survey88.run_transition_simulations(spouse_table=spouse_table)
+    else:
+        res = survey88.run_transition_simulations()
     
-    print_time_series()
-    return
+    preds, spans = zip(*res)
+    for name, pred, span in zip(ORDER, preds, spans):
+        print name, '%0.1f (%0.1f %0.1f)' % (pred*100, span[0]*100, span[1]*100)
 
-    print_transition_model()
-    return
+    series = ReligSeries()
+    series.plot_changes(1988, 2010, preds=preds, spans=spans)
 
-    run_transition_model()
-    return
 
-    test_significance()
-    return
+def plot_none_vs_yrborn():
+    survey = SeriesSurvey()
+    survey.read_csv('gss.series.csv', SeriesRespondent)
 
-    plot_time_series()
-    return
+    def filter_func(r):
+        return 1900 <= r.yrborn <= 1990
 
+    subsample = survey.subsample(filter_func)
+    subsample.plot_relig_vs_yrborn('none')
+
+
+def investigate_switches():
     survey88 = Survey()
     survey88.read_csv('gss1988.csv', Respondent)
 
@@ -1710,6 +1868,34 @@ def main(script):
         print val, prob
 
     survey88.investigate_switches('prot', 'none')
+
+
+def main(script):
+    plot_none_vs_yrborn()
+    return
+
+    make_regression_model()
+    return
+
+    # part three
+    make_spouse_series()
+    run_transition_model(spouse_flag=True)
+    return
+
+    spouse_table = make_spouse_table()
+    spouse_table.print_table()
+    return
+    
+    print_transition_model()
+    return
+
+    print_time_series()
+    return
+
+    test_significance()
+    return
+
+    plot_time_series()
     return
 
     series = ReligSeries()
