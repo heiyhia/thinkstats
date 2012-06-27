@@ -1,0 +1,526 @@
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                      CODEBOOK
+
+
+                         GSS 1972-2010 Cumulative Datafile
+                                          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page i
+
+
+                                      CONTENTS
+
+
+      item                                                                page
+
+      CASEID             CASE IDENTIFICATION NUMBER                          1
+      YEAR               GSS YEAR FOR THIS RESPONDENT                        1
+      COMPWT             Composite weight =  WTSSALL * OVERSAMP * FORMWT     1
+      AGE                AGE OF RESPONDENT                                   1
+      RACE               RACE OF RESPONDENT                                  2
+      SEX                RESPONDENTS SEX                                     2
+      RELIG              RS RELIGIOUS PREFERENCE                             3
+      RELIG16            RELIGION IN WHICH RAISED                            4
+      SPREL              SPOUSES RELIGIOUS PREFERENCE                        5
+      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE               5
+      PARELKID           FATHER'S RELIGION WHEN R WAS CHILD                  6
+      MARELIG            WHAT WAS MOTHERS RELIGIOUS PREFERENCE               6
+      MARELKID           MOTHERS RELIGION WHEN R WAS CHILD                   7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 27, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 1
+
+
+      CASEID             CASE IDENTIFICATION NUMBER
+
+           Data type: numeric
+           Record/columns: 1/1-5
+
+      ________________________________________________________________________
+
+      YEAR               GSS YEAR FOR THIS RESPONDENT
+
+           Data type: numeric
+           Record/columns: 1/7-10
+
+      ________________________________________________________________________
+
+      COMPWT             Composite weight =  WTSSALL * OVERSAMP * FORMWT
+
+
+           Created by COMPUTE version 3.5
+           on Mar 22, 2011  (Tue 11:54 AM PDT)
+
+           compwt = WTSSALL * OVERSAMP * FORMWT
+
+           Input variables:
+
+           FORMWT: Weight deal with experimental randomization
+
+           OVERSAMP: WEIGHTS FOR BLACK OVERSAMPLES
+
+           WTSSALL: WEIGHT VARIABLE
+           From study: /html/D3/GSS10
+
+           Data type: numeric
+           Record/columns: 1/12-34
+
+      ________________________________________________________________________
+
+      AGE                AGE OF RESPONDENT
+
+           13. Respondent's age
+
+           VALUE  LABEL
+              89  89 OR OLDER
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/36-37
+
+
+
+
+
+
+                                   June 27, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 2
+
+
+      RACE               RACE OF RESPONDENT
+
+           24. What race do you consider yourself?
+
+           VALUE  LABEL
+               0  IAP
+               1  WHITE
+               2  BLACK
+               3  OTHER
+
+           Data type: numeric
+           Missing-data code: 0
+           Record/column: 1/39
+
+      ________________________________________________________________________
+
+      SEX                RESPONDENTS SEX
+
+           23. Code respondent's sex
+
+           VALUE  LABEL
+               1  MALE
+               2  FEMALE
+
+           Data type: numeric
+           Missing-data code: 0
+           Record/column: 1/41
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 27, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 3
+
+
+      RELIG              RS RELIGIOUS PREFERENCE
+
+           104. What is your religous preference? Is it Protestant,
+           Catholic, Jewish, some other religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/43-44
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 27, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 4
+
+
+      RELIG16            RELIGION IN WHICH RAISED
+
+           115. In what religion were you raised?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/46-47
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 27, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 5
+
+
+      SPREL              SPOUSES RELIGIOUS PREFERENCE
+
+           115. In what religion were you raised?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER (SPECIFY)
+               6  BUDDHISM
+               7  HINDUISM
+               8  OTHER EASTERN
+               9  MOSLEM/ISLAM
+              10  ORTHODOX-CHRISTIAN
+              11  CHRISTIAN
+              12  NATIVE AMERICAN
+              13  INTER-NONDENOMINATIONAL
+              98  DK
+              99  NA
+
+           Data type: numeric
+           Missing-data codes: 0,98,99
+           Record/columns: 1/49-50
+
+      ________________________________________________________________________
+
+      PARELIG            WHAT WAS FATHERS RELIGIOUS PREFERENCE
+
+           360. What was your father's religious preference when you were
+           growing up? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  Protestant
+               2  Catholic
+               3  Jewish
+               4  None
+               5  OTHER
+               8  DONT KNOW
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/52
+
+
+
+
+
+                                   June 27, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 6
+
+
+      PARELKID           FATHER'S RELIGION WHEN R WAS CHILD
+
+           1387. What was your father's religious preference when you were
+           a child? Was it Protestant, Catholic, Jewish, some other"
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  ORTHODOX GREEK, RUSSIAN, ETC
+               5  MOSLEM
+               6  OTHER -SPECIFY
+               7  NO RELIGION
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/54
+
+      ________________________________________________________________________
+
+      MARELIG            WHAT WAS MOTHERS RELIGIOUS PREFERENCE
+
+           359. What was your mother's religious preference when you were
+           growing up? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  NONE
+               5  OTHER
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/56
+
+
+
+
+
+
+
+
+
+                                   June 27, 2012
+
+
+
+      GSS 1972-2010 Cumulative Datafile                                 Page 7
+
+
+      MARELKID           MOTHERS RELIGION WHEN R WAS CHILD
+
+           1386. What was your mother's religious preference when you were
+           a child? Was it Protestant, Catholic, Jewish, some other
+           religion, or no religion?
+
+           VALUE  LABEL
+               0  IAP
+               1  PROTESTANT
+               2  CATHOLIC
+               3  JEWISH
+               4  ORTHODOX GREEK, RUSSIAN, ETC
+               5  MOSLEM
+               6  OTHER -SPECIFY
+               7  NO RELIGION
+               8  DK
+               9  NA
+
+           Data type: numeric
+           Missing-data codes: 0,8,9
+           Record/column: 1/58
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                   June 27, 2012
