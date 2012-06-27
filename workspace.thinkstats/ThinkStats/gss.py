@@ -121,7 +121,7 @@ class Respondent(object):
         except AttributeError:
             pass
 
-    def clean_children():
+    def clean_children(self):
         # loop through the children to get the years they were born
         for i in range(1, 10):
             attr = 'kdyrbrn%d' % i
@@ -146,9 +146,9 @@ class Respondent(object):
         self.complete = ('NA' not in vars)
 
     def clean_relig(self):
-        self.relig_name = self.lookup_religion(self.relig, self.denom)
-        self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
-        self.sprelig_name = self.lookup_religion(self.sprel, self.spden)
+        self.relig_name = self.lookup_religion(self.relig)
+        self.relig16_name = self.lookup_religion(self.relig16)
+        self.sprelig_name = self.lookup_religion(self.sprel)
 
         # for 1988 and before, use parelig and marelig
         # after 1988, use parelkid and marelkid
@@ -156,8 +156,8 @@ class Respondent(object):
             self.parelig_name = self.relkid_dict[self.parelkid]
             self.marelig_name = self.relkid_dict[self.marelkid]
         else:
-            self.parelig_name = self.lookup_religion(self.parelig, self.paden)
-            self.marelig_name = self.lookup_religion(self.marelig, self.maden)
+            self.parelig_name = self.lookup_religion(self.parelig)
+            self.marelig_name = self.lookup_religion(self.marelig)
 
         self.has_relig = 0 if self.relig_name=='none' else 1
         self.pa_has = 0 if self.parelig_name=='none' else 1
@@ -197,6 +197,7 @@ class Respondent(object):
             except AttributeError:
                 pass
 
+    def clean_lib(self):
         self.lib = self.code_lib(self.relig_name, self.fund)
         self.pa_lib = self.code_lib(self.parelig_name, self.pafund)
         self.ma_lib = self.code_lib(self.marelig_name, self.mafund)
@@ -2065,7 +2066,7 @@ def plot_upbringing_elements(surveys):
 
     surveys: a map from decade born to Survey.
     """
-    tables = make_cross_tabs(surveys, 'marelig_name', 'relig16_name')
+    tables = make_cross_tabs(surveys, 'parelig_name', 'relig16_name')
 
     kind = 'upbringing'
     for name in ['prot', 'cath', 'none']:
@@ -2116,6 +2117,7 @@ def plot_element(tables, kind, relig_name):
                 xlabel='Survey year',
                 ylabel='Conversion rate to %s' % relig_name,
                 )
+
 
 def plot_simple_series(years, cols):
     """Plots a set of lines, color coded for religions.
@@ -2175,13 +2177,9 @@ def part_three():
 
 
 def part_four():
-    surveys = make_time_series('gss1988.csv')
-    plot_upbringing_elements(surveys)
-    return
-
-    surveys = make_time_series('gss.series.csv')
+    surveys = make_time_series('gss.series.csv', cutoff=1988)
     plot_transmission_elements(surveys)
-    return
+    #plot_upbringing_elements(surveys)
 
 
 def main(script):
