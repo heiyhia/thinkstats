@@ -4,7 +4,6 @@ by Allen B. Downey, available from greenteapress.com
 Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
-
 import copy
 import numpy as np
 import matplotlib.pyplot as pyplot
@@ -27,7 +26,9 @@ import thinkstats
 import rpy2.robjects as robjects
 # r = robjects.r
 
-ORDER = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
+ORDER_NA = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
+ORDER = ['prot', 'cath', 'jew', 'other', 'none']
+
 USE_PARENT_DATA = True
 
 def clean_var(var, na_codes):
@@ -302,6 +303,10 @@ class Survey(object):
             self.rs = rs
         self.cdf = None
 
+    def add_respondent(self, r):
+        """Adds a respondent to this survey."""
+        self.rs[r.caseid] = r
+
     def len(self):
         """Number of respondents."""
         return len(self.rs)
@@ -345,6 +350,54 @@ class Survey(object):
         """
         items = [(caseid, r.compwt) for caseid, r in self.rs.iteritems()]
         self.cdf = Cdf.MakeCdfFromItems(items)
+
+    def partition_by_attr(self, attr):
+        """Makes a map from year to Survey.
+
+        attr: string attribute to be used as a key
+        """
+        surveys = {}
+        for r in self.respondents():
+            val = getattr(r, attr)
+            if val == 'NA':
+                continue
+
+            if val not in surveys:
+                surveys[val] = Survey()
+            surveys[val].add_respondent(r)
+        return surveys
+
+    def make_series(self, attr):
+        d = {}
+        for r in self.respondents():
+            val = getattr(r, attr)
+            if r.year not in d:
+                d[r.year] = Pmf.Pmf()
+            d[r.year].Incr(val, r.compwt)
+
+        for pmf in d.itervalues():
+            pmf.Normalize()
+
+        return Series(d)
+
+    def cross_tab(self, attr1, attr2):
+        table = {}
+        hist = Pmf.Hist()
+
+        for name in ORDER:
+            table[name] = Pmf.Pmf()
+
+        for r in self.respondents():
+            x = getattr(r, attr1)
+            y = getattr(r, attr2)
+            if x=='NA' or y=='NA':
+                continue
+
+            table[x].Incr(y, r.compwt)
+            hist.Incr(x, r.compwt)
+
+        normalize_table(table)
+        return Table(table, hist)
 
     def resample(self, n=None):
         """Form a new cohort by resampling from this survey.
@@ -853,7 +906,7 @@ class TransitionModel(object):
         self.spouse_table.write_html_table()
 
         self.env_table.write_combined_table()
-        for name in ORDER[:-1]:
+        for name in ORDER:
             print 'parent table (%s)' % name
             self.env_table.print_table(name)
             self.env_table.write_html_table(name)
@@ -874,6 +927,13 @@ class SeriesRespondent(Respondent):
         self.sprelig_name = self.lookup_religion(self.sprel)
         self.relig16_name = self.lookup_religion(self.relig16)
 
+        try:
+            self.parelig_name = self.lookup_religion(self.parelig, self.paden)
+            self.marelig_name = self.lookup_religion(self.marelig, self.maden)
+        except AttributeError:
+            self.parelig_name = 'NA'
+            self.marelig_name = 'NA'
+
         if 'NA' in [self.relig_name, self.sprelig_name]:
             self.married_in = 'NA'
         else:
@@ -885,21 +945,6 @@ class SeriesRespondent(Respondent):
         else:
             self.yrborn = self.year - self.age
             self.decade = int(self.yrborn / 10) * 10
-
-
-class SeriesSurvey(Survey):
-    def make_series(self, attr):
-        d = {}
-        for r in self.respondents():
-            val = getattr(r, attr)
-            if r.year not in d:
-                d[r.year] = Pmf.Pmf()
-            d[r.year].Incr(val, r.compwt)
-
-        for pmf in d.itervalues():
-            pmf.Normalize()
-
-        return Series(d)
 
 
 class Series(object):
@@ -937,7 +982,7 @@ class Series(object):
 
 
 def make_spouse_series():
-    survey = SeriesSurvey()
+    survey = Survey()
     survey.read_csv('gss.series.csv', SeriesRespondent)
     
     series = survey.make_series('married_in')
@@ -955,7 +1000,7 @@ def make_spouse_table(low=1972, high=2010):
     def filter_func(r):
         return low <= r.year <= high
 
-    survey = SeriesSurvey()
+    survey = Survey()
     survey.read_csv('gss.series.csv', SeriesRespondent)
     subsample = survey.subsample(filter_func)
     spouse_table = SpouseTable(subsample)
@@ -1291,38 +1336,7 @@ class ReligSeries(object):
         fp.close()
 
     def plot_time_series_stack(self):
-        """Makes a plot of the actual data and the model predictions.
-        """
-        years = self.data.keys()
-        years.sort()
-
-        ys = np.zeros(len(years))
-
-        rows = []
-        for name in ORDER:
-            if name == 'NA':
-                continue
-
-            for i, year in enumerate(years):
-                percent = self.data[year].Prob(name) * 100
-                ys[i] += percent
-
-            print name, ys
-            rows.append(np.copy(ys))
-
-        colors = ['orange', 'green', 'blue', 'yellow', 'red', '', '', ]
-
-        for i in range(len(rows)-1, -1, -1):
-            ys = rows[i]
-            if i == 0:
-                prev = np.zeros(len(years))
-            else:
-                prev = rows[i-1]
-
-            pyplot.fill_between(years, prev, ys, 
-                                color=colors[i],
-                                alpha=0.2)
-
+        plot_time_series_stack(self.data)
         myplot.Save(root='gss0',
                     xlabel='Year of survey',
                     ylabel='Fraction of population',
@@ -1347,9 +1361,6 @@ class ReligSeries(object):
 
         rows = []
         for name in ORDER:
-            if name == 'NA':
-                continue
-
             ys = [self.data[year].Prob(name) * 100  for year in years]
             rows.append(ys)
 
@@ -1441,6 +1452,38 @@ class ReligSeries(object):
             p = pmf.Prob(val)
             res.append((year, p))
         return res
+
+
+def plot_time_series_stack(data):
+    """Makes a plot of the actual data and the model predictions.
+
+    data: map from year to Pmf
+    """
+    years = data.keys()
+    years.sort()
+
+    ys = np.zeros(len(years))
+
+    rows = []
+    for name in ORDER:
+        for i, year in enumerate(years):
+            percent = data[year].Prob(name) * 100
+            ys[i] += percent
+
+        rows.append(np.copy(ys))
+
+    colors = ['orange', 'green', 'blue', 'yellow', 'red', '', '', ]
+
+    for i in range(len(rows)-1, -1, -1):
+        ys = rows[i]
+        if i == 0:
+            prev = np.zeros(len(years))
+        else:
+            prev = rows[i-1]
+
+        pyplot.fill_between(years, prev, ys, 
+                            color=colors[i],
+                            alpha=0.2)
 
 
 def combine_row(row, header):
@@ -1583,14 +1626,13 @@ class EnvironmentTable(object):
 
         relig_name: string name of religion
         """
-        order = ORDER[:-1]
         header_row = ['']
-        header_row.extend(order)
+        header_row.extend(ORDER)
 
         rows = []
-        for ma in order:
+        for ma in ORDER:
             row = [ma]
-            for pa in order:
+            for pa in ORDER:
                 pmf = self.table[ma, pa]
                 percent = pmf.Prob(relig_name) * 100
                 row.append('%0.0f' % percent)
@@ -1603,17 +1645,16 @@ class EnvironmentTable(object):
     def print_combined_table(self):
         """Prints a table of mother's religion x father's religion.
         """
-        order = ORDER[:-1]
         print '\t\t',
-        for y in order:
+        for y in ORDER:
             print y, '\t',
         print
 
-        for ma in order:
-            for pa in order:
+        for ma in ORDER:
+            for pa in ORDER:
                 print '%4.4s-%4.4s\t' % (ma, pa),
                 pmf = self.table[ma, pa]
-                for name in order:
+                for name in ORDER:
                     percent = pmf.Prob(name) * 100
                     print '%0.0f\t' % percent,
                 print self.hist.Freq((ma, pa))
@@ -1621,21 +1662,20 @@ class EnvironmentTable(object):
     def diff_combined_table(self, other):
         """Prints a table of mother's religion x father's religion.
         """
-        order = ORDER[:-1]
         print '\t\t',
-        for y in order:
+        for y in ORDER:
             print y, '\t',
         print
         
         total = 0
-        for ma in order:
-            for pa in order:
+        for ma in ORDER:
+            for pa in ORDER:
                 print '%4.4s-%4.4s\t' % (ma, pa),
                 pmf = self.table[ma, pa]
                 pmf2 = other.table[ma, pa]
                 freq = self.hist.Freq((ma, pa))
 
-                for name in order:
+                for name in ORDER:
                     percent = pmf.Prob(name) * 100
                     percent2 = pmf2.Prob(name) * 100
                     change = percent2 - percent
@@ -1650,16 +1690,15 @@ class EnvironmentTable(object):
     def write_combined_table(self):
         """Prints a table of mother's religion x father's religion.
         """
-        order = ORDER[:-1]
         header_row = ['parents']
-        header_row.extend(order)
+        header_row.extend(ORDER)
 
         rows = []
-        for ma in order:
-            for pa in order:
+        for ma in ORDER:
+            for pa in ORDER:
                 row = ['%s-%s' % (ma, pa)]
                 pmf = self.table[ma, pa]
-                for name in order:
+                for name in ORDER:
                     percent = pmf.Prob(name) * 100
                     row.append('%0.0f' % percent)
                 rows.append(row)
@@ -1720,20 +1759,19 @@ class TransitionTable(object):
     def diff_table(self, other):
         """Prints a table of ...
         """
-        order = ORDER[:-1]
         print '\t',
-        for y in order:
+        for y in ORDER:
             print y, '\t',
         print
         
         total = 0
-        for raised in order:
+        for raised in ORDER:
             print raised, '\t',
             pmf = self.table[raised]
             pmf2 = other.table[raised]
             freq = self.hist.Freq(raised)
 
-            for name in order:
+            for name in ORDER:
                 percent = pmf.Prob(name) * 100
                 percent2 = pmf2.Prob(name) * 100
                 change = percent2 - percent
@@ -1761,6 +1799,15 @@ class TransitionTable(object):
         return pmf.Random()
 
 
+class Table(object):
+    def __init__(self, table, hist):
+        self.table = table
+        self.hist = hist
+
+    def get_pmf(self, key):
+        return self.table[key]
+
+
 def print_table(table):
     """Prints a transition table.
 
@@ -1780,15 +1827,13 @@ def print_table(table):
 
 
 def get_table_rows(table):
-    order = ORDER[:-1]
-
     header_row = ['']
-    header_row.extend(order)
+    header_row.extend(ORDER)
 
     rows = []
-    for x in order:
+    for x in ORDER:
         row = [x]
-        for y in order:
+        for y in ORDER:
             percent = table[x].Prob(y) * 100
             row.append('%0.0f' % percent)
         rows.append(row)
@@ -1968,7 +2013,7 @@ def run_transition_model(spouse_flag=False, env_flag=False, trans_flag=False):
 
 
 def plot_none_vs_yrborn():
-    survey = SeriesSurvey()
+    survey = Survey()
     survey.read_csv('gss.series.csv', SeriesRespondent)
 
     def filter_func(r):
@@ -1991,28 +2036,175 @@ def investigate_switches():
     survey88.investigate_switches('prot', 'none')
 
 
-def main(script):
+def make_time_series(filename, cutoff=None):
+    """Makes a map from decade born to Survey.
 
+    filename: file to read
+    cutoff: survey year to cut off results
+
+    Returns: a map from decade born to Survey.
+    """
+    survey = Survey()
+    survey.read_csv(filename, SeriesRespondent)
+
+    if cutoff:
+        survey = survey.subsample(lambda r: r.year<=cutoff)
+
+    surveys = survey.partition_by_attr('decade')
+    return surveys
+
+
+def make_cross_tabs(surveys, attr1, attr2):
+    """Makes a cross tabulation for each year.
+    
+    surveys: a map from decade born to Survey.
+    attr1: string attribute name
+    attr2: string attribute name
+
+    Returns: map from year to Table object
+    """
+    tables = {}
+    for year, survey in surveys.iteritems():
+        table = survey.cross_tab(attr1, attr2)
+        tables[year] = table
+    return tables
+
+
+def plot_upbringing_elements(surveys):
+    """Plots elements from upbringing tables as a time series.
+
+    surveys: a map from decade born to Survey.
+    """
+    tables = make_cross_tabs(surveys, 'marelig_name', 'relig16_name')
+
+    kind = 'upbringing'
+    for name in ['prot', 'cath', 'none']:
+        plot_element(tables, kind, name)
+
+
+def plot_transmission_elements(surveys):
+    """Plots elements from transmission tables as a time series.
+
+    surveys: a map from decade born to Survey.
+    """
+    tables = make_cross_tabs(surveys, 'relig16_name', 'relig_name')
+
+    kind = 'transmission'
+    for name in ['prot', 'cath', 'none']:
+        plot_element(tables, kind, name)
+
+
+def plot_element(tables, kind, relig_name):
+    """Plots an element of a table as a time series.
+
+    tables: map from year to Table object
+    kind: string used as part of the output filename
+    relig_name: which religion to generate a plot for
+    """
+    # collect the data
+    years = []
+    rows = []
+    for year, table in sorted(tables.iteritems()):
+        if table.hist.Total() < 100:
+            continue
+        
+        row = []
+        pmf = table.get_pmf(relig_name)
+        for name in ORDER:
+            percent = pmf.Prob(name) * 100
+            row.append(percent)
+
+        years.append(year)
+        rows.append(row)
+
+    # plot it
+    cols = zip(*rows)
+    plot_simple_series(years, cols)
+
+    root = 'gss.%s.%s' % (kind, relig_name)
+    myplot.Save(root=root,
+                xlabel='Survey year',
+                ylabel='Conversion rate to %s' % relig_name,
+                )
+
+def plot_simple_series(years, cols):
+    """Plots a set of lines, color coded for religions.
+
+    years: sequence of years
+    cols: list of columns, one for each religion, in standard order
+    """
+    pyplot.clf()
+
+    colors = ['orange', 'green', 'blue', 'yellow', 'red']
+    alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
+
+    for i, col in enumerate(cols):
+        myplot.Plot(years, col,
+                    label=ORDER[i],
+                    linewidth=3,
+                    color=colors[i],
+                    alpha=alphas[i])
+
+
+def make_stack_series(tables, name):
+    pmfs = {}
+    for year, table in tables.iteritems():
+        pmf = table.get_pmf(name)
+        pmfs[year] = pmf
+
+    plot_time_series_stack(pmfs)
+    myplot.Save(root='gss_stack_%s' % name,
+                xlabel='Year of survey',
+                ylabel='Fraction of population',
+                legend=True,
+                axis=[1972, 2010, 0, 100.5])
+
+
+def part_three():
+    # print the environment tables
+    env_table = make_env_table(1988)
+    env_table.print_combined_table()
+
+    env_table2 = make_env_table(2008)
+    env_table.diff_combined_table(env_table2)
+
+    # print the transmission tables
     trans_table = make_trans_table(1988)
     trans_table.print_table()
 
     trans_table2 = make_trans_table(2008)
     trans_table2.print_table()
     trans_table.diff_table(trans_table2)
-    return
 
-    run_transition_model(spouse_flag=False, env_flag=True, trans_flag=True)
-    return
-
-    env_table = make_env_table(1988)
-    env_table.print_combined_table()
-
-    env_table2 = make_env_table(2008)
-    env_table.diff_combined_table(env_table2)
+    # plot the model
+    run_transition_model(spouse_flag=False, env_flag=False, trans_flag=True)
     return
 
     # part three
     make_spouse_series()
+
+
+def part_four():
+    surveys = make_time_series('gss1988.csv')
+    plot_upbringing_elements(surveys)
+    return
+
+    surveys = make_time_series('gss.series.csv')
+    plot_transmission_elements(surveys)
+    return
+
+
+def main(script):
+    part_four()
+    return
+
+    part_three()
+    return
+
+    years = make_time_series()
+    tables = make_cross_tabs(years, 'relig_name', 'relig16_name')
+    make_stack_series(tables, 'prot')
+    return
 
     plot_none_vs_yrborn()
     return
