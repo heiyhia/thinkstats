@@ -103,10 +103,6 @@ class Respondent(object):
     
     def clean(self):
         self.clean_relig()
-        try:
-            self.clean_socioeconomic()
-        except AttributeError:
-            pass
 
         if self.age > 89:
             self.yrborn = 'NA'
@@ -115,6 +111,17 @@ class Respondent(object):
             self.yrborn = self.year - self.age
             self.decade = int(self.yrborn / 10) * 10
 
+        try:
+            self.clean_socioeconomic()
+        except AttributeError:
+            pass
+
+        try:
+            self.clean_children()
+        except AttributeError:
+            pass
+
+    def clean_children():
         # loop through the children to get the years they were born
         for i in range(1, 10):
             attr = 'kdyrbrn%d' % i
@@ -138,22 +145,19 @@ class Respondent(object):
                 self.pasei, self.masei]
         self.complete = ('NA' not in vars)
 
-
     def clean_relig(self):
         self.relig_name = self.lookup_religion(self.relig, self.denom)
         self.relig16_name = self.lookup_religion(self.relig16, self.denom16)
-        self.parelig_name = self.lookup_religion(self.parelig, self.paden)
-        self.marelig_name = self.lookup_religion(self.marelig, self.maden)
         self.sprelig_name = self.lookup_religion(self.sprel, self.spden)
 
-        # in 2008, parelig and marelig seem to be used for Jewish
-        # parents almost exclusively, so we have to use parelkid
-        self.parelkid_name = self.relkid_dict[self.parelkid]
-        self.marelkid_name = self.relkid_dict[self.marelkid]
-
-        if self.year == 2008:
-            self.parelig_name = self.parelkid_name
-            self.marelig_name = self.marelkid_name
+        # for 1988 and before, use parelig and marelig
+        # after 1988, use parelkid and marelkid
+        if self.year > 1988:
+            self.parelig_name = self.relkid_dict[self.parelkid]
+            self.marelig_name = self.relkid_dict[self.marelkid]
+        else:
+            self.parelig_name = self.lookup_religion(self.parelig, self.paden)
+            self.marelig_name = self.lookup_religion(self.marelig, self.maden)
 
         self.has_relig = 0 if self.relig_name=='none' else 1
         self.pa_has = 0 if self.parelig_name=='none' else 1
@@ -173,21 +177,34 @@ class Respondent(object):
         else:
             self.raised = 0
 
+        # married in the same religion?
+        if 'NA' in [self.relig_name, self.sprelig_name]:
+            self.married_in = 'NA'
+        else:
+            if self.has_relig and self.relig_name == self.sprelig_name:
+                self.married_in = 1
+            else:
+                self.married_in = 0
+
         # TODO: attendpa is available in 2008; in 1988 it was
         # called paattend and the coding was different
         if self.year == 2008:
-            self.attendpa = clean_var(self.attendpa, [0, 10, 98, 99])
-            self.attendma = clean_var(self.attendma, [0, 10, 98, 99])
-            self.attendkid = (1 if self.attendpa >= 7 or self.attendma >= 7
+            try:
+                self.attendpa = clean_var(self.attendpa, [0, 10, 98, 99])
+                self.attendma = clean_var(self.attendma, [0, 10, 98, 99])
+                self.attendkid = (1 if self.attendpa >= 7 or self.attendma >= 7
                               else 0)
-
-        #self.switch1 = self.lookup_switch(self.switch1)
-        #self.switch2 = self.lookup_switch(self.switch2)
-        #self.switch3 = self.lookup_switch(self.switch3)
+            except AttributeError:
+                pass
 
         self.lib = self.code_lib(self.relig_name, self.fund)
         self.pa_lib = self.code_lib(self.parelig_name, self.pafund)
         self.ma_lib = self.code_lib(self.marelig_name, self.mafund)
+
+    def clean_switch(self):
+        self.switch1 = self.lookup_switch(self.switch1)
+        self.switch2 = self.lookup_switch(self.switch2)
+        self.switch3 = self.lookup_switch(self.switch3)
 
     def code_lib(self, relig_name, fund):
         if relig_name == 'none':
@@ -920,33 +937,6 @@ class TransitionModel(object):
         self.gen_table.write_html_table()
 
 
-class SeriesRespondent(Respondent):
-    def clean(self):
-        self.compwt = float(self.compwt)
-        self.relig_name = self.lookup_religion(self.relig)
-        self.sprelig_name = self.lookup_religion(self.sprel)
-        self.relig16_name = self.lookup_religion(self.relig16)
-
-        try:
-            self.parelig_name = self.lookup_religion(self.parelig, self.paden)
-            self.marelig_name = self.lookup_religion(self.marelig, self.maden)
-        except AttributeError:
-            self.parelig_name = 'NA'
-            self.marelig_name = 'NA'
-
-        if 'NA' in [self.relig_name, self.sprelig_name]:
-            self.married_in = 'NA'
-        else:
-            self.married_in = 1 if self.relig_name == self.sprelig_name else 0
-
-        if self.age > 89:
-            self.yrborn = 'NA'
-            self.decade = 'NA'
-        else:
-            self.yrborn = self.year - self.age
-            self.decade = int(self.yrborn / 10) * 10
-
-
 class Series(object):
     def __init__(self, d):
         self.d = d
@@ -983,7 +973,7 @@ class Series(object):
 
 def make_spouse_series():
     survey = Survey()
-    survey.read_csv('gss.series.csv', SeriesRespondent)
+    survey.read_csv('gss.series.csv', Respondent)
     
     series = survey.make_series('married_in')
     rows = series.get_ratios(1, 0)
@@ -1001,7 +991,7 @@ def make_spouse_table(low=1972, high=2010):
         return low <= r.year <= high
 
     survey = Survey()
-    survey.read_csv('gss.series.csv', SeriesRespondent)
+    survey.read_csv('gss.series.csv', Respondent)
     subsample = survey.subsample(filter_func)
     spouse_table = SpouseTable(subsample)
     return spouse_table
@@ -2014,7 +2004,7 @@ def run_transition_model(spouse_flag=False, env_flag=False, trans_flag=False):
 
 def plot_none_vs_yrborn():
     survey = Survey()
-    survey.read_csv('gss.series.csv', SeriesRespondent)
+    survey.read_csv('gss.series.csv', Respondent)
 
     def filter_func(r):
         return 1900 <= r.yrborn <= 1990
@@ -2045,7 +2035,7 @@ def make_time_series(filename, cutoff=None):
     Returns: a map from decade born to Survey.
     """
     survey = Survey()
-    survey.read_csv(filename, SeriesRespondent)
+    survey.read_csv(filename, Respondent)
 
     if cutoff:
         survey = survey.subsample(lambda r: r.year<=cutoff)
