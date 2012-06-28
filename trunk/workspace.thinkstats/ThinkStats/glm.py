@@ -48,13 +48,13 @@ def get_coeffs(res):
 
     res: R glm result object
 
-    Returns: map from coefficient name to (estimate, error, z-value) tuple
+    Returns: list of (name, estimate, error, z-value) tuple
     """
     flag = False
     lines = r.summary(res)
     lines = str(lines)
 
-    res = {}
+    res = []
     for line in lines.split('\n'):
         line = line.strip()
         if line.startswith('---'):
@@ -65,7 +65,7 @@ def get_coeffs(res):
             est = float(t[1])
             error = float(t[2])
             z = float(t[3])
-            res[var] = est, error, z
+            res.append((var, est, error, z))
         if line.startswith('Estimate'):
             flag = True
     return res
