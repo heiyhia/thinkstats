@@ -29,6 +29,9 @@ import rpy2.robjects as robjects
 ORDER_NA = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
 ORDER = ['prot', 'cath', 'jew', 'other', 'none']
 
+PROPER_NAME = dict(prot='Protestant', cath='Catholic', jew='Jewish', 
+                   other='Other', none='None' )
+
 USE_PARENT_DATA = True
 
 def clean_var(var, na_codes):
@@ -79,13 +82,24 @@ class Respondent(object):
         episc = range(50, 60),
         )
 
-    switches = dict(
+    switch_dict = dict(
         prot = (100000, 200000),
         cath = (200000, 300000),
         jew = (300000, 400000),
         none = (400000, 500000),
         other = (500000, 600000),
         )
+
+    switwhy_dict = {
+        10: 'marriage',
+        20: 'friends',
+        30: 'family',
+        40: 'location',
+        50: 'theological',
+        77: 'positive beliefs',
+        0: 'NA',
+        99: 'NA',
+        }
 
     # codes for marelkid and parelkid
     relkid_dict = {
@@ -107,9 +121,11 @@ class Respondent(object):
         if self.age > 89:
             self.yrborn = 'NA'
             self.decade = 'NA'
+            self.age5 = 'NA'
         else:
             self.yrborn = self.year - self.age
             self.decade = int(self.yrborn / 10) * 10
+            self.age5 = int(self.age / 5) * 5
 
         try:
             self.clean_socioeconomic()
@@ -118,6 +134,11 @@ class Respondent(object):
 
         try:
             self.clean_children()
+        except AttributeError:
+            pass
+
+        try:
+            self.clean_switch()
         except AttributeError:
             pass
 
@@ -206,6 +227,8 @@ class Respondent(object):
         self.switch1 = self.lookup_switch(self.switch1)
         self.switch2 = self.lookup_switch(self.switch2)
         self.switch3 = self.lookup_switch(self.switch3)
+        self.switwhy1 = self.lookup_switwhy(self.switwhy1)
+        self.switwhy2 = self.lookup_switwhy(self.switwhy2)
 
     def code_lib(self, relig_name, fund):
         if relig_name == 'none':
@@ -245,11 +268,23 @@ class Respondent(object):
         if switch in [0, 999999]:
             return 'NA'
 
-        for name, (low, high) in self.switches.iteritems():
+        for name, (low, high) in self.switch_dict.iteritems():
             if low <= switch < high:
                 return name
 
         return '?'
+
+    def lookup_switwhy(self, switwhy):
+        """Converts reason codes to text.
+
+        switch: code from one of the switwhy fields
+
+        Returns: string
+        """
+        try:
+            return self.switwhy_dict[switwhy]
+        except KeyError:
+            return 'other'
 
     def ages_when_child_born(self):
         """Returns a list of the respondent's age when children were born."""
@@ -416,6 +451,62 @@ class Survey(object):
 
         normalize_table(table)
         return Table(table, hist)
+
+    def make_religiosity_curves_by_decade(self, relig_name):
+        surveys = self.partition_by_attr('decade')
+
+        curves = []
+        labels = []
+        for decade, survey in sorted(surveys.iteritems()):
+            if decade == 1890 or survey.len() < 300:
+                continue
+            curve = survey.make_religiosity_curve()
+            labels.append(str(decade))
+            curves.append(curve)
+
+        root = 'gss.religiosity.%s' % relig_name
+        title = 'Religiosity curves, %s' % PROPER_NAME[relig_name]
+
+        plot_curves(curves, labels)
+        myplot.Save(root=root,
+                    title=title,
+                    xlabel='Age when surveyed',
+                    ylabel='Fraction with any religion',
+                    )
+
+    def make_religiosity_curves(self):
+        surveys = self.partition_by_attr('relig16_name')
+
+        curves = []
+        for name in ORDER:
+            survey = surveys[name]
+            curve = survey.make_religiosity_curve()
+            curves.append(curve)
+
+        plot_relig_curves(curves)
+        myplot.Show()
+
+    def make_religiosity_curve(self):
+        d = {}
+        for r in self.respondents():
+            if r.relig_name == 'NA':
+                continue
+
+            age = r.age5
+            if age not in d:
+                d[age] = Pmf.Hist()
+                
+            d[age].Incr(r.relig_name != 'none')
+
+        rows = []
+        for age, hist in sorted(d.iteritems()):
+            if hist.Total() < 30:
+                continue
+            fraction = fraction_true(hist)
+            rows.append((age, fraction))
+
+        curve = zip(*rows)
+        return curve
 
     def resample(self, n=None):
         """Form a new cohort by resampling from this survey.
@@ -2015,9 +2106,29 @@ def plot_none_vs_yrborn():
 
 
 def investigate_switches():
-    survey88 = Survey()
-    survey88.read_csv('gss1988.csv', Respondent)
+    survey = Survey()
+    survey.read_csv('gss1988.csv', Respondent)
 
+    surveys = survey.partition_by_attr('relig16_name')
+    prot = surveys['prot'].subsample(lambda r: r.relig_name != 'prot')
+
+    rows = []
+    for r in prot.respondents():
+        row = (r.relig16_name, r.relig_name, 
+               r.switch1, r.switwhy1, r.switch2, r.switch3)
+        rows.append(row)
+
+    rows.sort()
+    for row in rows:
+        print row
+
+    return
+    for name in ORDER:
+        survey = surveys[name]
+        survey.make_pmg
+        print name, survey.len()
+
+    return
     pmf = survey88.make_pmf('switch1')
     pmf.Set('NA', 0)
     pmf.Normalize()
@@ -2138,6 +2249,37 @@ def plot_simple_series(years, cols):
                     alpha=alphas[i])
 
 
+def plot_relig_curves(curves):
+    """Plots a set of lines, color coded for religions.
+
+    curves: list of (xs, ys) pairs
+    """
+    pyplot.clf()
+
+    colors = ['orange', 'green', 'blue', 'yellow', 'red']
+    alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
+
+    for i, curve in enumerate(curves):
+        xs, ys = curve
+        myplot.Plot(xs, ys,
+                    label=ORDER[i],
+                    linewidth=3,
+                    color=colors[i],
+                    alpha=alphas[i])
+
+
+def plot_curves(curves, labels):
+    """Plots a set of lines.
+
+    curves: list of (xs, ys) pairs
+    """
+    pyplot.clf()
+
+    for curve, label in zip(curves, labels):
+        xs, ys = curve
+        myplot.Plot(xs, ys, label=label)
+
+
 def make_stack_series(tables, name):
     pmfs = {}
     for year, table in tables.iteritems():
@@ -2153,6 +2295,11 @@ def make_stack_series(tables, name):
 
 
 def part_three():
+    surveys = make_time_series('gss.series.csv', cutoff=1988)
+    plot_transmission_elements(surveys)
+    #plot_upbringing_elements(surveys)
+    return
+
     # print the environment tables
     env_table = make_env_table(1988)
     env_table.print_combined_table()
@@ -2177,9 +2324,16 @@ def part_three():
 
 
 def part_four():
-    surveys = make_time_series('gss.series.csv', cutoff=1988)
-    plot_transmission_elements(surveys)
-    #plot_upbringing_elements(surveys)
+    survey = Survey()
+    survey.read_csv('gss.series.csv', Respondent)
+    
+    surveys = survey.partition_by_attr('relig16_name')
+    for relig_name in ['prot', 'cath', 'none']:
+        subsurvey = surveys[relig_name]
+        subsurvey.make_religiosity_curves_by_decade(relig_name)
+
+    # sadly, this looks useless
+    investigate_switches()
 
 
 def main(script):
