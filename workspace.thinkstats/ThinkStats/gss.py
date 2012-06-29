@@ -29,6 +29,10 @@ import rpy2.robjects as robjects
 ORDER_NA = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
 ORDER = ['prot', 'cath', 'jew', 'other', 'none']
 
+COLORS = ['orange', 'green', 'blue', 'yellow', 'red']
+ALPHAS = [0.5,      0.5,      0.5,    0.8,      0.5]
+
+
 PROPER_NAME = dict(prot='Protestant', cath='Catholic', jew='Jewish', 
                    other='Other', none='None' )
 
@@ -336,16 +340,21 @@ class Respondent(object):
         children = [self.make_child(yrborn) for yrborn in years_born]
         return children
 
-    def make_child(self, yrborn):
+    def make_child(self, yrborn, trans_model):
+        """Generates a child based on the attributes of the parent.
+
+        yrborn: int, year the child is born
+        """
         child = Respondent()
         child.parent = self
         child.get_next_id()
         child.compwt = self.compwt
         child.yrborn = yrborn
         
-        child.relig16_name = self.up_table.choose(self.relig_name)
-        child.relig_name = self.trans_table.choose(child.relig16_name) 
-
+        child.relig16_name = trans_model.choose_upbringing(yrborn,
+                                                           self.relig_name)
+        child.relig_name = trans_model.choose_transmission(yrborn,
+                                                           child.relig16_name) 
         return child
 
     def get_next_id(self, t=[90000]):
@@ -502,6 +511,7 @@ class Survey(object):
         root = 'gss.religiosity.%s' % relig_name
         title = 'Religiosity curves, %s' % PROPER_NAME[relig_name]
 
+        pyplot.clf()
         plot_curves(curves, labels)
         myplot.Save(root=root,
                     title=title,
@@ -518,6 +528,7 @@ class Survey(object):
             curve = survey.make_religiosity_curve()
             curves.append(curve)
 
+        pyplot.clf()
         plot_relig_curves(curves)
         myplot.Show()
 
@@ -1008,11 +1019,13 @@ class Survey(object):
 
 
 class TransitionModel2(object):
-    def __init__(self, survey):
+    def __init__(self, survey, decade_flag=False):
         """Makes the simplified transition model.
 
         survey: Survey object
         """
+        self.decade_flag = decade_flag
+
         self.up_table = survey.cross_tab('parelig_name', 'relig16_name')
         self.trans_table = survey.cross_tab('relig16_name', 'relig_name')
 
@@ -1021,6 +1034,39 @@ class TransitionModel2(object):
                                          'parelig_name', 'relig16_name')
         self.trans_tables = make_cross_tabs(surveys, 
                                             'relig16_name', 'relig_name')
+
+    def extend_tables(self, attr, source_year, dest_years):
+        """Copies tables from the source_year into the dest_years.
+
+        source_year: int
+        dest_years: list of int
+        """
+        tables = getattr(self, attr)
+        if True:
+            print attr
+            for year, table in sorted(tables.iteritems()):
+                print year, table.hist.Total()
+            print source_year, dest_years
+
+        source = tables[source_year]
+        for dest_year in dest_years:
+            tables[dest_year] = source
+
+    def choose_upbringing(self, yrborn, relig_name):
+        if self.decade_flag:
+            decade = int(yrborn/10) * 10
+            table = self.up_tables[decade]
+            return table.choose(relig_name)
+        else:
+            return self.up_table.choose(relig_name)
+
+    def choose_transmission(self, yrborn, relig_name):
+        if self.decade_flag:
+            decade = int(yrborn/10) * 10
+            table = self.trans_tables[decade]
+            return table.choose(relig_name)
+        else:
+            return self.trans_table.choose(relig_name)
 
     def plot_upbringing_elements(self):
         """Plots elements from upbringing tables as a time series.
@@ -1048,21 +1094,14 @@ class TransitionModel2(object):
                         title=title,
                         )
 
-    def apply_tables(self, survey):
-        """Gives each respondent a reference to the same tables.
-        """
-        for r in survey.respondents():
-            r.up_table = self.up_table
-            r.trans_table = self.trans_table
-
-    def apply_tables_by_decade(self, survey):
-        """Gives each respondent a reference to the relevant tables.
-        """
-        for r in survey.respondents():
-            r.up_table = self.up_tables[r.decade]
-            r.trans_table = self.trans_tables[r.decade]
-
     def simulate_generation(self, survey, birth_model):
+        """Generates one child for each respondent.
+
+        survey: cohort of parents
+        birth_model: BirthModel
+
+        Returns: Survey
+        """
         next_gen = Survey()
         for parent in survey.respondents():
             if 'NA' in [parent.relig_name, parent.yrborn]:
@@ -1070,8 +1109,10 @@ class TransitionModel2(object):
 
             age_when_born = birth_model.random_age()
             yrborn = parent.yrborn + age_when_born
-            child = parent.make_child(yrborn)
+            child = parent.make_child(yrborn, self)
             next_gen.add_respondent(child)
+
+            # print parent.relig_name, child.relig_name
 
         return next_gen
 
@@ -1618,8 +1659,6 @@ class ReligSeries(object):
             ys = [self.data[year].Prob(name) * 100  for year in years]
             rows.append(ys)
 
-        colors = ['orange', 'green', 'blue', 'yellow', 'red']
-        alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
         stretch = 4 if preds else 1
 
         for i in range(len(rows)):
@@ -1634,8 +1673,8 @@ class ReligSeries(object):
             myplot.Plot(years, ys,
                         label=ORDER[i],
                         linewidth=3,
-                        color=colors[i],
-                        alpha=alphas[i])
+                        color=COLORS[i],
+                        alpha=ALPHAS[i])
 
             xloc = high + 0.6 * (i+1)
 
@@ -1644,8 +1683,8 @@ class ReligSeries(object):
                 high_span = 100.0 * 100.0 * spans[i][1] / baseline
                 myplot.Plot([xloc, xloc], [low_span, high_span],
                             linewidth=3,
-                            color=colors[i],
-                            alpha=alphas[i])
+                            color=COLORS[i],
+                            alpha=ALPHAS[i])
 
             if preds is not None:
                 pred = 100.0 * 100.0 * preds[i] / baseline
@@ -1653,8 +1692,8 @@ class ReligSeries(object):
                             marker='s',
                             markersize=10,
                             markeredgewidth=0,
-                            color=colors[i],
-                            alpha=alphas[i])
+                            color=COLORS[i],
+                            alpha=ALPHAS[i])
 
         if change_flag:
             if preds is None:
@@ -1726,8 +1765,6 @@ def plot_time_series_stack(data):
 
         rows.append(np.copy(ys))
 
-    colors = ['orange', 'green', 'blue', 'yellow', 'red', '', '', ]
-
     for i in range(len(rows)-1, -1, -1):
         ys = rows[i]
         if i == 0:
@@ -1736,7 +1773,7 @@ def plot_time_series_stack(data):
             prev = rows[i-1]
 
         pyplot.fill_between(years, prev, ys, 
-                            color=colors[i],
+                            color=COLORS[i],
                             alpha=0.2)
 
 
@@ -2382,36 +2419,45 @@ def plot_relig_series(years, cols):
     years: sequence of years
     cols: list of columns, one for each religion, in standard order
     """
-    pyplot.clf()
-
-    colors = ['orange', 'green', 'blue', 'yellow', 'red']
-    alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
-
     for i, col in enumerate(cols):
         myplot.Plot(years, col,
                     label=ORDER[i],
-                    linewidth=3,
-                    color=colors[i],
-                    alpha=alphas[i])
+                    color=COLORS[i],
+                    alpha=ALPHAS[i])
 
 
-def plot_relig_curves(curves):
+def plot_relig_curves(curves, indices=range(6), **options):
     """Plots a set of lines, color coded for religions.
 
     curves: list of (xs, ys) pairs
     """
-    pyplot.clf()
-
-    colors = ['orange', 'green', 'blue', 'yellow', 'red']
-    alphas = [0.5,      0.5,      0.5,    0.8,      0.5]
-
     for i, curve in enumerate(curves):
+        if i not in indices:
+            continue
+
         xs, ys = curve
         myplot.Plot(xs, ys,
                     label=ORDER[i],
-                    linewidth=3,
-                    color=colors[i],
-                    alpha=alphas[i])
+                    color=COLORS[i],
+                    alpha=ALPHAS[i],
+                    **options)
+
+
+def plot_simulated_relig_curves(curves, indices=range(6), **options):
+    """Plots a set of lines, color coded for religions.
+
+    curves: list of (xs, ys) pairs
+    """
+    for i, curve in enumerate(curves):
+        if i not in indices:
+            continue
+
+        xs, ys = curve
+        myplot.Plot(xs, ys,
+                    lw=1,
+                    color=COLORS[i],
+                    alpha=ALPHAS[i],
+                    **options)
 
 
 def plot_curves(curves, labels):
@@ -2419,8 +2465,6 @@ def plot_curves(curves, labels):
 
     curves: list of (xs, ys) pairs
     """
-    pyplot.clf()
-
     for curve, label in zip(curves, labels):
         xs, ys = curve
         myplot.Plot(xs, ys, label=label)
@@ -2477,61 +2521,175 @@ def part_four():
     investigate_switches()
 
 
-def part_five(cutoff=None):
+def part_five():
+    random.seed(21)
+
+    cutoff = 1988
+    start_year = 1988
+    end_year = 2010
+
     survey = Survey()
     survey.read_csv('gss.series.csv', Respondent)
 
-    if cutoff:
-        survey = survey.subsample(lambda r: r.year<=cutoff)
+    # surveys is a map from year to actual Survey
+    surveys = survey.partition_by_attr('year')
+    cohort = Cohort(survey, cutoff=cutoff, decade_flag=True)
 
-    trans_model = TransitionModel2(survey)
-    #trans_model.plot_transmission_elements()
-    #trans_model.plot_upbringing_elements()
+    # each simulation is a map from year to simulated Survey
+    simulations = []
+    for i in range(5):
+        simulation = cohort.run_simulation(start_year, end_year)
+        simulations.append(simulation)
 
-    birth_model = make_birth_model()
+    plot_real_and_simulated(surveys, simulations, [0,1,4], 'gss.model.1')
+    plot_real_and_simulated(surveys, simulations, [2,3], 'gss.model.2')
 
-    random.seed(21)
 
-    survey_year = 2008
-    survey08 = Survey()
-    survey08.read_csv('gss2008.csv', Respondent)
-    n = survey08.len()
+def plot_real_and_simulated(surveys, simulations, indices, root):
+    pyplot.clf()
 
-    pmfs = []
+    for simulation in simulations:
+        plot_surveys_relig(simulation, indices, real_flag=False)
+        
+    # plot the real data
+    plot_surveys_relig(surveys, indices)
+    myplot.Save(root=root,
+                xlabel='Survey year',
+                ylabel='fraction of population'
+                )
 
-    print survey08.len()
-    age_pmf = survey08.make_age_pmf(survey_year)
-    pmfs.append(('survey08', age_pmf))
 
-    trans_model.apply_tables(survey08)
-    next_gen = trans_model.simulate_generation(survey08, birth_model)
+def plot_surveys_relig(surveys, indices, real_flag=True):
+    """Plots a time series for each religion.
 
-    print next_gen.len()
-    pmf = next_gen.make_age_pmf(survey_year)
-    pmfs.append(('next_gen', pmf))
+    surveys: map from year to Survey
+    """
+    pmf_series = PmfSeries(surveys, 'relig_name')
 
-    next_gen.add_respondents(survey08.respondents())
+    curves = []
+    for name in ORDER:
+        curve = pmf_series.get_curve(name)
+        curves.append(curve)
 
-    print next_gen.len()
-    pmf = next_gen.make_age_pmf(survey_year)
-    pmfs.append(('combined', pmf))
+    if real_flag:
+        plot_relig_curves(curves, indices)
+    else:
+        plot_simulated_relig_curves(curves, indices)
 
-    # off to the future
-    predict_year = 2008
-    resample = next_gen.resample_by_age(n, predict_year, age_pmf)
 
-    print resample.len()
-    pmf = resample.make_age_pmf(predict_year)
-    pmfs.append(('resampled', pmf))
+class PmfSeries(object):
+    """Stores a series of PMFs."""
+    def __init__(self, surveys, attr):
+        self.pmfs = {}
+        for key, survey in surveys.iteritems():
+            self.pmfs[key] = survey.make_pmf(attr)
 
+    def get_curve(self, val):
+        """Gets the times series for a given value.
+
+        Returns: (years, probs) tuple
+        """
+        data = []
+        for key, pmf in sorted(self.pmfs.iteritems()):
+            data.append((key, pmf.Prob(val)))
+        return zip(*data)
+
+
+class Cohort(object):
+    def __init__(self, survey, cutoff=None, decade_flag=False):
+        self.cutoff = cutoff
+        self.decade_flag = decade_flag
+        self.trans_model = self.make_transition_model(survey)
+        self.birth_model = self.make_birth_model()
+
+    def plot_elements(self):
+        self.trans_model.plot_transmission_elements()
+        self.trans_model.plot_upbringing_elements()
+
+    def make_transition_model(self, survey):
+        if self.cutoff:
+            survey = survey.subsample(lambda r: r.year<=self.cutoff)
+            source_year = 1960
+        else:
+            source_year = 1980
+
+        dest_years = range(source_year+10, 2020, 10)
+
+        trans_model = TransitionModel2(survey, self.decade_flag)
+        trans_model.extend_tables('up_tables', source_year, dest_years)
+        trans_model.extend_tables('trans_tables', source_year, dest_years)
+        return trans_model
+
+    def make_birth_model(self, plot_flag=False):
+        survey = Survey()
+        survey.read_csv('gss1994.csv', Respondent)
+
+        if plot_flag:
+            survey.plot_child_curves()
+            survey.plot_child_curve()
+
+        birth_model = survey.make_birth_model()
+        return birth_model
+
+    def make_next_generation(self, survey_year):
+        survey = Survey()
+        filename = 'gss%d.csv' % survey_year
+        survey.read_csv(filename, Respondent)
+
+        n = survey.len()
+        age_pmf = survey.make_age_pmf(survey_year)
+
+        # simulate the next generation
+        next_gen = self.trans_model.simulate_generation(survey,
+                                                        self.birth_model)
+        # add the current generation in with the next
+        next_gen.add_respondents(survey.respondents())
+
+        return Generation(next_gen, n, age_pmf)
+
+    def run_simulation(self, start_year, end_year):
+        generation = self.make_next_generation(start_year)
+        #pmfs = []
+        #pmfs.append(('original', generation.age_pmf))
+
+        surveys = {}
+        for year in range(start_year, end_year+1):
+            simulated = generation.simulate(year)
+            #pmf = simulated.make_age_pmf(predict_year)
+            #name = 'predict%d' % predict_year
+            #pmfs.append((name, pmf))
+            surveys[year] = simulated
+
+        #plot_pmfs(pmfs)
+        return surveys
+
+
+class Generation(object):
+    def __init__(self, survey, n, age_pmf):
+        self.survey = survey
+        self.n = n
+        self.age_pmf = age_pmf
+
+    def simulate(self, predict_year):
+        # off to the future
+        resample = self.survey.resample_by_age(self.n, 
+                                               predict_year, 
+                                               self.age_pmf)
+        return resample
+
+
+def how_many_fake(survey):
     # how many of the resampled respondents are fake?
-    fake = resample.subsample(lambda r:r.caseid >= 90000)
-    print fake.len()
+    fake = survey.subsample(lambda r:r.caseid >= 90000)
+    return fake.len()
 
+
+def plot_pmfs(pmfs):
     for name, pmf in pmfs:
         cdf = Cdf.MakeCdfFromPmf(pmf, name=name)
         myplot.Cdf(cdf)
     myplot.Show()
+
 
 def part_six():
     summarize_complete_respondents()
@@ -2543,15 +2701,6 @@ def part_six():
                  'attendpa', 'attendma', 'attendkid', 
                  'college', 'sei']:
         make_regression_model(attr)
-
-
-def make_birth_model():
-    survey94 = Survey()
-    survey94.read_csv('gss1994.csv', Respondent)
-    #survey94.plot_child_curves()
-    #survey94.plot_child_curve()
-    birth_model = survey94.make_birth_model()
-    return birth_model
 
 
 def main(script):
