@@ -8,6 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import math
 import matplotlib
 import matplotlib.pyplot as pyplot
+import numpy as np
 
 # customize some matplotlib attributes
 #matplotlib.rc('figure', figsize=(4, 3))
@@ -193,6 +194,26 @@ def Cdfs(cdfs, complement=False, transform=None, **options):
     for i, cdf in enumerate(cdfs):
         Cdf(cdf, complement, transform, **options)
 
+
+def Contour(d, pcolor=False, contour=True, **options):
+    """Makes a contour plot.
+    
+    d: map from (x, y) to z
+    """
+    xs, ys = zip(*d.iterkeys())
+    xs = sorted(list(xs))
+    ys = sorted(list(ys))
+
+    X, Y = np.meshgrid(xs, ys)
+    func = lambda x, y: d.get((x, y))
+    func = np.vectorize(func)
+    Z = func(X, Y)
+
+    if pcolor:
+        pyplot.pcolor(X, Y, Z, **options)
+    if contour:
+        cs = pyplot.contour(X, Y, Z, **options)
+        pyplot.clabel(cs, inline=1, fontsize=10)
 
 def Config(**options):
     """Configures the plot.
