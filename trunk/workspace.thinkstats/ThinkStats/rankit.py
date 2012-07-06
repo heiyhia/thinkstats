@@ -11,17 +11,37 @@ import myplot
 import matplotlib.pyplot as pyplot
 
 def Sample(n=6):
+    """Generates a sample from a standard normal variate.
+
+    n: sample size
+
+    Returns: list of n floats
+    """
     t = [random.normalvariate(0.0, 1.0) for i in range(n)]
     t.sort()
     return t
 
 
 def Samples(n=6, m=1000):
+    """Generates m samples with size n each.
+
+    n: sample size
+    m: number of samples
+
+    Returns: list of m samples
+    """
     t = [Sample(n) for i in range(m)]
     return t
 
 
 def EstimateRankits(n=6, m=1000):
+    """Estimates the expected values of sorted random samples.
+
+    n: sample size
+    m: number of iterations
+
+    Returns: list of n rankits
+    """
     t = Samples(n, m)
     t = zip(*t)
     means = [thinkstats.Mean(x) for x in t]
@@ -50,7 +70,7 @@ def MakeNormalPlot(ys, root=None, line_options={}, **options):
     
 
 def main():
-    means = EstimateRankits()
+    means = EstimateRankits(84)
     print means
     
 

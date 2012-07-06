@@ -6,7 +6,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import math
+import random
+
 import thinkstats
+
 
 def Cov(xs, ys, mux=None, muy=None):
     """Computes Cov(X, Y).
@@ -156,6 +159,35 @@ def MapToRanks(t):
     # extract the ranks
     ranks = [trip[0]+1 for trip in resorted]
     return ranks
+
+
+def CorrelatedGenerator(rho):
+    """Generates standard normal variates with correlation.
+
+    rho: target coefficient of correlation
+
+    Returns: iterable
+    """
+    x = random.gauss(0, 1)
+    yield x
+
+    sigma = math.sqrt(1 - rho**2);    
+    while True:
+        x = random.gauss(x * rho, sigma)
+        yield x
+
+
+def CorrelatedNormalGenerator(mu, sigma, rho):
+    """Generates normal variates with correlation.
+
+    mu: mean of variate
+    sigma: standard deviation of variate
+    rho: target coefficient of correlation
+
+    Returns: iterable
+    """
+    for x in CorrelatedGenerator(rho):
+        yield x * sigma + mu
 
 
 def main():
