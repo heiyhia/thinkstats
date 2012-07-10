@@ -35,7 +35,7 @@ ALPHAS = [0.5,      0.5,      0.5,    0.8,      0.5]
 
 
 PROPER_NAME = dict(prot='Protestant', cath='Catholic', jew='Jewish', 
-                   other='Other', none='None' )
+                   other='Other', none='None', any='Any')
 
 USE_PARENT_DATA = True
 
@@ -204,6 +204,7 @@ class Respondent(object):
             self.marelig_name = self.lookup_religion(self.marelig)
 
         self.has_relig = 0 if self.relig_name=='none' else 1
+        self.had_relig = 0 if self.relig16_name=='none' else 1
         self.pa_has = 0 if self.parelig_name=='none' else 1
         self.ma_has = 0 if self.marelig_name=='none' else 1
         self.sp_has = 0 if self.sprelig_name=='none' else 1
@@ -519,12 +520,13 @@ class Survey(object):
         plot_relig_curves(curves)
         myplot.Show()
 
-    def make_religiosity_curves_by_decade(self, relig_name):
+    def make_religiosity_curves_by_decade(self, relig_name, age_flag=True):
         """Plots fraction with religion as a function of age.
 
         Partitioned by decade of birth.
 
         relig_name: string religion name to plot
+        age_flag: whether to use age or year of survey as x-axis
         """
         surveys = self.partition_by_attr('decade')
 
@@ -533,19 +535,26 @@ class Survey(object):
         for decade, survey in sorted(surveys.iteritems()):
             if decade in [1890, 1980] or survey.len() < 300:
                 continue
-            curve = survey.make_religiosity_curve()
+            curve = survey.make_religiosity_curve(age_flag)
             labels.append(str(decade))
-            curve = normalize_curve(curve, 1990)
+            if not age_flag:
+                curve = normalize_curve(curve, 1990)
             curves.append(curve)
 
-        root = 'gss.religiosity.%s' % relig_name
+        if age_flag:
+            root = 'gss.religiosity.%s' % relig_name
+            xlabel = 'Age when surveyed'
+        else:
+            root = 'gss.religiosity.by.year.normalized.%s' % relig_name
+            xlabel = 'Survey year'
+            
         title = 'Religiosity curves, %s' % PROPER_NAME[relig_name]
 
         pyplot.clf()
         plot_curves(curves, labels)
         myplot.Save(root=root,
                     title=title,
-                    xlabel='Age when surveyed',
+                    xlabel=xlabel,
                     ylabel='Fraction with any religion',
                     )
 
@@ -578,10 +587,12 @@ class Survey(object):
                     ylabel='Decade born',
                     )
 
-    def make_religiosity_curve(self):
+    def make_religiosity_curve(self, age_flag=True):
         """Makes a religiosity curve.
 
         Fraction with some religion vs. age when surveyed.
+
+        age_flag: whether to use age or year surveyed as the x-axis
 
         Returns: curve (pair of lists)
         """
@@ -590,19 +601,22 @@ class Survey(object):
             if r.relig_name == 'NA':
                 continue
 
-            age = r.age_group
-            age = (r.year / 5) * 5
-            if age not in d:
-                d[age] = Pmf.Hist()
+            if age_flag:
+                x = r.age_group
+            else:
+                x = (r.year / 5) * 5
+
+            if x not in d:
+                d[x] = Pmf.Hist()
                 
-            d[age].Incr(r.relig_name != 'none')
+            d[x].Incr(r.relig_name != 'none')
 
         rows = []
-        for age, hist in sorted(d.iteritems()):
+        for x, hist in sorted(d.iteritems()):
             if hist.Total() < 30:
                 continue
             fraction = fraction_true(hist)
-            rows.append((age, fraction))
+            rows.append((x, fraction))
 
         curve = zip(*rows)
         return curve
@@ -616,7 +630,7 @@ class Survey(object):
             self.make_cdf()
 
         n = n or len(self.rs)
-        return self.resample_by_cdf(cdf, n)
+        return self.resample_by_cdf(self.cdf, n)
 
     def resample_by_age(self, n, year, age_pmf):
         """Form a new cohort by resampling from this survey.
@@ -1127,7 +1141,10 @@ class TransitionModel2(object):
         if self.decade_flag:
             decade = int(yrborn/10) * 10
             table = self.up_tables[decade]
-            return table.choose(relig_name)
+            try:
+                return table.choose(relig_name)
+            except EmptyPmfError:
+                return self.up_table.choose(relig_name)
         else:
             return self.up_table.choose(relig_name)
 
@@ -2192,6 +2209,10 @@ class TransitionTable(object):
         return pmf.Random()
 
 
+class EmptyPmfError(ValueError):
+    """Raised if the PMF has no values."""
+
+
 class Table(object):
     def __init__(self, table, hist):
         self.table = table
@@ -2202,6 +2223,9 @@ class Table(object):
 
     def choose(self, key):
         pmf = self.get_pmf(key)
+        if pmf.Total() == 0:
+            print 'EmptyPmfError'
+            raise EmptyPmfError()
         val = pmf.Random()
         return val
 
@@ -2614,38 +2638,54 @@ def part_four():
     survey = Survey()
     survey.read_csv('gss.series.csv', Respondent)
     
+    raised = survey.subsample(lambda r: r.had_relig)
+    raised.make_religiosity_curves_by_decade('any', age_flag=False)
+
     surveys = survey.partition_by_attr('relig16_name')
     for relig_name in ['prot', 'cath', 'none']:
         subsurvey = surveys[relig_name]
         #subsurvey.make_religiosity_curves_by_decade(relig_name)
-        subsurvey.make_religiosity_contour_by_decade(relig_name)
+        subsurvey.make_religiosity_curves_by_decade(relig_name, age_flag=False)
+        #subsurvey.make_religiosity_contour_by_decade(relig_name)
 
     # sadly, this looks useless
     #investigate_switches()
 
 
-def part_five():
+def part_six():
     random.seed(21)
 
-    cutoff = 2010
-    start_year = 1988
-    end_year = 2010
+    #plot_simulation_predictions(cutoff=2010)
+    #plot_simulation_predictions(cutoff=1988)
+    plot_simulation_predictions(cutoff=2010, start_year=2010, end_year=2050)
 
-    survey = Survey()
-    survey.read_csv('gss.series.csv', Respondent)
+
+def plot_simulation_predictions(cutoff=2010,
+                                start_year=1988,
+                                end_year=2010):
+    whole_survey = Survey()
+    whole_survey.read_csv('gss.series.csv', Respondent)
 
     # surveys is a map from year to actual Survey
-    surveys = survey.partition_by_attr('year')
+    surveys = whole_survey.partition_by_attr('year')
+    start_survey = surveys[start_year]
+    
+    available_survey = whole_survey.subsample(lambda r: r.year<=cutoff)
 
     # each simulation is a map from year to simulated Survey
-    cohort = Cohort(survey, cutoff=cutoff, decade_flag=True)
     simulations = []
     for i in range(5):
+        print i+1
+        resample = available_survey.resample()
+        cohort = Cohort(resample, cutoff=cutoff, decade_flag=True)
         simulation = cohort.run_simulation(start_year, end_year)
         simulations.append(simulation)
 
-    plot_real_and_simulated(surveys, simulations, [0,1,4], 'gss.model.1')
-    plot_real_and_simulated(surveys, simulations, [2,3], 'gss.model.2')
+    root = 'gss.model.%d.%d.pcn' % (cutoff, end_year)
+    plot_real_and_simulated(surveys, simulations, [0,1,4], root)
+
+    root = 'gss.model.%d.%d.oj' % (cutoff, end_year)
+    plot_real_and_simulated(surveys, simulations, [2,3], root)
 
 
 def plot_real_and_simulated(surveys, simulations, indices, root):
@@ -2714,7 +2754,7 @@ class Cohort(object):
         decade_flag: whether to use a different transition model for
                      each decade of birth
         """
-        self.survey = survey.subsample(lambda r: r.year<=cutoff)
+        self.survey = survey
         self.trans_model = TransitionModel2(survey, decade_flag)
 
         source_years = {
@@ -2732,7 +2772,7 @@ class Cohort(object):
         cutoff: last year of data we're using
         source_year: year we're copying
         """
-        dest_years = range(source_year+10, 2020, 10)
+        dest_years = range(source_year+10, 2050, 10)
 
         self.trans_model.extend_tables('up_tables', source_year, dest_years)
         self.trans_model.extend_tables('trans_tables', source_year, dest_years)
@@ -2762,16 +2802,20 @@ class Cohort(object):
         self.trans_model.plot_transmission_elements()
         self.trans_model.plot_upbringing_elements()
 
-    def make_next_generation(self, survey_year):
+    def make_next_generation(self, survey_year, survey):
         """Makes a simulated survey of the children of the respondents.
 
         survey_year: what year to use for the hypothetical parents
 
         Returns: Generation
         """
-        survey = Survey()
-        filename = 'gss%d.csv' % survey_year
-        survey.read_csv(filename, Respondent)
+        if False:
+            survey = Survey()
+            filename = 'gss%d.csv' % survey_year
+            survey.read_csv(filename, Respondent)
+            survey = survey.resample()
+
+        print 'Start survey N =', survey.len()
 
         n = survey.len()
         age_pmf = survey.make_age_pmf(survey_year)
@@ -2793,7 +2837,9 @@ class Cohort(object):
 
         Returns: map from year to Survey
         """
-        generation = self.make_next_generation(start_year)
+        start_survey = self.survey.subsample(lambda r: r.year==start_year)
+        generation = self.make_next_generation(start_year, start_survey)
+
         if plot_flag:
             pmfs = []
             pmfs.append(('original', generation.age_pmf))
@@ -2859,7 +2905,7 @@ def how_many_fake(survey):
     return fake.len()
 
 
-def part_six():
+def part_seven():
     summarize_complete_respondents()
     return
 
@@ -2872,13 +2918,10 @@ def part_six():
 
 
 def main(script):
-    part_four()
-    return
-
-    part_five()
-    return
-
     part_six()
+    return
+
+    part_four()
     return
 
     part_three()
