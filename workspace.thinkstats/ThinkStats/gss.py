@@ -128,41 +128,28 @@ class Respondent(object):
             self.yrborn = 'NA'
             self.decade = 'NA'
             self.age_group = 'NA'
+            self.age_from_30 = 'NA'
         else:
             self.yrborn = self.year - self.age
             self.decade = int(self.yrborn / 10) * 10
             self.age_group = int(self.age / 10) * 10
+            self.age_from_30 = self.age - 30
 
-        try:
-            self.clean_socioeconomic()
-        except AttributeError:
-            pass
+        for method in [self.clean_socioeconomic,
+                     self.clean_attend,
+                     self.clean_internet,
+                     self.clean_children,
+                     self.clean_switch,
+                     ]:
+            try:
+                method()
+            except AttributeError:
+                pass
 
-        try:
-            self.clean_children()
-        except AttributeError:
-            pass
-
-        try:
-            self.clean_switch()
-        except AttributeError:
-            pass
-
-        try:
-            self.check_complete()
-        except AttributeError:
-            pass
-
-    def check_complete(self):
+    def check_complete(self, attrs):
         """Checks whether a respondent has all required variables."""
-        vars = [self.relig_name,
-                self.relig16_name,
-                self.educ,
-                self.parelig_name, 
-                self.marelig_name, 
-                self.attendpa, 
-                self.attendma]
-        self.complete = ('NA' not in vars)
+        t = [getattr(self, attr) for attr in attrs]
+        self.complete = ('NA' not in t)
 
     def clean_children(self):
         """Cleans data about the children.
@@ -180,6 +167,11 @@ class Respondent(object):
         """Clean socioeconomic data.
         """
         self.educ = clean_var(self.educ, [97, 98, 99])
+        if self.educ == 'NA':
+            self.educ_from_12 = 'NA'
+        else:
+            self.educ_from_12 = self.educ - 12
+
         self.college = 1 if self.educ >= 16 else 0
         self.paeduc = clean_var(self.paeduc, [97, 98, 99])
         self.maeduc = clean_var(self.maeduc, [97, 98, 99])
@@ -194,30 +186,40 @@ class Respondent(object):
         self.relig16_name = self.lookup_religion(self.relig16)
         self.sprelig_name = self.lookup_religion(self.sprel)
 
-        # for 1988 and before, use parelig and marelig
-        # after 1988, use parelkid and marelkid
-        if self.year > 1988:
+        if self.year in [1991, 1998, 2008]:
             self.parelig_name = self.relkid_dict[self.parelkid]
             self.marelig_name = self.relkid_dict[self.marelkid]
-        else:
+        elif self.year in [1988]:
             self.parelig_name = self.lookup_religion(self.parelig)
             self.marelig_name = self.lookup_religion(self.marelig)
+        else:
+            self.parelig_name = 'NA'
+            self.marelig_name = 'NA'
 
-        self.has_relig = 0 if self.relig_name=='none' else 1
-        self.had_relig = 0 if self.relig16_name=='none' else 1
-        self.pa_has = 0 if self.parelig_name=='none' else 1
-        self.ma_has = 0 if self.marelig_name=='none' else 1
-        self.sp_has = 0 if self.sprelig_name=='none' else 1
+        def has_religion(name):
+            """Returns 1 if name is a religion, 0 if it is none, NA otherwise.
+            """
+            if name == 'NA':
+                return name
+            if name == 'none':
+                return 0
+            return 1
+
+        self.has_relig = has_religion(self.relig_name)
+        self.had_relig = has_religion(self.relig16_name)
+        self.pa_has = has_religion(self.parelig_name)
+        self.ma_has = has_religion(self.marelig_name)
+        self.sp_has = has_religion(self.sprelig_name)
 
         # do the parents have the same religion?
-        if self.pa_has and self.parelig_name==self.marelig_name:
+        if self.pa_has==1 and self.parelig_name==self.marelig_name:
             self.par_same = 1
         else:
             self.par_same = 0
 
         # raised in one of the parents' religions?
-        if ((self.pa_has and self.parelig_name==self.relig16_name) or
-            (self.ma_has and self.marelig_name==self.relig16_name)):
+        if ((self.pa_has==1 and self.parelig_name==self.relig16_name) or
+            (self.ma_has==1 and self.marelig_name==self.relig16_name)):
             self.raised = 1
         else:
             self.raised = 0
@@ -226,24 +228,28 @@ class Respondent(object):
         if 'NA' in [self.relig_name, self.sprelig_name]:
             self.married_in = 'NA'
         else:
-            if self.has_relig and self.relig_name == self.sprelig_name:
+            if self.has_relig==1 and self.relig_name==self.sprelig_name:
                 self.married_in = 1
             else:
                 self.married_in = 0
 
-        # TODO: attendpa is available in 2008; in 1988 it was
-        # called paattend and the coding was different
-        if self.year == 2008:
-            try:
-                self.attendpa = clean_var(self.attendpa, [0, 10, 98, 99])
-                self.attendma = clean_var(self.attendma, [0, 10, 98, 99])
-                self.attendkid = 0
-                if self.attendpa != 'NA' and self.attendpa >= 7:
-                    self.attendkid = 1
-                if self.attendma != 'NA' and self.attendma >= 7:
-                    self.attendkid = 1
-            except AttributeError:
-                pass
+    def clean_attend(self):
+        if self.year in [1991, 1998, 2008]:
+            self.attendpa = clean_var(self.attendpa, [0, 10, 98, 99])
+            self.attendma = clean_var(self.attendma, [0, 10, 98, 99])
+            thresh = 7   # nearly every week
+        else:
+            self.attendpa = 'NA'
+            self.attendma = 'NA'
+            self.attendkid = 'NA'
+            return
+
+        self.attendkid = 0
+        if self.attendpa != 'NA' and self.attendpa >= thresh:
+            self.attendkid = 1
+        if self.attendma != 'NA' and self.attendma >= thresh:
+            self.attendkid = 1
+
 
     def clean_lib(self):
         """Clean data on how liberal the religions are.
@@ -252,6 +258,24 @@ class Respondent(object):
         self.pa_lib = self.code_lib(self.parelig_name, self.pafund)
         self.ma_lib = self.code_lib(self.marelig_name, self.mafund)
 
+    def clean_internet(self):
+        if self.intrhome in [0, 8, 9]:
+            self.internet = 'NA'
+        else:
+            self.internet = 1 if self.intrhome==1 else 0
+
+        self.wwwhr = clean_var(self.wwwhr, [-1, 998, 999])
+
+        def code_www(www, thresh):
+            if www == 'NA':
+                return 'NA'
+            if www > thresh:
+                return 1
+            return 0
+
+        self.somewww = code_www(self.wwwhr, 3)
+        self.heavywww = code_www(self.wwwhr, 9)
+        
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
         if relig_name == 'none':
@@ -1548,49 +1572,6 @@ class LogRegression(object):
             dv = getattr(r, attr)
             p = self.fit_prob(r)
             #print r.caseid, dv, p
-
-
-def summarize_complete_respondents():
-    survey = Survey()
-    survey.read_csv('gss2008.csv', Respondent)
-
-    complete = survey.subsample(lambda r: r.complete)
-    for attr in ['has_relig', 'ma_has', 'pa_has', 
-                 'par_same', 'raised', 'attendpa', 'attendma', 'attendkid', 
-                 'college', 'sei']:
-        pmf = complete.make_pmf(attr)
-        percent = pmf.Prob(1) * 100
-        print '%11s\t%0.1f' % (attr, percent)
-
-    # investigate par_same
-    d = {0: Pmf.Hist(), 1: Pmf.Hist()}
-    for r in complete.respondents():
-        if r.ma_has and r.pa_has:
-            d[r.par_same].Incr(r.has_relig == 1)
-
-    for val, pmf in sorted(d.iteritems()):
-        print val, fraction_true(pmf)
-
-
-def make_regression_model(attr=None):
-    survey = Survey()
-    survey.read_csv('gss2008.csv', Respondent)
-
-    complete = survey.subsample(lambda r: r.complete)
-    
-    if attr:
-        model = 'has_relig ~ ma_has + pa_has + %s' % attr
-    else:
-        model = 'has_relig ~ ma_has + pa_has'
-
-    reg = complete.regress_relig(model, print_flag=True)
-
-    total_odds = 1.0
-    for name, est, error, z in reg.estimates:
-        odds = math.exp(est)
-        total_odds *= odds
-        p = total_odds / (1 + total_odds)
-        print '%11s\t%0.2f\t%0.3f' % (name, odds, p)
 
 
 def trans_to_matrix(trans):
@@ -2906,18 +2887,144 @@ def how_many_fake(survey):
 
 
 def part_seven():
-    summarize_complete_respondents()
+    filename = 'gss1998-2010.csv'
+    survey = Survey()
+    survey.read_csv(filename, Respondent)
+
+    means = dict(educ_from_12=4, age_from_30=10, wwwhr=4)
+    control_attrs = ['had_relig', 'age_from_30', 'educ_from_12', 'somewww']
+    other_attrs = ['heavywww']
+    run_regressions(survey, control_attrs, other_attrs, means)
+
     return
 
-    make_regression_model()
+    plot_internet_users()
+    return
 
-    for attr in ['par_same', 'raised', 
-                 'attendpa', 'attendma', 'attendkid', 
-                 'college', 'sei']:
-        make_regression_model(attr)
+    control_attrs = []
+    other_attrs = ['had_relig', 'educ_from_12', 'college', 'sei',
+                   'age_from_30',
+                   'wwwhr', 'heavywww']
+
+    run_regressions(survey, control_attrs, other_attrs, means)
+
+    control_attrs = ['had_relig']
+    other_attrs = ['educ_from_12', 'college', 'sei', 'age_from_30',
+                   'wwwhr', 'heavywww']
+    run_regressions(survey, control_attrs, other_attrs, means)
+
+    control_attrs = ['had_relig', 'age_from_30']
+    other_attrs = ['educ_from_12', 'college', 'sei',
+                   'wwwhr', 'heavywww']
+    run_regressions(survey, control_attrs, other_attrs, means)
+
+
+def more_regressions():
+    control_attrs = ['ma_has', 'pa_has']
+    other_attrs = ['par_same', 'raised', 
+                   'attendpa', 'attendma', 'attendkid',
+                   'college', 'sei']
+
+    year = 1998
+    filename = 'gss%d.csv' % year
+    survey = Survey()
+    survey.read_csv(filename, Respondent)
+    run_regressions(survey, control_attrs, other_attrs)
+
+    year = 2008
+    filename = 'gss%d.csv' % year
+    survey2 = Survey()
+    survey2.read_csv(filename, Respondent)
+    run_regressions(survey2, control_attrs, other_attrs + ['internet'])
+
+    survey3 = Survey()
+    survey3.add_respondents(survey.respondents())
+    survey3.add_respondents(survey2.respondents())
+    print survey3.len()
+    run_regressions(survey3, control_attrs, other_attrs)
+
+    
+def run_regressions(survey, control_attrs, other_attrs, means={}):
+    dep = 'has_relig'
+    all_attrs = [dep] + control_attrs + other_attrs
+
+    for r in survey.respondents():
+        r.check_complete(all_attrs)
+
+    complete = survey.subsample(lambda r: r.complete)
+
+    print 'Required attrs'
+    for attr in all_attrs:
+        print attr
+    print 'Total respondents:', complete.len()
+
+    pmf = complete.make_pmf('year')
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    summarize_complete_respondents(complete, all_attrs)
+
+    print '\n'
+    if control_attrs:
+        make_regression_model(complete, dep, control_attrs, 
+                              means=means)
+
+    for attr in other_attrs:
+        print '\n', attr
+        make_regression_model(complete, dep, control_attrs, indep=[attr],
+                              means=means)
+
+
+def summarize_complete_respondents(survey, attrs):
+
+    for attr in attrs:
+        try:
+            pmf = survey.make_pmf(attr)
+            percent = pmf.Prob(1) * 100
+            print '%11s\t%0.1f' % (attr, percent)
+        except ValueError:
+            print '%11s\tNA' % (attr)
+
+
+def make_regression_model(survey, dep, base, indep=[], means={}):
+    s = ' + '.join(base + indep)
+    model = '%s ~ %s' % (dep, s)
+
+    reg = survey.regress_relig(model, print_flag=True)
+
+    total_odds = 1.0
+    for name, est, error, z in reg.estimates:
+        mean = means.get(name, 1)
+        odds = math.exp(est * mean)
+        total_odds *= odds
+        p = 100 * total_odds / (1 + total_odds)
+        print '%11s\t%0.2f\t%0.1f' % (name, odds, p)
+
+
+def plot_internet_users():
+    filename = 'IT.NET.USER.P2_Indicator_MetaData_en_EXCEL.csv'
+    fp = open(filename)
+    reader = csv.reader(fp)
+    
+    header = reader.next()[32:-1]
+    years = [int(x) for x in header]
+
+    pyplot.clf()
+    for t in reader:
+        if t[0] == 'United States':
+            ys = [float(y) for y in t[32:-1]]
+            myplot.Plot(years, ys, label='U.S.')
+
+    myplot.Save(root='gss.internet',
+                title='Prevalence of the Internet',
+                ylabel='Internet users per 100 people',
+                xlabel='Year')
 
 
 def main(script):
+    part_seven()
+    return
+
     part_six()
     return
 
