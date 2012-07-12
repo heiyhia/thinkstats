@@ -39,12 +39,27 @@ PROPER_NAME = dict(prot='Protestant', cath='Catholic', jew='Jewish',
 
 USE_PARENT_DATA = True
 
-def clean_var(var, na_codes):
+
+def clean_var(val, na_codes):
     """Replaces invalid codes with NA."""
-    if var in na_codes:
+    if val in na_codes:
         return 'NA'
     else:
-        return var
+        return val
+
+
+def meets_thresh(val, thresh):
+    """Returns NA if val is NA, 1 if the value meets or exceeds thresh, 
+    0 otherwise.
+
+    val: value
+    thresh: threshold
+    """
+    if val == 'NA':
+        return 'NA'
+    if val >= thresh:
+        return 1
+    return 0
 
 
 class Respondent(object):
@@ -129,11 +144,13 @@ class Respondent(object):
             self.decade = 'NA'
             self.age_group = 'NA'
             self.age_from_30 = 'NA'
+            self.born_from_1960 = 'NA'
         else:
             self.yrborn = self.year - self.age
             self.decade = int(self.yrborn / 10) * 10
             self.age_group = int(self.age / 10) * 10
             self.age_from_30 = self.age - 30
+            self.born_from_1960 = self.yrborn - 1960
 
         for method in [self.clean_socioeconomic,
                      self.clean_attend,
@@ -166,6 +183,10 @@ class Respondent(object):
     def clean_socioeconomic(self):
         """Clean socioeconomic data.
         """
+        self.income = clean_var(self.income, [0, 13, 98, 99])
+        self.rincome = clean_var(self.rincome, [0, 13, 98, 99])
+        self.high_income = meets_thresh(self.income, 12)
+
         self.educ = clean_var(self.educ, [97, 98, 99])
         if self.educ == 'NA':
             self.educ_from_12 = 'NA'
@@ -234,6 +255,7 @@ class Respondent(object):
                 self.married_in = 0
 
     def clean_attend(self):
+        """Clean data on church attendance."""
         if self.year in [1991, 1998, 2008]:
             self.attendpa = clean_var(self.attendpa, [0, 10, 98, 99])
             self.attendma = clean_var(self.attendma, [0, 10, 98, 99])
@@ -245,9 +267,9 @@ class Respondent(object):
             return
 
         self.attendkid = 0
-        if self.attendpa != 'NA' and self.attendpa >= thresh:
+        if meets_thresh(self.attendpa, thresh):
             self.attendkid = 1
-        if self.attendma != 'NA' and self.attendma >= thresh:
+        if meets_thresh(self.attendma, thresh):
             self.attendkid = 1
 
 
@@ -264,17 +286,20 @@ class Respondent(object):
         else:
             self.internet = 1 if self.intrhome==1 else 0
 
+        self.compuse = clean_var(self.compuse, [0, 8, 9])
+        self.usewww = clean_var(self.usewww, [0, 9])
         self.wwwhr = clean_var(self.wwwhr, [-1, 998, 999])
 
-        def code_www(www, thresh):
-            if www == 'NA':
-                return 'NA'
-            if www > thresh:
-                return 1
-            return 0
+        self.somewww = 'NA'
+        self.heavywww = 'NA'
 
-        self.somewww = code_www(self.wwwhr, 3)
-        self.heavywww = code_www(self.wwwhr, 9)
+        if self.compuse == 2 or self.usewww == 2:
+            self.somewww = 0
+            self.heavywww = 0
+        
+        if self.wwwhr != 'NA':
+            self.somewww = meets_thresh(self.wwwhr, 2)
+            self.heavywww = meets_thresh(self.wwwhr, 8)
         
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
@@ -441,6 +466,31 @@ class Survey(object):
 
         pmf.Normalize()
         return pmf
+
+    def print_pmf(self, attr):
+        """Print the PMF of an attribute.
+
+        attr: sting attribute name
+        """
+        print attr
+        pmf = self.make_pmf(attr)
+        print_pmf_sorted(pmf)
+
+    def summarize_binary_attrs(self, attrs):
+        """Summarize survey attributes.
+
+        Prints the probability that the val is 1.
+
+        attrs: list of string attr names
+        """
+
+        for attr in attrs:
+            try:
+                pmf = self.make_pmf(attr)
+                percent = pmf.Prob(1) * 100
+                print '%11s\t%0.1f' % (attr, percent)
+            except ValueError:
+                print '%11s\tNA' % (attr)
 
     def make_age_pmf(self, survey_year):
         """Make a PMF for an attribute.  Uses compwt to weight respondents.
@@ -789,7 +839,7 @@ class Survey(object):
 
         return Regression(xs)
 
-    def regress_relig(self, model, print_flag=True):
+    def logistic_regression(self, model, print_flag=True):
         """Performs a regression.
 
         model: string model in r format
@@ -823,9 +873,69 @@ class Survey(object):
 
         return LogRegression(res, estimates)
 
+    def make_logistic_regression(self, dep, control, exp_vars=[]):
+        """Runs a logistic regression.
+
+        dep: string dependent variable name
+        control: list of string control variables
+        exp_vars: list of string independent variable names
+
+        Returns: LogRegression object
+        """
+        s = ' + '.join(control + exp_vars)
+        model = '%s ~ %s' % (dep, s)
+
+        reg = self.logistic_regression(model, print_flag=True)
+        return reg
+
+    def make_logistic_regressions(self, dep, control, exp_vars, means={}):
+        """Runs multiple logistic regressions.
+
+        Prints results
+
+        dep: string dependent variable name
+        control: list of string control variables
+        exp_vars: list of string independent variable names
+        means: dictionary passed along to LogRegression.report
+        """
+        # make sure all respondents have the vars we need
+        all_attrs = [dep] + control + exp_vars
+
+        for r in self.respondents():
+            r.check_complete(all_attrs)
+
+        complete = self.subsample(lambda r: r.complete)
+
+        print 'Required attrs'
+        for attr in all_attrs:
+            print attr
+        print 'Total respondents:', self.len()
+        print 'Complete respondents:', complete.len()
+
+        # print the distribution of years
+        print 'Distribution of survey years'
+        pmf = complete.make_pmf('year')
+        for val, prob in sorted(pmf.Items()):
+            print val, prob
+
+        # summarize the variables
+        complete.summarize_binary_attrs(all_attrs)
+
+        # run the control model
+        print '\n'
+        if control:
+            reg = complete.make_logistic_regression(dep, control)
+            reg.report(means)
+
+        # run each explanatory model
+        for attr in exp_vars:
+            print '\n', attr
+            reg = complete.make_logistic_regression(dep, control, [attr])
+            reg.report(means)
+
     def iterate_respondent_child_ages(self):
         """Loops through respondents and generates (respondent, ages) pairs.
-        
+
         Where ages is the list of ages at which this parent had children.
 
         Skips parents with unknown year of birth or any children with
@@ -1548,20 +1658,30 @@ class Regression(object):
 
 class LogRegression(object):
     def __init__(self, res, estimates):
+        """Makes a LogRegression object
+
+        res: result object from rpy2
+        estimates: list of (name, est, error, z)
+        """
         self.res = res
         self.estimates = estimates
 
     def fit_prob(self, r):
+        """Computes the fitted probability for the given respondent.
+
+        r: Respondent
+
+        Returns: float prob
+        """
         log_odds = 0
-        for attr, t in self.estimates.iteritems():
-            coef = t[0] 
-            if attr == '(Intercept)':
-                log_odds += coef
+        for name, est, error, z in self.estimates:
+            if name == '(Intercept)':
+                log_odds += est
             else:
-                x = getattr(r, attr)
+                x = getattr(r, name)
                 if x == 'NA':
                     return 'NA'
-                log_odds += coef * x
+                log_odds += est * x
 
         odds = math.exp(log_odds)
         p = odds / (1 + odds)
@@ -1572,6 +1692,27 @@ class LogRegression(object):
             dv = getattr(r, attr)
             p = self.fit_prob(r)
             #print r.caseid, dv, p
+
+    def report(self, means):
+        """Prints a summary of the estimated parameters.
+
+        Iterates the attributes and computes the odds ratio, for
+        the given value, and the probability that corresponds to
+        the cumulative odds.
+
+        means: map from attribute to value
+        """
+        print '\todds\tcumulative'
+        print '\tratio\tprobability'
+
+        total_odds = 1.0
+        for name, est, error, z in self.estimates:
+            mean = means.get(name, 1)
+            odds = math.exp(est * mean)
+            total_odds *= odds
+            p = 100 * total_odds / (1 + total_odds)
+            print '%11s\t%0.2f\t%0.0f' % (name, odds, p)
+
 
 
 def trans_to_matrix(trans):
@@ -1598,6 +1739,15 @@ def fraction_true(hist):
 
 
 def print_pmf_sorted(pmf):
+    """Prints the values in the Pmf in ascending order by value.
+
+    pmf: Pmf object
+    """
+    for val, prob in sorted(pmf.Items()):
+        print val, prob * 100
+
+
+def print_pmf_sorted_by_prob(pmf):
     """Prints the values in the Pmf in descending order of prob.
 
     pmf: Pmf object
@@ -2887,41 +3037,89 @@ def how_many_fake(survey):
 
 
 def part_seven():
+
     filename = 'gss1998-2010.csv'
     survey = Survey()
     survey.read_csv(filename, Respondent)
+    
+    # survey = survey.subsample(lambda r: r.yrborn >= 1960)
+    
+    attrs = [
+        ('relig', 'has_relig'),
+        ('relig16', 'had_relig'),
+        ('yrborn', 'born_from_1960'),
+        ('educ', 'educ_from_12'),
+        ('income', 'high_income'),
+        ]
+    for attr1, attr2 in attrs:
+        survey.print_pmf(attr1)
+        print
+        survey.print_pmf(attr2)
+        print
 
-    means = dict(educ_from_12=4, age_from_30=10, wwwhr=4)
-    control_attrs = ['had_relig', 'age_from_30', 'educ_from_12', 'somewww']
-    other_attrs = ['heavywww']
-    run_regressions(survey, control_attrs, other_attrs, means)
+    survey.print_pmf('compuse')
+    print
+    survey.print_pmf('usewww')
+    print
+    survey.print_pmf('wwwhr')
+    print
+    survey.print_pmf('somewww')
+    print
+    survey.print_pmf('heavywww')
+
+    dep = 'has_relig'
+    control = ['had_relig', 'high_income', 'born_from_1960',
+                     'educ_from_12', 'somewww']
+    exp_vars = ['heavywww']
+
+    means = dict(had_relig=0,
+                 educ_from_12=4,
+                 age_from_30=10, 
+                 born_from_1960=10,
+                 wwwhr=4)
+    survey.make_logistic_regressions(dep, control, exp_vars, means)
 
     return
 
     plot_internet_users()
     return
 
-    control_attrs = []
-    other_attrs = ['had_relig', 'educ_from_12', 'college', 'sei',
+    control = []
+    exp_vars = ['had_relig', 'educ_from_12', 'college', 'sei',
                    'age_from_30',
                    'wwwhr', 'heavywww']
 
-    run_regressions(survey, control_attrs, other_attrs, means)
+    survey.make_logistic_regressions(dep, control, exp_vars, means)
 
-    control_attrs = ['had_relig']
-    other_attrs = ['educ_from_12', 'college', 'sei', 'age_from_30',
+    control = ['had_relig']
+    exp_vars = ['educ_from_12', 'college', 'sei', 'age_from_30',
                    'wwwhr', 'heavywww']
-    run_regressions(survey, control_attrs, other_attrs, means)
+    survey.make_logistic_regressions(dep, control, exp_vars, means)
 
-    control_attrs = ['had_relig', 'age_from_30']
-    other_attrs = ['educ_from_12', 'college', 'sei',
+    control = ['had_relig', 'age_from_30']
+    exp_vars = ['educ_from_12', 'college', 'sei',
                    'wwwhr', 'heavywww']
-    run_regressions(survey, control_attrs, other_attrs, means)
+    survey.make_logistic_regressions(dep, control, exp_vars, means)
+
+    return
+    # quick check on some numbers
+    survey = Survey()
+    survey.read_csv('gss.series.csv', Respondent)
+    surveys = survey.partition_by_attr('year')
+    
+    for year in [1990, 2010]:
+        print year
+        survey = surveys[year]
+        survey.print_pmf('relig_name')
+        print
+
+    return
 
 
 def more_regressions():
-    control_attrs = ['ma_has', 'pa_has']
-    other_attrs = ['par_same', 'raised', 
+    dep = 'has_relig'
+    control = ['ma_has', 'pa_has']
+    exp_vars = ['par_same', 'raised', 
                    'attendpa', 'attendma', 'attendkid',
                    'college', 'sei']
 
@@ -2929,77 +3127,22 @@ def more_regressions():
     filename = 'gss%d.csv' % year
     survey = Survey()
     survey.read_csv(filename, Respondent)
-    run_regressions(survey, control_attrs, other_attrs)
+    survey.make_logistic_regressions(dep, survey, control,
+                                     exp_vars)
 
     year = 2008
     filename = 'gss%d.csv' % year
     survey2 = Survey()
     survey2.read_csv(filename, Respondent)
-    run_regressions(survey2, control_attrs, other_attrs + ['internet'])
+    survey2.make_logistic_regressions(dep, survey2, control, 
+                                      exp_vars + ['internet'])
 
     survey3 = Survey()
     survey3.add_respondents(survey.respondents())
     survey3.add_respondents(survey2.respondents())
     print survey3.len()
-    run_regressions(survey3, control_attrs, other_attrs)
-
-    
-def run_regressions(survey, control_attrs, other_attrs, means={}):
-    dep = 'has_relig'
-    all_attrs = [dep] + control_attrs + other_attrs
-
-    for r in survey.respondents():
-        r.check_complete(all_attrs)
-
-    complete = survey.subsample(lambda r: r.complete)
-
-    print 'Required attrs'
-    for attr in all_attrs:
-        print attr
-    print 'Total respondents:', complete.len()
-
-    pmf = complete.make_pmf('year')
-    for val, prob in sorted(pmf.Items()):
-        print val, prob
-
-    summarize_complete_respondents(complete, all_attrs)
-
-    print '\n'
-    if control_attrs:
-        make_regression_model(complete, dep, control_attrs, 
-                              means=means)
-
-    for attr in other_attrs:
-        print '\n', attr
-        make_regression_model(complete, dep, control_attrs, indep=[attr],
-                              means=means)
-
-
-def summarize_complete_respondents(survey, attrs):
-
-    for attr in attrs:
-        try:
-            pmf = survey.make_pmf(attr)
-            percent = pmf.Prob(1) * 100
-            print '%11s\t%0.1f' % (attr, percent)
-        except ValueError:
-            print '%11s\tNA' % (attr)
-
-
-def make_regression_model(survey, dep, base, indep=[], means={}):
-    s = ' + '.join(base + indep)
-    model = '%s ~ %s' % (dep, s)
-
-    reg = survey.regress_relig(model, print_flag=True)
-
-    total_odds = 1.0
-    for name, est, error, z in reg.estimates:
-        mean = means.get(name, 1)
-        odds = math.exp(est * mean)
-        total_odds *= odds
-        p = 100 * total_odds / (1 + total_odds)
-        print '%11s\t%0.2f\t%0.1f' % (name, odds, p)
-
+    survey3.make_logistic_regressions(dep, survey3, control, 
+                                      exp_vars)
 
 def plot_internet_users():
     filename = 'IT.NET.USER.P2_Indicator_MetaData_en_EXCEL.csv'
@@ -3063,7 +3206,7 @@ def main(script):
     return
 
     model = 'has_relig ~ pa_has + ma_has + par_same + raised'
-    logit = survey88.regress_relig(model)
+    logit = survey88.logistic_regression(model)
     logit.validate(survey88.respondents(), 'has_relig')
 
     pmf = survey88.make_pmf('sprelig_name')
