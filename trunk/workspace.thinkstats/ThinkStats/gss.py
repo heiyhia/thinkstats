@@ -163,10 +163,16 @@ class Respondent(object):
             except AttributeError:
                 pass
 
-    def check_complete(self, attrs):
-        """Checks whether a respondent has all required variables."""
+    def is_complete(self, attrs):
+        """Checks whether a respondent has all required variables.
+
+        attrs: list of attributes
+
+        Returns: boolean
+        """
         t = [getattr(self, attr) for attr in attrs]
-        self.complete = ('NA' not in t)
+        complete = ('NA' not in t)
+        return complete
 
     def clean_children(self):
         """Cleans data about the children.
@@ -839,11 +845,10 @@ class Survey(object):
 
         return Regression(xs)
 
-    def logistic_regression(self, model, print_flag=True):
+    def logistic_regression(self, model):
         """Performs a regression.
 
         model: string model in r format
-        print_flag: boolean, whether to print results
 
         Returns: LogRegression object
         """
@@ -868,7 +873,7 @@ class Survey(object):
         col_dict = dict(zip(attrs, zip(*rows)))
         glm.inject_col_dict(col_dict)
 
-        res = glm.run_model(model, print_flag=print_flag)
+        res = glm.run_model(model)
         estimates = glm.get_coeffs(res)
 
         return LogRegression(res, estimates)
@@ -885,10 +890,10 @@ class Survey(object):
         s = ' + '.join(control + exp_vars)
         model = '%s ~ %s' % (dep, s)
 
-        reg = self.logistic_regression(model, print_flag=True)
+        reg = self.logistic_regression(model)
         return reg
 
-    def make_logistic_regressions(self, dep, control, exp_vars, means={}):
+    def make_logistic_regressions(self, dep, control, exp_vars):
         """Runs multiple logistic regressions.
 
         Prints results
@@ -896,42 +901,24 @@ class Survey(object):
         dep: string dependent variable name
         control: list of string control variables
         exp_vars: list of string independent variable names
-        means: dictionary passed along to LogRegression.report
+
+        Returns: list of LogRegression objects
         """
-        # make sure all respondents have the vars we need
-        all_attrs = [dep] + control + exp_vars
-
-        for r in self.respondents():
-            r.check_complete(all_attrs)
-
-        complete = self.subsample(lambda r: r.complete)
-
-        print 'Required attrs'
-        for attr in all_attrs:
-            print attr
-        print 'Total respondents:', self.len()
-        print 'Complete respondents:', complete.len()
-
-        # print the distribution of years
-        print 'Distribution of survey years'
-        pmf = complete.make_pmf('year')
-        for val, prob in sorted(pmf.Items()):
-            print val, prob
-
-        # summarize the variables
-        complete.summarize_binary_attrs(all_attrs)
+        regs = []
 
         # run the control model
         print '\n'
         if control:
-            reg = complete.make_logistic_regression(dep, control)
-            reg.report(means)
+            reg = self.make_logistic_regression(dep, control)
+            regs.append(reg)
 
         # run each explanatory model
         for attr in exp_vars:
             print '\n', attr
-            reg = complete.make_logistic_regression(dep, control, [attr])
-            reg.report(means)
+            reg = self.make_logistic_regression(dep, control, [attr])
+            regs.append(reg)
+
+        return regs
 
     def iterate_respondent_child_ages(self):
         """Loops through respondents and generates (respondent, ages) pairs.
@@ -1693,7 +1680,11 @@ class LogRegression(object):
             p = self.fit_prob(r)
             #print r.caseid, dv, p
 
-    def report(self, means):
+    def report(self):
+        """Prints a summary of the glm results."""
+        glm.print_summary(self.res)
+
+    def report_odds(self, means):
         """Prints a summary of the estimated parameters.
 
         Iterates the attributes and computes the odds ratio, for
@@ -3044,14 +3035,14 @@ def part_seven():
     
     # survey = survey.subsample(lambda r: r.yrborn >= 1960)
     
-    attrs = [
+    attr_pairs = [
         ('relig', 'has_relig'),
         ('relig16', 'had_relig'),
         ('yrborn', 'born_from_1960'),
         ('educ', 'educ_from_12'),
         ('income', 'high_income'),
         ]
-    for attr1, attr2 in attrs:
+    for attr1, attr2 in attr_pairs:
         survey.print_pmf(attr1)
         print
         survey.print_pmf(attr2)
@@ -3069,39 +3060,41 @@ def part_seven():
 
     dep = 'has_relig'
     control = ['had_relig', 'high_income', 'born_from_1960',
-                     'educ_from_12', 'somewww']
-    exp_vars = ['heavywww']
+               'educ_from_12', 'somewww', 'heavywww']
+    exp_vars = []
 
-    means = dict(had_relig=0,
-                 educ_from_12=4,
-                 age_from_30=10, 
-                 born_from_1960=10,
-                 wwwhr=4)
-    survey.make_logistic_regressions(dep, control, exp_vars, means)
+    means_with = dict(had_relig=1,
+                      educ_from_12=4,
+                      age_from_30=10, 
+                      born_from_1960=10,
+                      wwwhr=4)
+
+    means_without = dict(means_with)
+    means_without['had_relig'] = 0
+
+    print 'all'
+    regs = run_relig_regressions(survey, dep, control, exp_vars)
+    print_regression_reports(regs, means_with)
+    print_regression_reports(regs, means_without)
+
+    surveys = survey.partition_by_attr('had_relig')
+
+    control = ['high_income', 'born_from_1960', 'educ_from_12',
+               'somewww', 'heavywww']
+
+    print 'had_relig'
+    regs = run_relig_regressions(surveys[1], dep, control, exp_vars)
+    print_regression_reports(regs, means_with)
+
+    print 'not had_relig'
+    regs = run_relig_regressions(surveys[0], dep, control, exp_vars)
+    print_regression_reports(regs, means_without)
 
     return
 
     plot_internet_users()
     return
 
-    control = []
-    exp_vars = ['had_relig', 'educ_from_12', 'college', 'sei',
-                   'age_from_30',
-                   'wwwhr', 'heavywww']
-
-    survey.make_logistic_regressions(dep, control, exp_vars, means)
-
-    control = ['had_relig']
-    exp_vars = ['educ_from_12', 'college', 'sei', 'age_from_30',
-                   'wwwhr', 'heavywww']
-    survey.make_logistic_regressions(dep, control, exp_vars, means)
-
-    control = ['had_relig', 'age_from_30']
-    exp_vars = ['educ_from_12', 'college', 'sei',
-                   'wwwhr', 'heavywww']
-    survey.make_logistic_regressions(dep, control, exp_vars, means)
-
-    return
     # quick check on some numbers
     survey = Survey()
     survey.read_csv('gss.series.csv', Respondent)
@@ -3114,6 +3107,38 @@ def part_seven():
         print
 
     return
+
+
+def run_relig_regressions(survey, dep, control, exp_vars):
+
+    # make sure all respondents have the vars we need
+    all_attrs = [dep] + control + exp_vars
+
+    complete = survey.subsample(lambda r: r.is_complete(all_attrs))
+
+    print 'Required attrs'
+    for attr in all_attrs:
+        print attr
+    print 'Total respondents:', survey.len()
+    print 'Complete respondents:', complete.len()
+
+    # print the distribution of years
+    print 'Distribution of survey years'
+    pmf = complete.make_pmf('year')
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    # summarize the variables
+    complete.summarize_binary_attrs(all_attrs)
+
+    regs = complete.make_logistic_regressions(dep, control, exp_vars)
+    return regs
+
+
+def print_regression_reports(regs, means):
+    for reg in regs:
+        reg.report()
+        reg.report_odds(means)
 
 
 def more_regressions():
