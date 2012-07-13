@@ -6,26 +6,28 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 import bisect
 import copy
-import numpy as np
-import matplotlib.pyplot as pyplot
-import myplot
 import csv
-import re
-
 import HTML
-
-import Pmf
-import Cdf
-import columns
-import glm
-
-import correlation
 import math
 import random
+import re
+import shelve
+
+import Cdf
+import columns
+import correlation
+import glm
+import myplot
+import Pmf
 import thinkstats
 
+import numpy as np
+import matplotlib.pyplot as pyplot
+
+import rpy2
 import rpy2.robjects as robjects
-# r = robjects.r
+import rpy2.rinterface as rinterface
+
 
 ORDER_NA = ['prot', 'cath', 'jew', 'other', 'none', 'NA']
 ORDER = ['prot', 'cath', 'jew', 'other', 'none']
@@ -297,18 +299,18 @@ class Respondent(object):
         self.wwwhr = clean_var(self.wwwhr, [-1, 998, 999])
 
         self.somewww = 'NA'
+        self.modwww = 'NA'
         self.heavywww = 'NA'
-        self.megawww = 'NA'
 
         if self.compuse == 2 or self.usewww == 2:
             self.somewww = 0
+            self.modwww = 0
             self.heavywww = 0
-            self.megawww = 0
         
         if self.wwwhr != 'NA':
             self.somewww = meets_thresh(self.wwwhr, 2)
-            self.heavywww = meets_thresh(self.wwwhr, 8)
-            self.megawww = meets_thresh(self.wwwhr, 16)
+            self.modwww = meets_thresh(self.wwwhr, 8)
+            self.heavywww = meets_thresh(self.wwwhr, 20)
         
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
@@ -848,10 +850,11 @@ class Survey(object):
 
         return Regression(xs)
 
-    def logistic_regression(self, model):
+    def logistic_regression(self, model, print_flag=False):
         """Performs a regression.
 
         model: string model in r format
+        print_flag: boolean, whether to print results
 
         Returns: LogRegression object
         """
@@ -876,7 +879,7 @@ class Survey(object):
         col_dict = dict(zip(attrs, zip(*rows)))
         glm.inject_col_dict(col_dict)
 
-        res = glm.run_model(model)
+        res = glm.run_model(model, print_flag=print_flag)
         estimates = glm.get_coeffs(res)
 
         return LogRegression(res, estimates)
@@ -910,14 +913,12 @@ class Survey(object):
         regs = []
 
         # run the control model
-        print '\n'
         if control:
             reg = self.make_logistic_regression(dep, control)
             regs.append(reg)
 
         # run each explanatory model
         for attr in exp_vars:
-            print '\n', attr
             reg = self.make_logistic_regression(dep, control, [attr])
             regs.append(reg)
 
@@ -1685,6 +1686,8 @@ class LogRegression(object):
 
     def report(self):
         """Prints a summary of the glm results."""
+        if self.res is None:
+            print 'No summary'
         glm.print_summary(self.res)
 
     def report_odds(self, means):
@@ -1696,17 +1699,11 @@ class LogRegression(object):
 
         means: map from attribute to value
         """
-        print '\todds\tcumulative'
-        print '\tratio\tprobability'
+        cumulative = cumulative_odds(self.estimates, means)
+        print_cumulative_odds(cumulative)
 
-        total_odds = 1.0
-        for name, est, error, z in self.estimates:
-            mean = means.get(name, 1)
-            odds = math.exp(est * mean)
-            total_odds *= odds
-            p = 100 * total_odds / (1 + total_odds)
-            print '%11s\t%0.2f\t%0.0f' % (name, odds, p)
-
+    def make_pickleable(self):
+        self.res = None
 
 
 def trans_to_matrix(trans):
@@ -3030,14 +3027,64 @@ def how_many_fake(survey):
     return fake.len()
 
 
-def part_seven():
+class Locker(object):
+    def __init__(self, shelf_file):
+        self.shelf = shelve.open(shelf_file)
+        try:
+            self.get_next()
+        except KeyError:
+            self.set_next(0)
 
+    def close(self):
+        self.shelf.close()
+
+    def get_next(self):
+        return self.shelf['next']
+
+    def set_next(self, i):
+        self.shelf['next'] = i
+
+    def get(self, i):
+        return self.shelf[str(i)]
+
+    def get_all(self):
+        for i in range(self.get_next()):
+            yield self.get(i)
+
+    def put(self, item):
+        i = self.get_next()
+        self.shelf[str(i)] = item
+        self.set_next(i+1)
+
+
+def part_seven():
     filename = 'gss1998-2010.csv'
     survey = Survey()
     survey.read_csv(filename, Respondent)
+
+    summarize_survey(survey)
+    load_locker(survey)
+    return
+
+    plot_internet_users()
+    return
+
+    # quick check on some numbers
+    survey = Survey()
+    survey.read_csv('gss.series.csv', Respondent)
+    surveys = survey.partition_by_attr('year')
     
-    # survey = survey.subsample(lambda r: r.yrborn >= 1960)
-    
+    for year in [1990, 2010]:
+        print year
+        survey = surveys[year]
+        survey.print_pmf('relig_name')
+        print
+
+    return
+
+
+def summarize_survey(survey):
+        
     attr_pairs = [
         ('relig', 'has_relig'),
         ('relig16', 'had_relig'),
@@ -3059,85 +3106,67 @@ def part_seven():
     print
     survey.print_pmf('somewww')
     print
-    survey.print_pmf('heavywww')
+    survey.print_pmf('modwww')
     print
-    survey.print_pmf('megawww')
+    survey.print_pmf('heavywww')
 
+
+def load_locker(survey, n=62):    
     dep = 'has_relig'
-    control = ['had_relig', 'high_income', 'born_from_1960',
-               'educ_from_12', 'somewww', 'heavywww']
-    exp_vars = ['megawww']
-
-    means_with = dict(had_relig=1,
-                      educ_from_12=4,
-                      age_from_30=10, 
-                      born_from_1960=10,
-                      wwwhr=4)
-
-    means_without = dict(means_with)
-    means_without['had_relig'] = 0
-
-    print 'all'
-    #regs = run_relig_regressions(survey, dep, control, exp_vars)
-    #print_regression_reports(regs, means_with)
-    #print_regression_reports(regs, means_without)
-
-    surveys = survey.partition_by_attr('had_relig')
-
-    control = ['high_income', 'born_from_1960', 'educ_from_12',
-               'somewww', 'heavywww']
-
-    print 'had_relig'
-    regs = run_relig_regressions(surveys[1], dep, control, exp_vars)
-    print_regression_reports(regs, means_with)
-
-    print 'not had_relig'
-    #regs = run_relig_regressions(surveys[0], dep, control, exp_vars)
-    #print_regression_reports(regs, means_without)
-
-    return
-
-    plot_internet_users()
-    return
-
-    # quick check on some numbers
-    survey = Survey()
-    survey.read_csv('gss.series.csv', Respondent)
-    surveys = survey.partition_by_attr('year')
+    control = ['high_income', 'born_from_1960',
+               'educ_from_12', 'somewww', 'modwww']
+    exp_vars = []
     
-    for year in [1990, 2010]:
-        print year
-        survey = surveys[year]
-        survey.print_pmf('relig_name')
-        print
+    means = dict(had_relig=1,
+                 educ_from_12=4,
+                 age_from_30=10, 
+                 born_from_1960=10,
+                 wwwhr=4)
 
-    return
+    complete = filter_complete(survey, dep, control, exp_vars)
+
+    surveys = complete.partition_by_attr('had_relig')
+    had_relig = surveys[1]
+    
+    locker = Locker('gss.relig_reg.db')
+
+    for i in range(n):
+        index = locker.get_next()
+        random.seed(index)
+        resample = complete.resample()
+
+        regs = resample.make_logistic_regressions(dep, control, exp_vars)
+        assert len(regs) == 1
+        reg = regs[0]
+        reg.make_pickleable()
+        locker.put(reg)
+
+    print locker.get_next()
+    regs = list(locker.get_all())
+
+    summarize_regressions(regs, means)
+
+    locker.close()
 
 
-def run_relig_regressions(survey, dep, control, exp_vars):
-
+def filter_complete(survey, dep, control, exp_vars):
     # make sure all respondents have the vars we need
     all_attrs = [dep] + control + exp_vars
-
     complete = survey.subsample(lambda r: r.is_complete(all_attrs))
 
-    print 'Required attrs'
-    for attr in all_attrs:
-        print attr
-    print 'Total respondents:', survey.len()
-    print 'Complete respondents:', complete.len()
+    print '\nComplete respondents:', complete.len()
 
     # print the distribution of years
-    print 'Distribution of survey years'
+    print '\nDistribution of survey years'
     pmf = complete.make_pmf('year')
     for val, prob in sorted(pmf.Items()):
         print val, prob
 
     # summarize the variables
+    print '\nVariables:'
     complete.summarize_binary_attrs(all_attrs)
 
-    regs = complete.make_logistic_regressions(dep, control, exp_vars)
-    return regs
+    return complete
 
 
 def print_regression_reports(regs, means):
@@ -3146,35 +3175,93 @@ def print_regression_reports(regs, means):
         reg.report_odds(means)
 
 
-def more_regressions():
-    dep = 'has_relig'
-    control = ['ma_has', 'pa_has']
-    exp_vars = ['par_same', 'raised', 
-                   'attendpa', 'attendma', 'attendkid',
-                   'college', 'sei']
+def summarize_regressions(regs, means):
+    index = len(regs) / 20
+    mid = len(regs) / 2
+    names = [name for name, est, _, _ in regs[0].estimates]
 
-    year = 1998
-    filename = 'gss%d.csv' % year
-    survey = Survey()
-    survey.read_csv(filename, Respondent)
-    survey.make_logistic_regressions(dep, survey, control,
-                                     exp_vars)
+    rows = []
+    cumulatives = []
 
-    year = 2008
-    filename = 'gss%d.csv' % year
-    survey2 = Survey()
-    survey2.read_csv(filename, Respondent)
-    survey2.make_logistic_regressions(dep, survey2, control, 
-                                      exp_vars + ['internet'])
+    for reg in regs:
+        row = [est * means.get(name, 1) for name, est, _, _ in reg.estimates]
+        rows.append(row)
 
-    survey3 = Survey()
-    survey3.add_respondents(survey.respondents())
-    survey3.add_respondents(survey2.respondents())
-    print survey3.len()
-    survey3.make_logistic_regressions(dep, survey3, control, 
-                                      exp_vars)
+        cumulative = cumulative_odds(reg.estimates, means)
+        cumulatives.append(cumulative)
+
+    cols = zip(*rows)
+    cis = []
+
+    for name, col in zip(names, cols):
+        t = list(col)
+        t.sort()
+        median = t[mid]
+        low, high = t[index], t[-index-1]
+        ci = np.array([median, low, high])
+        cis.append(ci)
+
+    for name, ci in zip(names, cis):
+        odds_ci = np.exp(ci)
+        print name,
+        print format_range(ci),
+        print format_range(odds_ci)
+
+
+def cumulative_odds(estimates, means):
+    """Computes...
+
+    Iterates the attributes and computes the odds ratio, for
+    the given value, and the probability that corresponds to
+    the cumulative odds.
+
+    estimates: list of (name, est, error, z)
+    means: map from attribute to value
+    """
+    total_odds = 1.0
+    res = []
+
+    for name, est, error, z in estimates:
+        mean = means.get(name, 1)
+        odds = math.exp(est * mean)
+        total_odds *= odds
+        p = 100 * total_odds / (1 + total_odds)
+        res.append((name, odds, p))
+
+    return res
+
+
+def print_cumulative_odds(cumulative_odds):
+    """Prints a summary of the estimated parameters.
+
+    Iterates the attributes and computes the odds ratio, for
+    the given value, and the probability that corresponds to
+    the cumulative odds.
+
+    means: map from attribute to value
+    """
+    print '\t\todds\tcumulative'
+    print '\t\tratio\tprobability\tdiff'
+    prev = None
+
+    for name, odds, p in cumulative_odds:
+        if prev:
+            diff = p - prev
+            print '%11s\t%0.2g\t%0.2g\t%0.1g' % (name, odds, p, diff)
+        else:
+            print '%11s\t%0.2g\t%0.2g' % (name, odds, p)
+        prev = p
+
+def format_range(triple, format='%0.2g (%0.2g, %0.2g)'):
+    mean, low, high = triple
+    if high < low:
+        low, high = high, low
+
+    return format % (mean, low, high)
+
 
 def plot_internet_users():
+    """Plots World Bank data, number of Internet users in U.S. over time."""
     filename = 'IT.NET.USER.P2_Indicator_MetaData_en_EXCEL.csv'
     fp = open(filename)
     reader = csv.reader(fp)
