@@ -9,7 +9,7 @@ import csv
 
 
 def read_csv(filename, constructor):
-    """Reads a CSV file, return the header line and a list of objects.
+    """Reads a CSV file, returns the header line and a list of objects.
 
     filename: string filename
     """
