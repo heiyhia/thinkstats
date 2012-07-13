@@ -298,14 +298,17 @@ class Respondent(object):
 
         self.somewww = 'NA'
         self.heavywww = 'NA'
+        self.megawww = 'NA'
 
         if self.compuse == 2 or self.usewww == 2:
             self.somewww = 0
             self.heavywww = 0
+            self.megawww = 0
         
         if self.wwwhr != 'NA':
             self.somewww = meets_thresh(self.wwwhr, 2)
             self.heavywww = meets_thresh(self.wwwhr, 8)
+            self.megawww = meets_thresh(self.wwwhr, 16)
         
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
@@ -3057,11 +3060,13 @@ def part_seven():
     survey.print_pmf('somewww')
     print
     survey.print_pmf('heavywww')
+    print
+    survey.print_pmf('megawww')
 
     dep = 'has_relig'
     control = ['had_relig', 'high_income', 'born_from_1960',
                'educ_from_12', 'somewww', 'heavywww']
-    exp_vars = []
+    exp_vars = ['megawww']
 
     means_with = dict(had_relig=1,
                       educ_from_12=4,
@@ -3073,9 +3078,9 @@ def part_seven():
     means_without['had_relig'] = 0
 
     print 'all'
-    regs = run_relig_regressions(survey, dep, control, exp_vars)
-    print_regression_reports(regs, means_with)
-    print_regression_reports(regs, means_without)
+    #regs = run_relig_regressions(survey, dep, control, exp_vars)
+    #print_regression_reports(regs, means_with)
+    #print_regression_reports(regs, means_without)
 
     surveys = survey.partition_by_attr('had_relig')
 
@@ -3087,8 +3092,8 @@ def part_seven():
     print_regression_reports(regs, means_with)
 
     print 'not had_relig'
-    regs = run_relig_regressions(surveys[0], dep, control, exp_vars)
-    print_regression_reports(regs, means_without)
+    #regs = run_relig_regressions(surveys[0], dep, control, exp_vars)
+    #print_regression_reports(regs, means_without)
 
     return
 
