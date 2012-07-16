@@ -298,19 +298,22 @@ class Respondent(object):
         self.usewww = clean_var(self.usewww, [0, 9])
         self.wwwhr = clean_var(self.wwwhr, [-1, 998, 999])
 
-        self.somewww = 'NA'
-        self.modwww = 'NA'
-        self.heavywww = 'NA'
+        self.www3 = 'NA'
+        self.www8 = 'NA'
+        self.www14 = 'NA'
+        self.www20 = 'NA'
 
         if self.compuse == 2 or self.usewww == 2:
-            self.somewww = 0
-            self.modwww = 0
-            self.heavywww = 0
+            self.www3 = 0
+            self.www8 = 0
+            self.www14 = 0
+            self.www20 = 0
         
         if self.wwwhr != 'NA':
-            self.somewww = meets_thresh(self.wwwhr, 2)
-            self.modwww = meets_thresh(self.wwwhr, 8)
-            self.heavywww = meets_thresh(self.wwwhr, 20)
+            self.www3 = meets_thresh(self.wwwhr, 3)
+            self.www8 = meets_thresh(self.wwwhr, 8)
+            self.www14 = meets_thresh(self.wwwhr, 14)
+            self.www20 = meets_thresh(self.wwwhr, 20)
         
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
@@ -417,6 +420,12 @@ class Respondent(object):
         """
         self.caseid = t[0]
         t[0] += 1
+
+
+def read_survey(filename):
+    survey = Survey()
+    survey.read_csv(filename, Respondent)
+    return survey
 
 
 class Survey(object):
@@ -3056,18 +3065,39 @@ class Locker(object):
         self.shelf[str(i)] = item
         self.set_next(i+1)
 
+def part_eight():
+    run_many_regressions(n=301, version=1)
+    #run_many_regressions(n=0, version=2)
+
+def run_many_regressions(n=0, version=1):
+    locker_file = 'gss.regress.%d.db' % version
+    print locker_file
+
+    means = dict(had_relig=1,
+                 educ_from_12=4,
+                 age_from_30=10, 
+                 born_from_1960=10,
+                 wwwhr=4)
+
+    if n > 0 :
+        survey = read_survey('gss1998-2010.csv')
+        summarize_survey(survey)
+        load_locker(survey, locker_file, n, version)
+
+    summarize_locker(locker_file, means)
+
 
 def part_seven():
-    filename = 'gss1998-2010.csv'
-    survey = Survey()
-    survey.read_csv(filename, Respondent)
-
-    summarize_survey(survey)
-    load_locker(survey)
-    return
-
     plot_internet_users()
+
+    # run one regression
+    survey = read_survey('gss1998-2010.csv')
+    survey = survey.resample()
+    regs = run_has_relig(survey)
+    print_regression_reports(regs, means)
+
     return
+
 
     # quick check on some numbers
     survey = Survey()
@@ -3104,33 +3134,35 @@ def summarize_survey(survey):
     print
     survey.print_pmf('wwwhr')
     print
-    survey.print_pmf('somewww')
+    survey.print_pmf('www3')
     print
-    survey.print_pmf('modwww')
+    survey.print_pmf('www8')
     print
-    survey.print_pmf('heavywww')
+    survey.print_pmf('www20')
 
 
-def load_locker(survey, n=62):    
+def load_locker(survey, locker_file, n=62, version=1):
     dep = 'has_relig'
-    control = ['high_income', 'born_from_1960',
-               'educ_from_12', 'somewww', 'modwww']
+
+    if version == 1:
+        control = ['high_income', 'born_from_1960',
+                   'educ_from_12', 'www3', 'www8']
+
+    if version == 2:
+        control = ['high_income', 'born_from_1960',
+                   'educ_from_12', 'www3', 'www14', 'www20']
+
     exp_vars = []
     
-    means = dict(had_relig=1,
-                 educ_from_12=4,
-                 age_from_30=10, 
-                 born_from_1960=10,
-                 wwwhr=4)
-
     complete = filter_complete(survey, dep, control, exp_vars)
 
     surveys = complete.partition_by_attr('had_relig')
     had_relig = surveys[1]
     
-    locker = Locker('gss.relig_reg.db')
+    locker = Locker(locker_file)
 
     for i in range(n):
+        print i
         index = locker.get_next()
         random.seed(index)
         resample = complete.resample()
@@ -3141,12 +3173,30 @@ def load_locker(survey, n=62):
         reg.make_pickleable()
         locker.put(reg)
 
+    locker.close()
+
+
+def summarize_locker(locker_file, means):
+    locker = Locker(locker_file)
     print locker.get_next()
     regs = list(locker.get_all())
-
     summarize_regressions(regs, means)
-
     locker.close()
+
+
+def run_has_relig(survey):
+    dep = 'has_relig'
+    control = ['high_income', 'born_from_1960',
+               'educ_from_12', 'www3', 'www8']
+    exp_vars = []
+    
+    complete = filter_complete(survey, dep, control, exp_vars)
+
+    surveys = complete.partition_by_attr('had_relig')
+    had_relig = surveys[1]
+    
+    regs = survey.make_logistic_regressions(dep, control, exp_vars)
+    return regs
 
 
 def filter_complete(survey, dep, control, exp_vars):
@@ -3176,37 +3226,90 @@ def print_regression_reports(regs, means):
 
 
 def summarize_regressions(regs, means):
+    """Generate summary statistics for a set of regressions.
+
+    regs: list of LogRegression
+    means: map from variable to reference value
+    """
     index = len(regs) / 20
     mid = len(regs) / 2
-    names = [name for name, est, _, _ in regs[0].estimates]
+    reg = regs[0]
+    names = [name for name, est, _, _ in reg.estimates]
 
     rows = []
     cumulatives = []
 
+    # for each regression, make a list of estimates and a list
+    # of cumulative probabilities
     for reg in regs:
         row = [est * means.get(name, 1) for name, est, _, _ in reg.estimates]
         rows.append(row)
 
         cumulative = cumulative_odds(reg.estimates, means)
-        cumulatives.append(cumulative)
+        cumulatives.append([p for _, _, p in cumulative])
 
+    # cols is one column per variable
     cols = zip(*rows)
+    
+    # compute cis for the estimates
     cis = []
-
+    pvals = []
     for name, col in zip(names, cols):
-        t = list(col)
-        t.sort()
-        median = t[mid]
-        low, high = t[index], t[-index-1]
-        ci = np.array([median, low, high])
+        ci, pval = compute_ci(col)
+        pvals.append(pval)
         cis.append(ci)
 
-    for name, ci in zip(names, cis):
-        odds_ci = np.exp(ci)
-        print name,
-        print format_range(ci),
-        print format_range(odds_ci)
+    # compute cis for the cumulative probabilities
+    cols = zip(*cumulatives)
+    cumulatives = []
+    for name, col in zip(names, cols):
+        ci, pval = compute_ci(col)
+        cumulatives.append(ci)
 
+    # print the table
+    for name, ci, pval, cumulative in zip(names, cis, pvals, cumulatives):
+        odds_ci = np.exp(ci)
+        print '%15.15s  \t' % name,
+        print format_range(odds_ci), '  \t',
+        print format_range(cumulative), '\t',
+        print '%0.4g' % pval
+
+def compute_ci(col):
+    n = len(col)
+    index = n / 20
+    mid = n / 2
+
+    t = list(col)
+    t.sort()
+    median = t[mid]
+    
+    pval = compute_pvalue(median, t)
+
+    low, high = t[index], t[-index-1]
+    ci = np.array([median, low, high])
+
+    return ci, pval
+
+
+def compute_pvalue(median, t):
+    """Computes the p-value for a list of outcomes.
+
+    Counts the fraction of outcomes with the opposite sign from the median
+    (or 0).
+
+    median: median value from the list
+    t: list of outcomes
+
+    Returns: float prob
+    """
+    if median > 0:
+        opp = [x for x in t if x <= 0]
+    else:
+        opp = [x for x in t if x >= 0]
+
+    fraction = float(len(opp)) / len(t)
+    return fraction
+        
 
 def cumulative_odds(estimates, means):
     """Computes...
@@ -3217,11 +3320,13 @@ def cumulative_odds(estimates, means):
 
     estimates: list of (name, est, error, z)
     means: map from attribute to value
+
+    Returns: list of (name, odds, p)
     """
     total_odds = 1.0
     res = []
 
-    for name, est, error, z in estimates:
+    for name, est, _, _ in estimates:
         mean = means.get(name, 1)
         odds = math.exp(est * mean)
         total_odds *= odds
@@ -3234,11 +3339,7 @@ def cumulative_odds(estimates, means):
 def print_cumulative_odds(cumulative_odds):
     """Prints a summary of the estimated parameters.
 
-    Iterates the attributes and computes the odds ratio, for
-    the given value, and the probability that corresponds to
-    the cumulative odds.
-
-    means: map from attribute to value
+    cumulative_odds: list of (name, odds, p)
     """
     print '\t\todds\tcumulative'
     print '\t\tratio\tprobability\tdiff'
@@ -3247,12 +3348,12 @@ def print_cumulative_odds(cumulative_odds):
     for name, odds, p in cumulative_odds:
         if prev:
             diff = p - prev
-            print '%11s\t%0.2g\t%0.2g\t%0.1g' % (name, odds, p, diff)
+            print '%11s\t%0.2g\t%0.2g\t%0.2g' % (name, odds, p, diff)
         else:
             print '%11s\t%0.2g\t%0.2g' % (name, odds, p)
         prev = p
 
-def format_range(triple, format='%0.2g (%0.2g, %0.2g)'):
+def format_range(triple, format='%2.2g (%2.2g, %2.2g)'):
     mean, low, high = triple
     if high < low:
         low, high = high, low
@@ -3282,6 +3383,9 @@ def plot_internet_users():
 
 
 def main(script):
+    part_eight()
+    return
+
     part_seven()
     return
 
