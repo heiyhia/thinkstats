@@ -4,6 +4,7 @@ by Allen B. Downey, available from greenteapress.com
 Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
+
 import bisect
 import copy
 import csv
@@ -155,11 +156,11 @@ class Respondent(object):
             self.born_from_1960 = self.yrborn - 1960
 
         for method in [self.clean_socioeconomic,
-                     self.clean_attend,
-                     self.clean_internet,
-                     self.clean_children,
-                     self.clean_switch,
-                     ]:
+                       self.clean_attend,
+                       self.clean_internet,
+                       self.clean_children,
+                       self.clean_switch,
+                       ]:
             try:
                 method()
             except AttributeError:
@@ -175,6 +176,11 @@ class Respondent(object):
         t = [getattr(self, attr) for attr in attrs]
         complete = ('NA' not in t)
         return complete
+
+    def clean_random(self):
+        for attr in ['rand1', 'rand2', 'rand3']:
+            x = random.randint(0, 1)
+            setattr(self, attr, x)
 
     def clean_children(self):
         """Cleans data about the children.
@@ -279,7 +285,6 @@ class Respondent(object):
             self.attendkid = 1
         if meets_thresh(self.attendma, thresh):
             self.attendkid = 1
-
 
     def clean_lib(self):
         """Clean data on how liberal the religions are.
@@ -531,6 +536,37 @@ class Survey(object):
         pmf.Normalize()
         return pmf
 
+    def self_information_partition(self, attr, model):
+        """Computes the self information of a partition.
+
+        Does not take into account compwt
+
+        attr: string binary attribute
+        model: object with a fit_prob method that takes a respondent
+
+        Returns: float number of bits
+        """
+        def log2(x, denom=math.log(2)):
+            return math.log(x) / denom
+
+        total = 0.0
+        n = 0.0
+        for r in self.respondents():
+            x = getattr(r, attr)
+            if x == 'NA':
+                # if we don't know the answer, we got zero bits of info
+                continue
+
+            p = model.fit_prob(r)
+            if x == 1:
+                total += -log2(p)
+            elif x == 0:
+                total += -log2(1-p)
+            else:
+                raise ValueError('Values must be 0, 1 or NA')
+
+        return total
+
     def make_cdf(self):
         """Makes a CDF with caseids and weights.
 
@@ -724,7 +760,12 @@ class Survey(object):
             self.make_cdf()
 
         n = n or len(self.rs)
-        return self.resample_by_cdf(self.cdf, n)
+        resample = self.resample_by_cdf(self.cdf, n)
+        
+        # after resampling, all respondents have the same weight
+        [setattr(r, 'compwt', 1) for r in resample.respondents()]
+
+        return resample
 
     def resample_by_age(self, n, year, age_pmf):
         """Form a new cohort by resampling from this survey.
@@ -759,10 +800,39 @@ class Survey(object):
         """Form a new cohort by filtering respondents
 
         filter_func: function that takes a respondent and returns boolean
+
+        Returns: Survey
         """
         pairs = [(r.caseid, r) for r in self.respondents() if filter_func(r)]
         rs = dict(pairs)
         return Survey(rs)
+
+    def counterfactual(self, modify_func):
+        """Form a new cohort by applying a function to all respondents
+
+        modify_func: function that takes a respondent, modifies it
+                     and returns it
+
+        Returns: Survey
+        """
+        pairs = [(r.caseid, r.modify_func) for r in self.respondents()]
+        rs = dict(pairs)
+        return Survey(rs)
+
+    def simulate_model(self, model):
+        """Counts the number of respondents with some property, under a model.
+
+        model: any object with a fit_prob function
+
+        Returns: float, fraction of respondents with the property
+        """
+        count = 0.0
+        for r in self.respondents():
+            p = model.fit_prob(r)
+            if random.random() <= p:
+                count += 1
+
+        return count / self.len()
 
     def investigate_conversions(self, old, new):
         switches = []
@@ -888,10 +958,9 @@ class Survey(object):
         col_dict = dict(zip(attrs, zip(*rows)))
         glm.inject_col_dict(col_dict)
 
-        res = glm.run_model(model, print_flag=print_flag)
-        estimates = glm.get_coeffs(res)
+        res = glm.logit_model(model, print_flag=print_flag)
 
-        return LogRegression(res, estimates)
+        return LogRegression(res)
 
     def make_logistic_regression(self, dep, control, exp_vars=[]):
         """Runs a logistic regression.
@@ -906,6 +975,13 @@ class Survey(object):
         model = '%s ~ %s' % (dep, s)
 
         reg = self.logistic_regression(model)
+
+        model = make_null_model(self, dep)
+        reg.null_sip = self.self_information_partition(dep, model)
+
+        reg.model_sip = self.self_information_partition(dep, reg)
+        reg.sip = reg.null_sip - reg.model_sip
+
         return reg
 
     def make_logistic_regressions(self, dep, control, exp_vars):
@@ -1597,8 +1673,8 @@ class Regression(object):
 
         Returns a list of (x, fitted y) pairs
         """
-        res = glm.run_model('y ~ x', print_flag=print_flag)
-        estimates = glm.get_coeffs(res)
+        res = glm.logit_model('y ~ x', print_flag=print_flag)
+        estimates, aic = glm.get_coeffs(res)
 
         self.inter = estimates['(Intercept)'][0]
         self.slope = estimates['x'][0]
@@ -1622,8 +1698,8 @@ class Regression(object):
 
         Returns a list of (x, fitted y) pairs
         """
-        res = glm.run_model('y ~ x + x2', print_flag=print_flag)
-        estimates = glm.get_coeffs(res)
+        res = glm.logit_model('y ~ x + x2', print_flag=print_flag)
+        estimates, aic = glm.get_coeffs(res)
 
         self.inter = estimates['(Intercept)'][0]
         self.slope = estimates['x'][0]
@@ -1656,15 +1732,33 @@ class Regression(object):
         return p
     
 
+class NullModel(object):
+    def __init__(self, p):
+        """Make a NullModel.
+
+        p: probability that a respondent has some property
+        """
+        self.p = p
+
+    def fit_prob(self, r):
+        """Computes the fitted probability for the given respondent.
+
+        r: Respondent
+
+        Returns: float prob
+        """
+        return self.p
+
+
 class LogRegression(object):
-    def __init__(self, res, estimates):
+    def __init__(self, res):
         """Makes a LogRegression object
 
         res: result object from rpy2
         estimates: list of (name, est, error, z)
         """
         self.res = res
-        self.estimates = estimates
+        self.estimates, self.aic = glm.get_coeffs(res)
 
     def fit_prob(self, r):
         """Computes the fitted probability for the given respondent.
@@ -3056,7 +3150,7 @@ class Locker(object):
     def get(self, i):
         return self.shelf[str(i)]
 
-    def get_all(self):
+    def generate(self):
         for i in range(self.get_next()):
             yield self.get(i)
 
@@ -3065,11 +3159,112 @@ class Locker(object):
         self.shelf[str(i)] = item
         self.set_next(i+1)
 
+
+def make_null_model(survey, attr):
+    """Computes the self information of an attribute.
+
+    Total surprisal of the attr if we knew nothing about the respondents.
+
+    survey: Survey
+    attr: string attribute name
+    """
+    pmf = survey.make_pmf(attr)
+    yes, no = pmf.Prob(1), pmf.Prob(0)
+    p = yes / (yes + no)
+    model = NullModel(p)
+    return model
+
+
+def part_nine():
+    survey = read_survey('gss1998-2010.csv')
+
+    dep, control, exp_vars = get_version(1)
+    complete = filter_complete(survey, dep, control, exp_vars)
+
+    surveys = complete.partition_by_attr('had_relig')
+    had_relig = surveys[1]
+
+    regs = run_has_relig(had_relig, version=1)
+    print len(regs.regs)
+
+    null_model = make_null_model(had_relig, 'has_relig')
+    frac = had_relig.simulate_model(null_model)
+    print frac
+
+
 def part_eight():
-    run_many_regressions(n=301, version=1)
+    #test_models()
+
+    regs0 = run_many_regressions(n=0, version=0, clean_version=1)
+    regs1 = run_many_regressions(n=0, version=1)
+
+    print compare_sips(regs0, regs1)
     #run_many_regressions(n=0, version=2)
 
-def run_many_regressions(n=0, version=1):
+
+def compare_sips(regs0, regs1):
+    """See how often the first model yields more information than the second.
+
+    regs0: Regressions object
+    regs1: Regressions object
+    """
+    count = 0.0
+    total = 0.0
+    for sip0, sip1 in zip(regs0.sips, regs1.sips):
+        total += 1
+        if sip0 >= sip1:
+            count += 1
+    return count / total
+
+
+def test_models():
+    means = dict(had_relig=1,
+                 educ_from_12=4,
+                 age_from_30=10, 
+                 born_from_1960=10,
+                 wwwhr=4)
+
+    survey = read_survey('gss1998-2010.csv')
+
+    dep, control, exp_vars = get_version(1)
+    complete = filter_complete(survey, dep, control, exp_vars)
+
+    surveys = complete.partition_by_attr('had_relig')
+    had_relig = surveys[1]
+
+    random.seed(0)
+    resample = had_relig.resample()
+
+    #regs = run_has_relig(resample, version=0)
+    #regs.print_regression_reports(means)
+    #regs.summarize()
+
+    regs = run_has_relig(resample, version=1)
+    #regs.print_regression_reports(means)
+    regs.summarize(means)
+    regs.print_table()
+
+
+def run_has_relig(survey, version=1):
+    """Runs logistic regressions.
+
+    survey: Survey
+    version: which model to run
+
+    Returns: Regressions object
+    """
+    dep, control, exp_vars = get_version(version)
+    regs = survey.make_logistic_regressions(dep, control, exp_vars)
+    return Regressions(regs)
+
+
+def run_many_regressions(n=0, version=1, clean_version=None):
+    """Runs regressions and store the results.
+
+    n: int, number of regression
+    version: which model to use
+    clean_version: which model to use to clean the survey
+    """
     locker_file = 'gss.regress.%d.db' % version
     print locker_file
 
@@ -3081,10 +3276,85 @@ def run_many_regressions(n=0, version=1):
 
     if n > 0 :
         survey = read_survey('gss1998-2010.csv')
-        summarize_survey(survey)
-        load_locker(survey, locker_file, n, version)
 
-    summarize_locker(locker_file, means)
+        if clean_version is None:
+            clean_version = version
+
+        dep, control, exp_vars = get_version(clean_version)
+        complete = filter_complete(survey, dep, control, exp_vars)
+
+        surveys = complete.partition_by_attr('had_relig')
+        had_relig = surveys[1]
+
+        # summarize_survey(had_relig)
+        load_locker(had_relig, locker_file, n, version)
+
+    regs = summarize_locker(locker_file, means)
+    return regs
+
+
+def get_version(version):
+    dep = 'has_relig'
+
+    if version == 0:
+        control = ['high_income', 'born_from_1960',
+                   'educ_from_12', 'rand1', 'rand2']
+
+    if version == 1:
+        control = ['high_income', 'born_from_1960',
+                   'educ_from_12', 'www3', 'www8']
+
+    if version == 2:
+        control = ['high_income', 'born_from_1960',
+                   'educ_from_12', 'www3', 'www8', 'www20']
+
+    if version == 3:
+        control = ['high_income', 'born_from_1960',
+                   'educ_from_12', 'www3', 'www14', 'www20']
+
+    exp_vars = []
+
+    return dep, control, exp_vars
+    
+
+def load_locker(survey, locker_file, n=11, version=1):
+    """Runs resampled regressions and stores the results.
+
+    survey: Survey
+    locker_file: place to store results
+    n: number of regressions to run
+    version: int, which model to run
+    """
+    dep, control, exp_vars = get_version(version)
+    locker = Locker(locker_file)
+
+    for i in range(n):
+        index = locker.get_next()
+        print i, index
+
+        random.seed(index)
+        resample = survey.resample()
+        [r.clean_random() for r in resample.respondents()]
+
+        reg_list = resample.make_logistic_regressions(dep, control, exp_vars)
+        assert len(reg_list) == 1
+        reg = reg_list[0]
+        reg.make_pickleable()
+        locker.put(reg)
+
+    locker.close()
+
+
+def summarize_locker(locker_file, means):
+    locker = Locker(locker_file)
+    print locker.get_next()
+    regs = Regressions(list(locker.generate()))
+    locker.close()
+
+    regs.summarize(means)
+    regs.print_table()
+
+    return regs
 
 
 def part_seven():
@@ -3114,7 +3384,8 @@ def part_seven():
 
 
 def summarize_survey(survey):
-        
+    print 'N', survey.len()
+    return
     attr_pairs = [
         ('relig', 'has_relig'),
         ('relig16', 'had_relig'),
@@ -3141,64 +3412,6 @@ def summarize_survey(survey):
     survey.print_pmf('www20')
 
 
-def load_locker(survey, locker_file, n=62, version=1):
-    dep = 'has_relig'
-
-    if version == 1:
-        control = ['high_income', 'born_from_1960',
-                   'educ_from_12', 'www3', 'www8']
-
-    if version == 2:
-        control = ['high_income', 'born_from_1960',
-                   'educ_from_12', 'www3', 'www14', 'www20']
-
-    exp_vars = []
-    
-    complete = filter_complete(survey, dep, control, exp_vars)
-
-    surveys = complete.partition_by_attr('had_relig')
-    had_relig = surveys[1]
-    
-    locker = Locker(locker_file)
-
-    for i in range(n):
-        print i
-        index = locker.get_next()
-        random.seed(index)
-        resample = complete.resample()
-
-        regs = resample.make_logistic_regressions(dep, control, exp_vars)
-        assert len(regs) == 1
-        reg = regs[0]
-        reg.make_pickleable()
-        locker.put(reg)
-
-    locker.close()
-
-
-def summarize_locker(locker_file, means):
-    locker = Locker(locker_file)
-    print locker.get_next()
-    regs = list(locker.get_all())
-    summarize_regressions(regs, means)
-    locker.close()
-
-
-def run_has_relig(survey):
-    dep = 'has_relig'
-    control = ['high_income', 'born_from_1960',
-               'educ_from_12', 'www3', 'www8']
-    exp_vars = []
-    
-    complete = filter_complete(survey, dep, control, exp_vars)
-
-    surveys = complete.partition_by_attr('had_relig')
-    had_relig = surveys[1]
-    
-    regs = survey.make_logistic_regressions(dep, control, exp_vars)
-    return regs
-
-
 def filter_complete(survey, dep, control, exp_vars):
     # make sure all respondents have the vars we need
     all_attrs = [dep] + control + exp_vars
@@ -3219,60 +3432,99 @@ def filter_complete(survey, dep, control, exp_vars):
     return complete
 
 
-def print_regression_reports(regs, means):
-    for reg in regs:
-        reg.report()
-        reg.report_odds(means)
+class Regressions(object):
+    def __init__(self, regs):
+        self.regs = regs
+        reg = regs[0]
+        self.names = [name for name, est, _, _ in reg.estimates]
+        
+    def print_regression_reports(self, means):
+        for reg in self.regs:
+            reg.report()
+            reg.report_odds(means)
+            print 'AIC', reg.aic
+            print 'SIP', reg.sip
 
+    def summarize(self, means):
+        self.summarize_estimates(means)
+        self.summarize_cumulatives(means)
+        self.summarize_information()
+        
+    def summarize_estimates(self, means):
+        """Generate summary statistics for a set of regressions.
 
-def summarize_regressions(regs, means):
-    """Generate summary statistics for a set of regressions.
+        regs: list of LogRegression
+        means: map from variable to reference value
+        """
+        rows = []
 
-    regs: list of LogRegression
-    means: map from variable to reference value
-    """
-    index = len(regs) / 20
-    mid = len(regs) / 2
-    reg = regs[0]
-    names = [name for name, est, _, _ in reg.estimates]
+        # for each regression, make a list of estimates
+        for reg in self.regs:
+            row = [est * means.get(name, 1) 
+                   for name, est, _, _ in reg.estimates]
+            rows.append(row)
 
-    rows = []
-    cumulatives = []
+        # cols is one column per variable
+        cols = zip(*rows)
 
-    # for each regression, make a list of estimates and a list
-    # of cumulative probabilities
-    for reg in regs:
-        row = [est * means.get(name, 1) for name, est, _, _ in reg.estimates]
-        rows.append(row)
+        # compute cis for the estimates
+        cis = []
+        pvals = []
+        for col in cols:
+            ci, pval = compute_ci(col)
+            cis.append(ci)
+            pvals.append(pval)
 
-        cumulative = cumulative_odds(reg.estimates, means)
-        cumulatives.append([p for _, _, p in cumulative])
+        self.estimate_cis = cis
+        self.pvals = pvals
 
-    # cols is one column per variable
-    cols = zip(*rows)
-    
-    # compute cis for the estimates
-    cis = []
-    pvals = []
-    for name, col in zip(names, cols):
-        ci, pval = compute_ci(col)
-        pvals.append(pval)
-        cis.append(ci)
+    def summarize_cumulatives(self, means):
+        """Generate summary statistics for a set of regressions.
 
-    # compute cis for the cumulative probabilities
-    cols = zip(*cumulatives)
-    cumulatives = []
-    for name, col in zip(names, cols):
-        ci, pval = compute_ci(col)
-        cumulatives.append(ci)
+        means: map from variable to reference value
+        """
+        rows = []
 
-    # print the table
-    for name, ci, pval, cumulative in zip(names, cis, pvals, cumulatives):
-        odds_ci = np.exp(ci)
-        print '%15.15s  \t' % name,
-        print format_range(odds_ci), '  \t',
-        print format_range(cumulative), '\t',
-        print '%0.4g' % pval
+        for reg in self.regs:
+            cumulative = cumulative_odds(reg.estimates, means)
+            rows.append([p for _, _, p in cumulative])
+
+        # compute cis for the cumulative probabilities
+        cols = zip(*rows)
+        cis = []
+        for col in cols:
+            ci, pval = compute_ci(col)
+            cis.append(ci)
+
+        self.cumulative_cis = cis
+
+    def summarize_information(self):
+        """Generate summary statistics for a set of regressions.
+
+        regs: list of LogRegression
+        means: map from variable to reference value
+        """
+        self.aics = [reg.aic for reg in self.regs]
+        self.sips = [reg.sip for reg in self.regs]
+
+    def print_table(self):
+
+        data = zip(self.names, 
+                   self.estimate_cis, 
+                   self.pvals,
+                   self.cumulative_cis)
+
+        # print the table
+        for name, ci, pval, cumulative in data:
+            odds_ci = np.exp(ci)
+            print '%15.15s  \t' % name,
+            print format_range(odds_ci), '  \t',
+            print format_range(cumulative), '\t',
+            print '%0.4g' % pval
+
+        ci, pval = compute_ci(self.sips)
+        print 'SIP:', format_range(ci, 3), pval
+
 
 def compute_ci(col):
     n = len(col)
@@ -3353,12 +3605,12 @@ def print_cumulative_odds(cumulative_odds):
             print '%11s\t%0.2g\t%0.2g' % (name, odds, p)
         prev = p
 
-def format_range(triple, format='%2.2g (%2.2g, %2.2g)'):
+def format_range(triple, digits=2, format='%0.*g (%0.*g, %0.*g)'):
     mean, low, high = triple
     if high < low:
         low, high = high, low
 
-    return format % (mean, low, high)
+    return format % (digits, mean, digits, low, digits, high)
 
 
 def plot_internet_users():
@@ -3383,6 +3635,9 @@ def plot_internet_users():
 
 
 def main(script):
+    part_nine()
+    return
+    
     part_eight()
     return
 

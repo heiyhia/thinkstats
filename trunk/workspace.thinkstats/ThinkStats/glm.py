@@ -17,10 +17,13 @@ def linear_model(model, print_flag=True):
     return res
 
 
-def run_model(model, family=robjects.r.binomial(), print_flag=True):
-    """Submits model to r.lm and returns the result."""
+def logit_model(model,
+                family=robjects.r.binomial(),
+                weights=None,
+                print_flag=True):
+    """Submits model to r.glm and returns the result."""
     model = r(model)
-    res = r.glm(model, family=family)
+    res = r.glm(model, family=family, weights=weights)
     if print_flag:
         print_summary(res)
     return res
@@ -48,17 +51,22 @@ def get_coeffs(res):
 
     res: R glm result object
 
-    Returns: list of (name, estimate, error, z-value) tuple
+    Returns: list of (name, estimate, error, z-value) tuples and AIC
     """
     flag = False
     lines = r.summary(res)
     lines = str(lines)
 
     res = []
+    aic = None
+
     for line in lines.split('\n'):
         line = line.strip()
         if line.startswith('---'):
-            break
+            flag = False
+        if line.startswith('AIC'):
+            t = line.split()
+            aic = float(t[1])
         if flag:
             t = line.split()
             var = t[0]
@@ -68,7 +76,8 @@ def get_coeffs(res):
             res.append((var, est, error, z))
         if line.startswith('Estimate'):
             flag = True
-    return res
+
+    return res, aic
 
 def inject_col_dict(col_dict, prefix=''):
     """Copies data columns into the R global environment.
