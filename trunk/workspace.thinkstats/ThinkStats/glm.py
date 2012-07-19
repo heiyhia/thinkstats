@@ -7,7 +7,6 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import rpy2.robjects as robjects
 r = robjects.r
 
-
 def linear_model(model, print_flag=True):
     """Submits model to r.lm and returns the result."""
     model = r(model)
@@ -23,7 +22,12 @@ def logit_model(model,
                 print_flag=True):
     """Submits model to r.glm and returns the result."""
     model = r(model)
-    res = r.glm(model, family=family, weights=weights)
+    if weights is None:
+        res = r.glm(model, family=family)
+    else:
+        weight_vector = robjects.FloatVector(weights)
+        res = r.glm(model, family=family, weights=weight_vector)
+
     if print_flag:
         print_summary(res)
     return res

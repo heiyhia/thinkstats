@@ -308,7 +308,16 @@ class Respondent(object):
         self.www14 = 'NA'
         self.www20 = 'NA'
 
-        if self.compuse == 2 or self.usewww == 2:
+        # the logic here is that if the respondent has explicitly
+        # said that they don't use the web, then they
+        # have told us that wwwhr is 0; if we pretend we don't have
+        # that information, we discard a large number of users
+        # with no Internet use.
+
+        # but the protocol for these questions changed in 2010, causing
+        # some strange behavior; in particular, Internet use seems to
+        # go down in 2010, which is unlikely to be true.
+        if self.usewww == 2 and False:
             self.www3 = 0
             self.www8 = 0
             self.www14 = 0
@@ -815,7 +824,7 @@ class Survey(object):
 
         Returns: Survey
         """
-        pairs = [(r.caseid, r.modify_func) for r in self.respondents()]
+        pairs = [(r.caseid, modify_func(r)) for r in self.respondents()]
         rs = dict(pairs)
         return Survey(rs)
 
@@ -827,12 +836,13 @@ class Survey(object):
         Returns: float, fraction of respondents with the property
         """
         count = 0.0
+        total = 0.0
         for r in self.respondents():
             p = model.fit_prob(r)
-            if random.random() <= p:
-                count += 1
+            count += p * r.compwt
+            total += r.compwt
 
-        return count / self.len()
+        return count / total
 
     def investigate_conversions(self, old, new):
         switches = []
@@ -1101,8 +1111,7 @@ class Survey(object):
 
         table = np.zeros(shape=(90), dtype=np.float)
         for age, hist in sorted(d.iteritems()):
-            yes, no = hist.Freq(True), hist.Freq(False)
-            table[age] = float(yes) / (yes+no)
+            table[age] = fraction_true(hist)
 
         all_ages = set(d.iterkeys())
         return BirthModel(all_ages, table)
@@ -1531,7 +1540,7 @@ class Series(object):
                 print val, percent, 
             print
 
-    def get_ratios(self, val1, val2):
+    def get_ratios(self, val1=1, val2=0):
         """Gets the ratios of two values in the PMFs.
 
         val1: value in Pmf
@@ -1541,8 +1550,7 @@ class Series(object):
         """
         rows = []
         for year, pmf in sorted(self.d.iteritems()):
-            yes = pmf.Prob(val1)
-            no = pmf.Prob(val2)
+            yes, no = pmf.Prob(val1), pmf.Prob(val2)
             if yes + no:
                 percent = yes / (yes + no) * 100
                 rows.append((year, percent))
@@ -1551,17 +1559,14 @@ class Series(object):
 
         return rows
 
-    def plot_series(self, rows):
+    def plot_series(self, val1=1, val2=0, label=''):
         """Plots rows.
 
         rows: list of (year, y) pairs
         """
+        rows = self.get_ratios(val1, val2)
         years, ys = zip(*rows)
-        myplot.Plot(years, ys, lw=3, alpha=0.5)
-        myplot.Save(root='gss.spouse.series',
-                    title='Spouses with same religion',
-                    xlabel='Survey year',
-                    ylabel='% of respondents')
+        myplot.Plot(years, ys, label=label)
 
 
 def make_spouse_series():
@@ -1570,8 +1575,11 @@ def make_spouse_series():
     survey.read_csv('gss.series.csv', Respondent)
     
     series = survey.make_series('married_in')
-    rows = series.get_ratios(1, 0)
-    series.plot_series(rows)
+    series.plot_series()
+    myplot.Save(root='gss.spouse.series',
+                title='Spouses with same religion',
+                xlabel='Survey year',
+                ylabel='% of respondents')
 
 
 def make_spouse_table(low=1972, high=2010):
@@ -1829,6 +1837,10 @@ def trans_to_matrix(trans):
 
 def fraction_true(hist):
     yes, no = hist.Freq(True), hist.Freq(False)
+    return float(yes) / (yes+no)
+
+def fraction_one(pmf):
+    yes, no = pmf.Prob(1), pmf.Prob(0)
     return float(yes) / (yes+no)
 
 
@@ -3169,14 +3181,29 @@ def make_null_model(survey, attr):
     attr: string attribute name
     """
     pmf = survey.make_pmf(attr)
-    yes, no = pmf.Prob(1), pmf.Prob(0)
-    p = yes / (yes + no)
+    p = fraction_one(pmf)
     model = NullModel(p)
     return model
 
 
+def investigate_compuse():
+    survey = read_survey('gss1998-2010.csv')
+    survey = survey.subsample(lambda r: r.wwwhr == -1)
+    surveys = survey.partition_by_attr('year')
+
+    attr = 'usewww'
+    for year, survey in sorted(surveys.iteritems()):
+        print '\n', year, survey.len()
+        pmf = survey.print_pmf(attr)
+        #print attr, fraction_one(pmf)
+
+
 def part_nine():
     survey = read_survey('gss1998-2010.csv')
+    # survey = survey.subsample(lambda r: r.year != 2010)
+
+    pmf = survey.make_pmf('had_relig')
+    frac_had_relig = fraction_one(pmf)
 
     dep, control, exp_vars = get_version(1)
     complete = filter_complete(survey, dep, control, exp_vars)
@@ -3184,16 +3211,93 @@ def part_nine():
     surveys = complete.partition_by_attr('had_relig')
     had_relig = surveys[1]
 
-    regs = run_has_relig(had_relig, version=1)
-    print len(regs.regs)
+    surveys = had_relig.partition_by_attr('year')
 
+    for year, survey in sorted(surveys.iteritems()):
+        print '\n', year
+        for attr in ['www3', 'www8', 'www14']:
+            pmf = survey.make_pmf(attr)
+            print attr, fraction_one(pmf)
+
+    for attr in ['www3', 'www8', 'www14']:
+        series = had_relig.make_series(attr)
+        series.plot_series(label=attr)
+    
+    myplot.Save(root='gss.www.series',
+                xlabel='Survey year',
+                ylabel='Percent of respondents'
+                )
+
+    return
+
+    random.seed(17)
+    [r.clean_random() for r in had_relig.respondents()]
+
+    regs = run_has_relig(had_relig, version=0)
+    model0 = regs.get(0)
+    regs = run_has_relig(had_relig, version=1)
+    model1 = regs.get(0)
     null_model = make_null_model(had_relig, 'has_relig')
-    frac = had_relig.simulate_model(null_model)
-    print frac
+
+    print 'actual'
+    t_actual = run_counterfactuals(had_relig, model0, model1, null_model)
+
+    def clear_wwwhr(r):
+        r.wwwhr = 0
+        r.clean_internet()
+        return r
+
+    no_www = had_relig.counterfactual(clear_wwwhr)
+    print 'no_www'
+    t_none = run_counterfactuals(no_www, model0, model1, null_model)
+
+    def double_wwwhr(r):
+        if r.wwwhr < 3 and random.random() < 0.5:
+            r.wwwhr = 3
+        
+        if r.wwwhr < 8 and random.random() < 0.5:
+            r.wwwhr = 8
+        r.clean_internet()
+        return r
+
+    print 'double_www'
+    double_www = had_relig.counterfactual(double_wwwhr)
+    t_double = run_counterfactuals(double_www, model0, model1, null_model)
+
+    print '%0.3g\t%0.3g\t%0.3g' % t_actual
+    print '%0.3g\t%0.3g\t%0.3g' % t_none
+    print '%0.3g\t%0.3g\t%0.3g' % t_double
+
+    diff1 = t_none[1] - t_actual[1]
+    diff2 = t_double[1] - t_actual[1]
+
+    print 'Fraction raised with religion', frac_had_relig
+
+    # http://2010.census.gov/news/releases/operations/cb10-cn93.html
+    population_mil = 309
+    raised_with_relig = frac_had_relig * population_mil
+
+    print 'Diff none - actual (mil)', raised_with_relig * diff1
+    print 'Diff double - actual (mil)', raised_with_relig * diff2
+    
+
+
+def run_counterfactuals(survey, model0, model1, null_model):
+    survey.print_pmf('www3')
+    survey.print_pmf('www8')
+
+    frac0 = survey.simulate_model(model0)
+
+    frac1 = survey.simulate_model(model1)
+
+    frac_null = survey.simulate_model(null_model)
+
+    return frac0, frac1, frac_null
 
 
 def part_eight():
-    #test_models()
+    test_models()
+    return
 
     regs0 = run_many_regressions(n=0, version=0, clean_version=1)
     regs1 = run_many_regressions(n=0, version=1)
@@ -3225,6 +3329,7 @@ def test_models():
                  wwwhr=4)
 
     survey = read_survey('gss1998-2010.csv')
+    survey = survey.subsample(lambda r: r.year != 2010)
 
     dep, control, exp_vars = get_version(1)
     complete = filter_complete(survey, dep, control, exp_vars)
@@ -3232,8 +3337,9 @@ def test_models():
     surveys = complete.partition_by_attr('had_relig')
     had_relig = surveys[1]
 
-    random.seed(0)
-    resample = had_relig.resample()
+    #random.seed(0)
+    #resample = had_relig.resample()
+    resample = had_relig
 
     #regs = run_has_relig(resample, version=0)
     #regs.print_regression_reports(means)
@@ -3242,6 +3348,7 @@ def test_models():
     regs = run_has_relig(resample, version=1)
     #regs.print_regression_reports(means)
     regs.summarize(means)
+    print
     regs.print_table()
 
 
@@ -3436,14 +3543,38 @@ class Regressions(object):
     def __init__(self, regs):
         self.regs = regs
         reg = regs[0]
-        self.names = [name for name, est, _, _ in reg.estimates]
+        self.names = [name for name, _, _, _ in reg.estimates]
         
+    def get(self, i):
+        return self.regs[i]
+
     def print_regression_reports(self, means):
         for reg in self.regs:
             reg.report()
             reg.report_odds(means)
             print 'AIC', reg.aic
             print 'SIP', reg.sip
+
+    def median_model(self):
+        rows = []
+
+        # for each regression, make a list of estimates
+        for reg in self.regs:
+            row = [est for name, est, _, _ in reg.estimates]
+            rows.append(row)
+
+        # cols is one column per variable
+        cols = zip(*rows)
+
+        # compute cis for the estimates
+        medians = []
+        for col in cols:
+            ci, pval = compute_ci(col)
+            median, low, high = ci
+            medians.append(median)
+
+        for name, median in zip(self.names, medians):
+            print name, median
 
     def summarize(self, means):
         self.summarize_estimates(means)
@@ -3638,6 +3769,9 @@ def main(script):
     part_nine()
     return
     
+    investigate_compuse()
+    return
+
     part_eight()
     return
 
