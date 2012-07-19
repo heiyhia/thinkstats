@@ -5,6 +5,21 @@ Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+"""
+Data Files:
+http://sda.berkeley.edu/cgi-bin/hsda2?setupfile=harcsda&datasetname=gss10&ui=2&action=subset
+
+year(2000-2010)
+
+gss.2000-2010.csv
+
+CASEID,YEAR,COMPWT,SEX,AGE,RACE,RELIG,RELIG16,DENOM16,PARELIG,PARELKID,MARELIG,MARELKID,SPREL,EDUC,SEI,INCOME,RINCOME,INTRHOME,COMPUSE,WEBMOB,EMAILHR,EMAILMIN,USEWWW,WWWHR,WWWMIN
+
+
+"""
+
+
+
 import bisect
 import copy
 import csv
@@ -199,7 +214,7 @@ class Respondent(object):
         """
         self.income = clean_var(self.income, [0, 13, 98, 99])
         self.rincome = clean_var(self.rincome, [0, 13, 98, 99])
-        self.high_income = meets_thresh(self.income, 12)
+        self.top80_income = meets_thresh(self.income, 12)
 
         self.educ = clean_var(self.educ, [97, 98, 99])
         if self.educ == 'NA':
@@ -300,34 +315,33 @@ class Respondent(object):
             self.internet = 1 if self.intrhome==1 else 0
 
         self.compuse = clean_var(self.compuse, [0, 8, 9])
+        self.webmob = clean_var(self.compuse, [0, 8, 9])
+        self.emailhr = clean_var(self.compuse, [-1, 998, 999])
+        self.emailmin = clean_var(self.compuse, [-1, 98, 99])
         self.usewww = clean_var(self.usewww, [0, 9])
         self.wwwhr = clean_var(self.wwwhr, [-1, 998, 999])
 
-        self.www3 = 'NA'
-        self.www8 = 'NA'
-        self.www14 = 'NA'
-        self.www20 = 'NA'
+        if self.year < 2010 and self.usewww == 2:
+            assert self.wwwhr in [0, 'NA']
+            self.wwwhr = 0
 
-        # the logic here is that if the respondent has explicitly
-        # said that they don't use the web, then they
-        # have told us that wwwhr is 0; if we pretend we don't have
-        # that information, we discard a large number of users
-        # with no Internet use.
+        # according to the codebooks, this should be correct, but
+        # it's still not right, so for now I am dropping it
+        #if self.year >= 2010:
+        #    if self.compuse == 2 and self.webmob == 2:
+        #        if self.wwwhr == 'NA':
+        #            print 'clobber1'
+        #            self.wwwhr = 0
 
-        # but the protocol for these questions changed in 2010, causing
-        # some strange behavior; in particular, Internet use seems to
-        # go down in 2010, which is unlikely to be true.
-        if self.usewww == 2 and False:
-            self.www3 = 0
-            self.www8 = 0
-            self.www14 = 0
-            self.www20 = 0
+        #    elif self.emailhr == 0 and self.emailmin == 0 and self.usewww == 2:
+        #        assert self.wwwhr in [0, 'NA']
+        #        print 'clobber2'
+        #        self.wwwhr = 0
         
-        if self.wwwhr != 'NA':
-            self.www3 = meets_thresh(self.wwwhr, 3)
-            self.www8 = meets_thresh(self.wwwhr, 8)
-            self.www14 = meets_thresh(self.wwwhr, 14)
-            self.www20 = meets_thresh(self.wwwhr, 20)
+        self.www3 = meets_thresh(self.wwwhr, 3)
+        self.www8 = meets_thresh(self.wwwhr, 8)
+        self.www14 = meets_thresh(self.wwwhr, 14)
+        self.www20 = meets_thresh(self.wwwhr, 20)
         
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
@@ -3187,7 +3201,7 @@ def make_null_model(survey, attr):
 
 
 def investigate_compuse():
-    survey = read_survey('gss1998-2010.csv')
+    survey = read_survey('gss.2000-2010.csv')
     survey = survey.subsample(lambda r: r.wwwhr == -1)
     surveys = survey.partition_by_attr('year')
 
@@ -3199,8 +3213,7 @@ def investigate_compuse():
 
 
 def part_nine():
-    survey = read_survey('gss1998-2010.csv')
-    # survey = survey.subsample(lambda r: r.year != 2010)
+    survey = read_survey('gss.2000-2010.csv')
 
     pmf = survey.make_pmf('had_relig')
     frac_had_relig = fraction_one(pmf)
@@ -3228,8 +3241,6 @@ def part_nine():
                 ylabel='Percent of respondents'
                 )
 
-    return
-
     random.seed(17)
     [r.clean_random() for r in had_relig.respondents()]
 
@@ -3253,10 +3264,13 @@ def part_nine():
 
     def double_wwwhr(r):
         if r.wwwhr < 3 and random.random() < 0.5:
+            r.usewww = 1
             r.wwwhr = 3
         
         if r.wwwhr < 8 and random.random() < 0.5:
+            r.usewww = 1
             r.wwwhr = 8
+
         r.clean_internet()
         return r
 
@@ -3296,14 +3310,15 @@ def run_counterfactuals(survey, model0, model1, null_model):
 
 
 def part_eight():
-    test_models()
-    return
-
     regs0 = run_many_regressions(n=0, version=0, clean_version=1)
     regs1 = run_many_regressions(n=0, version=1)
+    regs2 = run_many_regressions(n=0, version=2)
+    regs3 = run_many_regressions(n=0, version=3, clean_version=2)
 
-    print compare_sips(regs0, regs1)
-    #run_many_regressions(n=0, version=2)
+    print 'pval 1>0', compare_sips(regs0, regs1)
+    print 'pval 2>0', compare_sips(regs0, regs2)
+    print 'pval 2>1', compare_sips(regs1, regs2)
+    print 'pval 2>3', compare_sips(regs3, regs2)
 
 
 def compare_sips(regs0, regs1):
@@ -3322,31 +3337,27 @@ def compare_sips(regs0, regs1):
 
 
 def test_models():
-    means = dict(had_relig=1,
-                 educ_from_12=4,
-                 age_from_30=10, 
-                 born_from_1960=10,
-                 wwwhr=4)
+    means = dict(educ_from_12=4,
+                 born_from_1960=10)
 
-    survey = read_survey('gss1998-2010.csv')
-    survey = survey.subsample(lambda r: r.year != 2010)
+    survey = read_survey('gss.2000-2010.csv')
+    print 'All respondents', survey.len()
 
     dep, control, exp_vars = get_version(1)
     complete = filter_complete(survey, dep, control, exp_vars)
+    print 'Complete respondents', complete.len()
 
     surveys = complete.partition_by_attr('had_relig')
     had_relig = surveys[1]
+    print 'Complete respondents with relig16', had_relig.len()
 
-    #random.seed(0)
-    #resample = had_relig.resample()
+    random.seed(0)
+    resample = had_relig.resample()
     resample = had_relig
 
-    #regs = run_has_relig(resample, version=0)
-    #regs.print_regression_reports(means)
-    #regs.summarize()
-
     regs = run_has_relig(resample, version=1)
-    #regs.print_regression_reports(means)
+    regs.print_regression_reports(means)
+    print
     regs.summarize(means)
     print
     regs.print_table()
@@ -3382,7 +3393,7 @@ def run_many_regressions(n=0, version=1, clean_version=None):
                  wwwhr=4)
 
     if n > 0 :
-        survey = read_survey('gss1998-2010.csv')
+        survey = read_survey('gss.2000-2010.csv')
 
         if clean_version is None:
             clean_version = version
@@ -3404,20 +3415,20 @@ def get_version(version):
     dep = 'has_relig'
 
     if version == 0:
-        control = ['high_income', 'born_from_1960',
+        control = ['top80_income', 'born_from_1960',
                    'educ_from_12', 'rand1', 'rand2']
 
     if version == 1:
-        control = ['high_income', 'born_from_1960',
+        control = ['top80_income', 'born_from_1960',
                    'educ_from_12', 'www3', 'www8']
 
     if version == 2:
-        control = ['high_income', 'born_from_1960',
+        control = ['top80_income', 'born_from_1960',
                    'educ_from_12', 'www3', 'www8', 'www20']
 
     if version == 3:
-        control = ['high_income', 'born_from_1960',
-                   'educ_from_12', 'www3', 'www14', 'www20']
+        control = ['top80_income', 'born_from_1960',
+                   'educ_from_12', 'www3', 'www8', 'rand1']
 
     exp_vars = []
 
@@ -3468,7 +3479,7 @@ def part_seven():
     plot_internet_users()
 
     # run one regression
-    survey = read_survey('gss1998-2010.csv')
+    survey = read_survey('gss.2000-2010.csv')
     survey = survey.resample()
     regs = run_has_relig(survey)
     print_regression_reports(regs, means)
@@ -3498,7 +3509,7 @@ def summarize_survey(survey):
         ('relig16', 'had_relig'),
         ('yrborn', 'born_from_1960'),
         ('educ', 'educ_from_12'),
-        ('income', 'high_income'),
+        ('income', 'top80_income'),
         ]
     for attr1, attr2 in attr_pairs:
         survey.print_pmf(attr1)
@@ -3659,7 +3670,7 @@ class Regressions(object):
 
 def compute_ci(col):
     n = len(col)
-    index = n / 20
+    index = n / 40
     mid = n / 2
 
     t = list(col)
@@ -3766,15 +3777,15 @@ def plot_internet_users():
 
 
 def main(script):
-    part_nine()
-    return
-    
-    investigate_compuse()
+    test_models()
     return
 
     part_eight()
     return
 
+    part_nine()
+    return
+    
     part_seven()
     return
 
