@@ -3472,6 +3472,10 @@ def summarize_locker(locker_file, means):
     regs.summarize(means)
     regs.print_table()
 
+    filename = locker_file + '.tex'
+    print 'Writing', filename
+    regs.write_table(filename)
+
     return regs
 
 
@@ -3650,22 +3654,66 @@ class Regressions(object):
         self.sips = [reg.sip for reg in self.regs]
 
     def print_table(self):
+        """Prints the table in human-readable form."""
 
         data = zip(self.names, 
                    self.estimate_cis, 
                    self.pvals,
                    self.cumulative_cis)
 
-        # print the table
         for name, ci, pval, cumulative in data:
             odds_ci = np.exp(ci)
             print '%15.15s  \t' % name,
             print format_range(odds_ci), '  \t',
             print format_range(cumulative), '\t',
-            print '%0.4g' % pval
+            print format_pvalue(pval)
 
         ci, pval = compute_ci(self.sips)
-        print 'SIP:', format_range(ci, 3), pval
+        print 'SIP:', format_range(ci, 3), format_pvalue(pval)
+
+    def write_table(self, filename):
+        """Writes the table in latex."""
+
+        data = zip(self.names, 
+                   self.estimate_cis, 
+                   self.pvals,
+                   self.cumulative_cis)
+
+        header = ['Variable',
+                  'Odds ratio',
+                  'Probability',
+                  'p-value',
+                  ]
+
+        rows = []
+        for name, ci, pval, cumulative in data:
+            odds_ci = np.exp(ci)
+            row = [
+                r'\verb"%s"' % name,
+                format_range(odds_ci),
+                format_range(cumulative),
+                format_pvalue(pval),
+                ]
+            rows.append(row)
+
+        fp = open(filename, 'w')
+        format = '|l|r|r|r|'
+        write_latex_table(fp, header, rows, format)
+        fp.close()
+
+def format_range(triple, digits=2, format='%0.*g (%0.*g, %0.*g)'):
+    mean, low, high = triple
+    if high < low:
+        low, high = high, low
+
+    return format % (digits, mean, digits, low, digits, high)
+
+
+def format_pvalue(pval, min_val=0.001):
+    if pval < min_val:
+        return '*'
+    else:
+        return 'p=%0.2g' % pval
 
 
 def compute_ci(col):
@@ -3747,13 +3795,6 @@ def print_cumulative_odds(cumulative_odds):
             print '%11s\t%0.2g\t%0.2g' % (name, odds, p)
         prev = p
 
-def format_range(triple, digits=2, format='%0.*g (%0.*g, %0.*g)'):
-    mean, low, high = triple
-    if high < low:
-        low, high = high, low
-
-    return format % (digits, mean, digits, low, digits, high)
-
 
 def plot_internet_users():
     """Plots World Bank data, number of Internet users in U.S. over time."""
@@ -3776,11 +3817,29 @@ def plot_internet_users():
                 xlabel='Year')
 
 
+def write_latex_table(fp, header, rows, format):
+    """Writes the data in a LaTeX table.
+
+    """
+    fp.write(r'\begin{tabular}{%s}' % format)
+    fp.write(r'\hline' '\n')
+    header = '&'.join(header)
+    fp.write(header + r'\\' '\n')
+    fp.write(r'\hline' '\n')
+
+    for row in rows:
+        row = '&'.join(row)
+        fp.write(row + r'\\' '\n')
+    
+    fp.write(r'\hline' '\n')
+    fp.write(r'\end{tabular}' '\n')
+
+
 def main(script):
-    test_models()
+    part_eight()
     return
 
-    part_eight()
+    test_models()
     return
 
     part_nine()
