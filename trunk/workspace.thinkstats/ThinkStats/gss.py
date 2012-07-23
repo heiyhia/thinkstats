@@ -581,6 +581,8 @@ class Survey(object):
                 continue
 
             p = model.fit_prob(r)
+            assert p != 'NA'
+
             if x == 1:
                 total += -log2(p)
             elif x == 0:
@@ -1796,6 +1798,7 @@ class LogRegression(object):
             else:
                 x = getattr(r, name)
                 if x == 'NA':
+                    print name
                     return 'NA'
                 log_odds += est * x
 
@@ -3212,6 +3215,53 @@ def investigate_compuse():
         #print attr, fraction_one(pmf)
 
 
+def part_ten():
+    survey = read_survey('gss.2000-2010.csv')
+    surveys = survey.partition_by_attr('year')
+
+    for year, sub in sorted(surveys.iteritems()):
+        pmf = sub.make_pmf('relig_name')
+        frac = pmf.Prob('none')
+        print year, frac * 100
+
+    random.seed(17)
+    [r.clean_random() for r in survey.respondents()]
+
+    dep, control, exp_vars = get_version(1)
+    complete = filter_complete(survey, dep, control, exp_vars)
+
+    had_relig = complete.subsample(lambda r: r.had_relig == 1)
+
+    surveys = had_relig.partition_by_attr('year')
+
+    for year, sub in sorted(surveys.iteritems()):
+        print year
+
+        pmf = sub.make_pmf('relig_name')
+        frac = pmf.Prob('none')
+        print frac * 100
+
+        regs = run_has_relig(sub, version=0)
+        model0 = regs.get(0)
+        frac0 = 1 - sub.simulate_model(model0)
+        print frac0 * 100
+
+        regs = run_has_relig(sub, version=1)
+        model1 = regs.get(0)
+        frac1 = 1 - sub.simulate_model(model1)
+        print frac1 * 100
+
+
+def make_models(survey):
+    regs = run_has_relig(survey, version=0)
+    model0 = regs.get(0)
+    regs = run_has_relig(survey, version=1)
+    model1 = regs.get(0)
+    null_model = make_null_model(survey, 'has_relig')
+
+    return model0, model1, null_model
+
+
 def part_nine():
     survey = read_survey('gss.2000-2010.csv')
 
@@ -3244,11 +3294,7 @@ def part_nine():
     random.seed(17)
     [r.clean_random() for r in had_relig.respondents()]
 
-    regs = run_has_relig(had_relig, version=0)
-    model0 = regs.get(0)
-    regs = run_has_relig(had_relig, version=1)
-    model1 = regs.get(0)
-    null_model = make_null_model(had_relig, 'has_relig')
+    had_relig, model0, model1, null_model = make_models()
 
     print 'actual'
     t_actual = run_counterfactuals(had_relig, model0, model1, null_model)
@@ -3836,6 +3882,9 @@ def write_latex_table(fp, header, rows, format):
 
 
 def main(script):
+    part_ten()
+    return
+
     part_eight()
     return
 
