@@ -3217,25 +3217,26 @@ def investigate_compuse():
 
 def part_ten():
     survey = read_survey('gss.2000-2010.csv')
-    surveys = survey.partition_by_attr('year')
+    had_relig = survey.subsample(lambda r: r.had_relig == 1)
+    print 'had_relig', had_relig.len()
 
+    surveys = had_relig.partition_by_attr('year')
+    actual = {}
     for year, sub in sorted(surveys.iteritems()):
         pmf = sub.make_pmf('relig_name')
         frac = pmf.Prob('none')
-        print year, frac * 100
+        actual[year] = frac * 100
 
     random.seed(17)
     [r.clean_random() for r in survey.respondents()]
 
     dep, control, exp_vars = get_version(1)
-    complete = filter_complete(survey, dep, control, exp_vars)
-
-    had_relig = complete.subsample(lambda r: r.had_relig == 1)
-
-    surveys = had_relig.partition_by_attr('year')
-
+    complete = filter_complete(had_relig, dep, control, exp_vars)
+    print 'complete', complete.len()
+    surveys = complete.partition_by_attr('year')
     for year, sub in sorted(surveys.iteritems()):
         print year
+        print actual[year]
 
         pmf = sub.make_pmf('relig_name')
         frac = pmf.Prob('none')
@@ -3246,10 +3247,10 @@ def part_ten():
         frac0 = 1 - sub.simulate_model(model0)
         print frac0 * 100
 
-        regs = run_has_relig(sub, version=1)
-        model1 = regs.get(0)
-        frac1 = 1 - sub.simulate_model(model1)
-        print frac1 * 100
+        #regs = run_has_relig(sub, version=1)
+        #model1 = regs.get(0)
+        #frac1 = 1 - sub.simulate_model(model1)
+        #print frac1 * 100
 
 
 def make_models(survey):
