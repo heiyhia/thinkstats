@@ -9,16 +9,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 Data Files:
 http://sda.berkeley.edu/cgi-bin/hsda2?setupfile=harcsda&datasetname=gss10&ui=2&action=subset
 
-year(2000-2010)
-
-gss.2000-2010.csv
-
-CASEID,YEAR,COMPWT,SEX,AGE,RACE,RELIG,RELIG16,DENOM16,PARELIG,PARELKID,MARELIG,MARELKID,SPREL,EDUC,SEI,INCOME,RINCOME,INTRHOME,COMPUSE,WEBMOB,EMAILHR,EMAILMIN,USEWWW,WWWHR,WWWMIN
-
-
 """
-
-
 
 import bisect
 import copy
@@ -309,37 +300,54 @@ class Respondent(object):
         self.ma_lib = self.code_lib(self.marelig_name, self.mafund)
 
     def clean_internet(self):
-        if self.intrhome in [0, 8, 9]:
-            self.internet = 'NA'
-        else:
-            self.internet = 1 if self.intrhome==1 else 0
 
+        # replace several invalid codes with 'NA'
         self.compuse = clean_var(self.compuse, [0, 8, 9])
-        self.webmob = clean_var(self.compuse, [0, 8, 9])
-        self.emailhr = clean_var(self.compuse, [-1, 998, 999])
-        self.emailmin = clean_var(self.compuse, [-1, 98, 99])
+        self.webtv = clean_var(self.webtv, [0, 8, 9])
+        self.webmob = clean_var(self.webmob, [0, 8, 9])
+        self.emailhr = clean_var(self.emailhr, [-1, 998, 999])
+        self.emailmin = clean_var(self.emailmin, [-1, 98, 99])
         self.usewww = clean_var(self.usewww, [0, 9])
         self.wwwhr = clean_var(self.wwwhr, [-1, 998, 999])
+        self.wwwmin = clean_var(self.wwwmin, [-1, 98, 99])
 
-        if self.year < 2010 and self.usewww == 2:
-            assert self.wwwhr in [0, 'NA']
-            self.wwwhr = 0
+        # the logic for cleaning these variables comes from
+        # personal correspondence with J. Son at NORC.
+        if self.year in [2000, 2002]:
+            if self.compuse == 2 and self.webtv == 2:
+                if self.wwwhr not in [0, 'NA']:
+                    print 'anomaly', self.year, self.caseid, self.compuse, 
+                    print self.webtv, self.usewww, self.wwwhr
+                    
+                self.wwwhr = self.wwwmin = 0
+            elif self.usewww == 2:
+                assert self.wwwhr in [0, 'NA']
+                self.wwwhr = self.wwwmin = 0
 
-        # according to the codebooks, this should be correct, but
-        # it's still not right, so for now I am dropping it
-        #if self.year >= 2010:
-        #    if self.compuse == 2 and self.webmob == 2:
-        #        if self.wwwhr == 'NA':
-        #            print 'clobber1'
-        #            self.wwwhr = 0
+        if self.year == 2004:
+            if self.compuse == 2 or self.usewww == 2:
+                assert self.wwwhr in [0, 'NA']
+                self.wwwhr = self.wwwmin = 0
 
-        #    elif self.emailhr == 0 and self.emailmin == 0 and self.usewww == 2:
-        #        assert self.wwwhr in [0, 'NA']
-        #        print 'clobber2'
-        #        self.wwwhr = 0
-        
-        self.www3 = meets_thresh(self.wwwhr, 3)
-        self.www8 = meets_thresh(self.wwwhr, 8)
+        # in 2010 and 2012, wwwhr was only asked for respondents
+        # who reported no email use, which is such a bizarre subset
+        # that it makes these variables useless for this analysis,
+        # and probably any analysis.  I don't know what they were
+        # thinking!
+        if self.year in [2010, 2012]:
+            self.wwwhr = 'NA'
+
+        self.recode_internet()
+
+    def recode_internet(self):
+        """Computes wwwhr and related variables."""
+
+        # add wwwmin into wwwhr as a fraction
+        if 'NA' not in [self.wwwhr, self.wwwmin]:
+            self.wwwhr += self.wwwmin / 60.0
+             
+        self.www2 = meets_thresh(self.wwwhr, 2)
+        self.www7 = meets_thresh(self.wwwhr, 7)
         self.www14 = meets_thresh(self.wwwhr, 14)
         self.www20 = meets_thresh(self.wwwhr, 20)
         
@@ -3215,42 +3223,30 @@ def investigate_compuse():
         #print attr, fraction_one(pmf)
 
 
-def part_ten():
-    survey = read_survey('gss.2000-2010.csv')
-    had_relig = survey.subsample(lambda r: r.had_relig == 1)
-    print 'had_relig', had_relig.len()
+def run_models(survey, version):
+    nones = simulate_nones(survey, version)
+    print '%5.5g' % (nones * 100)
 
-    surveys = had_relig.partition_by_attr('year')
-    actual = {}
+    surveys = survey.partition_by_attr('year')
     for year, sub in sorted(surveys.iteritems()):
-        pmf = sub.make_pmf('relig_name')
-        frac = pmf.Prob('none')
-        actual[year] = frac * 100
+        nones = simulate_nones(sub, version)
+        print '%5.5g' % (nones * 100),
+    print
 
-    random.seed(17)
-    [r.clean_random() for r in survey.respondents()]
 
-    dep, control, exp_vars = get_version(1)
-    complete = filter_complete(had_relig, dep, control, exp_vars)
-    print 'complete', complete.len()
-    surveys = complete.partition_by_attr('year')
-    for year, sub in sorted(surveys.iteritems()):
-        print year
-        print actual[year]
+def simulate_nones(survey, version):
+    """Fits a model to the data and computes the fraction of nones if
+    the model were perfect.
 
-        pmf = sub.make_pmf('relig_name')
-        frac = pmf.Prob('none')
-        print frac * 100
+    survey: Survey
+    version: which version of the model to run
 
-        regs = run_has_relig(sub, version=0)
-        model0 = regs.get(0)
-        frac0 = 1 - sub.simulate_model(model0)
-        print frac0 * 100
-
-        #regs = run_has_relig(sub, version=1)
-        #model1 = regs.get(0)
-        #frac1 = 1 - sub.simulate_model(model1)
-        #print frac1 * 100
+    Returns: float fraction
+    """
+    regs = run_has_relig(survey, version=version)
+    model = regs.get(0)
+    frac = 1 - survey.simulate_model(model)
+    return frac
 
 
 def make_models(survey):
@@ -3263,27 +3259,15 @@ def make_models(survey):
     return model0, model1, null_model
 
 
-def part_nine():
-    survey = read_survey('gss.2000-2010.csv')
-
-    pmf = survey.make_pmf('had_relig')
-    frac_had_relig = fraction_one(pmf)
-
-    dep, control, exp_vars = get_version(1)
-    complete = filter_complete(survey, dep, control, exp_vars)
-
-    surveys = complete.partition_by_attr('had_relig')
-    had_relig = surveys[1]
-
-    surveys = had_relig.partition_by_attr('year')
-
-    for year, survey in sorted(surveys.iteritems()):
+def make_www_series(survey):
+    surveys = survey.partition_by_attr('year')
+    for year, sub in sorted(surveys.iteritems()):
         print '\n', year
-        for attr in ['www3', 'www8', 'www14']:
-            pmf = survey.make_pmf(attr)
+        for attr in ['www2', 'www7', 'www14']:
+            pmf = sub.make_pmf(attr)
             print attr, fraction_one(pmf)
 
-    for attr in ['www3', 'www8', 'www14']:
+    for attr in ['www2', 'www7', 'www14']:
         series = had_relig.make_series(attr)
         series.plot_series(label=attr)
     
@@ -3292,21 +3276,55 @@ def part_nine():
                 ylabel='Percent of respondents'
                 )
 
+
+def part_nine():
+    survey, had_relig, complete = read_complete()
+    tuples = run_all_counterfactuals(complete)
+    print_counterfactual_results(tuples)
+    print_counterfactual_summary(tuples)
+
+
+def read_complete(version=1):
+    survey = read_survey('gss.2000-2010.csv')
+
+    # select just the years we want
+    years = [2000, 2002, 2004, 2006]
+    survey = survey.subsample(lambda r: r.year in years)
+
+    # select respondents raised with religion
+    had_relig = survey.subsample(lambda r: r.had_relig == 1)
+
+    # select complete records
+    dep, control, exp_vars = get_version(version=version)
+    complete = filter_complete(had_relig, dep, control, exp_vars)
+
     random.seed(17)
-    [r.clean_random() for r in had_relig.respondents()]
+    [r.clean_random() for r in complete.respondents()]
 
-    had_relig, model0, model1, null_model = make_models()
+    return survey, had_relig, complete
 
-    print 'actual'
-    t_actual = run_counterfactuals(had_relig, model0, model1, null_model)
+
+def run_all_counterfactuals(survey):
+    """Makes models and runs counterfactual scenarios.
+
+    survey: Survey
+
+    Returns: list of 3 tuples
+    """
+    model0, model1, null_model = make_models(survey)
+
+    print '\twww2\twww7'
+    print 'actual\t',
+    t_actual = run_counterfactuals(survey, model0, model1, null_model)
 
     def clear_wwwhr(r):
         r.wwwhr = 0
-        r.clean_internet()
+        r.wwwmin = 0
+        r.recode_internet()
         return r
 
-    no_www = had_relig.counterfactual(clear_wwwhr)
-    print 'no_www'
+    no_www = survey.counterfactual(clear_wwwhr)
+    print 'no www\t',
     t_none = run_counterfactuals(no_www, model0, model1, null_model)
 
     def double_wwwhr(r):
@@ -3318,109 +3336,89 @@ def part_nine():
             r.usewww = 1
             r.wwwhr = 8
 
-        r.clean_internet()
+        r.recode_internet()
         return r
 
-    print 'double_www'
-    double_www = had_relig.counterfactual(double_wwwhr)
+    double_www = survey.counterfactual(double_wwwhr)
+    print '+ www\t',
     t_double = run_counterfactuals(double_www, model0, model1, null_model)
 
-    print '%0.3g\t%0.3g\t%0.3g' % t_actual
-    print '%0.3g\t%0.3g\t%0.3g' % t_none
-    print '%0.3g\t%0.3g\t%0.3g' % t_double
-
-    diff1 = t_none[1] - t_actual[1]
-    diff2 = t_double[1] - t_actual[1]
-
-    print 'Fraction raised with religion', frac_had_relig
-
-    # http://2010.census.gov/news/releases/operations/cb10-cn93.html
-    population_mil = 309
-    raised_with_relig = frac_had_relig * population_mil
-
-    print 'Diff none - actual (mil)', raised_with_relig * diff1
-    print 'Diff double - actual (mil)', raised_with_relig * diff2
-    
+    return t_actual[0:2], t_none[0:2], t_double[0:2]
 
 
 def run_counterfactuals(survey, model0, model1, null_model):
-    survey.print_pmf('www3')
-    survey.print_pmf('www8')
+    pmf = survey.make_pmf('www2')
+    p3 = fraction_one(pmf) * 100
+    pmf = survey.make_pmf('www7')
+    p8 = fraction_one(pmf) * 100
+    print '%3.3g\t%3.3g' % (p3, p8)
 
-    frac0 = survey.simulate_model(model0)
-
-    frac1 = survey.simulate_model(model1)
-
-    frac_null = survey.simulate_model(null_model)
+    frac0 = 1 - survey.simulate_model(model0)
+    frac1 = 1 - survey.simulate_model(model1)
+    frac_null = 1 - survey.simulate_model(null_model)
 
     return frac0, frac1, frac_null
 
 
+def print_counterfactual_results(tuples):
+    print '\tmodel0\tmodel1'
+    names = ['actual', 'no www', '+ www']
+    for t, name in zip(tuples, names):
+        print name, '\t',
+        for x in t:
+            print '%3.3g\t' % (x*100),
+        print
+
+
+def print_counterfactual_summary(tuples):
+    actual = tuples[0][1]
+    no_www = tuples[1][1]
+    more_www = tuples[2][1]
+
+    diff1 = no_www - actual
+    diff2 = more_www - actual
+
+    # http://2010.census.gov/news/releases/operations/cb10-cn93.html
+    population_mil = 309
+
+    print 'Diff no www - actual (mil)', population_mil * diff1
+    print 'Diff more www - actual (mil)', population_mil * diff2
+    
+
+def part_ten():
+    survey, had_relig, complete = read_complete()
+    surveys = complete.partition_by_attr('year')
+
+    rows = []
+    years = []
+    for year, sub in sorted(surveys.iteritems()):
+        tuples = run_all_counterfactuals(sub)
+        row = tuples[0] + tuples[1]
+        rows.append(row)
+        years.append(year)
+
+    cols = zip(*rows)
+
+    myplot.Clf()
+    labels = ['model0 actual', 'model1 actual', 
+              'model0 no www', 'model1 no wwww']
+
+    for index in [0, 1, 3]:
+        myplot.Plot(years, cols[index], label=labels[index])
+
+    myplot.Show()
+
+
 def part_eight():
-    regs0 = run_many_regressions(n=0, version=0, clean_version=1)
-    regs1 = run_many_regressions(n=0, version=1)
-    regs2 = run_many_regressions(n=0, version=2)
-    regs3 = run_many_regressions(n=0, version=3, clean_version=2)
+    regs0 = run_many_regressions(n=101, version=0, clean_version=1)
+    regs1 = run_many_regressions(n=101, version=1)
+    regs2 = run_many_regressions(n=101, version=2)
+    regs3 = run_many_regressions(n=101, version=3, clean_version=2)
 
     print 'pval 1>0', compare_sips(regs0, regs1)
     print 'pval 2>0', compare_sips(regs0, regs2)
     print 'pval 2>1', compare_sips(regs1, regs2)
     print 'pval 2>3', compare_sips(regs3, regs2)
-
-
-def compare_sips(regs0, regs1):
-    """See how often the first model yields more information than the second.
-
-    regs0: Regressions object
-    regs1: Regressions object
-    """
-    count = 0.0
-    total = 0.0
-    for sip0, sip1 in zip(regs0.sips, regs1.sips):
-        total += 1
-        if sip0 >= sip1:
-            count += 1
-    return count / total
-
-
-def test_models():
-    means = dict(educ_from_12=4,
-                 born_from_1960=10)
-
-    survey = read_survey('gss.2000-2010.csv')
-    print 'All respondents', survey.len()
-
-    dep, control, exp_vars = get_version(1)
-    complete = filter_complete(survey, dep, control, exp_vars)
-    print 'Complete respondents', complete.len()
-
-    surveys = complete.partition_by_attr('had_relig')
-    had_relig = surveys[1]
-    print 'Complete respondents with relig16', had_relig.len()
-
-    random.seed(0)
-    resample = had_relig.resample()
-    resample = had_relig
-
-    regs = run_has_relig(resample, version=1)
-    regs.print_regression_reports(means)
-    print
-    regs.summarize(means)
-    print
-    regs.print_table()
-
-
-def run_has_relig(survey, version=1):
-    """Runs logistic regressions.
-
-    survey: Survey
-    version: which model to run
-
-    Returns: Regressions object
-    """
-    dep, control, exp_vars = get_version(version)
-    regs = survey.make_logistic_regressions(dep, control, exp_vars)
-    return Regressions(regs)
 
 
 def run_many_regressions(n=0, version=1, clean_version=None):
@@ -3440,22 +3438,42 @@ def run_many_regressions(n=0, version=1, clean_version=None):
                  wwwhr=4)
 
     if n > 0 :
-        survey = read_survey('gss.2000-2010.csv')
-
         if clean_version is None:
             clean_version = version
 
-        dep, control, exp_vars = get_version(clean_version)
-        complete = filter_complete(survey, dep, control, exp_vars)
-
-        surveys = complete.partition_by_attr('had_relig')
-        had_relig = surveys[1]
-
-        # summarize_survey(had_relig)
-        load_locker(had_relig, locker_file, n, version)
+        survey, had_relig, complete = read_complete(clean_version)
+        load_locker(complete, locker_file, n, version)
 
     regs = summarize_locker(locker_file, means)
     return regs
+
+
+def compare_sips(regs0, regs1):
+    """See how often the first model yields more information than the second.
+
+    regs0: Regressions object
+    regs1: Regressions object
+    """
+    count = 0.0
+    total = 0.0
+    for sip0, sip1 in zip(regs0.sips, regs1.sips):
+        total += 1
+        if sip0 >= sip1:
+            count += 1
+    return count / total
+
+
+def run_has_relig(survey, version=1):
+    """Runs logistic regressions.
+
+    survey: Survey
+    version: which model to run
+
+    Returns: Regressions object
+    """
+    dep, control, exp_vars = get_version(version)
+    regs = survey.make_logistic_regressions(dep, control, exp_vars)
+    return Regressions(regs)
 
 
 def get_version(version):
@@ -3467,15 +3485,15 @@ def get_version(version):
 
     if version == 1:
         control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'www3', 'www8']
+                   'educ_from_12', 'www2', 'www7']
 
     if version == 2:
         control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'www3', 'www8', 'www20']
+                   'educ_from_12', 'www2', 'www7', 'www14']
 
     if version == 3:
         control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'www3', 'www8', 'rand1']
+                   'educ_from_12', 'www2', 'www7', 'rand1']
 
     exp_vars = []
 
@@ -3526,6 +3544,53 @@ def summarize_locker(locker_file, means):
     return regs
 
 
+def test_models(resample_flag=False):
+    means = dict(educ_from_12=4,
+                 born_from_1960=10)
+
+    survey, had_relig, complete = read_complete()
+
+    print 'all respondents', survey.len()
+    print_fraction_none(survey)
+
+    print 'had_relig', had_relig.len()
+    print_fraction_none(had_relig)
+
+    print 'complete', complete.len()
+    print_fraction_none(complete)
+
+    summarize_variables(complete, version=2)
+
+    if resample_flag:
+        random.seed(0)
+        resample = complete.resample()
+    else:
+        resample = complete
+
+    for version in [1, 2]:
+        regs = run_has_relig(resample, version=version)
+        regs.print_regression_reports(means)
+        print
+        regs.summarize(means)
+
+
+def fraction_none(survey):
+    pmf = survey.make_pmf('relig_name')
+    #pmf.Set('NA', 0)
+    #pmf.Normalize()
+    frac = pmf.Prob('none')
+    actual = frac * 100
+    return '%3.3g' % actual
+
+
+def print_fraction_none(survey):
+    print fraction_none(survey)
+    surveys = survey.partition_by_attr('year')
+    for year, sub in sorted(surveys.iteritems()):
+        print fraction_none(sub),
+    print
+
+
 def part_seven():
     plot_internet_users()
 
@@ -3574,30 +3639,37 @@ def summarize_survey(survey):
     print
     survey.print_pmf('wwwhr')
     print
-    survey.print_pmf('www3')
+    survey.print_pmf('www2')
     print
-    survey.print_pmf('www8')
+    survey.print_pmf('www7')
     print
-    survey.print_pmf('www20')
+    survey.print_pmf('www14')
 
 
-def filter_complete(survey, dep, control, exp_vars):
-    # make sure all respondents have the vars we need
-    all_attrs = [dep] + control + exp_vars
-    complete = survey.subsample(lambda r: r.is_complete(all_attrs))
-
-    print '\nComplete respondents:', complete.len()
-
+def summarize_variables(survey, version):
     # print the distribution of years
     print '\nDistribution of survey years'
-    pmf = complete.make_pmf('year')
+    pmf = survey.make_pmf('year')
     for val, prob in sorted(pmf.Items()):
         print val, prob
 
     # summarize the variables
     print '\nVariables:'
-    complete.summarize_binary_attrs(all_attrs)
+    dep, control, exp_vars = get_version(version=version)
+    all_attrs = [dep] + control + exp_vars
+    survey.summarize_binary_attrs(all_attrs)
 
+
+def filter_complete(survey, dep, control, exp_vars):
+    """Select respondents who have all the variables we need.
+
+    survey: Survey
+    dep: dependent variable names
+    control: list of control variable names
+    exp_vars: list of explanatory variable names
+    """
+    all_attrs = [dep] + control + exp_vars
+    complete = survey.subsample(lambda r: r.is_complete(all_attrs))
     return complete
 
 
@@ -3883,9 +3955,6 @@ def write_latex_table(fp, header, rows, format):
 
 
 def main(script):
-    part_ten()
-    return
-
     part_eight()
     return
 
@@ -3895,6 +3964,9 @@ def main(script):
     part_nine()
     return
     
+    part_ten()
+    return
+
     part_seven()
     return
 

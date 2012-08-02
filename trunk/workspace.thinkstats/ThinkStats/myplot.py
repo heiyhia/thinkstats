@@ -48,7 +48,7 @@ def Underride(d, **options):
 
 def Clf():
     """Clears the figure."""
-    pyplot.Clf()
+    pyplot.clf()
 
 
 def Plot(xs, ys, style='', **options):
