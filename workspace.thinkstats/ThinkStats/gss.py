@@ -48,6 +48,9 @@ PROPER_NAME = dict(prot='Protestant', cath='Catholic', jew='Jewish',
 
 USE_PARENT_DATA = True
 
+# select the subset of people raised with religion?
+HAD_RELIG_FLAG = True
+
 
 def clean_var(val, na_codes):
     """Replaces invalid codes with NA."""
@@ -316,10 +319,10 @@ class Respondent(object):
         if self.year in [2000, 2002]:
             if self.compuse == 2 and self.webtv == 2:
                 if self.wwwhr not in [0, 'NA']:
-                    print 'anomaly', self.year, self.caseid, self.compuse, 
+                    print 'anomaly1', self.year, self.caseid, self.compuse, 
                     print self.webtv, self.usewww, self.wwwhr
-                    
-                self.wwwhr = self.wwwmin = 0
+                else:
+                    self.wwwhr = self.wwwmin = 0
             elif self.usewww == 2:
                 assert self.wwwhr in [0, 'NA']
                 self.wwwhr = self.wwwmin = 0
@@ -330,12 +333,23 @@ class Respondent(object):
                 self.wwwhr = self.wwwmin = 0
 
         # in 2010 and 2012, wwwhr was only asked for respondents
-        # who reported no email use, which is such a bizarre subset
-        # that it makes these variables useless for this analysis,
-        # and probably any analysis.  I don't know what they were
-        # thinking!
+        # who reported no email use, which is a bizarre subset.
+        # I don't know what they were thinking!
         if self.year in [2010, 2012]:
-            self.wwwhr = 'NA'
+            #if self.wwwhr not in [0, 'NA']:
+            #    print 'anomaly2', self.year, self.caseid, self.compuse, 
+            #    print self.webmob, self.emailhr, self.usewww, self.wwwhr
+
+            if self.compuse == 2 and self.webmob == 2:
+                if self.wwwhr not in [0, 'NA']:
+                    print 'anomaly3', self.year, self.caseid, self.compuse, 
+                    print self.webmob, self.usewww, self.wwwhr
+                else:
+                    self.wwwhr = self.wwwmin = 0
+
+            elif self.usewww == 2:
+                assert self.wwwhr in [0, 'NA']
+                self.wwwhr = self.wwwmin = 0
 
         self.recode_internet()
 
@@ -3268,7 +3282,7 @@ def make_www_series(survey):
             print attr, fraction_one(pmf)
 
     for attr in ['www2', 'www7', 'www14']:
-        series = had_relig.make_series(attr)
+        series = survey.make_series(attr)
         series.plot_series(label=attr)
     
     myplot.Save(root='gss.www.series',
@@ -3278,7 +3292,7 @@ def make_www_series(survey):
 
 
 def part_nine():
-    survey, had_relig, complete = read_complete()
+    survey, subset, complete = read_complete()
     tuples = run_all_counterfactuals(complete)
     print_counterfactual_results(tuples)
     print_counterfactual_summary(tuples)
@@ -3288,20 +3302,23 @@ def read_complete(version=1):
     survey = read_survey('gss.2000-2010.csv')
 
     # select just the years we want
-    years = [2000, 2002, 2004, 2006]
+    years = [2000, 2002, 2004, 2006, 2010]
     survey = survey.subsample(lambda r: r.year in years)
 
     # select respondents raised with religion
-    had_relig = survey.subsample(lambda r: r.had_relig == 1)
+    if HAD_RELIG_FLAG:
+        subset = survey.subsample(lambda r: r.had_relig == 1)
+    else:
+        subset = survey
 
     # select complete records
     dep, control, exp_vars = get_version(version=version)
-    complete = filter_complete(had_relig, dep, control, exp_vars)
+    complete = filter_complete(subset, dep, control, exp_vars)
 
     random.seed(17)
     [r.clean_random() for r in complete.respondents()]
 
-    return survey, had_relig, complete
+    return survey, subset, complete
 
 
 def run_all_counterfactuals(survey):
@@ -3386,7 +3403,7 @@ def print_counterfactual_summary(tuples):
     
 
 def part_ten():
-    survey, had_relig, complete = read_complete()
+    survey, subset, complete = read_complete()
     surveys = complete.partition_by_attr('year')
 
     rows = []
@@ -3410,10 +3427,10 @@ def part_ten():
 
 
 def part_eight():
-    regs0 = run_many_regressions(n=101, version=0, clean_version=1)
-    regs1 = run_many_regressions(n=101, version=1)
-    regs2 = run_many_regressions(n=101, version=2)
-    regs3 = run_many_regressions(n=101, version=3, clean_version=2)
+    regs0 = run_many_regressions(n=0, version=0, clean_version=1)
+    regs1 = run_many_regressions(n=0, version=1)
+    regs2 = run_many_regressions(n=0, version=2)
+    regs3 = run_many_regressions(n=0, version=3, clean_version=2)
 
     print 'pval 1>0', compare_sips(regs0, regs1)
     print 'pval 2>0', compare_sips(regs0, regs2)
@@ -3441,7 +3458,7 @@ def run_many_regressions(n=0, version=1, clean_version=None):
         if clean_version is None:
             clean_version = version
 
-        survey, had_relig, complete = read_complete(clean_version)
+        survey, subset, complete = read_complete(clean_version)
         load_locker(complete, locker_file, n, version)
 
     regs = summarize_locker(locker_file, means)
@@ -3479,21 +3496,28 @@ def run_has_relig(survey, version=1):
 def get_version(version):
     dep = 'has_relig'
 
+    # if we use the subset of people raised with religion,
+    # we don't want had_relig as a control variable
+    if HAD_RELIG_FLAG:
+        control = []
+    else:
+        control = ['had_relig']
+
     if version == 0:
-        control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'rand1', 'rand2']
+        control += ['top80_income', 'born_from_1960',
+                    'educ_from_12', 'rand1']
 
     if version == 1:
-        control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'www2', 'www7']
+        control += ['top80_income', 'born_from_1960',
+                    'educ_from_12', 'www2']
 
     if version == 2:
-        control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'www2', 'www7', 'www14']
+        control += ['top80_income', 'born_from_1960',
+                    'educ_from_12', 'www2', 'www7']
 
     if version == 3:
-        control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'www2', 'www7', 'rand1']
+        control += ['top80_income', 'born_from_1960',
+                    'educ_from_12', 'www2', 'rand1']
 
     exp_vars = []
 
@@ -3548,13 +3572,13 @@ def test_models(resample_flag=False):
     means = dict(educ_from_12=4,
                  born_from_1960=10)
 
-    survey, had_relig, complete = read_complete()
+    survey, subset, complete = read_complete()
 
     print 'all respondents', survey.len()
     print_fraction_none(survey)
 
-    print 'had_relig', had_relig.len()
-    print_fraction_none(had_relig)
+    print 'subset', subset.len()
+    print_fraction_none(subset)
 
     print 'complete', complete.len()
     print_fraction_none(complete)
@@ -3955,15 +3979,15 @@ def write_latex_table(fp, header, rows, format):
 
 
 def main(script):
-    part_eight()
-    return
-
-    test_models()
-    return
-
     part_nine()
     return
     
+    test_models()
+    return
+
+    part_eight()
+    return
+
     part_ten()
     return
 
