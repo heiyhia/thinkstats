@@ -48,9 +48,6 @@ PROPER_NAME = dict(prot='Protestant', cath='Catholic', jew='Jewish',
 
 USE_PARENT_DATA = True
 
-# select the subset of people raised with religion?
-HAD_RELIG_FLAG = True
-
 
 def clean_var(val, na_codes):
     """Replaces invalid codes with NA."""
@@ -219,6 +216,7 @@ class Respondent(object):
             self.educ_from_12 = self.educ - 12
 
         self.college = 1 if self.educ >= 16 else 0
+        self.high_school = 1 if self.educ >= 12 else 0
 
         self.sei = clean_var(self.sei, [-1, 99.8, 99.9])
 
@@ -227,10 +225,10 @@ class Respondent(object):
         self.rural = 1 if self.srcbelt in [6] else 0
 
         # these are last because they might be absent
-        self.paeduc = clean_var(self.paeduc, [97, 98, 99])
-        self.maeduc = clean_var(self.maeduc, [97, 98, 99])
-        self.pasei = clean_var(self.pasei, [-1, 99.8, 99.9])
-        self.masei = clean_var(self.masei, [-1, 99.8, 99.9])
+        #self.paeduc = clean_var(self.paeduc, [97, 98, 99])
+        #self.maeduc = clean_var(self.maeduc, [97, 98, 99])
+        #self.pasei = clean_var(self.pasei, [-1, 99.8, 99.9])
+        #self.masei = clean_var(self.masei, [-1, 99.8, 99.9])
 
     def clean_relig(self):
         """Clean religious data."""
@@ -861,6 +859,11 @@ class Survey(object):
         pairs = [(r.caseid, r) for r in self.respondents() if filter_func(r)]
         rs = dict(pairs)
         return Survey(rs)
+
+    def filter_complete(self, version):
+        dep, control, exp_vars = get_version(version, self.had_relig_flag)
+        complete = filter_complete(self, dep, control, exp_vars)
+        return complete
 
     def counterfactual(self, modify_func):
         """Form a new cohort by applying a function to all respondents
@@ -3326,16 +3329,6 @@ def simulate_nones(survey, version):
     return frac
 
 
-def make_models(survey):
-    regs = run_has_relig(survey, version=0)
-    model0 = regs.get(0)
-    regs = run_has_relig(survey, version=1)
-    model1 = regs.get(0)
-    null_model = make_null_model(survey, 'has_relig')
-
-    return model0, model1, null_model
-
-
 def make_www_series(survey):
     surveys = survey.partition_by_attr('year')
     for year, sub in sorted(surveys.iteritems()):
@@ -3355,17 +3348,46 @@ def make_www_series(survey):
 
 
 def part_nine():
-    survey, subset, complete = read_complete()
-    tuples = run_all_counterfactuals(complete)
-    print_counterfactual_results(tuples)
-    print_counterfactual_summary(tuples)
-    return
+    survey, subset, complete = read_complete(version=2, had_relig_flag=True)
 
-    plot_internet_users_and_nones()
-    return
+    def counter_func(r):
+        r.wwwhr = 0
+        r.wwwmin = 0
+        r.recode_internet()
+        return r
+
+    cf = Counterfactual(complete, version=2, attr='www2')
+    cf.run_counterfactuals(counter_func)
 
 
-def read_complete(version=1):
+def part_ten():
+    survey, subset, complete = read_complete(version=2, had_relig_flag=True)
+    
+    def counter_func(r):
+        if r.educ > 12:
+            if random.random() < 0.5:
+                r.educ = 12
+        r.clean_socioeconomic()
+        return r
+
+    cf = Counterfactual(complete, version=2, attr='college')
+    cf.run_counterfactuals(counter_func)
+
+
+def part_eleven():
+    survey, subset, complete = read_complete(version=2, had_relig_flag=False)
+    
+    def counter_func(r):
+        if r.had_relig == 0:
+            if random.random() < 0.5:
+                r.had_relig = 1
+        return r
+
+    cf = Counterfactual(complete, version=2, attr='had_relig')
+    cf.run_counterfactuals(counter_func)
+
+
+def read_complete(version=2, had_relig_flag=True):
     survey = read_survey('gss.2000-2010.csv')
 
     # select just the years we want
@@ -3373,14 +3395,15 @@ def read_complete(version=1):
     survey = survey.subsample(lambda r: r.year in years)
 
     # select respondents raised with religion
-    if HAD_RELIG_FLAG:
+    if had_relig_flag:
         subset = survey.subsample(lambda r: r.had_relig == 1)
     else:
         subset = survey
+    subset.had_relig_flag = had_relig_flag
 
     # select complete records
-    dep, control, exp_vars = get_version(version=version)
-    complete = filter_complete(subset, dep, control, exp_vars)
+    complete = subset.filter_complete(version)
+    complete.had_relig_flag = had_relig_flag
 
     random.seed(17)
     [r.clean_random() for r in complete.respondents()]
@@ -3388,115 +3411,130 @@ def read_complete(version=1):
     return survey, subset, complete
 
 
-def run_all_counterfactuals(survey):
-    """Makes models and runs counterfactual scenarios.
+class Counterfactual(object):
+    def __init__(self, survey, version, attr):
+        self.survey = survey
+        self.attr = attr
 
-    survey: Survey
+        regs = run_has_relig(survey, version)
+        self.model = regs.get(0)
 
-    Returns: list of 3 tuples
-    """
-    model0, model1, null_model = make_models(survey)
-
-    print '\twww2\twww7'
-    print 'actual\t',
-    t_actual = run_counterfactuals(survey, model0, model1, null_model)
-
-    def clear_wwwhr(r):
-        r.wwwhr = 0
-        r.wwwmin = 0
-        r.recode_internet()
-        return r
-
-    no_www = survey.counterfactual(clear_wwwhr)
-    print 'no www\t',
-    t_none = run_counterfactuals(no_www, model0, model1, null_model)
-
-    def double_wwwhr(r):
-        if r.wwwhr < 3 and random.random() < 0.5:
-            r.usewww = 1
-            r.wwwhr = 3
+        self.model.report()
+        print 'AIC', self.model.aic
+        print 'SIP', self.model.sip
         
-        if r.wwwhr < 8 and random.random() < 0.5:
-            r.usewww = 1
-            r.wwwhr = 8
+    def run_one_counterfactual(self, survey):
+        pmf = survey.make_pmf(self.attr)
+        p1 = fraction_one(pmf) * 100
+        print '%3.3g' % (p1)
 
-        r.recode_internet()
-        return r
+        frac = 1 - survey.simulate_model(self.model)
 
-    double_www = survey.counterfactual(double_wwwhr)
-    print '+ www\t',
-    t_double = run_counterfactuals(double_www, model0, model1, null_model)
+        return frac
 
-    return t_actual[0:2], t_none[0:2], t_double[0:2]
+    def run_counterfactuals(self, counter_func):
+        print '-act\t',
+        actual = self.run_one_counterfactual(self.survey)
 
+        counterfactual = self.survey.counterfactual(counter_func)
+        print '-cf\t',
+        counter = self.run_one_counterfactual(counterfactual)
 
-def run_counterfactuals(survey, model0, model1, null_model):
-    pmf = survey.make_pmf('www2')
-    p3 = fraction_one(pmf) * 100
-    pmf = survey.make_pmf('www7')
-    p8 = fraction_one(pmf) * 100
-    print '%3.3g\t%3.3g' % (p3, p8)
+        print 'actual\t %3.3g' % (actual*100)
+        print 'counter\t %3.3g' % (counter*100)
 
-    frac0 = 1 - survey.simulate_model(model0)
-    frac1 = 1 - survey.simulate_model(model1)
-    frac_null = 1 - survey.simulate_model(null_model)
+        diff1 = counter - actual
+        print 'Difference in percentage points', 100 * diff1
 
-    return frac0, frac1, frac_null
+        # http://2010.census.gov/news/releases/operations/cb10-cn93.html
+        population_mil = 309
 
-
-def print_counterfactual_results(tuples):
-    print '\tmodel0\tmodel1'
-    names = ['actual', 'no www', '+ www']
-    for t, name in zip(tuples, names):
-        print name, '\t',
-        for x in t:
-            print '%3.3g\t' % (x*100),
-        print
+        print 'Diff counter - actual (mil)', population_mil * diff1
+        # data from GSS tables
+        diff3 = 0.153 - 0.071
+        print 'Fraction explained', diff1 / diff3
 
 
-def print_counterfactual_summary(tuples):
-    actual = tuples[0][1]
-    no_www = tuples[1][1]
-    more_www = tuples[2][1]
+class Counterfactual1(object):
+    def __init__(self, survey):
+        self.survey = survey
+        self.model0, self.model2, self.null_model = make_models(self.survey)
 
-    diff1 = no_www - actual
-    diff2 = more_www - actual
+    def run_counterfactuals(self):
+        """Makes models and runs counterfactual scenarios.
 
-    # http://2010.census.gov/news/releases/operations/cb10-cn93.html
-    population_mil = 309
+        survey: Survey
 
-    print 'Diff no www - actual (mil)', population_mil * diff1
-    print 'Diff more www - actual (mil)', population_mil * diff2
-    
-    # data from GSS tables
-    diff3 = 0.153 - 0.071
-    print 'Difference between 1980s and 2000s', diff3 * 100
-    print 'Difference between 1980s and 2000s', diff3 * population_mil
+        Returns: list of 3 tuples
+        """
+        print '\twww2\twww7'
+        print 'actual\t',
+        t_actual = self.run_one_counterfactual(self.survey)
 
-    print 'Fraction explained', diff1 / diff3
+        no_www = self.survey.counterfactual(clear_wwwhr)
+        print 'no www\t',
+        t_none = self.run_one_counterfactual(no_www)
 
-def part_ten():
-    survey, subset, complete = read_complete()
-    surveys = complete.partition_by_attr('year')
+        def double_wwwhr(r):
+            if r.wwwhr < 3 and random.random() < 0.5:
+                r.usewww = 1
+                r.wwwhr = 3
 
-    rows = []
-    years = []
-    for year, sub in sorted(surveys.iteritems()):
-        tuples = run_all_counterfactuals(sub)
-        row = tuples[0] + tuples[1]
-        rows.append(row)
-        years.append(year)
+            if r.wwwhr < 8 and random.random() < 0.5:
+                r.usewww = 1
+                r.wwwhr = 8
 
-    cols = zip(*rows)
+            r.recode_internet()
+            return r
 
-    myplot.Clf()
-    labels = ['model0 actual', 'model1 actual', 
-              'model0 no www', 'model1 no wwww']
+        double_www = self.survey.counterfactual(double_wwwhr)
+        print '+ www\t',
+        t_double = self.run_one_counterfactual(double_www)
 
-    for index in [0, 1, 3]:
-        myplot.Plot(years, cols[index], label=labels[index])
+        return t_actual[0:2], t_none[0:2], t_double[0:2]
 
-    myplot.Show()
+    def run_one_counterfactual(self, survey):
+        pmf = survey.make_pmf('www2')
+        p3 = fraction_one(pmf) * 100
+        pmf = survey.make_pmf('www7')
+        p8 = fraction_one(pmf) * 100
+        print '%3.3g\t%3.3g' % (p3, p8)
+
+        frac0 = 1 - survey.simulate_model(self.model0)
+        frac1 = 1 - survey.simulate_model(self.model2)
+        frac_null = 1 - survey.simulate_model(self.null_model)
+
+        return frac0, frac1, frac_null
+
+    def print_counterfactual_results(self, tuples):
+        print '\tmodel0\tmodel2'
+        names = ['actual', 'no www', '+ www']
+        for t, name in zip(tuples, names):
+            print name, '\t',
+            for x in t:
+                print '%3.3g\t' % (x*100),
+            print
+
+    def print_counterfactual_summary(self, tuples):
+        actual = tuples[0][1]
+        no_www = tuples[1][1]
+        more_www = tuples[2][1]
+
+        diff1 = no_www - actual
+        diff2 = more_www - actual
+
+        # http://2010.census.gov/news/releases/operations/cb10-cn93.html
+        population_mil = 309
+
+        print 'Diff no www - actual (mil)', population_mil * diff1
+        print 'Diff more www - actual (mil)', population_mil * diff2
+
+        # data from GSS tables
+        diff3 = 0.153 - 0.071
+        print 'Difference between 1980s and 2000s', diff3 * 100
+        print 'Difference between 1980s and 2000s', diff3 * population_mil
+
+        print 'Fraction explained', diff1 / diff3
 
 
 def part_eight():
@@ -3561,17 +3599,17 @@ def run_has_relig(survey, version=1):
 
     Returns: Regressions object
     """
-    dep, control, exp_vars = get_version(version)
+    dep, control, exp_vars = get_version(version, survey.had_relig_flag)
     regs = survey.make_logistic_regressions(dep, control, exp_vars)
     return Regressions(regs)
 
 
-def get_version(version):
+def get_version(version, had_relig_flag=True):
     dep = 'has_relig'
 
     # if we use the subset of people raised with religion,
     # we don't want had_relig as a control variable
-    if HAD_RELIG_FLAG:
+    if had_relig_flag:
         control = []
     else:
         control = ['had_relig']
@@ -3605,7 +3643,7 @@ def load_locker(survey, locker_file, n=11, version=1):
     n: number of regressions to run
     version: int, which model to run
     """
-    dep, control, exp_vars = get_version(version)
+    dep, control, exp_vars = get_version(version, survey.had_relig_flag)
     locker = Locker(locker_file)
 
     for i in range(n):
@@ -3738,7 +3776,7 @@ def summarize_variables(survey, version):
 
     # summarize the variables
     print '\nVariables:'
-    dep, control, exp_vars = get_version(version=version)
+    dep, control, exp_vars = get_version(version, survey.had_relig_flag)
     all_attrs = [dep] + control + exp_vars
     survey.summarize_binary_attrs(all_attrs)
 
@@ -4020,6 +4058,11 @@ def main(script):
     part_nine()
     return
     
+    part_eleven()
+
+    part_ten()
+    return
+
     test_models()
     return
 
