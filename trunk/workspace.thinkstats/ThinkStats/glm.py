@@ -90,6 +90,6 @@ def inject_col_dict(col_dict, prefix=''):
     prefix: string prepended to the attribute names
     """
     for name, col in col_dict.iteritems():
-        robjects.globalEnv[prefix+name] = robjects.FloatVector(col)
+        robjects.globalenv[prefix+name] = robjects.FloatVector(col)
 
 
