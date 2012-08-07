@@ -3355,13 +3355,14 @@ def make_www_series(survey):
 
 
 def part_nine():
-    plot_internet_users_and_nones()
-    return
-
     survey, subset, complete = read_complete()
     tuples = run_all_counterfactuals(complete)
     print_counterfactual_results(tuples)
     print_counterfactual_summary(tuples)
+    return
+
+    plot_internet_users_and_nones()
+    return
 
 
 def read_complete(version=1):
