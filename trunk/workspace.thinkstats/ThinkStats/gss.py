@@ -157,12 +157,14 @@ class Respondent(object):
             self.age_group = 'NA'
             self.age_from_30 = 'NA'
             self.born_from_1960 = 'NA'
+            self.age2 = 'NA'
         else:
             self.yrborn = self.year - self.age
             self.decade = int(self.yrborn / 10) * 10
             self.age_group = int(self.age / 10) * 10
             self.age_from_30 = self.age - 30
             self.born_from_1960 = self.yrborn - 1960
+            self.age2 = self.age**2
 
         for method in [self.clean_socioeconomic,
                        self.clean_attend,
@@ -217,10 +219,16 @@ class Respondent(object):
             self.educ_from_12 = self.educ - 12
 
         self.college = 1 if self.educ >= 16 else 0
-        self.paeduc = clean_var(self.paeduc, [97, 98, 99])
-        self.maeduc = clean_var(self.maeduc, [97, 98, 99])
 
         self.sei = clean_var(self.sei, [-1, 99.8, 99.9])
+
+        self.srcbelt = clean_var(self.srcbelt, [0])
+        self.urban = 1 if self.srcbelt in [1] else 0
+        self.rural = 1 if self.srcbelt in [6] else 0
+
+        # these are last because they might be absent
+        self.paeduc = clean_var(self.paeduc, [97, 98, 99])
+        self.maeduc = clean_var(self.maeduc, [97, 98, 99])
         self.pasei = clean_var(self.pasei, [-1, 99.8, 99.9])
         self.masei = clean_var(self.masei, [-1, 99.8, 99.9])
 
@@ -2721,6 +2729,61 @@ def plot_none_vs_yrborn():
     subsample.plot_relig_vs_yrborn('none')
 
 
+def plot_none_vs_year():
+    survey = Survey()
+    survey.read_csv('gss.series.csv', Respondent)
+
+    surveys = survey.partition_by_attr('year')
+    
+    for year in [1990, 2010]:
+        print year
+        sub = surveys[year]
+        sub.print_pmf('relig_name')
+        print
+
+    years = []
+    ps = []
+    for year, sub in surveys.iteritems():
+        pmf = sub.make_pmf('relig_name')
+        pmf.Set('NA', 0)
+        pmf.Normalize()
+        years.append(year)
+        prob = pmf.Prob('none')
+        ps.append(prob * 100)
+
+    myplot.Plot(years, ps, color='red', label='% unaffiliated')
+    pyplot.axis([1971, 2011, 0, 20])
+
+
+def plot_internet_users():
+    """Plots World Bank data, number of Internet users in U.S. over time."""
+    filename = 'IT.NET.USER.P2_Indicator_MetaData_en_EXCEL.csv'
+    fp = open(filename)
+    reader = csv.reader(fp)
+    
+    header = reader.next()[32:-1]
+    years = [int(x) for x in header]
+
+    for t in reader:
+        if t[0] == 'United States':
+            ys = [float(y) for y in t[32:-1]]
+            myplot.Plot(years, ys, label='Internet users per 100')
+
+    pyplot.axis([1971, 2011, 0, 80])
+    pyplot.legend(loc=2)
+    pyplot.title('Prevalence of Internet use and non-affiliation')
+
+
+def plot_internet_users_and_nones():
+    pyplot.subplot(2, 1, 1)
+    plot_internet_users()
+
+    pyplot.subplot(2, 1, 2)
+    plot_none_vs_year()
+
+    myplot.Save(root='gss.internet', xlabel='Year')
+
+
 def investigate_switches():
     survey = Survey()
     survey.read_csv('gss1988.csv', Respondent)
@@ -3292,6 +3355,9 @@ def make_www_series(survey):
 
 
 def part_nine():
+    plot_internet_users_and_nones()
+    return
+
     survey, subset, complete = read_complete()
     tuples = run_all_counterfactuals(complete)
     print_counterfactual_results(tuples)
@@ -3401,6 +3467,12 @@ def print_counterfactual_summary(tuples):
     print 'Diff no www - actual (mil)', population_mil * diff1
     print 'Diff more www - actual (mil)', population_mil * diff2
     
+    # data from GSS tables
+    diff3 = 0.153 - 0.071
+    print 'Difference between 1980s and 2000s', diff3 * 100
+    print 'Difference between 1980s and 2000s', diff3 * population_mil
+
+    print 'Fraction explained', diff1 / diff3
 
 def part_ten():
     survey, subset, complete = read_complete()
@@ -3623,20 +3695,6 @@ def part_seven():
     survey = survey.resample()
     regs = run_has_relig(survey)
     print_regression_reports(regs, means)
-
-    return
-
-
-    # quick check on some numbers
-    survey = Survey()
-    survey.read_csv('gss.series.csv', Respondent)
-    surveys = survey.partition_by_attr('year')
-    
-    for year in [1990, 2010]:
-        print year
-        survey = surveys[year]
-        survey.print_pmf('relig_name')
-        print
 
     return
 
@@ -3937,27 +3995,6 @@ def print_cumulative_odds(cumulative_odds):
         else:
             print '%11s\t%0.2g\t%0.2g' % (name, odds, p)
         prev = p
-
-
-def plot_internet_users():
-    """Plots World Bank data, number of Internet users in U.S. over time."""
-    filename = 'IT.NET.USER.P2_Indicator_MetaData_en_EXCEL.csv'
-    fp = open(filename)
-    reader = csv.reader(fp)
-    
-    header = reader.next()[32:-1]
-    years = [int(x) for x in header]
-
-    pyplot.clf()
-    for t in reader:
-        if t[0] == 'United States':
-            ys = [float(y) for y in t[32:-1]]
-            myplot.Plot(years, ys, label='U.S.')
-
-    myplot.Save(root='gss.internet',
-                title='Prevalence of the Internet',
-                ylabel='Internet users per 100 people',
-                xlabel='Year')
 
 
 def write_latex_table(fp, header, rows, format):
