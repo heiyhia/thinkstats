@@ -186,7 +186,7 @@ class Respondent(object):
         return complete
 
     def clean_random(self):
-        for attr in ['rand1', 'rand2', 'rand3']:
+        for attr in ['rand1', 'rand2']:
             x = random.randint(0, 1)
             setattr(self, attr, x)
 
@@ -559,7 +559,6 @@ class Survey(object):
 
         attrs: list of string attr names
         """
-
         for attr in attrs:
             try:
                 pmf = self.make_pmf(attr)
@@ -860,11 +859,6 @@ class Survey(object):
         rs = dict(pairs)
         return Survey(rs)
 
-    def filter_complete(self, version):
-        dep, control, exp_vars = get_version(version, self.had_relig_flag)
-        complete = filter_complete(self, dep, control, exp_vars)
-        return complete
-
     def counterfactual(self, modify_func):
         """Form a new cohort by applying a function to all respondents
 
@@ -1035,11 +1029,13 @@ class Survey(object):
 
         reg = self.logistic_regression(model)
 
-        model = make_null_model(self, dep)
-        reg.null_sip = self.self_information_partition(dep, model)
+        null_model = make_null_model(self, dep)
+        reg.null_sip = self.self_information_partition(dep, null_model)
 
         reg.model_sip = self.self_information_partition(dep, reg)
         reg.sip = reg.null_sip - reg.model_sip
+
+        print reg.null_sip, reg.model_sip, reg.sip
 
         return reg
 
@@ -3348,7 +3344,7 @@ def make_www_series(survey):
 
 
 def part_nine():
-    survey, subset, complete = read_complete(version=2, had_relig_flag=True)
+    survey, complete = read_complete(version=3)
 
     def counter_func(r):
         r.wwwhr = 0
@@ -3356,12 +3352,12 @@ def part_nine():
         r.recode_internet()
         return r
 
-    cf = Counterfactual(complete, version=2, attr='www2')
+    cf = Counterfactual(complete, version=3, attr='www2')
     cf.run_counterfactuals(counter_func)
 
 
 def part_ten():
-    survey, subset, complete = read_complete(version=2, had_relig_flag=True)
+    survey, complete = read_complete(version=3)
     
     def counter_func(r):
         if r.educ > 12:
@@ -3370,12 +3366,12 @@ def part_ten():
         r.clean_socioeconomic()
         return r
 
-    cf = Counterfactual(complete, version=2, attr='college')
+    cf = Counterfactual(complete, version=3, attr='college')
     cf.run_counterfactuals(counter_func)
 
 
 def part_eleven():
-    survey, subset, complete = read_complete(version=2, had_relig_flag=False)
+    survey, complete = read_complete(version=3)
     
     def counter_func(r):
         if r.had_relig == 0:
@@ -3383,32 +3379,8 @@ def part_eleven():
                 r.had_relig = 1
         return r
 
-    cf = Counterfactual(complete, version=2, attr='had_relig')
+    cf = Counterfactual(complete, version=3, attr='had_relig')
     cf.run_counterfactuals(counter_func)
-
-
-def read_complete(version=2, had_relig_flag=True):
-    survey = read_survey('gss.2000-2010.csv')
-
-    # select just the years we want
-    years = [2000, 2002, 2004, 2006, 2010]
-    survey = survey.subsample(lambda r: r.year in years)
-
-    # select respondents raised with religion
-    if had_relig_flag:
-        subset = survey.subsample(lambda r: r.had_relig == 1)
-    else:
-        subset = survey
-    subset.had_relig_flag = had_relig_flag
-
-    # select complete records
-    complete = subset.filter_complete(version)
-    complete.had_relig_flag = had_relig_flag
-
-    random.seed(17)
-    [r.clean_random() for r in complete.respondents()]
-
-    return survey, subset, complete
 
 
 class Counterfactual(object):
@@ -3538,15 +3510,18 @@ class Counterfactual1(object):
 
 
 def part_eight():
-    regs0 = run_many_regressions(n=0, version=0, clean_version=1)
-    regs1 = run_many_regressions(n=0, version=1)
-    regs2 = run_many_regressions(n=0, version=2)
-    regs3 = run_many_regressions(n=0, version=3, clean_version=2)
+    regs1 = run_many_regressions(n=11, version=1)
+    regs11 = run_many_regressions(n=11, version=11, clean_version=1)
+    regs2 = run_many_regressions(n=11, version=2)
+    regs22 = run_many_regressions(n=11, version=22, clean_version=2)
+    regs3 = run_many_regressions(n=11, version=3)
+    regs33 = run_many_regressions(n=11, version=33, clean_version=3)
+    regs333 = run_many_regressions(n=11, version=333, clean_version=3)
 
-    print 'pval 1>0', compare_sips(regs0, regs1)
-    print 'pval 2>0', compare_sips(regs0, regs2)
-    print 'pval 2>1', compare_sips(regs1, regs2)
-    print 'pval 2>3', compare_sips(regs3, regs2)
+    print 'pval 1>11', compare_sips(regs1, regs11)
+    print 'pval 2>22', compare_sips(regs2, regs22)
+    print 'pval 3>33', compare_sips(regs3, regs33)
+    print 'pval 3>33', compare_sips(regs3, regs333)
 
 
 def run_many_regressions(n=0, version=1, clean_version=None):
@@ -3559,81 +3534,38 @@ def run_many_regressions(n=0, version=1, clean_version=None):
     locker_file = 'gss.regress.%d.db' % version
     print locker_file
 
-    means = dict(had_relig=1,
-                 educ_from_12=4,
-                 age_from_30=10, 
-                 born_from_1960=10,
-                 wwwhr=4)
+    means = dict(educ_from_12=4,
+                 born_from_1960=10)
 
     if n > 0 :
         if clean_version is None:
             clean_version = version
 
-        survey, subset, complete = read_complete(clean_version)
+        survey, complete = read_complete(clean_version)
+
+        if version in [3, 33, 333]:
+            complete = complete.subsample(lambda r: r.had_relig == 1)
+
         load_locker(complete, locker_file, n, version)
 
     regs = summarize_locker(locker_file, means)
     return regs
 
 
-def compare_sips(regs0, regs1):
-    """See how often the first model yields more information than the second.
+def compare_sips(regs1, regs2):
+    """Computes the pvalue for the hypothesis that regs0 > regs1.
 
     regs0: Regressions object
     regs1: Regressions object
     """
     count = 0.0
     total = 0.0
-    for sip0, sip1 in zip(regs0.sips, regs1.sips):
+    for sip1, sip2 in zip(regs1.sips, regs2.sips):
         total += 1
-        if sip0 >= sip1:
+        if sip1 < sip2:
             count += 1
     return count / total
 
-
-def run_has_relig(survey, version=1):
-    """Runs logistic regressions.
-
-    survey: Survey
-    version: which model to run
-
-    Returns: Regressions object
-    """
-    dep, control, exp_vars = get_version(version, survey.had_relig_flag)
-    regs = survey.make_logistic_regressions(dep, control, exp_vars)
-    return Regressions(regs)
-
-
-def get_version(version, had_relig_flag=True):
-    dep = 'has_relig'
-
-    # if we use the subset of people raised with religion,
-    # we don't want had_relig as a control variable
-    if had_relig_flag:
-        control = []
-    else:
-        control = ['had_relig']
-
-    if version == 0:
-        control += ['top80_income', 'born_from_1960',
-                    'educ_from_12', 'rand1']
-
-    if version == 1:
-        control += ['top80_income', 'born_from_1960',
-                    'educ_from_12', 'www2']
-
-    if version == 2:
-        control += ['top80_income', 'born_from_1960',
-                    'educ_from_12', 'www2', 'www7']
-
-    if version == 3:
-        control += ['top80_income', 'born_from_1960',
-                    'educ_from_12', 'www2', 'rand1']
-
-    exp_vars = []
-
-    return dep, control, exp_vars
-    
 
 def load_locker(survey, locker_file, n=11, version=1):
     """Runs resampled regressions and stores the results.
@@ -3643,9 +3575,10 @@ def load_locker(survey, locker_file, n=11, version=1):
     n: number of regressions to run
     version: int, which model to run
     """
-    dep, control, exp_vars = get_version(version, survey.had_relig_flag)
+    dep, control = get_version(version)
     locker = Locker(locker_file)
 
+    print 'N', survey.len()
     for i in range(n):
         index = locker.get_next()
         print i, index
@@ -3654,9 +3587,7 @@ def load_locker(survey, locker_file, n=11, version=1):
         resample = survey.resample()
         [r.clean_random() for r in resample.respondents()]
 
-        reg_list = resample.make_logistic_regressions(dep, control, exp_vars)
-        assert len(reg_list) == 1
-        reg = reg_list[0]
+        reg = resample.make_logistic_regression(dep, control)
         reg.make_pickleable()
         locker.put(reg)
 
@@ -3679,35 +3610,142 @@ def summarize_locker(locker_file, means):
     return regs
 
 
-def test_models(resample_flag=False):
+def test_models(version=2, resample_flag=False):
     means = dict(educ_from_12=4,
                  born_from_1960=10)
 
-    survey, subset, complete = read_complete()
+    # read the survey
+    survey, complete = read_complete(version)
+    subset = complete.subsample(lambda r: r.had_relig==1)
 
     print 'all respondents', survey.len()
     print_fraction_none(survey)
 
-    print 'subset', subset.len()
-    print_fraction_none(subset)
-
     print 'complete', complete.len()
     print_fraction_none(complete)
 
-    summarize_variables(complete, version=2)
+    print 'subset', subset.len()
+    print_fraction_none(subset)
 
+    # print the distribution of years
+    print '\nDistribution of survey years'
+    pmf = survey.make_pmf('year')
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    # summarize the variables
+    print '\nVariables:'
+    dep, control = get_version(version)
+    attrs = [dep] + control
+    complete.summarize_binary_attrs(attrs)
+
+    # resample
     if resample_flag:
         random.seed(0)
         resample = complete.resample()
     else:
         resample = complete
 
+    # run the models
     for version in [1, 2]:
-        regs = run_has_relig(resample, version=version)
-        regs.print_regression_reports(means)
-        print
-        regs.summarize(means)
+        run_has_relig_and_print(resample, version=version, means=means)
 
+    run_has_relig_and_print(subset, version=3, means=means)
+
+    subset2 = complete.subsample(lambda r: r.had_relig==0)
+    run_has_relig_and_print(subset2, version=4, means=means)
+
+
+def read_complete(version):
+    survey = read_survey('gss.2000-2010.csv')
+
+    # select just the years we want
+    years = [2000, 2002, 2004, 2006, 2010]
+    survey = survey.subsample(lambda r: r.year in years)
+
+    # give respondents random values
+    random.seed(17)
+    [r.clean_random() for r in survey.respondents()]
+
+    # select complete records
+    dep, control = get_version(version)
+    attrs = [dep] + control
+    complete = survey.subsample(lambda r: r.is_complete(attrs))
+
+    return survey, complete
+
+
+def run_has_relig_and_print(survey, version, means):
+    """Runs a logistic regression and prints results
+
+    survey: Survey
+    version: which model to run
+    means: map from variables to nominal values
+    """
+    print 'Version', version
+    print 'N', survey.len()
+    regs = run_has_relig(survey, version)
+    regs.print_regression_reports(means)
+    print
+    regs.summarize(means)
+
+
+def run_has_relig(survey, version):
+    """Runs logistic regressions.
+
+    survey: Survey
+    version: which model to run
+
+    Returns: Regressions object
+    """
+    dep, control = get_version(version)
+    reg = survey.make_logistic_regression(dep, control)
+    return Regressions([reg])
+
+
+def get_version(version):
+    """Gets the variables for different versions of the model.
+
+    version: int
+
+    Returns: string, list of strings
+    """
+    dep = 'has_relig'
+
+    if version == 1:
+        control = ['had_relig', 'top80_income', 'born_from_1960',
+                    'educ_from_12', 'www2']
+
+    if version == 11:
+        control = ['had_relig', 'top80_income', 'born_from_1960',
+                    'educ_from_12', 'rand1']
+
+    if version == 2:
+        control = ['had_relig', 'top80_income', 'born_from_1960',
+                    'educ_from_12', 'www2', 'www7']
+
+    if version == 22:
+        control = ['had_relig', 'top80_income', 'born_from_1960',
+                    'educ_from_12', 'www2', 'rand1']
+
+    if version == 3:
+        control = ['top80_income', 'born_from_1960',
+                   'educ_from_12', 'www2', 'www7']
+
+    if version == 33:
+        control = ['top80_income', 'born_from_1960',
+                   'educ_from_12', 'rand1', 'rand2']
+
+    if version == 333:
+        control = ['top80_income', 'born_from_1960',
+                   'educ_from_12', 'www2', 'rand1']
+
+    if version == 4:
+        control = ['top80_income', 'born_from_1960',
+                   'educ_from_12', 'www2']
+
+    return dep, control
+    
 
 def fraction_none(survey):
     pmf = survey.make_pmf('relig_name')
@@ -3765,33 +3803,6 @@ def summarize_survey(survey):
     survey.print_pmf('www7')
     print
     survey.print_pmf('www14')
-
-
-def summarize_variables(survey, version):
-    # print the distribution of years
-    print '\nDistribution of survey years'
-    pmf = survey.make_pmf('year')
-    for val, prob in sorted(pmf.Items()):
-        print val, prob
-
-    # summarize the variables
-    print '\nVariables:'
-    dep, control, exp_vars = get_version(version, survey.had_relig_flag)
-    all_attrs = [dep] + control + exp_vars
-    survey.summarize_binary_attrs(all_attrs)
-
-
-def filter_complete(survey, dep, control, exp_vars):
-    """Select respondents who have all the variables we need.
-
-    survey: Survey
-    dep: dependent variable names
-    control: list of control variable names
-    exp_vars: list of explanatory variable names
-    """
-    all_attrs = [dep] + control + exp_vars
-    complete = survey.subsample(lambda r: r.is_complete(all_attrs))
-    return complete
 
 
 class Regressions(object):
@@ -3957,6 +3968,12 @@ def format_pvalue(pval, min_val=0.001):
 
 
 def compute_ci(col):
+    """Computes a 95% confidence interval.
+
+    col: sequence of values
+
+    Returns: CI tuple, p-value
+    """
     n = len(col)
     index = n / 40
     mid = n / 2
@@ -3994,7 +4011,7 @@ def compute_pvalue(median, t):
         
 
 def cumulative_odds(estimates, means):
-    """Computes...
+    """Computes cumulative odds based on a sequence of estimates.
 
     Iterates the attributes and computes the odds ratio, for
     the given value, and the probability that corresponds to
@@ -4055,18 +4072,18 @@ def write_latex_table(fp, header, rows, format):
 
 
 def main(script):
+    part_eight()
+    return
+
+    test_models()
+    return
+
     part_nine()
     return
     
     part_eleven()
 
     part_ten()
-    return
-
-    test_models()
-    return
-
-    part_eight()
     return
 
     part_ten()
