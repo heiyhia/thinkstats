@@ -803,6 +803,9 @@ class Survey(object):
         curve = zip(*rows)
         return curve
 
+    def deepcopy(self):
+        return copy.deepcopy(self)
+
     def resample(self, n=None):
         """Form a new cohort by resampling from this survey.
 
@@ -3343,58 +3346,157 @@ def make_www_series(survey):
                 )
 
 
-def part_nine():
-    survey, complete = read_complete(version=3)
+def odds_ratio(p1, p2):
+    return p1 * (1-p2) / p2 / (1-p1)
 
+def odds(p):
+    return p / (1 - p)
+
+def prob(odds):
+    return odds / (1 + odds)
+
+
+def part_nine(n=101, version=2):
+    # compute odds ratios to rewind to the 1980s
+    print odds_ratio(0.033, 0.077)   # raised none
+    print odds_ratio(0.174, 0.272)   # college
+
+    random.seed(18)
+    survey, complete = read_complete(version)
+
+    rows = []
+    for i in range(n):
+        resample = complete.resample()
+
+        regs = run_has_relig(resample, version)
+        model = regs.get(0)
+        model.report()
+        
+        x1 = estimate_upbringing_effect(complete, model)
+        x2 = estimate_college_effect(complete, model)
+        x3 = estimate_internet_effect(complete, model)
+        x4 = estimate_generational_effect(complete, model)
+
+        rows.append((x1, x2, x3, x4))
+
+    cols = zip(*rows)
+    names = ['upbringing', 'college', 'internet', 'generation']
+    for col, name in zip(cols, names):
+        ci, pval = compute_ci(col)
+        print name, format_range(ci, 3)
+        fractions = [val / 25.0 * 100 for val in ci]
+        print name, format_range(fractions, 3)
+    
+
+def estimate_internet_effect(survey, model):
+    """Estimate the effect of the Internet on the population of unaffiliated.
+
+    survey: Survey
+    model: LogRegression
+    odds_ratio: float, observed change in the explanatory variable
+
+    Returns: float, number of people explained by the Internet effect
+    """
     def counter_func(r):
         r.wwwhr = 0
         r.wwwmin = 0
         r.recode_internet()
         return r
 
-    cf = Counterfactual(complete, version=3, attr='www2')
-    cf.run_counterfactuals(counter_func)
+    cf = Counterfactual(survey, model, attr='www2')
+    return cf.run_counterfactuals(counter_func)
 
 
-def part_ten():
-    survey, complete = read_complete(version=3)
-    
+def estimate_generational_effect(survey, model):
+    """Estimate the generational effect on the population of unaffiliated.
+
+    survey: Survey
+    model: LogRegression
+    odds_ratio: float, observed change in the explanatory variable
+
+    Returns: float, number of people explained by generational replacement
+    """
+    def counter_func(r):
+        r.born_from_1960 -= 20
+        return r
+
+    cf = Counterfactual(survey, model, attr='born_from_1960')
+    return cf.run_counterfactuals(counter_func)
+
+
+def compute_adjustment_ratio(survey, attr, odds_ratio, flag=False):
+    """Computes the fractions of As to convert to Bs to get the
+    desired odds ratio.
+
+    survey: Survey
+    attr: string attribute name
+    odds_ratio: float
+    flag: boolean, whether to invert the "before" probability
+
+    Returns: float
+    """
+    pmf = survey.make_pmf(attr)
+    before = fraction_one(pmf)
+    if flag:
+        before = 1 - before
+
+    after = prob(odds(before) * odds_ratio)
+    adjustment_ratio = (before - after) / before
+    return adjustment_ratio
+
+
+def estimate_college_effect(survey, model, odds_ratio=0.56):
+    """Estimate the effect of college on the population of unaffiliated.
+
+    survey: Survey
+    model: LogRegression
+    odds_ratio: float, observed change in the explanatory variable
+
+    Returns: float, number of people explained by college effect
+    """
     def counter_func(r):
         if r.educ > 12:
-            if random.random() < 0.5:
+            if random.random() < adjustment_ratio:
                 r.educ = 12
         r.clean_socioeconomic()
         return r
 
-    cf = Counterfactual(complete, version=3, attr='college')
-    cf.run_counterfactuals(counter_func)
+    attr = 'college'
+    adjustment_ratio = compute_adjustment_ratio(survey, attr, odds_ratio)
+
+    cf = Counterfactual(survey, model, attr)
+    return cf.run_counterfactuals(counter_func)
 
 
-def part_eleven():
-    survey, complete = read_complete(version=3)
-    
+def estimate_upbringing_effect(survey, model, odds_ratio=0.41):
+    """Estimate the effect of upbringing on the population of unaffiliated.
+
+    survey: Survey
+    model: LogRegression
+    odds_ratio: float, observed change in the explanatory variable
+
+    Returns: float, number of people explained by religious upbringing
+    """
     def counter_func(r):
         if r.had_relig == 0:
-            if random.random() < 0.5:
+            if random.random() < adjustment_ratio:
                 r.had_relig = 1
         return r
 
-    cf = Counterfactual(complete, version=3, attr='had_relig')
-    cf.run_counterfactuals(counter_func)
+    attr = 'had_relig'
+    adjustment_ratio = compute_adjustment_ratio(survey, attr, odds_ratio, True)
+
+    cf = Counterfactual(survey, model, attr)
+    return cf.run_counterfactuals(counter_func)
 
 
 class Counterfactual(object):
-    def __init__(self, survey, version, attr):
-        self.survey = survey
+    def __init__(self, survey, model, attr):
+        # make a safety copy before we go modifying anything
+        self.survey = survey.deepcopy()
+        self.model = model
         self.attr = attr
 
-        regs = run_has_relig(survey, version)
-        self.model = regs.get(0)
-
-        self.model.report()
-        print 'AIC', self.model.aic
-        print 'SIP', self.model.sip
-        
     def run_one_counterfactual(self, survey):
         pmf = survey.make_pmf(self.attr)
         p1 = fraction_one(pmf) * 100
@@ -3415,113 +3517,34 @@ class Counterfactual(object):
         print 'actual\t %3.3g' % (actual*100)
         print 'counter\t %3.3g' % (counter*100)
 
-        diff1 = counter - actual
+        diff1 = actual - counter
         print 'Difference in percentage points', 100 * diff1
 
         # http://2010.census.gov/news/releases/operations/cb10-cn93.html
         population_mil = 309
 
-        print 'Diff counter - actual (mil)', population_mil * diff1
+        excess = diff1 * population_mil
+        print 'Diff counter - actual (mil)', excess
+
         # data from GSS tables
         diff3 = 0.153 - 0.071
         print 'Fraction explained', diff1 / diff3
 
-
-class Counterfactual1(object):
-    def __init__(self, survey):
-        self.survey = survey
-        self.model0, self.model2, self.null_model = make_models(self.survey)
-
-    def run_counterfactuals(self):
-        """Makes models and runs counterfactual scenarios.
-
-        survey: Survey
-
-        Returns: list of 3 tuples
-        """
-        print '\twww2\twww7'
-        print 'actual\t',
-        t_actual = self.run_one_counterfactual(self.survey)
-
-        no_www = self.survey.counterfactual(clear_wwwhr)
-        print 'no www\t',
-        t_none = self.run_one_counterfactual(no_www)
-
-        def double_wwwhr(r):
-            if r.wwwhr < 3 and random.random() < 0.5:
-                r.usewww = 1
-                r.wwwhr = 3
-
-            if r.wwwhr < 8 and random.random() < 0.5:
-                r.usewww = 1
-                r.wwwhr = 8
-
-            r.recode_internet()
-            return r
-
-        double_www = self.survey.counterfactual(double_wwwhr)
-        print '+ www\t',
-        t_double = self.run_one_counterfactual(double_www)
-
-        return t_actual[0:2], t_none[0:2], t_double[0:2]
-
-    def run_one_counterfactual(self, survey):
-        pmf = survey.make_pmf('www2')
-        p3 = fraction_one(pmf) * 100
-        pmf = survey.make_pmf('www7')
-        p8 = fraction_one(pmf) * 100
-        print '%3.3g\t%3.3g' % (p3, p8)
-
-        frac0 = 1 - survey.simulate_model(self.model0)
-        frac1 = 1 - survey.simulate_model(self.model2)
-        frac_null = 1 - survey.simulate_model(self.null_model)
-
-        return frac0, frac1, frac_null
-
-    def print_counterfactual_results(self, tuples):
-        print '\tmodel0\tmodel2'
-        names = ['actual', 'no www', '+ www']
-        for t, name in zip(tuples, names):
-            print name, '\t',
-            for x in t:
-                print '%3.3g\t' % (x*100),
-            print
-
-    def print_counterfactual_summary(self, tuples):
-        actual = tuples[0][1]
-        no_www = tuples[1][1]
-        more_www = tuples[2][1]
-
-        diff1 = no_www - actual
-        diff2 = more_www - actual
-
-        # http://2010.census.gov/news/releases/operations/cb10-cn93.html
-        population_mil = 309
-
-        print 'Diff no www - actual (mil)', population_mil * diff1
-        print 'Diff more www - actual (mil)', population_mil * diff2
-
-        # data from GSS tables
-        diff3 = 0.153 - 0.071
-        print 'Difference between 1980s and 2000s', diff3 * 100
-        print 'Difference between 1980s and 2000s', diff3 * population_mil
-
-        print 'Fraction explained', diff1 / diff3
-
+        return excess
 
 def part_eight():
-    regs1 = run_many_regressions(n=11, version=1)
-    regs11 = run_many_regressions(n=11, version=11, clean_version=1)
-    regs2 = run_many_regressions(n=11, version=2)
-    regs22 = run_many_regressions(n=11, version=22, clean_version=2)
-    regs3 = run_many_regressions(n=11, version=3)
-    regs33 = run_many_regressions(n=11, version=33, clean_version=3)
-    regs333 = run_many_regressions(n=11, version=333, clean_version=3)
+    regs1 = run_many_regressions(n=0, version=1)
+    regs11 = run_many_regressions(n=0, version=11, clean_version=1)
+    regs2 = run_many_regressions(n=0, version=2)
+    regs22 = run_many_regressions(n=0, version=22, clean_version=2)
+    regs3 = run_many_regressions(n=0, version=3)
+    regs33 = run_many_regressions(n=0, version=33, clean_version=3)
+    regs333 = run_many_regressions(n=0, version=333, clean_version=3)
 
     print 'pval 1>11', compare_sips(regs1, regs11)
     print 'pval 2>22', compare_sips(regs2, regs22)
     print 'pval 3>33', compare_sips(regs3, regs33)
-    print 'pval 3>33', compare_sips(regs3, regs333)
+    print 'pval 3>333', compare_sips(regs3, regs333)
 
 
 def run_many_regressions(n=0, version=1, clean_version=None):
@@ -4072,21 +4095,13 @@ def write_latex_table(fp, header, rows, format):
 
 
 def main(script):
+    part_nine()
+    return
+    
     part_eight()
     return
 
     test_models()
-    return
-
-    part_nine()
-    return
-    
-    part_eleven()
-
-    part_ten()
-    return
-
-    part_ten()
     return
 
     part_seven()
@@ -4101,55 +4116,6 @@ def main(script):
     part_three()
     return
 
-    years = make_time_series()
-    tables = make_cross_tabs(years, 'relig_name', 'relig16_name')
-    make_stack_series(tables, 'prot')
-    return
-
-    plot_none_vs_yrborn()
-    return
-
-    spouse_table = make_spouse_table()
-    spouse_table.print_table()
-    return
-    
-    print_transition_model()
-    return
-
-    print_time_series()
-    return
-
-    test_significance()
-    return
-
-    plot_time_series()
-    return
-
-    series = ReligSeries()
-    series.test_significance('none')
-    return
-
-    model = 'has_relig ~ pa_has + ma_has + par_same + raised'
-    logit = survey88.logistic_regression(model)
-    logit.validate(survey88.respondents(), 'has_relig')
-
-    pmf = survey88.make_pmf('sprelig_name')
-    for val, prob in sorted(pmf.Items()):
-        print val, prob
-
-    return
-
-    plot_time_series()
-    return
-    
-    val = 'none'
-
-    reg = survey.regress_by_yrborn('relig_name', val)
-    fit = reg.linear_model(True)
-    #slope, inter, fit = survey.quadratic_model(xs, True)
-
-    survey.plot_relig_vs_yrborn(val)
-    survey.simulate_aging_cohort(val, -16, 23)
 
 
 if __name__ == '__main__':
