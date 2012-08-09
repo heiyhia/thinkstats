@@ -3322,7 +3322,7 @@ def simulate_nones(survey, version):
 
     Returns: float fraction
     """
-    regs = run_has_relig(survey, version=version)
+    regs = run_regression(survey, version=version)
     model = regs.get(0)
     frac = 1 - survey.simulate_model(model)
     return frac
@@ -3347,16 +3347,24 @@ def make_www_series(survey):
 
 
 def odds_ratio(p1, p2):
+    """Computes the odds ratio of p1 relative to p2.
+
+    p1, p2: float probabilities
+
+    Returns: float odds ratio
+    """
     return p1 * (1-p2) / p2 / (1-p1)
 
 def odds(p):
+    """Computes the odds corresponding to probability p."""
     return p / (1 - p)
 
 def prob(odds):
+    """Computes the probability corresponding to odds."""
     return odds / (1 + odds)
 
 
-def part_nine(n=101, version=2):
+def part_nine(n=3, version=2):
     # compute odds ratios to rewind to the 1980s
     print odds_ratio(0.033, 0.077)   # raised none
     print odds_ratio(0.174, 0.272)   # college
@@ -3368,7 +3376,7 @@ def part_nine(n=101, version=2):
     for i in range(n):
         resample = complete.resample()
 
-        regs = run_has_relig(resample, version)
+        regs = run_regression(resample, version)
         model = regs.get(0)
         model.report()
         
@@ -3381,12 +3389,26 @@ def part_nine(n=101, version=2):
 
     cols = zip(*rows)
     names = ['upbringing', 'college', 'internet', 'generation']
+
+    rows = []
     for col, name in zip(cols, names):
         ci, pval = compute_ci(col)
-        print name, format_range(ci, 3)
+        millions = format_range(ci, 3)
         fractions = [val / 25.0 * 100 for val in ci]
-        print name, format_range(fractions, 3)
-    
+        percentages = format_range(fractions, 3)
+        row = [name, millions, percentages]
+        rows.append(rows)
+
+    header = ['Factor',
+              'Millions',
+              'Percentage']
+
+    filename = 'gss.factor_table.tex'
+    fp = open(filename, 'w')
+    format = '|l|r|r|'
+    write_latex_table(fp, header, rows, format)
+    fp.close()
+
 
 def estimate_internet_effect(survey, model):
     """Estimate the effect of the Internet on the population of unaffiliated.
@@ -3543,6 +3565,7 @@ def part_eight():
 
     print 'pval 1>11', compare_sips(regs1, regs11)
     print 'pval 2>22', compare_sips(regs2, regs22)
+    print 'pval 2>1', compare_sips(regs2, regs1)
     print 'pval 3>33', compare_sips(regs3, regs33)
     print 'pval 3>333', compare_sips(regs3, regs333)
 
@@ -3633,6 +3656,23 @@ def summarize_locker(locker_file, means):
     return regs
 
 
+def auxiliary_models():
+    means = dict(educ_from_12=4,
+                 born_from_1960=10)
+
+    version = 6
+    survey, complete = read_complete(version)
+    run_regression_and_print(complete, version, means=means)
+
+    version = 5
+    survey, complete = read_complete(version)
+    run_regression_and_print(complete, version, means=means)
+
+
+def compare_survey_and_complete():
+    pass
+
+
 def test_models(version=2, resample_flag=False):
     means = dict(educ_from_12=4,
                  born_from_1960=10)
@@ -3640,6 +3680,8 @@ def test_models(version=2, resample_flag=False):
     # read the survey
     survey, complete = read_complete(version)
     subset = complete.subsample(lambda r: r.had_relig==1)
+
+    compare_survey_and_complete(survey, complete)
 
     print 'all respondents', survey.len()
     print_fraction_none(survey)
@@ -3671,12 +3713,12 @@ def test_models(version=2, resample_flag=False):
 
     # run the models
     for version in [1, 2]:
-        run_has_relig_and_print(resample, version=version, means=means)
+        run_regression_and_print(resample, version=version, means=means)
 
-    run_has_relig_and_print(subset, version=3, means=means)
+    run_regression_and_print(subset, version=3, means=means)
 
     subset2 = complete.subsample(lambda r: r.had_relig==0)
-    run_has_relig_and_print(subset2, version=4, means=means)
+    run_regression_and_print(subset2, version=4, means=means)
 
 
 def read_complete(version):
@@ -3692,13 +3734,16 @@ def read_complete(version):
 
     # select complete records
     dep, control = get_version(version)
+    for var in [dep] + control:
+        print r'\verb"%s",' % var
+
     attrs = [dep] + control
     complete = survey.subsample(lambda r: r.is_complete(attrs))
 
     return survey, complete
 
 
-def run_has_relig_and_print(survey, version, means):
+def run_regression_and_print(survey, version, means):
     """Runs a logistic regression and prints results
 
     survey: Survey
@@ -3707,13 +3752,13 @@ def run_has_relig_and_print(survey, version, means):
     """
     print 'Version', version
     print 'N', survey.len()
-    regs = run_has_relig(survey, version)
+    regs = run_regression(survey, version)
     regs.print_regression_reports(means)
     print
     regs.summarize(means)
 
 
-def run_has_relig(survey, version):
+def run_regression(survey, version):
     """Runs logistic regressions.
 
     survey: Survey
@@ -3722,6 +3767,7 @@ def run_has_relig(survey, version):
     Returns: Regressions object
     """
     dep, control = get_version(version)
+    print dep, control
     reg = survey.make_logistic_regression(dep, control)
     return Regressions([reg])
 
@@ -3765,7 +3811,17 @@ def get_version(version):
 
     if version == 4:
         control = ['top80_income', 'born_from_1960',
-                   'educ_from_12', 'www2']
+                   'educ_from_12', 'www7']
+
+    if version == 5:
+        dep = 'college'
+        control = ['had_relig', 'top80_income', 'born_from_1960',
+                   'sei', 'urban', 'rural']
+
+    if version == 6:
+        dep = 'www2'
+        control = ['had_relig', 'top80_income', 'born_from_1960',
+                   'sei', 'urban', 'rural']
 
     return dep, control
     
@@ -3793,7 +3849,7 @@ def part_seven():
     # run one regression
     survey = read_survey('gss.2000-2010.csv')
     survey = survey.resample()
-    regs = run_has_relig(survey)
+    regs = run_regression(survey)
     print_regression_reports(regs, means)
 
     return
@@ -3987,7 +4043,7 @@ def format_pvalue(pval, min_val=0.001):
     if pval < min_val:
         return '*'
     else:
-        return 'p=%0.2g' % pval
+        return '%0.2g' % pval
 
 
 def compute_ci(col):
@@ -4095,15 +4151,18 @@ def write_latex_table(fp, header, rows, format):
 
 
 def main(script):
-    part_nine()
-    return
-    
-    part_eight()
-    return
-
     test_models()
     return
 
+    auxiliary_models()
+    return
+
+    part_eight()
+    return
+
+    part_nine()
+    return
+    
     part_seven()
     return
 
