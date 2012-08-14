@@ -4150,7 +4150,25 @@ def write_latex_table(fp, header, rows, format):
     fp.write(r'\end{tabular}' '\n')
 
 
+def read_year_file(year):
+    filename = 'gss.%d.csv' % year
+    objs = columns.read_csv(filename, Respondent)
+    print len(objs)
+    for obj in objs:
+        print obj.id, obj.income06
+
+        #for key, val in sorted(obj.__dict__.iteritems()):
+        #    if 'id' in key:
+        #        print key, val
+        #    if 'income' in key:
+        #        print key, val
+        #break
+    
 def main(script):
+    read_year_file(2010)
+    return
+
+
     test_models()
     return
 
