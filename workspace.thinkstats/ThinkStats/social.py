@@ -106,29 +106,31 @@ def MakeFigures(pmf, biased_pmf):
     biased_cdf = Cdf.MakeCdfFromPmf(biased_pmf, 'biased')
     print 'biased median', biased_cdf.Percentile(50)
 
-    myplot.Cdfs([cdf, biased_cdf],
-               root='slashdot.logx',
-               xlabel='Number of friends/foes',
-               ylabel='CDF',
-               xscale='log')
+    myplot.Clf()
+    myplot.Cdfs([cdf, biased_cdf])
+    myplot.Save(root='slashdot.logx',
+                xlabel='Number of friends/foes',
+                ylabel='CDF',
+                xscale='log')
 
 
 def MakeCdfs(lens):
     cdf = Cdf.MakeCdfFromList(lens, 'slashdot')
-    myplot.Cdf(cdf,
-               root='slashdot.logx',
-               xlabel='Number of friends/foes',
-               ylabel='CDF',
-               xscale='log')
 
-    myplot.Cdf(cdf,
-               root='slashdot.loglog',
-               xlabel='Number of friends/foes',
-               ylabel='CDF',
-               complement=True,
-               xscale='log',
-               yscale='log',
-               )
+    myplot.Clf()
+    myplot.Cdf(cdf)
+    myplot.Save(root='slashdot.logx',
+                xlabel='Number of friends/foes',
+                ylabel='CDF',
+                xscale='log')
+
+    myplot.Clf()
+    myplot.Cdf(cdf, complement=True)
+    myplot.Save(root='slashdot.loglog',
+                xlabel='Number of friends/foes',
+                ylabel='CDF',
+                xscale='log',
+                yscale='log')
 
 def PmfProbLess(pmf1, pmf2):
     """Probability that a value from pmf1 is less than a value from pmf2.

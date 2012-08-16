@@ -99,24 +99,55 @@ def MakeFigures(firsts, others):
 
     # make the histogram
     axis = [23, 46, 0, 2700]
-    myplot.Hists([firsts.hist, others.hist], 
-                 root='nsfg_hist', 
-                 title='Histogram',
-                 xlabel='weeks',
-                 ylabel='frequency',
-                 axis=axis,
-                 bar_options=bar_options
-                 )
+    Hists([firsts.hist, others.hist])
+    myplot.Save(root='nsfg_hist', 
+                title='Histogram',
+                xlabel='weeks',
+                ylabel='frequency',
+                axis=axis)
 
     # make the PMF
     axis = [23, 46, 0, 0.6]
-    myplot.Hists([firsts.pmf, others.pmf],
-                 root='nsfg_pmf',
-                 title='PMF',
-                 xlabel='weeks',
-                 ylabel='probability',
-                 bar_options=bar_options,
-                 axis=axis)
+    Hists([firsts.pmf, others.pmf])
+    myplot.Save(root='nsfg_pmf',
+                title='PMF',
+                xlabel='weeks',
+                ylabel='probability',
+                axis=axis)
+
+
+def Hists(hists):
+    """Plot two histograms on the same axes.
+
+    hists: list of Hist
+    """
+    width = 0.4
+    shifts = [-width, 0.0]
+
+    option_list = [
+        dict(color='0.9'),
+        dict(color='blue')
+        ]
+
+    pyplot.clf()
+    for i, hist in enumerate(hists):
+        xs, fs = hist.Render()
+        xs = Shift(xs, shifts[i])
+        pyplot.bar(xs, fs, label=hist.name, width=width, **option_list[i])
+
+
+def Shift(xs, shift):
+    """Adds a constant to a sequence of values.
+
+    Args:
+      xs: sequence of values
+
+      shift: value to add
+
+    Returns:
+      sequence of numbers
+    """
+    return [x+shift for x in xs]
 
 
 def MakeDiffFigure(firsts, others):
@@ -132,11 +163,11 @@ def MakeDiffFigure(firsts, others):
 
     pyplot.clf()
     pyplot.bar(weeks, diffs, align='center')
-    myplot.Save('nsfg_diffs',
-              title='Difference in PMFs',
-              xlabel='weeks',
-              ylabel='100 (PMF$_{first}$ - PMF$_{other}$)',
-              legend=False)
+    myplot.Save(root='nsfg_diffs',
+                title='Difference in PMFs',
+                xlabel='weeks',
+                ylabel='100 (PMF$_{first}$ - PMF$_{other}$)',
+                legend=False)
 
 
 def main(name, data_dir=''):
@@ -149,3 +180,5 @@ def main(name, data_dir=''):
 if __name__ == '__main__':
     import sys
     main(*sys.argv)
+
+

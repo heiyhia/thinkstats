@@ -39,29 +39,32 @@ def main():
 
     # plot the distribution of actual speeds
     pmf = Pmf.MakePmfFromList(speeds, 'actual speeds')
-    #myplot.Hist(pmf,
-    #           show=True,
-    #           title='PMF of running speed',
-    #           xlabel='speed (mph)',
-    #           ylabel='probability')
+
+    # myplot.Clf()
+    # myplot.Hist(pmf)
+    # myplot.Save(root='observed_speeds',
+    #             title='PMF of running speed',
+    #             xlabel='speed (mph)',
+    #             ylabel='probability')
 
     # plot the biased distribution seen by the observer
     biased = BiasPmf(pmf, 7.5, name='observed speeds')
 
-    myplot.Hist(biased, 
-               root='observed_speeds',
-               title='PMF of running speed',
-               xlabel='speed (mph)',
-               ylabel='probability',
-               show=False)
+    myplot.Clf()
+    myplot.Hist(biased)
+    myplot.Save(root='observed_speeds',
+                title='PMF of running speed',
+                xlabel='speed (mph)',
+                ylabel='probability')
 
     cdf = Cdf.MakeCdfFromPmf(biased)
-    myplot.Cdf(cdf,
-               root='observed_speeds_cdf',
-               title='CDF of running speed',
-               xlabel='speed (mph)',
-               ylabel='cumulative probability',
-               show=True)
+
+    myplot.Clf()
+    myplot.Cdf(cdf)
+    myplot.Save(root='observed_speeds_cdf',
+                title='CDF of running speed',
+                xlabel='speed (mph)',
+                ylabel='cumulative probability')
     
 
 if __name__ == '__main__':

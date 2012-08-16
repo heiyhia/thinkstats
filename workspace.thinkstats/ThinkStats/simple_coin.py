@@ -63,28 +63,15 @@ def Percentile(pmf, p):
 
 def TrianglePrior():
     pmf = Pmf.Pmf()
-    for x in range(0, 50):
+    for x in range(0, 51):
         pmf.Set(x, x)
     for x in range(51, 101):
         pmf.Set(x, 100-x) 
     pmf.Normalize()
     return pmf
 
-def Main():
-    pmf = Pmf.Pmf()
-    for x in range(0, 101):
-        pmf.Set(x, 1)
-    pmf.Normalize()
 
-    pmf = TrianglePrior()
-    # plot the posterior distributions
-    myplot.Pmf(pmf,
-               root='simple_coin_triangle_prior',
-               title='Biased coin',
-               xlabel='x',
-               ylabel='Probability')
-
-
+def RunUpdate(pmf):
     evidence = 'H' * 140 + 'T' * 110
 
     for outcome in evidence:
@@ -100,9 +87,56 @@ def Main():
     print '5th %ile', Percentile(pmf, 0.05) 
     print '95th %ile', Percentile(pmf, 0.95) 
 
+
+def Ratio():
+    biased = Pmf.Pmf()
+    for x in range(0, 101):
+        biased.Set(x, 1)
+    biased.Set(50, 0)
+    biased.Normalize()
+
+    print Likelihood(biased, 140, 110)
+
+    fair = Pmf.Pmf()
+    fair.Set(50, 1)
+    print Likelihood(fair, 140, 110)
+
+
+def Likelihood(pmf, heads, tails):
+    total = 0
+    for x in pmf.Values():
+        p = x / 100.0
+        likelihood = p**heads * (1-p)**tails
+        total += pmf.Prob(x) * likelihood
+    return total
+
+
+def Main():
+    Ratio()
+    return
+
+    pmf1 = Pmf.Pmf()
+    for x in range(0, 101):
+        pmf1.Set(x, 1)
+    pmf1.Normalize()
+
+    pmf2 = TrianglePrior()
+
+    # plot the priors
+    myplot.Clf()
+    myplot.Pmfs([pmf1, pmf2])
+    myplot.Save(root='simple_coin_both_prior',
+                title='Biased coin',
+                xlabel='x',
+                ylabel='Probability')
+
+    RunUpdate(pmf1)
+    RunUpdate(pmf2)
+
     # plot the posterior distributions
-    myplot.Pmf(pmf,
-               root='simple_coin_triangle_post',
+    myplot.Clf()
+    myplot.Pmfs([pmf1, pmf2])
+    myplot.Save(root='simple_coin_both_post',
                title='Biased coin',
                xlabel='x',
                ylabel='Probability')

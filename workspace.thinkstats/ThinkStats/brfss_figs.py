@@ -46,10 +46,10 @@ class Respondents(brfss.Respondents):
         pyplot.plot(xs, ps, label='data', linewidth=2, color='blue')
      
         myplot.Save(root,
-                  title = 'Adult weight',
-                  xlabel = xlabel,
-                  ylabel = 'CDF',
-                  axis=axis or [0, xmax, 0, 1])
+                    title = 'Adult weight',
+                    xlabel = xlabel,
+                    ylabel = 'CDF',
+                    axis=axis or [0, xmax, 0, 1])
     
     def MakeFigures(self):
         """Generates CDFs and normal prob plots for weights and log weights."""

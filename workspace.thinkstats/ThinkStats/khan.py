@@ -139,7 +139,8 @@ def CheckCdf():
     t = [SimulateChi2() for i in range(1000)]
     cdf = Cdf.MakeCdfFromList(t)
 
-    myplot.Cdf(cdf, clf=False, show=True)
+    myplot.Cdf(cdf)
+    myplot.Show()
 
 
 def CheckCdf2():
@@ -149,7 +150,8 @@ def CheckCdf2():
     t2 = [scipy.stats.chi2.cdf(x, df) for x in t]
     cdf = Cdf.MakeCdfFromList(t2)
 
-    myplot.Cdf(cdf, show=True)
+    myplot.Cdf(cdf)
+    myplot.Show()
 
 
 def Chi2Cdf(df=2, high=5, n=100):

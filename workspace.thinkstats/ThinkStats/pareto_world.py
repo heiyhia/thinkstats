@@ -45,6 +45,15 @@ def MakeParetoCdf():
 
 
 def MakeFigure(xmin=100, alpha=1.7, mu=150, sigma=25):
+    """Makes a figure showing the CDF of height in ParetoWorld.
+
+    Compared to a normal distribution.
+
+    xmin: parameter of the Pareto distribution
+    alpha: parameter of the Pareto distribution
+    mu: parameter of the Normal distribution
+    sigma: parameter of the Normal distribution
+    """
 
     t1 = [xmin * random.paretovariate(alpha) for i in range(10000)]
     cdf1 = Cdf.MakeCdfFromList(t1, name='pareto')
@@ -52,15 +61,22 @@ def MakeFigure(xmin=100, alpha=1.7, mu=150, sigma=25):
     t2 = [random.normalvariate(mu, sigma) for i in range(10000)]
     cdf2 = Cdf.MakeCdfFromList(t2, name='normal')
 
-    myplot.Cdfs([cdf1, cdf2],
-                root='pareto_world2',
+    myplot.Clf()
+    myplot.Cdfs([cdf1, cdf2])
+    myplot.Save(root='pareto_world2',
                 title='Pareto World',
                 xlabel='height (cm)',
                 ylabel='CDF')
 
 
 def TallestPareto(iters=2, n=10000, xmin=100, alpha=1.7):
-    """Find the tallest person in Pareto World."""
+    """Find the tallest person in Pareto World.
+
+    iters: how many samples to generate
+    n: how many in each sample
+    xmin: parameter of the Pareto distribution
+    alpha: parameter of the Pareto distribution
+    """
     tallest = 0
     for i in range(iters):
         t = [xmin * random.paretovariate(alpha) for i in range(n)]

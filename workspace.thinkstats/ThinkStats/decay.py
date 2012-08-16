@@ -98,11 +98,10 @@ def main():
     suite.name = 'posterior'
 
     # plot the posterior distributions
-    myplot.Pmf(suite, 
-               title='Decay parameter',
-               xlabel='Parameter (inverse cm)',
-               ylabel='Posterior probability',
-               show=True)
+    myplot.Pmf(suite)
+    myplot.Show(title='Decay parameter',
+                xlabel='Parameter (inverse cm)',
+                ylabel='Posterior probability')
 
     print 'Naive parameter estimate:', 1.0 / thinkstats.Mean(evidence)
     print 'Mean of the posterior distribution:', suite.Mean()

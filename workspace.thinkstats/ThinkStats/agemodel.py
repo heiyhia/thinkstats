@@ -158,42 +158,37 @@ def MakeFigures(pool, firsts, others):
     """Creates several figures for the book."""
 
     # CDF of all ages
-    myplot.Cdf(pool.age_cdf, 
-               root='agemodel_age_cdf',
-               title="Distribution of mother's age",
-               xlabel='age (years)',
-               ylabel='CDF',
-               legend=False)
+    myplot.Clf()
+    myplot.Cdf(pool.age_cdf)
+    myplot.Save(root='agemodel_age_cdf',
+                title="Distribution of mother's age",
+                xlabel='age (years)',
+                ylabel='CDF',
+                legend=False)
 
     # CDF of all weights
-    myplot.Cdf(pool.weight_cdf, 
-               root='agemodel_weight_cdf',
-               title="Distribution of birth weight",
-               xlabel='birth weight (oz)',
-               ylabel='CDF',
-               legend=False)
+    myplot.Clf()
+    myplot.Cdf(pool.weight_cdf)
+    myplot.Save(root='agemodel_weight_cdf',
+                title="Distribution of birth weight",
+                xlabel='birth weight (oz)',
+                ylabel='CDF',
+                legend=False)
 
     # plot CDFs of birth ages for first babies and others
-    line_options = [
-                    dict(linewidth=2, alpha=0.7),
-                    dict(linewidth=2, alpha=0.7)
-                    ]
-
-    myplot.Cdfs([firsts.age_cdf, others.age_cdf], 
-                root='agemodel_age_cdfs',
-                line_options=line_options, 
+    myplot.Clf()
+    myplot.Cdfs([firsts.age_cdf, others.age_cdf])
+    myplot.Save(root='agemodel_age_cdfs',
                 title="Distribution of mother's age",
                 xlabel='age (years)',
                 ylabel='CDF')
 
-    myplot.Cdfs([firsts.weight_cdf, others.weight_cdf], 
-                root='agemodel_weight_cdfs',
-                line_options=line_options, 
+    myplot.Clf()
+    myplot.Cdfs([firsts.weight_cdf, others.weight_cdf])
+    myplot.Save(root='agemodel_weight_cdfs',
                 title="Distribution of birth weight",
                 xlabel='birth weight (oz)',
                 ylabel='CDF')
-
-    return
 
     # make a scatterplot of ages and weights
     ages, weights = GetAgeWeight(pool)
@@ -286,8 +281,8 @@ def MakeLinePlot(age_bins):
         xs.append(bin)
         ys.append(thinkstats.Mean(weights))
 
-    myplot.Plot(xs, ys, 'bs-',
-                root='agemodel_line',
+    myplot.Plot(xs, ys, 'bs-')
+    myplot.Save(root='agemodel_line',
                 xlabel="Mother's age (years)",
                 ylabel='Mean birthweight (oz)',
                 legend=False)

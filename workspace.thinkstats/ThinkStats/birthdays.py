@@ -49,6 +49,7 @@ def Diff(t):
         diffs.append(diff)
     return diffs
 
+
 def Main(script):
 
     # read 'em and sort 'em
@@ -61,12 +62,11 @@ def Main(script):
 
     # make and plot the CCDF on a log scale.
     cdf = Cdf.MakeCdfFromList(days, name='intervals')
-    myplot.Cdfs([cdf],
-                'intervals', 
+    scale = myplot.Cdf(cdf, transform='exponential')
+    myplot.Save(root='intervals', 
                 xlabel='days', 
                 ylabel='ccdf', 
-                yscale='log',
-                complement=True)
+                **scale)
 
 if __name__ == '__main__':
     Main(*sys.argv)

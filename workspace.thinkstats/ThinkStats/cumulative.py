@@ -49,55 +49,49 @@ def MakeTables(data_dir='.'):
 def Resample(cdf, n=10000):
     sample = cdf.Sample(n)
     new_cdf = Cdf.MakeCdfFromList(sample, 'resampled')
-    myplot.Cdfs([cdf, new_cdf],
-                root='resample_cdf',
-                title='CDF',
-                xlabel='weight in oz',
-                ylabel='CDF(x)') 
+    myplot.Clf()
+    myplot.Cdfs([cdf, new_cdf])
+    myplot.Save(root='resample_cdf',
+               title='CDF',
+               xlabel='weight in oz',
+               ylabel='CDF(x)') 
 
 
 def MakeExample():
     """Make a simple example CDF."""
     t = [2, 1, 3, 2, 5]
     cdf = Cdf.MakeCdfFromList(t)
-    myplot.Cdf(cdf,
-              root='example_cdf',
-              title='CDF',
-              xlabel='x',
-              ylabel='CDF(x)',
-              axis=[0, 6, 0, 1],
-              legend=False)    
+    myplot.Clf()
+    myplot.Cdf(cdf)
+    myplot.Save(root='example_cdf',
+                title='CDF',
+                xlabel='x',
+                ylabel='CDF(x)',
+                axis=[0, 6, 0, 1],
+                legend=False)    
 
 
 def MakeFigures(pool, firsts, others):
     """Creates several figures for the book."""
 
-    bar_options = [
-        dict(linewidth=0, color='blue'),
-        dict(linewidth=0, color='orange')
-        ]
-
     # plot PMFs of birth weights for first babies and others
-    myplot.Hists([firsts.weight_pmf, others.weight_pmf], 
-               root='nsfg_birthwgt_pmf',
-               bar_options=bar_options, 
-               title='Birth weight PMF',
-               xlabel='weight (ounces)',
-               ylabel='probability')
-
-    plot_options = [
-                    dict(linewidth=2, color='blue'),
-                    dict(linewidth=2, color='orange')
-                    ]
+    myplot.Clf()
+    myplot.Hist(firsts.weight_pmf, linewidth=0, color='blue')
+    myplot.Hist(others.weight_pmf, linewidth=0, color='orange')
+    myplot.Save(root='nsfg_birthwgt_pmf',
+                title='Birth weight PMF',
+                xlabel='weight (ounces)',
+                ylabel='probability')
 
     # plot CDFs of birth weights for first babies and others
-    myplot.Cdfs([firsts.weight_cdf, others.weight_cdf], 
-               root='nsfg_birthwgt_cdf',
-               plot_options=plot_options, 
-               title='Birth weight CDF',
-               xlabel='weight (ounces)',
-               ylabel='probability',
-               axis=[0, 200, 0, 1])
+    myplot.Clf()
+    myplot.Cdf(firsts.weight_cdf, linewidth=2, color='blue')
+    myplot.Cdf(others.weight_cdf, linewidth=2, color='orange')
+    myplot.Save(root='nsfg_birthwgt_cdf',
+                title='Birth weight CDF',
+                xlabel='weight (ounces)',
+                ylabel='probability',
+                axis=[0, 200, 0, 1])
 
 def main(name, data_dir=''):
     MakeExample()
