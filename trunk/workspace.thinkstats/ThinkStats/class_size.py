@@ -86,11 +86,10 @@ def ClassSizes():
     print 'var', unbiased_pmf.Var()
 
     # plot the Pmfs
-    myplot.Pmfs([pmf, biased_pmf],
-               xlabel='Class size',
-               ylabel='PMF',
-               show=True)
-
+    myplot.Pmfs([pmf, biased_pmf])
+    myplot.Show(xlabel='Class size',
+                ylabel='PMF')
+    
  
 def main():
     ClassSizes()

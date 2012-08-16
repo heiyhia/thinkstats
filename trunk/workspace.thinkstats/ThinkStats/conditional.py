@@ -54,6 +54,8 @@ def ConditionOnWeeks(pmf, week=39, name='conditional'):
 
 
 def MakeFigure(firsts, others):
+    """Makes a figure showing...
+    """
 
     weeks = range(35, 46)
     
@@ -74,34 +76,30 @@ def MakeFigure(firsts, others):
         pyplot.plot(weeks, ps, label=name)
         print name, ps
         
-    myplot.Save('conditional',
+    myplot.Save(root='conditional',
                 xlabel='weeks',
                 ylabel=r'Prob{x $=$ weeks | x $\geq$ weeks}',
-                title='Conditional Probability',
-                show=True,
-                )
+                title='Conditional Probability')
+
 
 def RelativeRisk(first, others, week=38):
+    """Computes relative risk of the conditional prob of having
+    a baby for each week, first babies compared to others.
+
+    first: Pregnancies table
+    others: Pregnancies table
+    week: 
+    """
+    print type(first)
     first_cond = ConditionOnWeeks(first.pmf, week, 'first babies')
     other_cond = ConditionOnWeeks(others.pmf, week, 'others')
 
     risk.ComputeRelativeRisk(first_cond, other_cond)
 
-    return
-
-    myplot.Pmfs([first_cond, other_cond],
-                xlabel='weeks',
-                ylabel=r'Prob{x $=$ weeks | x $\geq$ weeks}',
-                title='Conditional Probability',
-                show=True,
-                )
-
-    
 
 def main():
     pool, firsts, others = descriptive.MakeTables()
     RelativeRisk(firsts, others)
-    return
     MakeFigure(firsts, others)
     
 

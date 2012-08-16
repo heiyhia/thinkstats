@@ -36,6 +36,9 @@ def Underride(d, **options):
     """Add key-value pairs to d only if key is not in d.
 
     If d is None, create a new dictionary.
+
+    d: dictionary
+    options: keyword args to add to d
     """
     if d is None:
         d = {}
@@ -58,6 +61,7 @@ def Plot(xs, ys, style='', **options):
       xs: sequence of x values
       ys: sequence of y values
       style: style string passed along to pyplot.plot
+      options: keyword args passed to pyplot.plot
     """
     options = Underride(options, linewidth=3, alpha=0.5)
     pyplot.plot(xs, ys, style, **options)
@@ -68,6 +72,7 @@ def Pmf(pmf, **options):
 
     Args:
       pmf: Hist or Pmf object
+      options: keyword args passed to pyplot.plot
     """
     xs, ps = pmf.Render()
     options = Underride(options, label=pmf.name)
@@ -76,9 +81,13 @@ def Pmf(pmf, **options):
 
 def Pmfs(pmfs, **options):
     """Plots a sequence of PMFs.
+
+    Options are passed along for all PMFs.  If you want different
+    options for each pmf, make multiple calls to Pmf.
     
     Args:
       pmfs: sequence of PMF objects
+      options: keyword args passed to pyplot.plot
     """
     for i, pmf in enumerate(pmfs):
         Pmf(pmf, **options)
@@ -89,6 +98,7 @@ def Hist(hist, **options):
 
     Args:
       hist: Hist or Pmf object
+      options: keyword args passed to pyplot.bar
     """
     # find the minimum distance between adjacent values
     xs, fs = hist.Render()
@@ -100,36 +110,21 @@ def Hist(hist, **options):
                         edgecolor='blue',
                         width=width)
 
-    pyplot.bar(xs, fs, **bar_options)
+    pyplot.bar(xs, fs, **options)
 
 
 def Hists(hists, **options):
     """Plots two histograms as interleaved bar plots.
 
+    Options are passed along for all PMFs.  If you want different
+    options for each pmf, make multiple calls to Pmf.
+
     Args:
       hists: list of two Hist or Pmf objects
+      options: keyword args passed to pyplot.plot
     """
-    width = 0.4
-    shifts = [-width, 0.0]
-
-    for i, hist in enumerate(hists):
-        xs, fs = hist.Render()
-        xs = Shift(xs, shifts[i])
-        pyplot.bar(xs, fs, label=hist.name, width=width, **options)
-
-
-def Shift(xs, shift):
-    """Adds a constant to a sequence of values.
-
-    Args:
-      xs: sequence of values
-
-      shift: value to add
-
-    Returns:
-      sequence of numbers
-    """
-    return [x+shift for x in xs]
+    for hist in hists:
+        Hist(hist, **options)
 
 
 def Diff(t):
@@ -152,17 +147,23 @@ def Cdf(cdf, complement=False, transform=None, **options):
       cdf: Cdf object
       complement: boolean, whether to plot the complementary CDF
       transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
+      options: keyword args passed to pyplot.plot
+
+    Returns:
+      dictionary with the scale options that should be passed to
+      myplot.Save or myplot.Show
     """
     xs, ps = cdf.Render()
+    scale = dict(xscale='linear', yscale='linear')
 
     if transform == 'exponential':
         complement = True
-        options['yscale'] = 'log'
+        scale['yscale'] = 'log'
 
     if transform == 'pareto':
         complement = True
-        options['yscale'] = 'log'
-        options['xscale'] = 'log'
+        scale['yscale'] = 'log'
+        scale['xscale'] = 'log'
 
     if complement:
         ps = [1.0-p for p in ps]
@@ -171,16 +172,17 @@ def Cdf(cdf, complement=False, transform=None, **options):
         xs.pop()
         ps.pop()
         ps = [-math.log(1.0-p) for p in ps]
-        options['xscale'] = 'log'
-        options['yscale'] = 'log'
+        scale['xscale'] = 'log'
+        scale['yscale'] = 'log'
 
     if transform == 'gumbel':
         xs.pop(0)
         ps.pop(0)
         ps = [-math.log(p) for p in ps]
-        options['yscale'] = 'log'
+        scale['yscale'] = 'log'
 
     line = pyplot.plot(xs, ps, label=cdf.name, **options)
+    return scale
 
 
 def Cdfs(cdfs, complement=False, transform=None, **options):
@@ -190,6 +192,7 @@ def Cdfs(cdfs, complement=False, transform=None, **options):
       cdfs: sequence of CDF objects
       complement: boolean, whether to plot the complementary CDF
       transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
+      options: keyword args passed to pyplot.plot
     """
     for i, cdf in enumerate(cdfs):
         Cdf(cdf, complement, transform, **options)
@@ -199,6 +202,9 @@ def Contour(d, pcolor=False, contour=True, **options):
     """Makes a contour plot.
     
     d: map from (x, y) to z
+    pcolor: boolean, whether to make a pseudocolor plot
+    contour: boolean, whether to make a contour plot
+    options: keyword args passed to pyplot.pcolor and/or pyplot.contour
     """
     xs, ys = zip(*d.iterkeys())
     xs = sorted(list(xs))
@@ -214,6 +220,7 @@ def Contour(d, pcolor=False, contour=True, **options):
     if contour:
         cs = pyplot.contour(X, Y, Z, **options)
         pyplot.clabel(cs, inline=1, fontsize=10)
+
 
 def Config(**options):
     """Configures the plot.
@@ -253,7 +260,12 @@ def Config(**options):
 
 
 def Show(**options):
-    """Shows the plot."""
+    """Shows the plot.
+
+    For options, see Config.
+
+    options: keyword args used to invoke various pyplot functions
+    """
     # TODO: figure out how to show more than one plot
     Config(**options)
     pyplot.show()
@@ -262,10 +274,12 @@ def Show(**options):
 def Save(root=None, formats=None, **options):
     """Saves the plot in the given formats.
 
+    For options, see Config.
+
     Args:
       root: string filename root
       formats: list of string formats
-      options: dictionary of options
+      options: keyword args used to invoke various pyplot functions
     """
     Config(**options)
 
@@ -282,7 +296,6 @@ def SaveFormat(root, format='eps'):
 
     Args:
       root: string filename root
-
       format: string format
     """
     filename = '%s.%s' % (root, format)

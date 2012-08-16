@@ -202,7 +202,7 @@ def PlotCoefVariation(suites):
     for label, suite in suites.iteritems():
         pmf = ComputeCoefVariation(suite)
         cdf = Cdf.MakeCdfFromPmf(pmf, label)
-        myplot.Cdf(cdf, clf=False)
+        myplot.Cdf(cdf)
     
         pmfs[label] = pmf
 
@@ -224,9 +224,9 @@ def PlotCdfs(samples):
         cdf = Cdf.MakeCdfFromList(outliers, label)
         cdfs.append(cdf)
 
-    myplot.Cdfs(cdfs,
-                show=True,
-                #root='bayes_height_cdfs',
+    myplot.Clf()
+    myplot.Cdfs(cdfs)
+    myplot.Save(root='bayes_height_cdfs',
                 title='CDF of height',
                 xlabel='Reported height (cm)',
                 ylabel='CDF')
@@ -286,15 +286,15 @@ def PlotMarginals(suite):
 
     pyplot.subplot(1, 2, 1)
     cdf_m = Cdf.MakeCdfFromPmf(pmf_m, 'mu')
-    myplot.Cdf(cdf_m, clf=False,
-               xlabel='Mean height (cm)',
-               ylabel='CDF')
+    myplot.Cdf(cdf_m)
+    pyplot.xlabel('Mean height (cm)')
+    pyplot.ylabel('CDF')
 
     pyplot.subplot(1, 2, 2)
     cdf_s = Cdf.MakeCdfFromPmf(pmf_s, 'sigma')
-    myplot.Cdf(cdf_s, clf=False,
-               xlabel='Stddev (cm)',
-               ylabel='CDF')
+    myplot.Cdf(cdf_s)
+    pyplot.xlabel('Std Dev height (cm)')
+    pyplot.ylabel('CDF')
 
     myplot.Save(root='bayes_height_marginals_%s' % suite.name)
 
@@ -303,7 +303,9 @@ def PlotAges(resp):
     """Plot the distribution of ages."""
     ages = [r.age for r in resp.records]
     cdf = Cdf.MakeCdfFromList(ages)
-    myplot.Cdf(cdf, show=True)
+    myplot.Clf()
+    myplot.Cdf(cdf)
+    myplot.Show()
 
 
 def DumpHeights(data_dir='.', n=10000):

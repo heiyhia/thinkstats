@@ -37,30 +37,32 @@ def MakeFigures():
     
     cdf = Cdf.MakeCdfFromList(pops, 'populations')
 
-    myplot.Cdf(cdf, 
-               root='populations',
+    myplot.Clf()
+    myplot.Cdf(cdf)
+    myplot.Save(root='populations',
                title='City/Town Populations',
                xlabel='population',
                ylabel='CDF',
                legend=False)
 
-    myplot.Cdf(cdf, 
-               root='populations_logx',
-               title='City/Town Populations',
-               xlabel='population',
-               ylabel='CDF',
-               xscale='log',
-               legend=False)
+    myplot.Clf()
+    myplot.Cdf(cdf) 
+    myplot.Save(root='populations_logx',
+                title='City/Town Populations',
+                xlabel='population',
+                ylabel='CDF',
+                xscale='log',
+                legend=False)
 
-    myplot.Cdf(cdf, 
-               root='populations_loglog',
-               complement=True,
-               title='City/Town Populations',
-               xlabel='population',
-               ylabel='Complementary CDF',
-               yscale='log',
-               xscale='log',
-               legend=False)
+    myplot.Clf()
+    myplot.Cdf(cdf, complement=True) 
+    myplot.Save(root='populations_loglog',
+                title='City/Town Populations',
+                xlabel='population',
+                ylabel='Complementary CDF',
+                yscale='log',
+                xscale='log',
+                legend=False)
     
     t = [math.log(x) for x in pops]
     t.sort()

@@ -63,6 +63,11 @@ def ProbLate(pmf):
 
 
 def ComputeRelativeRisk(first_pmf, other_pmf):
+    """Computes relative risks for two PMFs.
+
+    first_pmf: Pmf object
+    other_pmf: Pmf object
+    """
 
     print 'Risks:'
     funcs = [ProbEarly, ProbOnTime, ProbLate]

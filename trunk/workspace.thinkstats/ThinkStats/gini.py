@@ -10,7 +10,6 @@ import sys
 
 import irs
 
-import myplot
 import Pmf
 import Cdf
 
