@@ -207,7 +207,7 @@ class Respondent(object):
         """
         self.income = clean_var(self.income, [0, 13, 98, 99])
         self.rincome = clean_var(self.rincome, [0, 13, 98, 99])
-        self.top80_income = meets_thresh(self.income, 12)
+        self.top75_income = meets_thresh(self.income, 12)
 
         self.educ = clean_var(self.educ, [97, 98, 99])
         if self.educ == 'NA':
@@ -371,6 +371,14 @@ class Respondent(object):
         self.www14 = meets_thresh(self.wwwhr, 14)
         self.www20 = meets_thresh(self.wwwhr, 20)
         
+    def clean_income(self):
+        """Computes income-related variables."""
+        try:
+            self.orig_income = int(self.orig_income)
+        except ValueError:
+            self.orig_income = 'NA'
+        self.top50_income = meets_thresh(self.orig_income, 19)
+        
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
         if relig_name == 'none':
@@ -522,6 +530,13 @@ class Survey(object):
         objs = columns.read_csv(filename, constructor)
         for obj in objs:
             self.rs[obj.caseid] = obj
+
+    def get_income_data(self, filename='gss.income_data.db'):
+        income_data = IncomeData(filename)
+        for r in self.respondents():
+            r.orig_income = income_data.lookup(r.year, r.id)
+            r.clean_income()
+        income_data.close()
 
     def make_pmf(self, attr, na_flag=False):
         """Make a PMF for an attribute.  Uses compwt to weight respondents.
@@ -3714,6 +3729,7 @@ def test_models(version=2, resample_flag=False):
     # run the models
     for version in [1, 2]:
         run_regression_and_print(resample, version=version, means=means)
+        return
 
     run_regression_and_print(subset, version=3, means=means)
 
@@ -3727,6 +3743,7 @@ def read_complete(version):
     # select just the years we want
     years = [2000, 2002, 2004, 2006, 2010]
     survey = survey.subsample(lambda r: r.year in years)
+    # survey.get_income_data()
 
     # give respondents random values
     random.seed(17)
@@ -3782,45 +3799,49 @@ def get_version(version):
     dep = 'has_relig'
 
     if version == 1:
-        control = ['had_relig', 'top80_income', 'born_from_1960',
-                    'educ_from_12', 'www2']
+        control = ['had_relig', 'top75_income',
+                   'born_from_1960',
+                   'educ_from_12', 'www2']
 
     if version == 11:
-        control = ['had_relig', 'top80_income', 'born_from_1960',
-                    'educ_from_12', 'rand1']
+        control = ['had_relig', 'top75_income',
+                   'born_from_1960',
+                   'educ_from_12', 'rand1']
 
     if version == 2:
-        control = ['had_relig', 'top80_income', 'born_from_1960',
-                    'educ_from_12', 'www2', 'www7']
+        control = ['had_relig', 'top75_income',
+                   'born_from_1960',
+                   'educ_from_12', 'www2', 'www7']
 
     if version == 22:
-        control = ['had_relig', 'top80_income', 'born_from_1960',
-                    'educ_from_12', 'www2', 'rand1']
+        control = ['had_relig', 'top75_income',
+                   'born_from_1960',
+                   'educ_from_12', 'www2', 'rand1']
 
     if version == 3:
-        control = ['top80_income', 'born_from_1960',
+        control = ['top75_income', 'born_from_1960',
                    'educ_from_12', 'www2', 'www7']
 
     if version == 33:
-        control = ['top80_income', 'born_from_1960',
+        control = ['top75_income', 'born_from_1960',
                    'educ_from_12', 'rand1', 'rand2']
 
     if version == 333:
-        control = ['top80_income', 'born_from_1960',
+        control = ['top75_income', 'born_from_1960',
                    'educ_from_12', 'www2', 'rand1']
 
     if version == 4:
-        control = ['top80_income', 'born_from_1960',
+        control = ['top75_income', 'born_from_1960',
                    'educ_from_12', 'www7']
 
     if version == 5:
         dep = 'college'
-        control = ['had_relig', 'top80_income', 'born_from_1960',
+        control = ['had_relig', 'top75_income', 'born_from_1960',
                    'sei', 'urban', 'rural']
 
     if version == 6:
         dep = 'www2'
-        control = ['had_relig', 'top80_income', 'born_from_1960',
+        control = ['had_relig', 'top75_income', 'born_from_1960',
                    'sei', 'urban', 'rural']
 
     return dep, control
@@ -3863,7 +3884,7 @@ def summarize_survey(survey):
         ('relig16', 'had_relig'),
         ('yrborn', 'born_from_1960'),
         ('educ', 'educ_from_12'),
-        ('income', 'top80_income'),
+        ('income', 'top75_income'),
         ]
     for attr1, attr2 in attr_pairs:
         survey.print_pmf(attr1)
@@ -4150,25 +4171,46 @@ def write_latex_table(fp, header, rows, format):
     fp.write(r'\end{tabular}' '\n')
 
 
-def read_year_file(year):
-    filename = 'gss.%d.csv' % year
-    objs = columns.read_csv(filename, Respondent)
-    print len(objs)
-    for obj in objs:
-        print obj.id, obj.income06
+class SimpleRespondent(object):
+    convert = dict()
 
-        #for key, val in sorted(obj.__dict__.iteritems()):
-        #    if 'id' in key:
-        #        print key, val
-        #    if 'income' in key:
-        #        print key, val
-        #break
-    
+    def clean(self):
+        pass
+
+class IncomeData(object):
+    def __init__(self, shelf_file):
+        self.shelf = shelve.open(shelf_file)
+
+    def read_year_file(self, year):
+        filename = 'gss.%d.csv' % year
+        objs = columns.read_csv(filename, SimpleRespondent)
+
+        if year in [2000, 2002, 2004]:
+            attr = 'income98'
+        elif year in [2006, 2010]:
+            attr = 'income06'
+
+        for obj in objs:
+            income = getattr(obj, attr)
+            print obj.year, obj.id, income
+            key = '%d.%d' % (obj.year, obj.id)
+            self.shelf[key] = income
+
+    def close(self):
+        self.shelf.close()
+
+    def lookup(self, year, orig_id):
+        key = '%d.%d' % (year, orig_id)
+        return self.shelf.get(key)
+
+
 def main(script):
     test_models()
     return
 
-    read_year_file(2010)
+    income_data = IncomeData('gss.income_data.db')
+    for year in [2004, 2002, 2000]:
+        income_data.read_year_file(year)
     return
 
     auxiliary_models()
