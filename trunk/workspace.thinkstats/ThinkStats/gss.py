@@ -3669,7 +3669,7 @@ def auxiliary_models():
     run_regression_and_print(complete, version, means=means)
 
 
-def compare_survey_and_complete():
+def compare_survey_and_complete(survey, complete):
     pass
 
 
@@ -4165,11 +4165,10 @@ def read_year_file(year):
         #break
     
 def main(script):
-    read_year_file(2010)
+    test_models()
     return
 
-
-    test_models()
+    read_year_file(2010)
     return
 
     auxiliary_models()
