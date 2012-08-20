@@ -377,7 +377,7 @@ class Respondent(object):
             self.orig_income = int(self.orig_income)
         except ValueError:
             self.orig_income = 'NA'
-        self.top50_income = meets_thresh(self.orig_income, 19)
+        self.top50_income = meets_thresh(self.orig_income, 21)
         
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
@@ -3685,7 +3685,35 @@ def auxiliary_models():
 
 
 def compare_survey_and_complete(survey, complete):
-    pass
+    """Looks for the effect of selecting only complete records.
+
+    survey: all respondents
+    complete: only complete respondents (for a particular version)
+    """
+    for s in [survey, complete]:
+        pmf = s.make_pmf('has_relig')
+        frac = fraction_one(pmf)
+        print 'has_relig', frac
+
+        pmf = s.make_pmf('had_relig')
+        frac = fraction_one(pmf)
+        print 'had_relig', frac
+
+        pmf = s.make_pmf('top75_income')
+        frac = fraction_one(pmf)
+        print 'top75_income', frac
+
+        pmf = s.make_pmf('born_from_1960')
+        try:
+            pmf.Remove('NA')
+        except:
+            pass
+        pmf.Normalize()
+        print 'mean born_from_1960', pmf.Mean()
+
+        pmf = s.make_pmf('college')
+        frac = fraction_one(pmf)
+        print 'college', frac
 
 
 def test_models(version=2, resample_flag=False):
@@ -3726,6 +3754,8 @@ def test_models(version=2, resample_flag=False):
     else:
         resample = complete
 
+    # run_regression_and_print(complete, version=0, means=means)
+
     # run the models
     for version in [1, 2]:
         run_regression_and_print(resample, version=version, means=means)
@@ -3743,7 +3773,7 @@ def read_complete(version):
     # select just the years we want
     years = [2000, 2002, 2004, 2006, 2010]
     survey = survey.subsample(lambda r: r.year in years)
-    # survey.get_income_data()
+    #survey.get_income_data()
 
     # give respondents random values
     random.seed(17)
@@ -3751,8 +3781,8 @@ def read_complete(version):
 
     # select complete records
     dep, control = get_version(version)
-    for var in [dep] + control:
-        print r'\verb"%s",' % var
+    #for var in [dep] + control:
+    #    print r'\verb"%s",' % var
 
     attrs = [dep] + control
     complete = survey.subsample(lambda r: r.is_complete(attrs))
@@ -3797,6 +3827,11 @@ def get_version(version):
     Returns: string, list of strings
     """
     dep = 'has_relig'
+
+    if version == 0:
+        control = ['had_relig', 'top75_income', 'top50_income',
+                   'born_from_1960',
+                   'educ_from_12']
 
     if version == 1:
         control = ['had_relig', 'top75_income',
