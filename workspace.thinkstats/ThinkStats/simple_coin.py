@@ -25,16 +25,21 @@ MacKay asks, "But do these data give evidence that the coin is biased
 rather than fair?"
 
 We will get to that question, but we will start by defining a distribution
-of possible values for p, the probability of heads, and computing the
-posterior distribution of p given the evidence cited.
+of possible values for x, the probability of heads, and computing the
+posterior distribution of x given the evidence cited.
 
 The code below uses a Pmf object to represent a suite of hypotheses.
-In this case, the values in the Pmf are possible values of p, but in
+In this case, the values in the Pmf are possible values of x, but in
 general we could use any kind of object to represent a hypothesis.
 
 """
 
 def Update(pmf, outcome):
+    """Updates the pmf based on evidence.
+
+    pmf: Pmf object
+    outcome: outcome of a coin toss, string 'H' or 'T'
+    """
     for x in pmf.Values():
         if outcome == 'H':
             pmf.Mult(x, x)
