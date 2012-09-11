@@ -1,0 +1,350 @@
+% LaTeX source for ``Think Bayes: Bayesian Statistics Made Simple''
+% Copyright 2012  Allen B. Downey.
+
+% License: Creative Commons Attribution-NonCommercial 3.0 Unported License.
+% http://creativecommons.org/licenses/by-nc/3.0/
+%
+
+\documentclass[12pt]{book}
+\usepackage[width=5.5in,height=8.5in,
+  hmarginratio=3:2,vmarginratio=1:1]{geometry}
+
+% for some of these packages, you might have to install
+% texlive-latex-extra (in Ubuntu)
+
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{mathpazo}
+\usepackage{url}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{makeidx}
+\usepackage{setspace}
+\usepackage{hevea}                           
+\usepackage{upquote}
+
+\title{Think Bayes}
+\author{Allen B. Downey}
+
+\newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
+\newcommand{\theversion}{0.1.0}
+
+% these styles get translated in CSS for the HTML version
+\newstyle{a:link}{color:black;}
+\newstyle{p+p}{margin-top:1em;margin-bottom:1em}
+\newstyle{img}{border:0px}
+
+% change the arrows in the HTML version
+\setlinkstext
+  {\imgsrc[ALT="Previous"]{back.png}}
+  {\imgsrc[ALT="Up"]{up.png}}
+  {\imgsrc[ALT="Next"]{next.png}} 
+
+\makeindex
+
+\newif\ifplastex
+\plastexfalse
+
+\begin{document}
+
+\frontmatter
+
+\ifplastex
+
+\else
+\fi
+
+\newcommand{\PMF}{\mathrm{PMF}}
+\newcommand{\PDF}{\mathrm{PDF}}
+\newcommand{\CDF}{\mathrm{CDF}}
+\newcommand{\ICDF}{\mathrm{ICDF}}
+
+\ifplastex
+    \usepackage{localdef}
+    \maketitle
+
+\else
+
+\input{latexonly}
+
+\begin{latexonly}
+
+\renewcommand{\blankpage}{\thispagestyle{empty} \quad \newpage}
+
+% TITLE PAGES FOR LATEX VERSION
+
+%-half title--------------------------------------------------
+\thispagestyle{empty}
+
+\begin{flushright}
+\vspace*{2.0in}
+
+\begin{spacing}{3}
+{\huge Think Bayes: Bayesian Statistics Made Simple}\\
+{\Large }
+\end{spacing}
+
+\vspace{0.25in}
+
+Version \theversion
+
+\vfill
+
+\end{flushright}
+
+%--verso------------------------------------------------------
+
+\blankpage
+\blankpage
+
+%--title page--------------------------------------------------
+\pagebreak
+\thispagestyle{empty}
+
+\begin{flushright}
+\vspace*{2.0in}
+
+\begin{spacing}{3}
+{\huge Think Bayes}\\
+{\Large Bayesian Statistics Made Simple}
+\end{spacing}
+
+\vspace{0.25in}
+
+Version \theversion
+
+\vspace{1in}
+
+
+{\Large
+Allen B. Downey\\
+}
+
+
+\vspace{0.5in}
+
+{\Large Green Tea Press}
+
+{\small Needham, Massachusetts}
+
+\vfill
+
+\end{flushright}
+
+
+%--copyright--------------------------------------------------
+\pagebreak
+\thispagestyle{empty}
+
+Copyright \copyright ~2012 Allen B. Downey.
+
+
+\vspace{0.2in}
+
+\begin{flushleft}
+Green Tea Press       \\
+9 Washburn Ave \\
+Needham MA 02492
+\end{flushleft}
+
+Permission is granted to copy, distribute, and/or modify this document
+under the terms of the Creative Commons Attribution-NonCommercial 3.0 Unported
+License, which is available at \url{http://creativecommons.org/licenses/by-nc/3.0/}.
+
+\vspace{0.2in}
+
+\end{latexonly}
+
+
+% HTMLONLY
+
+\begin{htmlonly}
+
+% TITLE PAGE FOR HTML VERSION
+
+{\Large \thetitle}
+
+{\large Allen B. Downey}
+
+Version \theversion
+
+\vspace{0.25in}
+
+Copyright 2012 Allen B. Downey
+
+\vspace{0.25in}
+
+Permission is granted to copy, distribute, and/or modify this document
+under the terms of the Creative Commons Attribution-NonCommercial 3.0
+Unported License, which is available at
+\url{http://creativecommons.org/licenses/by-nc/3.0/}.
+
+\setcounter{chapter}{-1}
+
+\end{htmlonly}
+
+\fi
+% END OF THE PART WE SKIP FOR PLASTEX
+
+\chapter{Preface}
+\label{preface}
+
+\section*{}
+
+
+Allen B. Downey \\*
+Needham MA \\*
+
+Allen B. Downey is a Professor of Computer Science at 
+the Franklin W. Olin College of Engineering.
+
+
+
+
+%\section*{Acknowledgements}
+
+
+
+\section*{Contributor List}
+
+If you have a suggestion or correction, please send email to 
+{\tt downey@allendowney.com}.  If I make a change based on your
+feedback, I will add you to the contributor list
+(unless you ask to be omitted).
+\index{contributors}
+
+If you include at least part of the sentence the
+error appears in, that makes it easy for me to search.  Page and
+section numbers are fine, too, but not quite as easy to work with.
+Thanks!
+
+\small
+
+\begin{itemize}
+
+\item No contributors yet.
+
+% ENDCONTRIB
+
+\end{itemize}
+
+\normalsize
+
+\clearemptydoublepage
+
+% TABLE OF CONTENTS
+\begin{latexonly}
+
+\tableofcontents
+
+\clearemptydoublepage
+
+\end{latexonly}
+
+% START THE BOOK
+\mainmatter
+
+\newcommand{\p}{{\mathrm p}}
+\newcommand{\and}{{\mathrm and}}
+\newcommand{\not}{{\mathrm not}}
+
+
+\chapter{Bayes's Theorem}
+\label{intro}
+
+\section{Conditional probability}
+
+The fundamental idea behind all Bayesian statistics is Bayes's Theorem.
+which is surprisingly easy to derive, provided that you understand
+conditional probability.  So let's start with probability, then
+conditional probabilty, and then we'll get back to 
+
+A probability is a number between 0 and 1 (including both) that
+represents a degree of belief in a fact or prediction.  A probability
+of 1 represents certainty that a fact is true, or that a prediction
+will come to pass.  A probability of 0 represents equal certainty
+that the fact is false.
+
+Intermediate values represent degrees of certainty.  The value 0.5,
+often represented as 50\%, means that a predicted outcome is
+as likely to happen as not.  For example, the probability that a tossed
+coin lands face up is very close to 50\%.
+
+A conditional probability is a probability based on some background
+information.  For example, I might be interested in the probability
+that I will have a heart attack in the next year.  According to the
+CDC, ``Every year about 785,000 Americans have a first coronary attack.
+(\url{http://www.cdc.gov/heartdisease/facts.htm})''
+
+The U.S. population is about 311 million,
+is roughly million, so the probability that a randomly-chosen
+American will have a heart attack in the next year is 0.3\%.
+
+But I am not a randomly-chosen American.  
+Epidemiologists have identified many factors
+affect the risk of heart attacks; depending on those factors,
+my risk might be higher or lower than average.
+
+I am male, 45 years old, and I have
+borderline high cholesterol.  Those factors increase my chances.
+However, I have low blood pressure and I don't smoke, and
+those factors decrease my chances.
+
+Plugging everything into the online calculator at
+\url{http://hp2010.nhlbihin.net/atpiii/calculator.asp}, I find that my
+risk of a heart attack in the next year is about 0.2\%, slightly
+less than the national average.
+That value is a conditional probability, because it is based on
+a number of factors that make up my ``condition.''
+
+The usual notation for conditional probability is $\p(A|B)$, which
+is the probability of $A$ given that $B$ is true.  In this
+example, $A$ represents the prediction that I will have a heart
+attack in the next year, and $B$ is the set of conditions I listed.
+
+Simple example with numbers?
+
+\section{Conjunction}
+
+``Conjoint probability'' is a fancy way to say the probability that
+two things are both true.  I will write $\p(A \and B)$ to mean the
+probability that $A$ and $B$ are both true.
+
+If you learned about probability in the context of coin tosses and
+dice, you might have learned the formula
+
+\[ \p(A \and B) = \p(A) \p(B) \]
+
+For example, if I toss two coins, and $A$ means the first coin lands
+face up, and $B$ means the second coin lands face up, then $\p(A) =
+\p(B) = 0.5$, and sure enough, $\p(A \and B) = \p(A) \p(B) = 0.25$.
+
+But this formula only works because in this case $A$ and $B$ are
+independent; that is, the second event does not depend on the first.
+If you tell me the first coin is heads, that does not change $\p(B)$.
+
+Here is a different example where the events are not independent.
+Suppose again that $A$ means the first coin lands face up, but let's
+add $C$, which means that {\em both} coins land face up.  What is the
+probability of both events, $\p(A \and C)$?
+
+These events are dependent because if we know whether or not $A$ is
+true, that changes $\p(C)$.  In this case, if $A$ is true then $\p(C)
+= 0.5$; but if $A$ is false $\p(C) = 0$.
+
+To be more precise, I should not say that $\p(C)$ changes, but
+rather that the conditional probabilities are different: $\p(C|A) = 0.5$
+and $\p(C| \not A) = 0$.
+
+
+Conjunction fallacy?
+
+
+
+
+
+\end{document}
+
