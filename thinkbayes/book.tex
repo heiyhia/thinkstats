@@ -247,9 +247,10 @@ Thanks!
 % START THE BOOK
 \mainmatter
 
-\newcommand{\p}{{\mathrm p}}
-\newcommand{\and}{{\mathrm and}}
-\newcommand{\not}{{\mathrm not}}
+\newcommand{\p}[1]{\ensuremath{\mathrm{p}(#1)}}
+\newcommand{\T}[1]{\mbox{#1}}
+\newcommand{\AND}{~\mathrm{and}~}
+\newcommand{\NOT}{\mathrm{not}~}
 
 
 \chapter{Bayes's Theorem}
@@ -279,14 +280,13 @@ that I will have a heart attack in the next year.  According to the
 CDC, ``Every year about 785,000 Americans have a first coronary attack.
 (\url{http://www.cdc.gov/heartdisease/facts.htm})''
 
-The U.S. population is about 311 million,
-is roughly million, so the probability that a randomly-chosen
-American will have a heart attack in the next year is 0.3\%.
+The U.S. population is about 311 million, so the probability that a
+randomly-chosen American will have a heart attack in the next year is
+0.3\%.
 
-But I am not a randomly-chosen American.  
-Epidemiologists have identified many factors
-affect the risk of heart attacks; depending on those factors,
-my risk might be higher or lower than average.
+But I am not a randomly-chosen American.  Epidemiologists have
+identified many factors affect the risk of heart attacks; depending on
+those factors, my risk might be higher or lower than average.
 
 I am male, 45 years old, and I have
 borderline high cholesterol.  Those factors increase my chances.
@@ -300,51 +300,212 @@ less than the national average.
 That value is a conditional probability, because it is based on
 a number of factors that make up my ``condition.''
 
-The usual notation for conditional probability is $\p(A|B)$, which
+The usual notation for conditional probability is \p{A|B}, which
 is the probability of $A$ given that $B$ is true.  In this
 example, $A$ represents the prediction that I will have a heart
 attack in the next year, and $B$ is the set of conditions I listed.
 
 Simple example with numbers?
 
-\section{Conjunction}
+
+\section{Conjoint probability}
 
 ``Conjoint probability'' is a fancy way to say the probability that
-two things are both true.  I will write $\p(A \and B)$ to mean the
+two things are both true.  I will write \p{A \AND B} to mean the
 probability that $A$ and $B$ are both true.
 
 If you learned about probability in the context of coin tosses and
 dice, you might have learned the formula
 
-\[ \p(A \and B) = \p(A) \p(B) \]
+\[ \p{A \AND B} = \p{A}~\p{B} \]
 
 For example, if I toss two coins, and $A$ means the first coin lands
-face up, and $B$ means the second coin lands face up, then $\p(A) =
-\p(B) = 0.5$, and sure enough, $\p(A \and B) = \p(A) \p(B) = 0.25$.
+face up, and $B$ means the second coin lands face up, then \p{A} =
+\p{B} = 0.5, and sure enough, \p{A \AND B} = \p{A}~\p{B} = 0.25.
 
 But this formula only works because in this case $A$ and $B$ are
 independent; that is, the second event does not depend on the first.
-If you tell me the first coin is heads, that does not change $\p(B)$.
+If you tell me the first coin is heads, that does not change \p{B}.
 
 Here is a different example where the events are not independent.
 Suppose again that $A$ means the first coin lands face up, but let's
 add $C$, which means that {\em both} coins land face up.  What is the
-probability of both events, $\p(A \and C)$?
+probability of both events, \p{A \AND C}?
 
 These events are dependent because if we know whether or not $A$ is
-true, that changes $\p(C)$.  In this case, if $A$ is true then $\p(C)
-= 0.5$; but if $A$ is false $\p(C) = 0$.
+true, that changes \p{C}.  Specifically, if $A$ is true then \p{C}
+= 0.5; but if $A$ is false \p{C} = 0.
 
-To be more precise, I should not say that $\p(C)$ changes, but
-rather that the conditional probabilities are different: $\p(C|A) = 0.5$
-and $\p(C| \not A) = 0$.
+To be more precise, I should not say that \p{C} changes, but
+rather that the conditional probabilities are different: \p{C|A} = 0.5
+and \p{C| \NOT A} = 0.
+
+In general, the probability of a conjunction is
+%
+\[ \p{A \AND C} = \p{A}~\p{C|A} \]
+%
+In this case, \p{A \AND C} = (0.5)(0.5) = 0.25.
 
 
-Conjunction fallacy?
+\section{The girl named Florida problem}
+
+Conditional probability is a simple enough idea, but it can be
+tricky to apply.  One example is the ``girl named Florida problem,''
+which I found in Leonard Mlodinow's book {\it The Drunkard's Walk}.
+
+Before stating Mlodinow's version of the problem, I will work
+up to it with some simpler versions.
+
+Suppose I tell you that I have two children (which is true) and
+that the older one is a girl (also true).  If you don't know anything
+else about me or my family, what is the probability that both of
+my children are girls?
+
+To keep things simple, you can assume that my children are not twins,
+and that the probability that any child is a girl is 50\%.
+
+The fact that the first child is a girl does not affect the probability
+for the second girl, so
+%
+\[ \p{\T{two girls} | \T{older child is a girl}} = 0.5 \]
+%
+No problem so far.  Let's change it just a little.  Suppose that instead
+of telling you that my older child is a girl, I mentioned something
+about ``my daughter,'' which implies that at least one of my children
+is a girl, but it doesn't tell you which one, and it doesn't tell
+you anything about the other child.  In that case, what is the probability
+that both children are girls?
+
+You might be tempted to say that it doesn't make any difference and
+the chance is still 0.5.  But it turns out that's not right.
+
+To see why, imagine that there are 100 families with two children.
+You would expect 25 of them to have two girls and 25 to have two
+boys; another 25 would have an older daughter and a younger son,
+and 25 would have an older son and a younger daughter.
+
+If we select the families with at least one girl, that eliminates
+the 25 families with two boys, leaving 75 families.  Of those, 25
+have two girls, so:
+%
+\[ \p{\T{two girls} | \T{at least one child is a girl}} = 1/3 \]
+%
+And now we're ready for the girl named Florida.  Suppose I tell
+you that I have two children, and one of them is a girl named
+Florida.  What is the probability that both children are girls?
+
+You can find a solution to this problem in my blog, {\it Probably
+  Overthinking It} at
+\url{http://allendowney.blogspot.com/2011/11/girl-named-florida-solutions.html}.
+
+I think this problem is fun, but it comes with a warning.  Our
+intuition for probability is sometimes very good, but sometimes
+misleading.  So we will need to be careful.
+
+\section{The Cookie Problem}
+
+We'll get to Bayes's Theorem soon, but I want to motivate it with an
+example called The Cookie Problem\footnote{Based on an example from
+  \url{http://en.wikipedia.org/wiki/Bayes'_theorem} that is no longer
+  there.}.  Suppose there are two bowls of cookies.  Bowl 1 contains
+  30 vanilla cookies and 10 chocolate cookies.  Bowl 2 contains 20 of
+  each.
+
+Now suppose you choose one of the bowls at random and, without looking,
+select a cookie at random.  The cookie is vanilla.  What is the probability
+that it came from Bowl 1?
+
+This is a conditional probability; we want \p{\T{Bowl 1} | \T{vanilla}},
+but it is not immediately obvious how to compute it.  On the other
+hand, if we flip it around, it's very easy:
+%
+\p{\T{vanilla} | \T{Bowl 1}} = 3/4
+%
+Unfortunately, \p{A|B} is {\em not} the same as \p{B|A}, but there
+is a way to get from one to the other: Bayes's Theorem.
 
 
+\section{Bayes's Theorem}
 
+At this point we have everything we need to derive Bayes's Theorem.
+Again, the probability of a conjuction is
+%
+\[ \p{A \AND B} = \p{A}~\p{B|A} \]
+%
+for any $A$ and $B$.  Or, if we define $A$ and $B$ the other way
+around, we could also write
+%
+\[ \p{B \AND A} = \p{B}~\p{A|B} \]
+%
+And finally
+%
+\[ \p{A \AND B} = \p{B \AND A} \]
+%
+Pulling it all together, we get
+%
+\[ \p{B}~\p{A|B} = \p{A}~\p{B|A} \]
+%
+Which means there are two ways to compute the conjunction.
+If you have \p{A}, you multiply by the conditional
+probability \p{B|A}.  Or you could do it the other way around; if you
+know \p{B}, you multiply by \p{A|B}.  Either way you should get
+the same thing.
+
+Finally we can divide through by \p{B}
+%
+\[ \p{A|B} = \frac{\p{A}~\p{B|A}}{\p{B}} \]
+%
+which is Bayes's Theorem!
+
+Now we are ready to solve the Cookie Problem.  I'll use
+$B_1$ for the hypothesis that the cookie came from Bowl 1
+and $V$ for the vanilla cookie.  Plugging in Bayes's Theorem
+we get
+%
+\[ \p{B_1|V} = \frac{\p{B_1}~\p{V|B_1}}{\p{V}} \]
+%
+The term on the left is what we want: the probability of Bowl 1, given
+that we chose a vanilla cookie.  The terms on the right are:
+
+\begin{itemize}
+
+\item \p{B_1}: This is the probability that we chose Bowl 1, unconditioned
+by what kind of cookie we got.  Since the problem says we chose the
+bowls at random, we can assume that means \p{B_1} = 1/2.
+
+\item \p{V|B_1}: This is the probability of getting a vanilla cookie
+from Bowl 1, which is 3/4.
+
+\item \p{V}: This is the probability of drawing a vanilla cookie from
+either bowl.  If we combine the two bowls, we get 50 vanilla and 30
+chocolate cookies, so \p(V) = 5/8.
+
+\end{itemize}
+
+Putting it together, we have 
+%
+\[ \p{B_1|V} = \frac{(1/2)(3/4)}{5/8} \]
+%
+which reduces to 3/5.  So the vanilla cookie gives us a hint that
+we probably chose Bowl 1, because vanilla cookies are more likely to
+come from Bowl 1.
+
+This example demonstrates one use of Bayes's Theorem: it provides
+a process to get from \p{B|A} to \p{A|B}.  This strategy is useful
+in cases, like the Cookie Problem, where it is easier to compute
+the terms on the right side of Bayes's Theorem than the term on the
+left.
+
+\section{The diachronic interpretation}
+
+There is another way to think of Bayes's Theorem: it gives us a
+way to update the probability of a hypothesis, $H$, in light of
+some body of evidence, $E$.
+
+Rewriting Bayes's Theorem with $H$ and $E$ yields:
+%
+\[ \p{H|E} = \frac{\p{H}~\p{E|H}}{\p{E}} \]
+%
 
 
 \end{document}
-
