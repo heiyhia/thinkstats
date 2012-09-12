@@ -83,8 +83,8 @@
 \vspace*{2.0in}
 
 \begin{spacing}{3}
-{\huge Think Bayes: Bayesian Statistics Made Simple}\\
-{\Large }
+{\huge Think Bayes}\\
+{\Large Bayesian Statistics Made Simple}
 \end{spacing}
 
 \vspace{0.25in}
@@ -194,6 +194,12 @@ Unported License, which is available at
 
 \section*{}
 
+This version of the book is a rough draft.  I am making this draft
+available for comments, but it comes with the warning that it is
+probably full of errors.
+
+If you find some of those errors, please let me know.  But it is
+probably too early to bother with typos.
 
 Allen B. Downey \\*
 Needham MA \\*
@@ -232,8 +238,8 @@ Thanks!
   his book as examples.
 
 \item This book has also benefited from my interactions with Sanjoy
-  Mahajan, especially in Fall 2012, when I audited his class at Olin
-  College.
+  Mahajan, especially in Fall 2012, when I audited his class on
+  Bayesian Inference at Olin College.
 
 % ENDCONTRIB
 
@@ -266,15 +272,16 @@ Thanks!
 
 \section{Conditional probability}
 
-The fundamental idea behind all Bayesian statistics is Bayes's Theorem.
+The fundamental idea behind all Bayesian statistics is Bayes's Theorem,
 which is surprisingly easy to derive, provided that you understand
-conditional probability.  So let's start with probability, then
-conditional probabilty, and then we'll get back to it.
+conditional probability.  So we'll start with probability, then
+conditional probabilty, then Bayes's Theorem, and on to Bayesian
+statistics.
 
 A probability is a number between 0 and 1 (including both) that
 represents a degree of belief in a fact or prediction.  A probability
 of 1 represents certainty that a fact is true, or that a prediction
-will come to pass.  A probability of 0 represents equal certainty
+will come true.  A probability of 0 represents equal certainty
 that the fact is false.
 
 Intermediate values represent degrees of certainty.  The value 0.5,
@@ -290,7 +297,7 @@ CDC, ``Every year about 785,000 Americans have a first coronary attack.
 
 The U.S. population is about 311 million, so the probability that a
 randomly-chosen American will have a heart attack in the next year is
-0.3\%.
+roughly 0.3\%.
 
 But I am not a randomly-chosen American.  Epidemiologists have
 identified many factors affect the risk of heart attacks; depending on
@@ -323,7 +330,7 @@ probability that $A$ and $B$ are both true.
 If you learned about probability in the context of coin tosses and
 dice, you might have learned the formula
 
-\[ \p{A \AND B} = \p{A}~\p{B} \]
+\[ \p{A \AND B} = \p{A}~\p{B} \quad\mbox{WARNING: not always true}\]
 
 For example, if I toss two coins, and $A$ means the first coin lands
 face up, and $B$ means the second coin lands face up, then $\p{A} =
@@ -342,7 +349,7 @@ These events are dependent because if we know whether or not $A$ is
 true, that changes \p{C}.  Specifically, if $A$ is true then $\p{C}
 = 0.5$; but if $A$ is false $\p{C} = 0$.
 
-To be more precise, I should not say that \p{C} changes, but
+To be more correct, I should not say that \p{C} changes, but
 rather that the conditional probabilities are different: $\p{C|A} = 0.5$
 and $\p{C| \NOT A} = 0$.
 
@@ -350,7 +357,7 @@ In general, the probability of a conjunction is
 %
 \[ \p{A \AND C} = \p{A}~\p{C|A} \]
 %
-In this case, \p{A \AND C} = (0.5)(0.5) = 0.25.
+for any $A$ and $C$.  In this example, \p{A \AND C} = (0.5)(0.5) = 0.25.
 
 
 \section{The girl named Florida problem}
@@ -359,7 +366,7 @@ Conditional probability is a simple enough idea, but it can be
 tricky to apply.  One example is the ``girl named Florida problem,''
 which I found in Leonard Mlodinow's book {\it The Drunkard's Walk}.
 
-Before starting Mlodinow's version of the problem, let's work
+Before we get to Mlodinow's version of the problem, let's work
 up to it with some simpler versions.
 
 Suppose I tell you that I have two children (which is true) and
@@ -383,7 +390,7 @@ you anything about the other child.  In that case, what is the probability
 that both children are girls?
 
 You might be tempted to say that it doesn't make any difference and
-the chance is still $1/2$.  But it turns out that's not right.
+the chance is still $1/2$.  But that's not right.
 
 To see why, imagine 100 families with two children.
 You would expect 25 of them to have two girls and 25 to have two
@@ -391,7 +398,7 @@ boys; another 25 would have an older daughter and a younger son,
 and 25 would have an older son and a younger daughter.
 
 If we select the families with at least one girl, that eliminates
-the 25 families with two boys, leaving 75 families.  Of those, 25
+25 families with two boys, leaving 75 families.  Of those, 25
 have two girls, so:
 %
 \[ \p{\T{two girls} | \T{at least one child is a girl}} = 1/3 \]
@@ -401,8 +408,8 @@ you that I have two children, and one of them is a girl named
 Florida.  What is the probability that both children are girls?
 
 Most people have a strong intuition that the name of the child
-is irrelevant, and therefore the answer is $1/3$.  But that is
-not correct (at least for the interpretation of the problem that
+is irrelevant, and therefore the answer is $1/3$.  But that's
+not right (at least for the interpretation of the problem that
 I think is most natural).
 
 You can find a solution to this problem in my blog, {\it Probably
@@ -412,9 +419,7 @@ You can find a solution to this problem in my blog, {\it Probably
 This problem is fun, in part because the result is
 counterintuitive, but it comes with a warning.  Our
 intuition for probability is sometimes very good, but sometimes
-misleading.  So we will need to be careful.  One of the reasons
-Bayes's Theorem is useful is that it provides a divide-and-conquer
-strategy for breaking a tricky problem into simple pieces.
+misleading.  So we will need to be careful.
 
 
 \section{The Cookie Problem}
@@ -431,38 +436,40 @@ select a cookie at random.  The cookie is vanilla.  What is the probability
 that it came from Bowl 1?
 
 This is a conditional probability; we want \p{\T{Bowl 1} | \T{vanilla}},
-but it is not immediately obvious how to compute it.  On the other
+but it is not obvious how to compute it.  On the other
 hand, if we flip it around, it's very easy:
 %
 \p{\T{vanilla} | \T{Bowl 1}} = 3/4
 %
-Unfortunately, \p{A|B} is {\em not} the same as \p{B|A}, but there
+Unfortunately, \p{A|B} is {\em not} the same as \p{B|A}.  But there
 is a way to get from one to the other: Bayes's Theorem.
 
 
 \section{Bayes's Theorem}
 
 At this point we have everything we need to derive Bayes's Theorem.
-Again, the probability of a conjuction is
-%
-\[ \p{A \AND B} = \p{A}~\p{B|A} \]
-%
-for any $A$ and $B$.  Or, if we define $A$ and $B$ the other way
-around, we could also write
-%
-\[ \p{B \AND A} = \p{B}~\p{A|B} \]
-%
-And finally
+We'll start with the observation that conjunction is commutative; that is
 %
 \[ \p{A \AND B} = \p{B \AND A} \]
 %
-Pulling it all together, we get
+for any events $A$ and $B$.
+
+Next, we write the probability of a conjunction:
+%
+\[ \p{A \AND B} = \p{A}~\p{B|A} \]
+%
+And if we define $A$ and $B$ the other way
+around, we can also write
+%
+\[ \p{B \AND A} = \p{B}~\p{A|B} \]
+%
+And that's all we need.  Pulling those pieces together, we get
 %
 \[ \p{B}~\p{A|B} = \p{A}~\p{B|A} \]
 %
 Which means there are two ways to compute the conjunction.
 If you have \p{A}, you multiply by the conditional
-probability \p{B|A}.  Or you could do it the other way around; if you
+probability \p{B|A}.  Or you can do it the other way around; if you
 know \p{B}, you multiply by \p{A|B}.  Either way you should get
 the same thing.
 
@@ -470,9 +477,10 @@ Finally we can divide through by \p{B}
 %
 \[ \p{A|B} = \frac{\p{A}~\p{B|A}}{\p{B}} \]
 %
-which is Bayes's Theorem!
+And that's Bayes's Theorem!  It doesn't look like much, but
+it is a surprisingly powerful idea.
 
-Now we are ready to solve the Cookie Problem.  I'll use
+As an example, we can use it to solve the Cookie Problem.  I'll write
 $B_1$ for the hypothesis that the cookie came from Bowl 1
 and $V$ for the vanilla cookie.  Plugging in Bayes's Theorem
 we get
@@ -485,8 +493,8 @@ that we chose a vanilla cookie.  The terms on the right are:
 \begin{itemize}
 
 \item \p{B_1}: This is the probability that we chose Bowl 1, unconditioned
-by what kind of cookie we got.  Since the problem says we chose the
-bowls at random, we can assume that means \p{B_1} = 1/2.
+by what kind of cookie we got.  Since the problem says we chose a
+bowl at random, we can assume \p{B_1} = 1/2.
 
 \item \p{V|B_1}: This is the probability of getting a vanilla cookie
 from Bowl 1, which is 3/4.
@@ -501,7 +509,7 @@ Putting it together, we have
 %
 \[ \p{B_1|V} = \frac{(1/2)(3/4)}{5/8} \]
 %
-which reduces to 3/5.  So the vanilla cookie gives us a hint that
+which reduces to 3/5.  So the vanilla cookie is a hint that
 we probably chose Bowl 1, because vanilla cookies are more likely to
 come from Bowl 1.
 
@@ -516,6 +524,12 @@ left.
 There is another way to think of Bayes's Theorem: it gives us a
 way to update the probability of a hypothesis, $H$, in light of
 some body of data, $D$.
+
+This way of thinking about Bayes's Theorem is called the
+{\bf diachronic interpretation}.  ``Diachronic'' means that something
+is happening over time; in this case there is an implicit notion
+that the probability of the hypotheses changes, over time, as
+we see new data.
 
 Rewriting Bayes's Theorem with $H$ and $D$ yields:
 %
@@ -542,9 +556,11 @@ called the {\bf normalizing constant}.
 In some cases, we can compute the prior
 based on background information.  For example, the Cookie
 Problem specifies that we choose a bowl at random (and implies
-that they have equal probability).  In other cases the prior
-might be subjective; that is, reasonable people might disagree,
-either because they are using different background information
+that they have equal probability).
+
+In other cases the prior
+is subjective; that is, reasonable people might disagree,
+either because they use different background information
 or because they interpret the same information differently.
 
 The likelihood is usually the easiest part to compute.  In the
@@ -568,7 +584,7 @@ possibilities; one of the hypotheses has to be true.
 
 \end{description}
 
-I use the word {\bf suite} for a set of hypothesis that has these
+I use the word {\bf suite} for a set of hypotheses that has these
 properties.
 
 In the Cookie Problem, there are only two hypotheses---the cookie
@@ -576,33 +592,31 @@ came from Bowl 1 or Bowl 2---and they are mutually exclusive and
 collectively exhaustive.
 
 In that case we can compute \p{D} using the law of total probability,
-which means that if there are two exclusive ways that something
-might happen, then you can add up the probabilities like this:
+which says that if there are two exclusive ways that something
+might happen, you can add up the probabilities like this:
 %
 \[ \p{D} = \p{B_1}~\p{D|B_1} + \p{B_2}~\p{D|B_2} \]
 %
 Plugging in the values from the Cookie Problem, we have
 %
-\[ \p{D} = (1/2)~(3/4) + (1/2)~(1/2) = 5/8\]
+\[ \p{D} = (1/2)~(3/4) + (1/2)~(1/2) = 5/8 \]
 %
 which is what we computed earlier by mentally combining the two
 bowls.
 
-This way of thinking about Bayes's Theorem is called the
-{\bf diachronic interpretation}.  ``Diachronic'' means that something
-is happening over time; in this case there is an implicit notion
-that the probability of the hypotheses changes, over time, as
-we see new data.
 
 \newcommand{\MM}{M\&M}
 
 \section{The \MM~Problem}
 
-The blue \MM~was introduced in 1995\footnote{\MM~is a registered
-  trademark of Mars, Inc.}.  Before then, the color mix in a bag of
-plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\% Green, 10\%
-Orange, 10\% Tan).  Afterward it was (24\% Blue , 20\% Green, 16\%
-Orange, 14\% Yellow, 13\% Red, 13\% Brown).
+\MM's are small candy-coated chocolates that come in a variety of
+colors.  Mars, Inc., which makes \MM's, changes the mixture of
+colors from time to time.
+
+In 1995, they introduced blue \MM's.  Before then, the color mix in
+a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
+Green, 10\% Orange, 10\% Tan).  Afterward it was (24\% Blue , 20\%
+Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown).
 
 %\index{M\&M}
 
@@ -612,13 +626,13 @@ which, but he gives me one \MM~from each bag.  One is yellow and
 one is green.  What is the probability that the yellow one came
 from the 1994 bag?
 
-This problem is similar to the Cookie Problem, with the twist that
-I draw one sample from each bowl/bag.  This problem also gives
-me a chance to demonstrate a technique that is useful for solving
-problems like this on paper.  In the next chapter we will see how
-to do them computationally.
+This problem is similar to the Cookie Problem, with the twist that I
+draw one sample from each bowl/bag.  This problem also gives me a
+chance to demonstrate the table method, which is useful for solving
+problems like this on paper.  In the next chapter we will
+solve them computationally.
 
-The first step is to enumerate the hypothesis.  In this case there
+The first step is to enumerate the hypotheses.  In this case there
 are only two:
 
 \begin{itemize}
@@ -630,47 +644,48 @@ from 1996.
 
 \end{itemize}
 
-Now I construct a table with one row for each hypothesis and one
+Now we construct a table with a row for each hypothesis and a
 column for each term in Bayes's Theorem:
 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
    & \p{H} & \p{D|H} & \p{H}~\p{D|H}  & \p{H|D}  \\
 \hline
-A  &  1/2  &  20\% 20\%  &  200  &  20/27 \\
-B  &  1/2  &  10\% 14\%  &   70  &  7/27 \\
+A  &  1/2  &  (20)(20)  &  200  &  20/27 \\
+B  &  1/2  &  (10)(14)  &   70  &  7/27 \\
 \hline
 \end{tabular}
 
-The first column is the priors.
+The first column has the priors.
 Since there is one bag from 1994 and one from 1996,
-it is reasonable to choose the priors $\p{A} = \p{B} = 1/2$.
+it is reasonable to choose $\p{A} = \p{B} = 1/2$.
 
-The second column in the likelihoods, which follow from the
+The second column has the likelihoods, which follow from the
 information in the problem.  If $A$ is true, the yellow \MM came from
 1994 with probability 20\%, and the green came from 1996 with
-probability 20\%.  In this case we can assume that the selections are
-independent, I get the conjoint probability by multiplying.
+probability 20\%.  Because the selections are
+independent, we get the conjoint probability by multiplying.
 
 The third column is just the product of the previous two.
 The sum of this column, 270, is the normalizing constant.
-
 To get the last column, which contains the posteriors, we divide
-the third column by the normalizing constant.  That's it.  Simple,
-right?
+the third column by the normalizing constant.
+
+That's it.  Simple, right?
 
 Well, you might be bothered by one detail.  I wrote \p{D|H}
 in terms of percentages, not probabilities, which means it
-is off by a factor of 10,000.  But it turns out ok because
-it cancels out when we divide through by the normalizing factor.
+is off by a factor of 10,000.  But that
+cancels out when we divide through by the normalizing factor, so
+it doesn't affect the result.
 
 When the set of hypotheses is mutually exclusive and collectively
-exhaustive, you can feel free to multiply or divide the probabilities,
+exhaustive, you can multiply the probabilities by any factor,
 if it is convenient, as long as you apply the same factor to the entire
 column.
 
 
-\item{The Monty Hall problem}
+\section{The Monty Hall problem}
 
 The Monty Hall problem might be the most contentious question in
 the history of probability.  The scenario is simple, but the correct
@@ -742,21 +757,26 @@ C  &  1/3  &  1  &   1/3  &  2/3 \\
 \end{tabular}
 
 Filling in the priors is easy because we are told that the prizes
-are arranged at random, which suggests that the car is equally
+are arranged at random, which implies that the car is equally
 likely to be behind any door.
 
-Figuring out the likelihoods takes some thought, but we reasonable
-care we can be confident that we have it right.  Let's start with
-$A$.  If the car is actually behind A, Monty could safely open Doors
+Figuring out the likelihoods takes some thought, but with reasonable
+care we can be confident that we have it right:
+
+\begin{itemize}
+
+\item If the car is actually behind A, Monty could safely open Doors
 B or C.  So the probability that he chooses B is 1/2.  Since he
 knows where the car is, the probability that there is no car there
 is 1.
 
-If the car is actually behind B, Monty does not open B, so the
+\item If the car is actually behind B, Monty does not open B, so the
 probability of the data we saw is 0.
 
-Finally, if the car is behind Door C, Monty opens B with probability
+\item Finally, if the car is behind Door C, Monty opens B with probability
 1 and finds no car there with probability 1.
+
+\end{itemize}
 
 Now the hard part is over; the rest is just arithmetic.  The
 sum of the third column is 1/2.  Dividing through yields
@@ -764,7 +784,7 @@ $\p{A|D} = 1/3$ and $\p{C|D} = 2/3$.  So you are better off switching.
 
 There are many variations of the Monty Hall problem.  One of the
 strengths of the Bayesian approach is that it generalizes to handle
-these variation.
+these variations.
 
 For example, suppose that Monty always chooses B if he can, and
 only chooses C if he has to (because the car is behind B).  In
@@ -794,5 +814,363 @@ On the other hand, if he had opened $C$, we would know $\p{B|D} = 1$.
 
 
 \chapter{Computational statistics}
+
+\section{Distributions}
+
+In statistics a {\bf distribution} is a set of values and their
+corresponding probabilities.
+
+For example, if you roll a six-sided die, the set of possible
+values is the numbers 1 to 6, and the probability associated
+with each value is 1/6.
+
+As another example, you might be interested in how many times each
+word appears in common English usage.  You could build a distribution
+that includes each word and how many time it appears.
+
+In Python, you could represent a distribution with a dictionary that
+maps from each value to its probability.  As an alternative, I have
+written a class called {\tt Pmf} that represents a distribution.  PMF
+stands for ``probability mass function'' which is the more specific
+mathematical term for what I am calling a distribution.
+
+{\tt Pmf} is defined in a Python module I wrote to accompany this
+book, called {\tt thinkbayes.py}.  You can download it from
+\url{http://thinkbayes.com/thinkbayes.py}.  To use {\tt Pmf} you
+can import it like this:
+
+\begin{verbatim}
+from thinkbayes import Pmf
+\end{verbatim}
+
+The following code builds a Pmf to represent the distribution
+of outcomes for a six-sided die:
+
+\begin{verbatim}
+pmf = Pmf()
+for x in [1,2,3,4,5,6]:
+    pmf.Set(x, 1/6.0)
+\end{verbatim}
+
+\verb"Pmf" creates an empty Pmf object with no values.  The
+\verb"Set" method sets the probability associated with each
+value to $1/6$.
+
+Here's another example that counts the number of times each word
+appears in a sequence:
+
+\begin{verbatim}
+pmf = Pmf()
+for word in word_list:
+    pmf.Incr(word, 1)
+\end{verbatim}
+
+\verb"Incr" increases the ``probability'' associated with each
+word by 1.  If a word is not already in the Pmf, it is added.
+
+I put ``probability'' in quotes because in this example, the
+probabilities are not normalized; that is, they do not add up to 1.
+So they are not true probabilities.
+
+But in this example the word counts are proportional to the probabilities.
+So after we count all the words, we can compute probabilities by
+dividing through by the total number of words.  {\tt Pmf} provides
+a method, \verb"Normalize", that does exactly that:
+
+\begin{verbatim}
+pmf.Normalize()
+\end{verbatim}
+
+Once you have made a Pmf object, you can ask for the probability
+associated with any value:
+
+\begin{verbatim}
+print pmf.Prob('the')
+\end{verbatim}
+
+And that would print the frequency of the word ``the'' as a fraction
+of the words in the list.
+
+Pmf uses a Python dictionary to store the values and their
+probabilities, so the values in the Pmf can be any hashable type.
+The probabilities can be any numerical type, but they are usually
+floating point numbers (type \verb"float").
+
+
+\section{The Cookie Problem}
+
+In the context of Bayes's Theorem, it is natural to use a Pmf
+to map from each hypothesis to its probability.  In the Cookie
+Problem, the hypotheses are $B_1$ and $B_2$.  In Python, I will
+represent them with strings:
+
+\begin{verbatim}
+pmf = Pmf()
+pmf.Set('Bowl 1', 0.5)
+pmf.Set('Bowl 2', 0.5)
+\end{verbatim}
+
+This distribution, which contains the priors for each hypothesis,
+is called (wait for it) the {\bf prior distribution}.
+
+To update the distribution based on new data (the vanilla cookie),
+we multiply each prior by the corresponding likelihood.  The likelihood
+of drawing a vanilla cookie from Bowl 1 is 3/4.  The likelihood
+for Bowl 2 is 1/2.
+
+\begin{verbatim}
+pmf.Mult('Bowl 1', 0.75)
+pmf.Mult('Bowl 2', 0.5)
+\end{verbatim}
+
+\verb"Mult" does what you would expect.  It gets the probability
+for the given value and multiplies by the given factor.
+
+After this update, the distribution is no longer normalized, but
+because these hypotheses are mutually exclusion and collectively
+exhaustive, we can {\bf renormalize}:
+
+\begin{verbatim}
+pmf.Normalize()
+\end{verbatim}
+
+The result is a distribution that contains the posterior probability
+for each hypothesis, which is called (wait now) the
+{\bf posterior distribution}.
+
+Finally, we can get the posterior for Bowl 1.
+
+\begin{verbatim}
+print pmf.Prob('Bowl 1')
+\end{verbatim}
+
+And the answer is 0.6.  You can download this example
+from \url{http://thinkbayes.com/cookie.py}.
+
+
+\section{The Bayesian framework}
+
+Before we go on to other problems, I want to rewrite the code
+from the previous section to make it more general.  First I'll
+define a class to encapsulate the code related to this problem:
+
+\begin{verbatim}
+class Cookie(Pmf):
+    def __init__(self, hypos):
+        Pmf.__init__(self)
+        for hypo in hypos:
+            self.Set(hypo, 1)
+        self.Normalize()
+\end{verbatim}
+
+A Cookie object is a Pmf that maps from hypotheses to their
+probabilities.  The \verb"__init__" method gives each hypothesis
+the same probability.  As in the previous section, there are
+two hypotheses:
+
+\begin{verbatim}
+    hypos = ['Bowl 1', 'Bowl 2']
+    pmf = Cookie(hypos)
+\end{verbatim}
+
+\verb"Cookie" provides an \verb"Update" method that takes
+data as a parameter and updates the probabilities.
+
+\begin{verbatim}
+    def Update(self, data):
+        for hypo in self.Values():
+            like = self.Likelihood(hypo, data)
+            self.Mult(hypo, like)
+        self.Normalize()
+\end{verbatim}
+
+\verb"Update" loops through each hypothesis in the suite
+and multiplies its probability by the likelihood of the
+data under the hypothesis, which is computed by \verb"Likelihood":
+
+\begin{verbatim}
+    mixes = {
+        'Bowl 1':dict(vanilla=0.75, chocolate=0.25),
+        'Bowl 2':dict(vanilla=0.5, chocolate=0.5),
+        }
+
+    def Likelihood(self, hypo, data):
+        mix = self.mixes[hypo]
+        like = mix[data]
+        return like
+\end{verbatim}
+
+\verb"Likelihood" uses \verb"mixes", which is a dictionary
+that maps from the name of a bowl to the mix of cookies in
+the bowl.
+
+Here's what the update looks like:
+
+\begin{verbatim}
+    pmf.Update('vanilla')
+\end{verbatim}
+
+And then we can print the posterior probability of each hypothesis:
+
+\begin{verbatim}
+    for hypo, prob in pmf.Items():
+        print hypo, prob
+\end{verbatim}
+
+The result is
+
+\begin{verbatim}
+Bowl 1 0.6
+Bowl 2 0.4
+\end{verbatim}
+
+which is the same as what we got before.  This code is more complicated
+than what we saw in the previous section.  One advantage is that it
+generalizes easily to the case where we draw more than one cookie:
+
+\begin{verbatim}
+    dataset = ['vanilla', 'chocolate', 'vanilla']
+    for data in dataset:
+        pmf.Update(data)
+\end{verbatim}
+
+The other advantage is that it provides a framework for solving many
+similar problems.  In the next section we'll solve the \MM problem
+computationally and then see what parts of the framework are the
+same.
+
+The code in this section is available from
+\url{http://thinkbayes.com/cookie2.py}.
+
+
+\section{The \MM problem}
+
+To solve the \MM problem, I'll define a new class:
+
+\begin{verbatim}
+class M_and_M(Pmf):
+    def __init__(self, hypos):
+        Pmf.__init__(self)
+        for hypo in hypos:
+            self.Set(hypo, 1)
+        self.Normalize()
+
+    def Update(self, data):
+        for hypo in self.Values():
+            like = self.Likelihood(hypo, data)
+            self.Mult(hypo, like)
+        self.Normalize()
+\end{verbatim}
+
+So far, \verb"M_and_M" and \verb"Cookie" are exactly the same.
+And the code that creates the Pmf is the same, too, except for
+the names of the hypotheses.
+
+\begin{verbatim}
+    hypos = ['A', 'B']
+    pmf = M_and_M(hypos)
+\end{verbatim}
+
+To do the update, I have to chose a representation for the data.
+I decided to use a list of (bag, color) pairs:
+
+\begin{verbatim}
+    dataset = [('bag1', 'yellow'),
+              ('bag2', 'green')]
+\end{verbatim}
+
+And then the rest of the process is the same.
+
+\begin{verbatim}
+    for data in dataset:
+        pmf.Update(data)
+
+    for hypo, prob in pmf.Items():
+        print hypo, prob
+\end{verbatim}
+
+The implementation of \verb"Update" is exactly the same:
+
+\begin{verbatim}
+    def Update(self, data):
+        for hypo in self.Values():
+            like = self.Likelihood(hypo, data)
+            self.Mult(hypo, like)
+        self.Normalize()
+\end{verbatim}
+
+The only part that requires some work is \verb"Likelihood".
+First I need to encode the color mixes from before and
+after 1995.
+
+\begin{verbatim}
+    mix94 = dict(brown=30,
+                 yellow=20,
+                 red=20,
+                 green=10,
+                 orange=10,
+                 tan=10)
+
+    mix96 = dict(blue=24,
+                 green=20,
+                 orange=16,
+                 yellow=14,
+                 red=13,
+                 brown=13)
+\end{verbatim}
+
+Then I have to encode the hypotheses:
+
+\begin{verbatim}
+    hypo1 = dict(bag1=mix94, bag2=mix96)
+    hypo2 = dict(bag1=mix96, bag2=mix94)
+\end{verbatim}
+
+\verb"hypo1" represents the hypothesis that Bag 1 is from
+1994 and Bag 2 from 1996.  \verb"hypo2" is the other way
+around.
+
+I have to map from the name of the hypothesis to
+the representation:
+
+\begin{verbatim}
+    hypotheses = dict(A=hypo1, B=hypo2)
+\end{verbatim}
+
+And then, finally, I can write \verb"Likelihood"
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        bag, color = data
+        bags = self.hypotheses[hypo]
+        mix = bags[bag]
+        like = mix[color]
+        return like
+\end{verbatim}
+
+When I run it, the result is
+
+\begin{verbatim}
+A 0.740740740741
+B 0.259259259259
+\end{verbatim}
+
+The posterior probability of A is approximately $20/27$, which
+is what we got before.
+
+In this example, writing \verb"Likelihood" is a little complicated,
+but the framework of the Bayesian update is simple.  The code in
+this section is available from \url{http://thinkbayes.com/m_and_m.py}.
+
+
+\section{Encapsulating the framework}
+
+Now that we see what elements of the framework are the same, we
+can encapsulate them in an object:
+
+\begin{verbatim}
+
+\end{verbatim}
+
 
 \end{document}
