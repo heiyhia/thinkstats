@@ -19,56 +19,49 @@ PDFFLAGS = -dCompatibilityLevel=1.4 -dPDFSETTINGS=/prepress \
 all:	book.tex
 	pdflatex book
 	makeindex book.idx
-	mv book.pdf thinkstats.pdf
-	evince thinkstats.pdf
+	mv book.pdf thinkbayes.pdf
+	evince thinkbayes.pdf
 
 hevea:
-	sed 's/\(figs\/[^.]*\).\(pdf\|png\)/\1.eps/' book.tex > thinkstats.tex
+	sed 's/\(figs\/[^.]*\).\(pdf\|png\)/\1.eps/' book.tex > thinkbayes.tex
 	rm -rf html
 	mkdir html
-	hevea -O -e latexonly htmlonly thinkstats
-	imagen -png thinkstats
-	hacha thinkstats.html
+	hevea -O -e latexonly htmlonly thinkbayes
+	# uncomment this when there are some images!
+	#imagen -png thinkbayes
+	hacha thinkbayes.html
 	cp up.png next.png back.png html
-	mv index.html thinkstats.css thinkstats*.html thinkstats*.png *motif.gif html
+	#mv index.html thinkbayes.css thinkbayes*.html thinkbayes*.png *motif.gif html
+	mv index.html thinkbayes.css thinkbayes*.html *motif.gif html
 
-DEST = /home/downey/public_html/greent/thinkstats
+DEST = /home/downey/public_html/greent/thinkbayes
 
 distrib:
 	rm -rf dist
 	mkdir dist dist/tex dist/tex/figs
-	rsync -a thinkstats.pdf html cover_nolines.png dist
+	rsync -a thinkbayes.pdf html cover_nolines.png dist
 	rsync -a Makefile book.tex latexonly htmlonly dist/tex
 	# rsync -a figs/*.fig figs/*.eps dist/tex/figs
-	cd dist; zip -r thinkstats.tex.zip tex
-	cd dist; zip -r thinkstats.html.zip html
+	cd dist; zip -r thinkbayes.tex.zip tex
+	cd dist; zip -r thinkbayes.html.zip html
 	rsync -a dist/* $(DEST)
 	chmod -R o+r $(DEST)/*
+	cd /home/downey/public_html/greent; sh back
 
 plastex:
 	# Before running plastex, we need the current directory in PYTHONPATH
 	# export PYTHONPATH=$PYTHONPATH:.
-	rm -rf /home/downey/thinkstats/trunk/book/.svn
+	rm -rf /home/downey/thinkbayes/trunk/book/.svn
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=book.xml book.tex
-	rm -rf /home/downey/thinkstats/trunk/book/.svn
+	rm -rf /home/downey/thinkbayes/trunk/book/.svn
 
 xxe:
 	~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
 
-vector:
-	plastex --renderer=DocBook --theme=book --vector-imager=dvisvgm --filename=book.xml book.tex
-
-small: small.tex
-	plastex --renderer=DocBook --theme=book --image-resolution=300 --filename=small.xml small.tex
-
-sample:
-	plastex --renderer=DocBook --theme=book --image-resolution=300 --image-scale-factor=0.25 --filename=sample2e.xml sample2e.tex
-	~/Downloads/xxe-perso-4_8_0/bin/xxe sample2e/sample2e.xml
-
 oreilly:
 	rsync -a book/ ~/oreilly
 	rsync -a figs/* ~/oreilly/figs
-	cp thinkstats.pdf ~/oreilly/pdf
+	cp thinkbayes.pdf ~/oreilly/pdf
 
 clean:
 	rm -f *~ *.aux *.log *.dvi *.idx *.ilg *.ind *.toc
