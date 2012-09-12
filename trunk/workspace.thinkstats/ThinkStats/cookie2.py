@@ -34,15 +34,11 @@ class Cookie(Pmf):
 
 def main():
     hypos = ['Bowl 1', 'Bowl 2']
-    dataset = ['vanilla', 'vanilla', 'vanilla']
 
     pmf = Cookie(hypos)
 
     pmf.Update('vanilla')
 
-    for data in dataset:
-        pmf.Update(data)
-    
     for hypo, prob in pmf.Items():
         print hypo, prob
 
