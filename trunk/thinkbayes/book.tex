@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.1.0}
+\newcommand{\theversion}{0.2.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -637,10 +637,10 @@ are only two:
 
 \begin{itemize}
 
-\item A: the yellow \MM is from 1994, which implies that green is
+\item A: the yellow \MM~is from 1994, which implies that green is
 from 1996.
 
-\item B: the yellow \MM is from 1996 and green from 1996.
+\item B: the yellow \MM~is from 1996 and green from 1996.
 
 \end{itemize}
 
@@ -661,7 +661,7 @@ Since there is one bag from 1994 and one from 1996,
 it is reasonable to choose $\p{A} = \p{B} = 1/2$.
 
 The second column has the likelihoods, which follow from the
-information in the problem.  If $A$ is true, the yellow \MM came from
+information in the problem.  If $A$ is true, the yellow \MM~came from
 1994 with probability 20\%, and the green came from 1996 with
 probability 20\%.  Because the selections are
 independent, we get the conjoint probability by multiplying.
@@ -1035,20 +1035,20 @@ generalizes easily to the case where we draw more than one cookie:
 \end{verbatim}
 
 The other advantage is that it provides a framework for solving many
-similar problems.  In the next section we'll solve the \MM problem
-computationally and then see what parts of the framework are the
-same.
+similar problems.  In the next section we'll solve the Monty Hall
+problem computationally and then see what parts of the framework are
+the same.
 
 The code in this section is available from
 \url{http://thinkbayes.com/cookie2.py}.
 
 
-\section{The \MM problem}
+\section{The Monty Hall problem}
 
-To solve the \MM problem, I'll define a new class:
+To solve the Monty Hall problem, I'll define a new class:
 
 \begin{verbatim}
-class M_and_M(Pmf):
+class Monty(Pmf):
     def __init__(self, hypos):
         Pmf.__init__(self)
         for hypo in hypos:
@@ -1062,34 +1062,23 @@ class M_and_M(Pmf):
         self.Normalize()
 \end{verbatim}
 
-So far, \verb"M_and_M" and \verb"Cookie" are exactly the same.
+So far \verb"Monty" and \verb"Cookie" are exactly the same.
 And the code that creates the Pmf is the same, too, except for
 the names of the hypotheses.
 
 \begin{verbatim}
-    hypos = ['A', 'B']
-    pmf = M_and_M(hypos)
+    hypos = 'ABC'
+    pmf = Monty(hypos)
 \end{verbatim}
 
-To do the update, I have to chose a representation for the data.
-I decided to use a list of (bag, color) pairs:
+Calling \verb"Update" is pretty much the same:
 
 \begin{verbatim}
-    dataset = [('bag1', 'yellow'),
-              ('bag2', 'green')]
+    data = 'B'
+    pmf.Update(data)
 \end{verbatim}
 
-And then the rest of the process is the same.
-
-\begin{verbatim}
-    for data in dataset:
-        pmf.Update(data)
-
-    for hypo, prob in pmf.Items():
-        print hypo, prob
-\end{verbatim}
-
-The implementation of \verb"Update" is exactly the same:
+And the implementation of \verb"Update" is exactly the same:
 
 \begin{verbatim}
     def Update(self, data):
@@ -1100,6 +1089,100 @@ The implementation of \verb"Update" is exactly the same:
 \end{verbatim}
 
 The only part that requires some work is \verb"Likelihood".
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        if hypo == data:
+            return 0
+        elif hypo == 'A':
+            return 0.5
+        else:
+            return 1
+\end{verbatim}
+
+Finally, printing the results is the same:
+
+\begin{verbatim}
+    for hypo, prob in pmf.Items():
+        print hypo, prob
+\end{verbatim}
+
+And the answer is
+
+\begin{verbatim}
+A 0.333333333333
+B 0.0
+C 0.666666666667
+\end{verbatim}
+
+In this example, writing \verb"Likelihood" is a little complicated,
+but the framework of the Bayesian update is simple.  The code in
+this section is available from \url{http://thinkbayes.com/monty.py}.
+
+
+\section{Encapsulating the framework}
+
+Now that we see what elements of the framework are the same, we
+can encapsulate them in an object: a \verb"Suite" is a \verb"Pmf"
+that provides \verb"__init__", \verb"Update" and \verb"Print".
+
+\begin{verbatim}
+class Suite(Pmf):
+    """Represents a suite of hypotheses and their probabilities."""
+
+    def __init__(self, hypos):
+        """Initializes the distribution."""
+
+    def Update(self, data):
+        """Updates each hypothesis based on the data."""
+
+    def Print(self):
+        """Prints the hypotheses and their probabilities."""
+\end{verbatim}
+
+The implementation of \verb"Suite" is in \verb"thinkbayes.py".  To use
+\verb"Suite", you should write a class that inherits from it and
+provides \verb"Likelihood".  For example, here is the solution to the
+Monty Hall problem rewritten to use \verb"Suite":
+
+\begin{verbatim}
+from thinkbayes import Suite
+
+class Monty(Suite):
+
+    def Likelihood(self, hypo, data):
+        if hypo == data:
+            return 0
+        elif hypo == 'A':
+            return 0.5
+        else:
+            return 1
+\end{verbatim}
+
+And here's the code that uses this class:
+
+\begin{verbatim}
+    suite = Monty('ABC')
+    suite.Update('B')
+    suite.Print()
+\end{verbatim}
+
+You can download this example at
+\url{http://thinkbayes.com/monty2.py}.  If you are familiar with
+design patterns, you might recognize this as an example of the
+Template method pattern: the parent class, \verb"Suite", defines an
+algorithm framework; the child class, \verb"Monty" provides the
+missing elements of the algorithm, in this case the \verb"Likelihood"
+function.  You can read about this pattern at
+\url{http://en.wikipedia.org/wiki/Template_method_pattern}.
+
+
+\section{The \MM~problem}
+
+We can use the \verb"Suite" framework to solve the \MM~problem.
+Writing the \verb"Likelihood" function is tricky, but everything
+else is straightforward.
+
 First I need to encode the color mixes from before and
 after 1995.
 
@@ -1122,33 +1205,45 @@ after 1995.
 Then I have to encode the hypotheses:
 
 \begin{verbatim}
-    hypo1 = dict(bag1=mix94, bag2=mix96)
-    hypo2 = dict(bag1=mix96, bag2=mix94)
+    hypoA = dict(bag1=mix94, bag2=mix96)
+    hypoB = dict(bag1=mix96, bag2=mix94)
 \end{verbatim}
 
-\verb"hypo1" represents the hypothesis that Bag 1 is from
-1994 and Bag 2 from 1996.  \verb"hypo2" is the other way
+\verb"hypoA" represents the hypothesis that Bag 1 is from
+1994 and Bag 2 from 1996.  \verb"hypoB" is the other way
 around.
 
-I have to map from the name of the hypothesis to
-the representation:
+Next I map from the name of the hypothesis to the representation:
 
 \begin{verbatim}
-    hypotheses = dict(A=hypo1, B=hypo2)
+    hypotheses = dict(A=hypoA, B=hypoA)
 \end{verbatim}
 
-And then, finally, I can write \verb"Likelihood"
+And finally I can write \verb"Likelihood".  In this case
+the hypothesis, \verb"hypo" is a string, \verb"A" or \verb"B".
+The data is a tuple that specifies a bag, \verb"bag1" or \verb"bag2",
+and a color.
 
 \begin{verbatim}
     def Likelihood(self, hypo, data):
         bag, color = data
-        bags = self.hypotheses[hypo]
-        mix = bags[bag]
+        mix = self.hypotheses[hypo][bag]
         like = mix[color]
         return like
 \end{verbatim}
 
-When I run it, the result is
+Here's the code that creates the suite and updates it:
+
+\begin{verbatim}
+    suite = M_and_M('AB')
+
+    suite.Update(('bag1', 'yellow'))
+    suite.Update(('bag2', 'green'))
+
+    suite.Print()
+\end{verbatim}
+
+And here's the result:
 
 \begin{verbatim}
 A 0.740740740741
@@ -1158,19 +1253,8 @@ B 0.259259259259
 The posterior probability of A is approximately $20/27$, which
 is what we got before.
 
-In this example, writing \verb"Likelihood" is a little complicated,
-but the framework of the Bayesian update is simple.  The code in
-this section is available from \url{http://thinkbayes.com/m_and_m.py}.
-
-
-\section{Encapsulating the framework}
-
-Now that we see what elements of the framework are the same, we
-can encapsulate them in an object:
-
-\begin{verbatim}
-
-\end{verbatim}
+The code in this section is available from
+\url{http://thinkbayes.com/m_and_m.py}.
 
 
 \end{document}
