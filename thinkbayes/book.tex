@@ -1257,4 +1257,244 @@ The code in this section is available from
 \url{http://thinkbayes.com/m_and_m.py}.
 
 
+\chapter{Tanks and Trains}
+
+\section{Which die was it?}
+
+This problem is based on an example I saw in Sanjoy Mahajan's class
+on Bayesian inference.
+
+Suppose I have a box of dice that contains a 4-sided die, a 6-sided
+die, an 8-sided die, a 12-sided die and a 20-sided die.  If you
+have ever played Dungeons\&Dragons, you know what I am talking about.
+
+Suppose I select a die from the box at random, roll it, and get a 6.
+What is the probability that I rolled each die?
+
+Let me suggest a three-step strategy for approaching a problem like this.
+
+\begin{enumerate}
+
+\item Choose a representation for the hypotheses.
+
+\item Choose a representation for the data.
+
+\item Write the likelihood function.
+
+\end{enumerate}
+
+In previous examples I used strings to represent hypotheses and
+data, but for the die problem I'll use numbers.  Specifically,
+I'll use the integers 4, 6, 8, 12, and 20 to represent hypotheses:
+
+\begin{verbatim}
+    suite = Dice([4, 6, 8, 12, 20])
+\end{verbatim}
+
+And integers from 1 to 20 for the data:
+
+\begin{verbatim}
+    suite.Update(6)
+\end{verbatim}
+
+I chose these representations because they make it easy to
+write the likelihood function:
+
+\begin{verbatim}
+class Dice(Suite):
+    def Likelihood(self, hypo, data):
+        if hypo < data:
+            return 0
+        else:
+            return 1.0/hypo
+\end{verbatim}
+
+Here's how \verb"Likelihood" works.  If \verb"hypo < data", that
+means the roll is greater than the number of sides on the die.
+That can't happen, so the likelihood is 0.
+
+Otherwise the question is, ``Given that there are {\tt hypo}
+sides, what is the chance of rolling {\tt data}?''  The
+answer is \verb"1/hypo", regardless of {\tt data}.
+
+You can download this example from \url{http://thinkbayes.com/dice.py}.
+And here is the result:
+
+\begin{verbatim}
+4 0.0
+6 0.392156862745
+8 0.294117647059
+12 0.196078431373
+20 0.117647058824
+\end{verbatim}
+
+After we roll a 6, the probability for the 4-sided die is 0.  The
+most likely alternative is the 6-sided die, but there is still
+almost a 12\% chance for the 20-sided die.
+
+What if we roll a few more times and get 6, 8, 7, 7, 5, and 4?
+
+\begin{verbatim}
+    for roll in [4, 8, 7, 7, 2, 6]:
+        suite.Update(roll)
+\end{verbatim}
+
+With this data the 6-sided die is eliminated, and the 8-sided
+die seems quite likely.  Here are the results:
+
+\begin{verbatim}
+4 0.0
+6 0.0
+8 0.943248453672
+12 0.0552061280613
+20 0.0015454182665
+\end{verbatim}
+
+Now the probability is 94\% that we are rolling the 8-sided die,
+and less than 1\% for the 20-sided die.
+
+\section{The Locomotive Problem}
+
+\section{The locomotive problem}
+\index{locomotive problem}
+\index{Mosteller, Frederick}
+\index{German tank problem}
+
+The locomotive problem is a classic also
+known as the ``German tank problem.''  Here is the version
+that appears in Mosteller, {\it Fifty Challenging Problems in
+  Probability}:
+
+\begin{quote}
+``A railroad numbers its locomotives in order 1..N.  One day you see a
+locomotive with the number 60.  Estimate how many locomotives the
+railroad has.''
+\end{quote}
+
+To solve this problem,
+we have to make some assumptions about the numbers on the locomotives.
+Do they start at 1?  Are they assigned sequentially, or do they
+skip around?  Are all of the locomotives in operation?  And are
+they all equally likely to be seen in a given location?
+
+That's a lot of questions!  Well, we have to start somewhere, so let's
+start simple: assume that the numbers are sequential from 1 to $N$,
+where $N$ is the unknown number of locomotives.  And assume that
+the location of trains in space is unrelated to their numbers.
+
+If these assumptions are correct, we know the railroad has 60 or more
+locomotives.  But how many more?  To apply Bayesian reasoning, we
+can break this problem into two steps:
+
+\begin{itemize}
+
+\item What did we know about $N$ before we saw the
+data?
+
+\item For any given value of $N$, what is the likelihood of
+seeing the data (a locomotive with number 60)?
+
+\end{itemize}
+
+The answer to the first question is the prior.  The answer to the
+second question is the likelihood.
+
+The question doesn't give us much basis to choose a prior, but
+again we can start with something simple, see what we get, and
+then evaluate some alternatives.  So let's assume that $N$ is less
+than 1000, and equally likely to be any value from 1 to 1000.
+
+\begin{verbatim}
+    hypos = xrange(1, 1001)
+    suite = Train(hypos)
+\end{verbatim}
+
+Now all we need is a likelihood function.  With a little thought,
+you will realize that the likelihood functions for the Locomotive
+problem and the Dice problem are identical:
+
+\begin{verbatim}
+class Train(Suite):
+    def Likelihood(self, hypo, data):
+        if hypo < data:
+            return 0
+        else:
+            return 1.0/hypo
+\end{verbatim}
+
+And here's the update:
+
+\begin{verbatim}
+    suite.Update(30)
+\end{verbatim}
+
+Since there are 1000 hypothesis, I didn't print the results.
+Instead I used {\tt myplot.Pmf}:
+
+\begin{verbatim}
+    myplot.Pmf(suite)
+    myplot.Show(xlabel='Number of trains',
+                ylabel='Probability')
+\end{verbatim}
+
+The result is in Figure~\ref{fig.train}.  Not surprisingly, all
+values of $N$ below 60 have been eliminated.  The most likely
+value, if you had to guess, is 60.  That might not seem like
+a very good guess; after all, what are the chances that you just
+happened to see the train with the highest number?
+
+Nevertheless, if you want to maximize the chance of getting
+the answer exactly right, you should guess 60.  But maybe that's
+not the right goal.  An obvious alternative is to compute the
+mean of the posterior distribution:
+
+\begin{verbatim}
+def Mean(suite):
+    total = 0
+    for hypo, prob in suite.Items():
+        total += hypo * prob
+    return total
+
+print Mean(suite)
+\end{verbatim}
+
+Or you could use the very similar method provided by {\tt Pmf}:
+
+\begin{verbatim}
+    print suite.Mean()
+\end{verbatim}
+
+The mean of this posterior distribution is 276, so that might
+be a good guess if you wanted to minimize error.  That is,
+if you played this guessing game over and over, using the mean
+of the posterior as your estimate would minimize
+the total squared error, over the long run.
+
+Confidence interval?
+
+Other priors.
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
 \end{document}
