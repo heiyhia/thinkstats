@@ -5,22 +5,10 @@ Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from thinkbayes import Pmf
+from thinkbayes import Suite
 
 
-class M_and_M(Pmf):
-    def __init__(self, hypos):
-        Pmf.__init__(self)
-        for hypo in hypos:
-            self.Set(hypo, 1)
-        self.Normalize()
-
-    def Update(self, data):
-        for hypo in self.Values():
-            like = self.Likelihood(hypo, data)
-            self.Mult(hypo, like)
-        self.Normalize()
-
+class M_and_M(Suite):
     mix94 = dict(brown=30,
                  yellow=20,
                  red=20,
@@ -35,31 +23,25 @@ class M_and_M(Pmf):
                  red=13,
                  brown=13)
 
-    hypo1 = dict(bag1=mix94, bag2=mix96)
-    hypo2 = dict(bag1=mix96, bag2=mix94)
+    hypoA = dict(bag1=mix94, bag2=mix96)
+    hypoB = dict(bag1=mix96, bag2=mix94)
 
-    hypotheses = dict(A=hypo1, B=hypo2)
+    hypotheses = dict(A=hypoA, B=hypoB)
 
     def Likelihood(self, hypo, data):
         bag, color = data
-        bags = self.hypotheses[hypo]
-        mix = bags[bag]
+        mix = self.hypotheses[hypo][bag]
         like = mix[color]
         return like
 
 
 def main():
-    hypos = ['A', 'B']
-    pmf = M_and_M(hypos)
+    suite = M_and_M('AB')
 
-    dataset = [('bag1', 'yellow'),
-              ('bag2', 'green')]
+    suite.Update(('bag1', 'yellow'))
+    suite.Update(('bag2', 'green'))
 
-    for data in dataset:
-        pmf.Update(data)
-
-    for hypo, prob in pmf.Items():
-        print hypo, prob
+    suite.Print()
 
 
 if __name__ == '__main__':
