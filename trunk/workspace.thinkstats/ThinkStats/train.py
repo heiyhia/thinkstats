@@ -8,22 +8,31 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from dice import Dice
 import myplot
 
-class Tank(Dice):
-    """The likelihood function for the tank problem is the same as
+class Train(Dice):
+    """The likelihood function for the train problem is the same as
     for the Dice problem."""
 
 
+def Mean(suite):
+    total = 0
+    for hypo, prob in suite.Items():
+        total += hypo * prob
+    return total
+
+
 def main():
-    hypos = xrange(1, 200)
-    suite = Tank(hypos)
+    hypos = xrange(1, 1001)
+    suite = Train(hypos)
 
     suite.Update(30)
-    print 'After one tank'
 
     myplot.Pmf(suite)
-    myplot.Show(xlabel='Number of tanks',
+    myplot.Save(root='train1',
+                xlabel='Number of trains',
                 ylabel='Probability')
 
+    print Mean(suite)
+    print suite.Mean()
 
 if __name__ == '__main__':
     main()
