@@ -1353,9 +1353,8 @@ die seems quite likely.  Here are the results:
 Now the probability is 94\% that we are rolling the 8-sided die,
 and less than 1\% for the 20-sided die.
 
-\section{The Locomotive Problem}
 
-\section{The locomotive problem}
+\section{The Locomotive problem}
 \index{locomotive problem}
 \index{Mosteller, Frederick}
 \index{German tank problem}
@@ -1399,6 +1398,14 @@ seeing the data (a locomotive with number 60)?
 The answer to the first question is the prior.  The answer to the
 second question is the likelihood.
 
+\begin{figure}
+% train.py
+\centerline{\includegraphics[height=2.5in]{figs/train1.pdf}}
+\caption{Posterior distribution for the Locomotive problem, based
+on a uniform prior.}
+\label{fig.train1}
+\end{figure}
+
 The question doesn't give us much basis to choose a prior, but
 again we can start with something simple, see what we get, and
 then evaluate some alternatives.  So let's assume that $N$ is less
@@ -1425,7 +1432,7 @@ class Train(Suite):
 And here's the update:
 
 \begin{verbatim}
-    suite.Update(30)
+    suite.Update(60)
 \end{verbatim}
 
 Since there are 1000 hypothesis, I didn't print the results.
@@ -1437,7 +1444,7 @@ Instead I used {\tt myplot.Pmf}:
                 ylabel='Probability')
 \end{verbatim}
 
-The result is in Figure~\ref{fig.train}.  Not surprisingly, all
+The result is in Figure~\ref{fig.train1}.  Not surprisingly, all
 values of $N$ below 60 have been eliminated.  The most likely
 value, if you had to guess, is 60.  That might not seem like
 a very good guess; after all, what are the chances that you just
@@ -1464,16 +1471,114 @@ Or you could use the very similar method provided by {\tt Pmf}:
     print suite.Mean()
 \end{verbatim}
 
-The mean of this posterior distribution is 276, so that might
-be a good guess if you wanted to minimize error.  That is,
-if you played this guessing game over and over, using the mean
-of the posterior as your estimate would minimize
-the total squared error, over the long run.
+The mean of this posterior distribution is 276, so that might be a
+good guess if you wanted to minimize error.  If you played this
+guessing game over and over, using the mean of the posterior as your
+estimate would minimize the total squared error over the long run.
 
-Confidence interval?
+You can download this example from \url{http://thinkbayes.com/train.py}.
 
-Other priors.
 
+\section{What about that prior?}
+
+To make any progress on the Locomotive problem we had to make
+some assumptions, and some of them were pretty arbitrary.  In
+particular, we chose a uniform prior from 1 to 1000, without
+much justification for choosing 1000, or for choosing a uniform
+distribution.
+
+It is not crazy to believe that a railroad company might operate
+1000 locomotives, but a reasonable person might guess more or fewer.
+So we might wonder whether the posterior distribution is sensitive
+to these assumptions.  With so little data (only one observation)
+it probably is.
+
+Recall that with a uniform prior from 1 to 1000, the mean of
+the posterior is 276.  With an upper bound of 500, we get a
+posterior mean of 166, and with an upper bound of 2000,
+the posterior mean is 467.
+
+So that's bad.  There are two ways to proceed:
+
+\begin{itemize}
+
+\item Get more data.
+
+\item Get more background information.
+
+\end{itemize}
+
+With more data, the posterior distributions based on different
+priors tend to converge.  For example, suppose that in addition
+to train 60 we also see trains 30 and 90.  We can update the
+distribution like this:
+
+\begin{verbatim}
+    for data in [60, 30, 90]:
+        suite.Update(data)
+\end{verbatim}
+
+With these data, the means of the posteriors are
+
+  \begin{tabular}{|l|l|}
+  \hline
+  Upper & Posterior \\
+  Bound & Mean \\
+  \hline
+  500 & 152 \\
+  1000 & 164\\
+  2000 & 171\\
+  \hline
+  \end{tabular}
+
+So the difference between the priors is much smaller.
+
+If more data are not available, the alternative it to improve the
+priors by gathering more background information.  It is probably
+not reasonable to assume that a railroad company with 1000 locomotives
+is just as likely as a company with only 1.
+
+With some effort, we could probably find a list of companies that
+operate locomotives in the area of observation.  Or we could
+interview an expert in rail shipping to gather information about
+the typical size of companies.
+
+But even without getting into the specifics of railroad economics, we
+can make some educated guesses.  In most fields, there are many small
+companies, fewer medium-sized companies, and only one or two very
+large companies.  In fact, the distribution of company sizes tends to
+follow a power law, as Robert Axtell reports in {\it Science} (see
+\url{http://www.sciencemag.org/content/293/5536/1818.full.pdf}).
+
+This law suggests that if there are 1000 companies with fewer than
+10 locomotives, there might be 100 companies with 100 locomotives,
+10 companies with 1000, and possibly one company with 10,000 locomotives.
+
+We can construct a power law prior like this:
+
+\begin{verbatim}
+\end{verbatim}
+
+
+orders of magnitude, or decades, based on
+number of employees or income,
+
+If we assume that the number of locomotives follows the same law,
+we can construct a prior with 
+
+I ran the program again with a uniform distribution from 1 to
+2000.  
+
+
+check whether the results are sensitive to the priors
+
+get more background information
+
+get more data
+
+http://www.sciencemag.org/content/293/5536/1818.full.pdf
+
+sufficient statistics
 
 \begin{verbatim}
 \end{verbatim}
