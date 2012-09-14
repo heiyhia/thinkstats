@@ -98,7 +98,7 @@ figs:
 red:
 	rsync -avp red.htm red.nb HTML* $(DEST)
 
-bayes:
+bayes_tut:
 	zip -r bayes_tutorial.zip bayes_tutorial
 	rsync -a bayes_tutorial.zip $(DEST)
 
@@ -114,3 +114,20 @@ gss-table:
 
 clean:
 	rm gss.regress.*.db
+
+BAYES_PY = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
+monty.py cookie2.py cookie.py
+
+BAYES_DEST = /home/downey/public_html/greent/thinkbayes
+
+BAYES_FIGS = train1.pdf train2.pdf
+
+bayes_code:
+	pydoc -w thinkbayes
+	rsync -a thinkbayes.html $(BAYES_DEST)
+	rsync -a $(BAYES_PY) $(BAYES_DEST)
+	chmod -R o+r $(BAYES_DEST)/*
+
+bayes_figs:
+	rsync -a $(BAYES_FIGS) ../../thinkbayes/figs
+

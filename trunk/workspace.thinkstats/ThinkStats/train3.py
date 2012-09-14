@@ -21,15 +21,20 @@ def Mean(suite):
 
 
 def main():
-    hypos = xrange(1, 1001)
+    hypos = (range(1, 10) + 
+             range(10, 100, 10) + 
+             range(100, 1000, 100) +
+             range(1000, 10000, 1000))
+
     suite = Train(hypos)
 
-    suite.Update(60)
+    suite.Update(30)
 
     myplot.Pmf(suite)
-    myplot.Save(root='train1',
+    myplot.Save(root='train2',
                 xlabel='Number of trains',
-                ylabel='Probability')
+                ylabel='Probability',
+                xscale='log')
 
     print Mean(suite)
     print suite.Mean()
