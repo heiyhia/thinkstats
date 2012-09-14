@@ -20,19 +20,29 @@ def Mean(suite):
     return total
 
 
-def main():
-    hypos = xrange(1, 1001)
+def MakePosterior(high, dataset):
+    hypos = xrange(1, high+1)
     suite = Train(hypos)
+    suite.name = str(high)
 
-    suite.Update(60)
+    for data in dataset:
+        suite.Update(data)
 
     myplot.Pmf(suite)
-    myplot.Save(root='train1',
+    return suite
+
+
+def main():
+    dataset = [30, 60, 90]
+
+    for high in [500, 1000, 2000]:
+        suite = MakePosterior(high, dataset)
+        print high, suite.Mean()
+
+    myplot.Save(root='train2',
                 xlabel='Number of trains',
                 ylabel='Probability')
 
-    print Mean(suite)
-    print suite.Mean()
 
 if __name__ == '__main__':
     main()
