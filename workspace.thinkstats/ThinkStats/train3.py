@@ -12,14 +12,14 @@ import myplot
 class Train(Dice):
     """The likelihood function for the train problem is the same as
     for the Dice problem."""
-    def __init__(self, hypos):
+    def __init__(self, hypos, alpha=1.0):
         """Initializes the hypotheses with a power law distribution.
 
         hypos: sequence of hypotheses
         """
         Pmf.__init__(self)
         for hypo in hypos:
-            self.Set(hypo, 1.0/hypo)
+            self.Set(hypo, hypo**(-alpha))
         self.Normalize()
 
 
@@ -31,26 +31,29 @@ def Mean(suite):
     return total
 
 
-def main():
-    hypos = (range(10, 100, 10) + 
-             range(100, 1000, 100) +
-             range(1000, 10000, 1000))
-
+def MakePosterior(high, dataset):
+    hypos = xrange(1, high+1)
     suite = Train(hypos)
-    suite.name = 'prior'
-    myplot.Pmf(suite)
+    suite.name = str(high)
 
-    suite.Update(30)
-    suite.name = 'posterior'
+    for data in dataset:
+        suite.Update(data)
 
     myplot.Pmf(suite)
+    return suite
+
+
+def main():
+    dataset = [30, 60, 90]
+
+    for high in [500, 1000, 2000, 4000, 8000, 160000]:
+        suite = MakePosterior(high, dataset)
+        print high, suite.Mean()
+
     myplot.Save(root='train3',
                 xlabel='Number of trains',
-                ylabel='Probability',
-                xscale='log')
+                ylabel='Probability')
 
-    print Mean(suite)
-    print suite.Mean()
 
 if __name__ == '__main__':
     main()

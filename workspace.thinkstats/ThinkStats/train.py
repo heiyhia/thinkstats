@@ -29,7 +29,8 @@ def main():
     myplot.Pmf(suite)
     myplot.Save(root='train1',
                 xlabel='Number of trains',
-                ylabel='Probability')
+                ylabel='Probability',
+                formats=['pdf', 'eps'])
 
     print Mean(suite)
     print suite.Mean()
