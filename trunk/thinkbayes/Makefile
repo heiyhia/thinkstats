@@ -27,12 +27,11 @@ hevea:
 	rm -rf html
 	mkdir html
 	hevea -O -e latexonly htmlonly thinkbayes
-	# uncomment this when there are some images!
-	#imagen -png thinkbayes
+	imagen -png thinkbayes
 	hacha thinkbayes.html
 	cp up.png next.png back.png html
-	#mv index.html thinkbayes.css thinkbayes*.html thinkbayes*.png *motif.gif html
-	mv index.html thinkbayes.css thinkbayes*.html *motif.gif html
+	mv index.html thinkbayes.css thinkbayes*.html  html
+	mv thinkbayes*.png *motif.gif html
 
 DEST = /home/downey/public_html/greent/thinkbayes
 

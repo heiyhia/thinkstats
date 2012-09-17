@@ -1531,9 +1531,12 @@ With these data, the means of the posteriors are
   \hline
   \end{tabular}
 
-So the difference between the priors is much smaller.
+So the difference between the posteriors is smaller.
 
-If more data are not available, the alternative it to improve the
+
+\section{An alternative prior}
+
+If more data are not available, another option is to improve the
 priors by gathering more background information.  It is probably
 not reasonable to assume that a railroad company with 1000 locomotives
 is just as likely as a company with only 1.
@@ -1554,34 +1557,209 @@ This law suggests that if there are 1000 companies with fewer than
 10 locomotives, there might be 100 companies with 100 locomotives,
 10 companies with 1000, and possibly one company with 10,000 locomotives.
 
+Mathematically, a power law means the number of companies
+with a given size is inversely proportional to the size, or
+%
+\[ \PMF(x) \propto \left( \frac{1}{x} \right)^{\alpha}   \]
+%
+where $\PMF(x)$ is the probability mass function of $x$ and $\alpha$ is
+a parameter that is often near 1.
+
 We can construct a power law prior like this:
 
 \begin{verbatim}
+class Train(Dice):
+    def __init__(self, hypos, alpha=1.0):
+        Pmf.__init__(self)
+        for hypo in hypos:
+            self.Set(hypo, hypo**(-alpha))
+        self.Normalize()
 \end{verbatim}
 
-
-orders of magnitude, or decades, based on
-number of employees or income,
-
-If we assume that the number of locomotives follows the same law,
-we can construct a prior with 
-
-I ran the program again with a uniform distribution from 1 to
-2000.  
-
-
-check whether the results are sensitive to the priors
-
-get more background information
-
-get more data
-
-http://www.sciencemag.org/content/293/5536/1818.full.pdf
-
-sufficient statistics
+And here's the code that constructs the prior
 
 \begin{verbatim}
+    hypos = range(1, 1001)
 \end{verbatim}
+
+Again, the upper bound is arbitrary, but with a power law
+prior, the posterior is less sensitive to this choice.
+
+If we start with this prior and observe trains 30, 60 and 90,
+the means of the posteriors are
+
+  \begin{tabular}{|l|l|}
+  \hline
+  Upper & Posterior \\
+  Bound & Mean \\
+  \hline
+  500 & 131 \\
+  1000 & 133 \\
+  2000 & 134 \\
+  \hline
+  \end{tabular}
+
+Now the difference between the posteriors is much smaller.  In fact,
+with an arbitrarily large upper bound, the mean converges on 134.
+
+So the power law prior is more realistic, because it is based on
+general information about the size of companies, and it
+behaves better in practice.
+
+
+\chapter{Urns and Coins}
+
+\section{Four Urns}
+
+James Joyce, the American philosopher not the Irish author, wrote
+a paper called {\it How probabilities reflect evidence} that poses
+the following problem (which I am quoting loosely):
+
+\begin{quote}
+Jacob and Emily both start out knowing that an urn, U, was
+randomly chosen from a set of four urns ${urn_0, urn_1, urn_2, urn_3}$
+where $urn_i$ contains three balls, $i$ of which are blue and $3-i$ of
+which are green. [...]  Jacob and Emily regard random drawing with
+replacement as an exchangeable process, so that any series of draws
+that produces m blue balls and n green balls is as likely as any other
+such series, irrespective of order.  Use $B^m G^n$ to denote the generic
+event in which $m$ blue balls and $n$ green balls are drawn at random
+and with replacement from U.  Against this backdrop of shared
+evidence, suppose Jacob sees five balls drawn at random and with
+replacement from U and observes that all are blue, so his evidence is
+$B^5 G^0$.  Emily, who sees Jacob's evidence, looks at fifteen additional
+draws of which twelve come up blue, so her evidence is $B^{17} G^3$.  [If
+$B_{next}$ is the probability that the next ball drawn from the urn is
+blue,] what should Emily and Jacob think about $B_{next}$?
+\end{quote}
+
+We'll proceed in two steps: the first is to compute the probability
+that U is $urn_i$ for each $i$.  The second is to compute $B_{next}$.
+
+Let's use $H_i$ to represent the hypothesis that the urn we chose, U,
+is $urn_i$.  Since we are told that U was chosen at random, we can
+infer that the prior probabilities are $H_i = 1/4$ for all $i$.
+
+And the likelihood function is easy.  If $H_i$ is true, U contains
+$i$ blue balls, so $\p{B|H_i} = i/3$.  Or in Python
+
+\begin{verbatim}
+class Urn(Suite):
+    def Likelihood(self, hypo, data):
+        """
+        hypo: integer number of blue balls (out of three)
+        data: string 'B' or 'G'
+        """
+        p = hypo / 3.0
+        if data == 'B':
+            return p
+        else:
+            return 1-p
+\end{verbatim}
+
+And here's the code that creates the prior and updates it
+with Jacob's data:
+
+\begin{verbatim}
+    suite = Urn([0,1,2,3])
+
+    for data in 'BBBBB':
+        suite.Update(data)
+\end{verbatim}
+
+And here are the results:
+
+\begin{verbatim}
+0 0.0
+1 0.0036231884058
+2 0.115942028986
+3 0.880434782609
+\end{verbatim}
+
+Since he has seen 5 blue and no green balls, Jacob rules out $urn_0$
+and gives low posterior probabilities to $urn_1$ and $urn_2$.  Based
+on this data, Jacob is 88\% sure that U is $urn_3$.
+
+So what should Jacob believe about $B_{next}$, the chance that the
+next ball from U is blue.  If he $H_3$ right, and U is $urn_3$,
+then $B_{next}$ is 100\%.  But Jacob is not sure about $H_3$.
+
+Jacob can compute $B_{next}$ using the law of total probability, which
+says that the probability that the next ball is blue is the sum
+of the probabilities for each way it can happen; in this case
+
+\[ B_{next} = \sum i/3 \p{H_i | D} \]
+
+Pulling out the factor of 1/3, we have
+
+\[ B_{next} = 1/3 \sum i \p{H_i | D} \]
+
+which we recognize as the mean of the posterior distribution, over 3.
+
+\begin{verbatim}
+print suite.Mean() / 3.0
+\end{verbatim}
+
+For Jacob, $B_{next}$ is 0.96.  For Emily, who sees 17 blue and 3 green
+balls, the posterior distribution is 
+
+\begin{verbatim}
+0 0.0
+1 3.05166468308e-05
+2 0.999969483353
+3 0.0
+\end{verbatim}
+
+Since Emily has seen a blue and a green ball, she can rule out $H_0$
+and $H_3$.  And since she has seen many more blue than green balls,
+she is all but certain that U is $urn_2$, so her value for $B_{next}$
+is very close to 2/3.
+
+Joyce constructed this example to point out a difference between the
+evidence seen by Jacob and Emily.  Jacob's evidence has more
+``force,'' in one sense of the word, because his posterior belief
+about $B_{next}$ is more strongly biased.  But Emily's evidence has
+more ``weight,'' because she is more confident about which urn U is.
+
+For Joyce the point of this example is to probe what we mean
+when we talk about the ``weight'' or ``force,'' of
+evidence.  We will come back to this question, from a Bayesian
+perspective, in the next chapter.
+
+For us, the point of this example is to provide a warm-up exercise
+that will help with the next problem.
+
+
+\section{The Euro coin problem}
+
+In {\it Information Theory, Inference, and Learning Algorithms}, David MacKay
+poses this question:
+
+\begin{quote}
+A statistical statement appeared in ``The Guardian" on Friday January 4, 2002:
+
+  \begin{quote}
+        When spun on edge 250 times, a Belgian one-euro coin came
+        up heads 140 times and tails 110.  `It looks very suspicious
+        to me,' said Barry Blight, a statistics lecturer at the London
+        School of Economics.  `If the coin were unbiased, the chance of
+        getting a result as extreme as that would be less than 7\%.'
+        \end{quote}
+
+But do these data give evidence that the coin is biased rather than fair?
+\end{quote}
+
+To answer that question, we'll proceed in two steps.  The first
+is to estimate the probability that the coin lands face up.  The second
+is to evaluate whether the data support the hypothesis that the
+coin is biased.
+
+Any given coin has some probability, $x$, of landing heads up when spun
+on edge.  It seems reasonable to believe that the value of $x$ depends
+on some physical characteristics of the coin, primarily the distribution
+of weight.
+
+
 
 \begin{verbatim}
 \end{verbatim}
