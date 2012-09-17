@@ -116,17 +116,18 @@ clean:
 	rm gss.regress.*.db
 
 BAYES_PY = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
-monty.py cookie2.py cookie.py
+monty.py cookie2.py cookie.py train3.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
-BAYES_FIGS = train1.pdf train2.pdf
+BAYES_FIGS = train1.* train2.*
 
 bayes_code:
 	pydoc -w thinkbayes
 	rsync -a thinkbayes.html $(BAYES_DEST)
 	rsync -a $(BAYES_PY) $(BAYES_DEST)
 	chmod -R o+r $(BAYES_DEST)/*
+	cd /home/downey/public_html/greent; sh back
 
 bayes_figs:
 	rsync -a $(BAYES_FIGS) ../../thinkbayes/figs
