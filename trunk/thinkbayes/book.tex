@@ -1607,6 +1607,51 @@ general information about the size of companies, and it
 behaves better in practice.
 
 
+\section{Confidence intervals}
+
+Once you have computed a posterior distribution, it is often useful
+to summarize the results with a single point estimate or an interval.
+For point estimates it is common to use the mean, median, or the
+value with maximum likelihood.
+
+For intervals we usually report two values computed
+so that there is a 90\% chance that the unknown value falls
+between them, or 95\%, or some other value.
+
+These values define a ``confidence interval'' or ``credible interval.''
+There is a technical difference between these terms, but I will
+use them interchangeably here.
+
+A simple way to compute a confidence interval is to add up the
+probabilities in the posterior distribution and record the values
+that correspond to probabilities 5\% and 95\%.  In other words,
+the 5th and 95th percentiles.
+
+This function computes percentiles:
+
+\begin{verbatim}
+def Percentile(pmf, p):
+    total = 0
+    for val, prob in pmf.Items():
+        total += prob
+        if total >= p:
+            return val    
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+ 
+
+
 \chapter{Urns and Coins}
 
 \section{Four Urns}
