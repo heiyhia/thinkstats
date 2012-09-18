@@ -648,3 +648,47 @@ class Suite(Pmf):
         for hypo, prob in sorted(self.Items()):
             print hypo, prob
 
+
+def MaximumLikelihood(pmf):
+    """Returns the value with the highest probability.
+
+    pmf: Pmf object
+
+    Returns: float probability
+    """
+    prob, val = max((prob, val) for val, prob in pmf.Items())
+    return val
+
+
+def Percentile(pmf, percentage):
+    """Computes a percentile of a given Pmf.
+
+    percentage: float 0-100
+    """
+    p = percentage / 100.0
+    total = 0
+    for val, prob in pmf.Items():
+        total += prob
+        if total >= p:
+            return val    
+
+
+def ConfidenceInterval(pmf, percentage):
+    """Computes a confidence interval for a given distribution.
+
+    If percentage=90, computes the 90% CI.
+
+    Args:
+        pmf: Pmf object representing a posterior distribution
+        percentage: float between 0 and 100
+
+    Returns:
+        sequence of two floats, low and high
+    """
+    cdf = MakeCdfFromPmf(pmf)
+    prob = (1 - percentage/100.0) / 2
+    interval = cdf.Value(prob), cdf.Value(1-prob)
+    return interval
+
+
+

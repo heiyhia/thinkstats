@@ -22,11 +22,11 @@ rather than fair?"
 
 """
 
-from thinkbayes import Suite
+import thinkbayes
 import myplot
 
 
-class Euro(Suite):
+class Euro(thinkbayes.Suite):
 
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
@@ -41,54 +41,61 @@ class Euro(Suite):
             return 1-x
 
 
-def RunUniformPrior():
+def UniformPrior():
+    """Makes a Suite with a uniform prior."""
     suite = Euro(xrange(0, 101))
-    dataset = 'H' * 140 + 'T' * 110
+    return suite
+
+
+def RunUpdate(suite, heads=140, tails=110):
+    """Updates the Suite with the given number of heads and tails.
+
+    suite: Suite object
+    heads: int
+    tails: int
+    """
+    dataset = 'H' * heads + 'T' * tails
 
     for data in dataset:
         suite.Update(data)
+
+
+def Summarize(suite):
+    print suite.Prob(50)
+    # 0.0209765261295
+
+    print 'MLE', thinkbayes.MaximumLikelihood(suite)
+
+    print 'Mean', suite.Mean()
+    print 'Median', thinkbayes.Percentile(suite, 50) 
+
+    print '5th %ile', thinkbayes.Percentile(suite, 5) 
+    print '95th %ile', thinkbayes.Percentile(suite, 95) 
+
+    print 'CI', thinkbayes.ConfidenceInterval(suite, 90)
+
+def Main():
+    suite = UniformPrior()
+    RunUpdate(suite)
+    Summarize(suite)
 
     myplot.Clf()
     myplot.Pmf(suite)
     myplot.Save(root='euro1',
                 xlabel='x',
-                ylabel='Probability')
+                ylabel='Probability',
+                formats=['pdf', 'eps'])
 
-
-def Main():
-    RunUniformPrior()
-
-
-def MLE(pmf):
-    prob, val = max((prob, val) for val, prob in pmf.Items())
-    return val
 
 
 def TrianglePrior():
-    pmf = Pmf.Pmf()
+    suite = Suite.Suite()
     for x in range(0, 51):
-        pmf.Set(x, x)
+        suite.Set(x, x)
     for x in range(51, 101):
-        pmf.Set(x, 100-x) 
-    pmf.Normalize()
-    return pmf
-
-
-def RunUpdate(pmf):
-    evidence = 'H' * 140 + 'T' * 110
-
-    for outcome in evidence:
-        Update(pmf, outcome)
-
-    print pmf.Prob(50)
-    # 0.0209765261295
-
-    print 'MLE', MLE(pmf)
-
-    print 'Mean', Mean(pmf)
-
-    print '5th %ile', Percentile(pmf, 0.05) 
-    print '95th %ile', Percentile(pmf, 0.95) 
+        suite.Set(x, 100-x) 
+    suite.Normalize()
+    return suite
 
 
 def Ratio():

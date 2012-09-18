@@ -6,10 +6,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import thinkbayes
-
-from thinkbayes import Pmf
-from dice import Dice
 import myplot
+
+from thinkbayes import Pmf, Percentile
+from dice import Dice
 
 
 class Train(Dice):
@@ -27,15 +27,14 @@ class Train(Dice):
         self.Normalize()
 
 
-
-def Mean(suite):
-    total = 0
-    for hypo, prob in suite.Items():
-        total += hypo * prob
-    return total
-
-
 def MakePosterior(high, dataset):
+    """Makes and updates a Suite.
+
+    high: upper bound on the range of hypotheses
+    dataset: observed data to use for the update
+
+    Returns: posterior Suite
+    """
     hypos = xrange(1, high+1)
     suite = Train(hypos)
     suite.name = str(high)
@@ -45,18 +44,6 @@ def MakePosterior(high, dataset):
 
     myplot.Pmf(suite)
     return suite
-
-
-def Percentile(pmf, p):
-    """Computes a percentile of a given Pmf.
-
-    p: float probability
-    """
-    total = 0
-    for val, prob in pmf.Items():
-        total += prob
-        if total >= p:
-            return val    
 
 
 def main():
@@ -70,7 +57,7 @@ def main():
                 xlabel='Number of trains',
                 ylabel='Probability')
 
-    interval = Percentile(suite, 0.05), Percentile(suite, 0.95)
+    interval = Percentile(suite, 5), Percentile(suite, 95)
     print interval
 
     cdf = thinkbayes.MakeCdfFromPmf(suite)
