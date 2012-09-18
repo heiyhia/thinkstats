@@ -14,6 +14,10 @@ class Train(Dice):
 
 
 def Mean(suite):
+    """Computes the mean of a Pmf.
+
+    This is just an example; it would be better to use Pmf.Mean()
+    """
     total = 0
     for hypo, prob in suite.Items():
         total += hypo * prob
@@ -34,6 +38,7 @@ def main():
 
     print Mean(suite)
     print suite.Mean()
+
 
 if __name__ == '__main__':
     main()

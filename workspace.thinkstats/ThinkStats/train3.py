@@ -9,9 +9,11 @@ from thinkbayes import Pmf
 from dice import Dice
 import myplot
 
+
 class Train(Dice):
     """The likelihood function for the train problem is the same as
     for the Dice problem."""
+
     def __init__(self, hypos, alpha=1.0):
         """Initializes the hypotheses with a power law distribution.
 
@@ -43,16 +45,31 @@ def MakePosterior(high, dataset):
     return suite
 
 
+def Percentile(pmf, p):
+    """Computes a percentile of a given Pmf.
+
+    p: float probability
+    """
+    total = 0
+    for val, prob in pmf.Items():
+        total += prob
+        if total >= p:
+            return val    
+
+
 def main():
     dataset = [30, 60, 90]
 
-    for high in [500, 1000, 2000, 4000, 8000, 160000]:
+    for high in [500, 1000, 2000]:
         suite = MakePosterior(high, dataset)
         print high, suite.Mean()
 
     myplot.Save(root='train3',
                 xlabel='Number of trains',
                 ylabel='Probability')
+
+    interval = Percentile(suite, 0.05), Percentile(suite, 0.95)
+    print interval
 
 
 if __name__ == '__main__':
