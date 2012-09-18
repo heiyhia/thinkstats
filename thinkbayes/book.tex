@@ -1629,10 +1629,11 @@ probabilities in the posterior distribution and record the values
 that correspond to probabilities 5\% and 95\%.  In other words,
 the 5th and 95th percentiles.
 
-This function computes percentiles:
+\verb"thinkbayes.py" provides a function that computes percentiles:
 
 \begin{verbatim}
-def Percentile(pmf, p):
+def Percentile(pmf, percentage):
+    p = percentage / 100.0
     total = 0
     for val, prob in pmf.Items():
         total += prob
@@ -1643,7 +1644,7 @@ def Percentile(pmf, p):
 And here's the code that uses it:
 
 \begin{verbatim}
-    interval = Percentile(suite, 0.05), Percentile(suite, 0.95)
+    interval = Percentile(suite, 5), Percentile(suite, 95)
     print interval
 \end{verbatim}
 
@@ -1651,6 +1652,7 @@ For the previous example---the locomotive problem with a power law prior
 and three trains---the 90\% confidence interval is $(91, 243)$.  The
 width of this range suggests, correctly, that we are still quite
 uncertain about how many locomotives there are.
+
 
 \section{Cumulative distribution function}
 
@@ -1688,6 +1690,7 @@ probability is also logarithmic, so Cdfs are efficient for many
 calculations.
 
 The examples in this section are in \url{http://thinkbayes.com/train.py}.
+
 
 \chapter{Urns and Coins}
 
@@ -1892,14 +1895,75 @@ And then we can plot the posterior.
 
 The result is in Figure~\ref{fig.euro1}.
 
-\begin{verbatim}
-\end{verbatim}
+
+\section{Summarizing the posterior}
+
+Again, there are several ways to summarize the posterior distribution.
+One option is to find the most likely value in the posterior
+distribution.  \verb"thinkbayes.py" provides a function that does 
+that:
 
 \begin{verbatim}
+def MaximumLikelihood(pmf):
+    """Returns the value with the highest probability."""
+    prob, val = max((prob, val) for val, prob in pmf.Items())
+    return val
 \end{verbatim}
 
+In this case the result is 56, which is also the observed percentage of
+heads, $140/250 = 0.56\%$.  So that suggests (correctly) that the
+percentage in a sample is the maximum likelihood estimator
+for the population.
+
+We might also summarize the posterior by computing the mean
+and median:
+
 \begin{verbatim}
+    print 'Mean', suite.Mean()
+    print 'Median', thinkbayes.Percentile(suite, 50)
 \end{verbatim}
+
+The mean is 55.95; the median is 56.  Finally, we can compute a
+confidence interval: 
+
+\begin{verbatim}
+    print 'CI', thinkbayes.ConfidenceInterval(suite, 90)
+\end{verbatim}
+
+The result is $(51, 61)$.
+
+Now, getting back to the original question,
+we would like to know whether the coin is fair.  We observe
+that the posterior confidence interval does not include 50\%,
+which suggests that the coin is not fair.
+
+But that is not exactly the question we started with.  MacKay asked,
+`` Do these data give evidence that the coin is biased rather than
+fair?''  To answer that question, we will have to be more precise
+about what it means to say that data constitute evidence for
+a hypothesis.  And that is the subject of the next chapter.
+
+But before we go, I want to address on possible source of confusion.
+Since we want to know whether the coin is fair, it might be tempting
+to ask for the probability that {\tt x} is 50\%:
+
+\begin{verbatim}
+    print suite.Prob(50)
+\end{verbatim}
+
+The result is 0.021, but that value is pretty much meaningless.  The
+decision to evaluate 101 hypotheses was arbitrary; we could have
+divided the range into more or fewer pieces, and if we had the
+probability for any given hypothesis would be greater or less.
+
+
+\section{What about that prior?}
+
+Again, we started with a uniform prior, and again we have to
+acknowledge that it was not a very good choice.
+
+
+\section{Optimization}
 
 
 \end{document}
