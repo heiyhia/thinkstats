@@ -5,6 +5,8 @@ Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import thinkbayes
+
 from thinkbayes import Pmf
 from dice import Dice
 import myplot
@@ -71,6 +73,9 @@ def main():
     interval = Percentile(suite, 0.05), Percentile(suite, 0.95)
     print interval
 
+    cdf = thinkbayes.MakeCdfFromPmf(suite)
+    interval = cdf.Percentile(5), cdf.Percentile(95)
+    print interval
 
 if __name__ == '__main__':
     main()
