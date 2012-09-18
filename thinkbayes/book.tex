@@ -1576,7 +1576,7 @@ class Train(Dice):
         self.Normalize()
 \end{verbatim}
 
-And here's the code that constructs the prior
+And here's the code that constructs the prior:
 
 \begin{verbatim}
     hypos = range(1, 1001)
@@ -1606,6 +1606,8 @@ So the power law prior is more realistic, because it is based on
 general information about the size of companies, and it
 behaves better in practice.
 
+You can download the examples in this section from
+\url{http://thinkbayes.com/train3.py}.
 
 \section{Confidence intervals}
 
@@ -1638,19 +1640,54 @@ def Percentile(pmf, p):
             return val    
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+And here's the code that uses it:
 
 \begin{verbatim}
+    interval = Percentile(suite, 0.05), Percentile(suite, 0.95)
+    print interval
 \end{verbatim}
+
+For the previous example---the locomotive problem with a power law prior
+and three trains---the 90\% confidence interval is $(91, 243)$.  The
+width of this range suggests, correctly, that we are still quite
+uncertain about how many locomotives there are.
+
+\section{Cumulative distribution function}
+
+In the previous section we computed percentiles by iterating through
+the values and probabilities in a Pmf.  If we need to compute more
+than a few percentiles, it is more efficient to use a cumulative
+distribution function, or Cdf.
+
+Cdfs and Pmfs are equivalent in the sense that they contain the
+same information about the distribution, and you can always convert
+from one to the other.  The advantage of the Cdf is that you can
+compute percentiles more efficiently.
+
+{\tt thinkbayes.py} provides a {\tt Cdf} class that represents a
+cumulative distribution function.  It also provides functions for
+converting from a Pmf to a Cdf (and back). 
 
 \begin{verbatim}
+import thinkbayes
+cdf = thinkbayes.MakeCdfFromPmf(suite)
 \end{verbatim}
+
+And Cdf provides a function named \verb"Percentile"
 
 \begin{verbatim}
+    interval = cdf.Percentile(5), cdf.Percentile(95)
 \end{verbatim}
- 
 
+Converting from a Pmf to a Cdf takes time proportional to the number
+of values.  The Cdf stores the values and probabilities in sorted
+lists, so looking up a probability to get the corresponding value
+takes ``log time,'' that is, time proportional to the logarithm of the
+number of values.  Looking up a value to get the corresponding
+probability is also logarithmic, so Cdfs are efficient for many
+calculations.
+
+The examples in this section are in \url{http://thinkbayes.com/train.py}.
 
 \chapter{Urns and Coins}
 
@@ -1804,16 +1841,48 @@ on edge.  It seems reasonable to believe that the value of $x$ depends
 on some physical characteristics of the coin, primarily the distribution
 of weight.
 
+If a coin is perfectly balanced, we expect $x$ to be close to 50\%, but
+for a lop-sided coin $x$ might be substantially different.  We can use
+Bayes's Theorem and the observed data to estimate $x$.
 
+Let's define 101 hypotheses, where $H_i$ is the hypothesis that
+$x$ is $i$\%, for values of $i$ from 0 to 100.  I'll start with a uniform
+prior where the probability of $H_i$ is the same for all $i$.  We'll
+come back later to consider other priors.
+
+The likelihood function is easy; in fact, it is the same as in
+the Four Urn problem.  If $H_i$ is true, then the probability of
+heads is $i/100$; the probability of tails is $1- i/100$.
 
 \begin{verbatim}
+class Euro(Suite):
+
+    def Likelihood(self, hypo, data):
+        x = hypo / 100.0
+        if data == 'H':
+            return x
+        else:
+            return 1-x
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+Here's the code that makes the suite and updates it:
 
 \begin{verbatim}
+    suite = Euro(xrange(0, 101))
+    dataset = 'H' * 140 + 'T' * 110
+
+    for data in dataset:
+        suite.Update(data)
 \end{verbatim}
+
+And then we can plot the posterior.
+
+\begin{verbatim}
+    myplot.Pmf(suite)
+    myplot.Show()
+\end{verbatim}
+
+The result is in Figure~\ref{fig.euro1}.
 
 \begin{verbatim}
 \end{verbatim}
