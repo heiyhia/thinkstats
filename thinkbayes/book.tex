@@ -1959,8 +1959,18 @@ probability for any given hypothesis would be greater or less.
 
 \section{What about that prior?}
 
-Again, we started with a uniform prior, and again we have to
-acknowledge that it was not a very good choice.
+Again we started with a uniform prior, and again we have to
+acknowledge that it was not a very good choice. I can believe
+that if a coin is lop-sided, $x$ might deviate substantially from
+50\%, but it seems unlikely that the Belgian Euro coin is so
+imbalanced that $x$ is 10\% or 90\%.
+
+So it might be more reasonable to choose a prior that gives
+higher probability to values of $x$ near 50\% and lower probability
+to extreme values.
+
+As an example, I constructed a triangular prior, shown in
+Figure~\ref{fig.euro2}.
 
 
 \section{Optimization}
