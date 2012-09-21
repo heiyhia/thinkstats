@@ -47,6 +47,17 @@ def UniformPrior():
     return suite
 
 
+def TrianglePrior():
+    """Makes a Suite with a triangular prior."""
+    suite = Euro(xrange(0, 101))
+    for x in range(0, 51):
+        suite.Set(x, x)
+    for x in range(51, 101):
+        suite.Set(x, 100-x) 
+    suite.Normalize()
+    return suite
+
+
 def RunUpdate(suite, heads=140, tails=110):
     """Updates the Suite with the given number of heads and tails.
 
@@ -74,28 +85,26 @@ def Summarize(suite):
 
     print 'CI', thinkbayes.ConfidenceInterval(suite, 90)
 
-def Main():
-    suite = UniformPrior()
+
+def Run(suite, root):
     RunUpdate(suite)
     Summarize(suite)
 
-    myplot.Clf()
     myplot.Pmf(suite)
-    myplot.Save(root='euro1',
+    myplot.Save(root=root,
                 xlabel='x',
                 ylabel='Probability',
                 formats=['pdf', 'eps'])
 
 
+def Main():
+    suite1 = UniformPrior()
+    suite1.name = 'uniform'
+    Run(suite1, 'euro1')
 
-def TrianglePrior():
-    suite = Suite.Suite()
-    for x in range(0, 51):
-        suite.Set(x, x)
-    for x in range(51, 101):
-        suite.Set(x, 100-x) 
-    suite.Normalize()
-    return suite
+    suite2 = TrianglePrior()
+    suite2.name = 'triangle'
+    Run(suite2, 'euro2')
 
 
 def Ratio():
