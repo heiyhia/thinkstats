@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.2.0}
+\newcommand{\theversion}{0.4.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1773,11 +1773,11 @@ Jacob can compute $B_{next}$ using the law of total probability, which
 says that the probability that the next ball is blue is the sum
 of the probabilities for each way it can happen; in this case
 
-\[ B_{next} = \sum i/3 \p{H_i | D} \]
+\[ B_{next} = \sum \frac{1}{3} \p{H_i | D} \]
 
-Pulling out the factor of 1/3, we have
+Pulling out the factor of $1/3$, we have
 
-\[ B_{next} = 1/3 \sum i \p{H_i | D} \]
+\[ B_{next} = \frac{1}{3} \sum i \p{H_i | D} \]
 
 which we recognize as the mean of the posterior distribution, over 3.
 
@@ -1957,7 +1957,22 @@ divided the range into more or fewer pieces, and if we had the
 probability for any given hypothesis would be greater or less.
 
 
-\section{What about that prior?}
+\section{Swamping the priors}
+
+\begin{figure}
+% euro.py
+\centerline{\includegraphics[height=2.5in]{figs/euro2.pdf}}
+\caption{Uniform and triangular priors for the
+Euro problem.}
+\label{fig.euro2}
+\end{figure}
+
+\begin{figure}
+% euro.py
+\centerline{\includegraphics[height=2.5in]{figs/euro3.pdf}}
+\caption{Posterior distributions for the Euro problem.}
+\label{fig.euro3}
+\end{figure}
 
 Again we started with a uniform prior, and again we have to
 acknowledge that it was not a very good choice. I can believe
@@ -1970,18 +1985,43 @@ higher probability to values of $x$ near 50\% and lower probability
 to extreme values.
 
 As an example, I constructed a triangular prior, shown in
-Figure~\ref{fig.euro2}.
+Figure~\ref{fig.euro2}.  Here's the code that constructs the prior:
+
+\begin{verbatim}
+    suite = Euro(xrange(0, 101))
+    for x in range(0, 51):
+        suite.Set(x, x)
+    for x in range(51, 101):
+        suite.Set(x, 100-x) 
+    suite.Normalize()
+\end{verbatim}
+
+Figure~\ref{fig.euro2} shows the result.  Updating this prior
+with the same dataset yields the posterior distribution shown
+in Figure~\ref{fig.euro3}.
+
+The point of this example is that even with substantially different
+priors, the posterior distributions are very similar.  The medians
+and the confidence intervals are identical; the means differ by
+less than 0.5\%.
+
+This is an example of ``swamping the priors:'' with enough
+evidence, people who start with different priors will tend to
+converge on the same posterior.
 
 
 \section{Optimization}
 
 The code I have shown so far is meant to be easy to read, but it
 is not very efficient.  In general, I like to develop code that
-is demonstrably correct and check whether it is fast enough for
+is demonstrably correct, then check whether it is fast enough for
 my purposes.  If so, there is no need to optimize.
+For this example, if we care about run time,
+there are several ways we can speed it up.
 
-But in this case there are two ways we can speed it up substantially.
-In the original code, we call \verb"Update" once for each coin toss.
+The first opportunity is to reduce the number of times we
+normalize the suite.
+In the original code, we call \verb"Update" once for each spin.
 
 \begin{verbatim}
     dataset = 'H' * heads + 'T' * tails
@@ -2025,7 +2065,10 @@ And here's how we can invoke it:
 
 This optimization speeds things up, but the run time is still
 proportional to the amount of data.  We can speed things up
-even more by rewriting \verb"Likelihood".  In the original version,
+even more by rewriting \verb"Likelihood" to process the entire
+dataset, rather than one spin at a time.
+
+In the original version,
 \verb"data" is a string that encodes either heads or tails:
 
 \begin{verbatim}
@@ -2037,9 +2080,9 @@ even more by rewriting \verb"Likelihood".  In the original version,
             return 1-x
 \end{verbatim}
 
-Alternatively, we could pass the entire dataset as a tuple of integers
-encoding the number of heads and tails.  In that case 
-\verb"Likelihood" looks like this:
+As an alternative, we could encode the dataset as a tuple of 
+two integers: the number of heads and tails.
+In that case \verb"Likelihood" looks like this:
 
 \begin{verbatim}
     def Likelihood(self, hypo, data):
@@ -2057,10 +2100,88 @@ And then we can call \verb"Update" like this:
 \end{verbatim}
 
 Since we have replaced repeated multiplication with exponentiation,
-this version takes the same time for any number of coin tosses (up
+this version takes the same time for any number of spins (up
 to a point).
 
+For this example there is yet another optimization we can apply,
+but we'll come back to that later.
 
+
+\chapter{Odds and ends}
+
+One way to represent a probability is with a number between
+0 and 1, but that's not the only way.  If you have ever bet
+on a football game or a horse race, you have probably encountered
+another representation of probability, called ``odds.''
+
+You might have heard expressions like ``the odds are
+three to one against,'' but you might not know what they mean.  
+The odds in favor of an event are the ratio of the probability
+it will occur to the probability that it will not.
+
+So if I think my team has a 75\% chance of winning, I would
+say that the odds in their favor are three to one, because
+the chance of winning is three times the chance of losing.
+
+You can write odds in decimal form, but it is most common to
+write them as a ratio of integers.  So ``three to one'' is
+written $3:1$.
+
+When probabilities are low, it is more common to report the
+``odds against'' rather than the odds in favor.  For
+example, if I think my horse has a 10\% chance of winning,
+I would say that the odds against are $9:1$.
+
+In the context of betting, it can be confusing to talk about
+odds, because the same format is used to report the payoff.
+For example, if I offer you a bet with a payoff of ``two to one,''
+that means I will pay you \$2 for every \$1 you bet (if
+you win).  Of course, I would only offer you that bet if
+I thought the odds against you were more than $2:1$.
+
+But this is not a book about gambling, so I will only talk about odds
+and forget about payoffs.
+
+Probabilities and odds are different representations of the
+same information.  Given a probability, you can compute the
+odds like this:
+
+\begin{verbatim}
+def odds(p):
+    return p / (1-p)
+\end{verbatim}
+
+Given the odds in favor, in decimal form, you can convert to
+probability like this:
+
+\begin{verbatim}
+def probability(o):
+    return o / (o+1)
+\end{verbatim}
+
+If you represent odds with a numerator and denominator, you
+can convert to probability like this:
+
+\begin{verbatim}
+def probability2(yes, no):
+    return yes / (yes + no)
+\end{verbatim}
+
+When I work with odds in my head, I find it helpful to picture
+people at the track.  If 20\% of them think my horse will win,
+then 80\% of them don't, so the odds in favor are $20:80$ or
+$1:4$.
+
+If the odds are $5:1$ against my horse, then five out of six
+people think she will lose, so the probability of winning
+is $1/6$.
+
+\section{The odds form of Bayes's Theorem}
+
+In Chapter~\ref{bayes} I wrote Bayes's Theorem in the ``probability
+form'':
+
+\[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
 
 
 \end{document}
