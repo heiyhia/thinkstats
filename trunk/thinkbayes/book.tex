@@ -1975,5 +1975,92 @@ Figure~\ref{fig.euro2}.
 
 \section{Optimization}
 
+The code I have shown so far is meant to be easy to read, but it
+is not very efficient.  In general, I like to develop code that
+is demonstrably correct and check whether it is fast enough for
+my purposes.  If so, there is no need to optimize.
+
+But in this case there are two ways we can speed it up substantially.
+In the original code, we call \verb"Update" once for each coin toss.
+
+\begin{verbatim}
+    dataset = 'H' * heads + 'T' * tails
+
+    for data in dataset:
+        suite.Update(data)
+\end{verbatim}
+
+And here's what \verb"Update" looks like:
+
+\begin{verbatim}
+    def Update(self, data):
+        for hypo in self.Values():
+            like = self.Likelihood(hypo, data)
+            self.Mult(hypo, like)
+        return self.Normalize()
+\end{verbatim}
+
+Each update iterates through the hypotheses, then calls \verb"Normalize",
+which iterates through the hypotheses again.  We can save some
+time by doing all of the updates before normalizing.
+
+\verb"Suite" provides a method called \verb"UpdateSet" that does
+exactly that.  Here it is:
+
+\begin{verbatim}
+    def UpdateSet(self, dataset):
+        for data in dataset:
+            for hypo in self.Values():
+                like = self.Likelihood(hypo, data)
+                self.Mult(hypo, like)
+        return self.Normalize()
+\end{verbatim}
+
+And here's how we can invoke it:
+
+\begin{verbatim}
+    dataset = 'H' * heads + 'T' * tails
+    suite.UpdateSet(dataset)
+\end{verbatim}
+
+This optimization speeds things up, but the run time is still
+proportional to the amount of data.  We can speed things up
+even more by rewriting \verb"Likelihood".  In the original version,
+\verb"data" is a string that encodes either heads or tails:
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        x = hypo / 100.0
+        if data == 'H':
+            return x
+        else:
+            return 1-x
+\end{verbatim}
+
+Alternatively, we could pass the entire dataset as a tuple of integers
+encoding the number of heads and tails.  In that case 
+\verb"Likelihood" looks like this:
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        x = hypo / 100.0
+        heads, tails = data
+        like = x**heads * (1-x)**tails
+        return like
+\end{verbatim}
+
+And then we can call \verb"Update" like this:
+
+\begin{verbatim}
+    heads, tails = 140, 110
+    suite.Update((heads, tails))
+\end{verbatim}
+
+Since we have replaced repeated multiplication with exponentiation,
+this version takes the same time for any number of coin tosses (up
+to a point).
+
+
+
 
 \end{document}
