@@ -120,7 +120,7 @@ monty.py cookie2.py cookie.py train3.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
-BAYES_FIGS = train1.* train2.* euro[123].*
+BAYES_FIGS = train1.* train2.* euro[123].pdf euro[123].eps
 
 bayes_code:
 	pydoc -w thinkbayes
