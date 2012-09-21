@@ -630,6 +630,22 @@ class Suite(Pmf):
             self.Mult(hypo, like)
         return self.Normalize()
 
+    def UpdateSet(self, dataset):
+        """Updates each hypothesis based on the dataset.
+
+        This is more efficient than calling Update repeatedly because
+        it waits until the end to Normalize.
+
+        dataset: a sequence of data
+
+        returns: the normalizing constant
+        """
+        for data in dataset:
+            for hypo in self.Values():
+                like = self.Likelihood(hypo, data)
+                self.Mult(hypo, like)
+        return self.Normalize()
+
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
 
