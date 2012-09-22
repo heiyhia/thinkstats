@@ -232,7 +232,7 @@ Thanks!
 \begin{itemize}
 
 \item First, I have to acknowledge David MacKay's excellent book,
-  ``Information Theory, Inference, and Learning Algorithms'' which is
+  {\it Information Theory, Inference, and Learning Algorithms} which is
   where I first came to understand Bayesian methods.  With his
   permission (and with acknowledgement) I use several problems from
   his book as examples.
@@ -262,6 +262,7 @@ Thanks!
 \mainmatter
 
 \newcommand{\p}[1]{\ensuremath{\mathrm{p}(#1)}}
+\renewcommand{\o}[1]{\ensuremath{\mathrm{o}(#1)}}
 \newcommand{\T}[1]{\mbox{#1}}
 \newcommand{\AND}{~\mathrm{and}~}
 \newcommand{\NOT}{\mathrm{not}~}
@@ -2182,6 +2183,106 @@ In Chapter~\ref{bayes} I wrote Bayes's Theorem in the ``probability
 form'':
 
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
+
+If we define $\bar{H}$ as ``hypothesis H is false'', we can write the
+odds in favor of $H$ like this:
+
+\[ \frac{\p{H|D}}{\p{\bar{H}|D}} = \frac{\p{H}~\p{D|H}}
+                                        {\p{\bar{H}}~\p{D|\bar{H}}} \]
+
+Or writing \o{H} for odds in favor of H:
+
+\[ \o{H|D} = \o{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+
+In words, this says that the posterior odds are the prior odds times
+the likelihood ratio.  This is the ``odds form'' of Bayes's Theorem.
+
+This form is most convenient for computing a Bayesian update on
+paper, or in your head.  For example, let's go back to the
+cookie problem:
+
+\begin{quote}
+Suppose there are two bowls of cookies.  Bowl 1 contains
+  30 vanilla cookies and 10 chocolate cookies.  Bowl 2 contains 20 of
+  each.
+
+Now suppose you choose one of the bowls at random and, without looking,
+select a cookie at random.  The cookie is vanilla.  What is the probability
+that it came from Bowl 1?
+\end{quote}
+
+The prior probability is 50\%, so the prior odds are $1:1$, or just
+$1$.  The likelihood ratio is $\frac{3}{4} / \frac{1}{2}$, or $3/2$.
+So the posterior odds are $3:2$, which corresponds to probability
+$3/5$.
+
+
+\section{Oliver's blood}
+
+Here is another problem from MacKay's {\it Information Theory,
+  Inference, and Learning Algorithms}:
+
+\begin{quote}
+Two people have left traces of their own blood at the scene of
+a crime.  A suspect, Oliver, is tested and found to have type
+'O' blood.  The blood groups of the two traces are found to
+be of type 'O' (a common type in the local population, having frequency
+60\%) and of type 'AB' (a rare type, with frequency 1\%).
+Do these data [the traces found at the scene] give evidence
+in favor of the proposition that Oliver was one of the people
+[who left blood at the scene]?
+\end{quote}
+
+To answer this question, we need to think about what it means
+for data to give evidence in favor of (or against) a hypothesis.
+Intuitively, we might say that data favor a hypothesis if the
+hypothesis is more likely in light of the data than it was before.
+
+In the cookie problem, the prior odds are $1:1$, or probability 50\%.
+The posterior odds are $3:2$, or probability 60\%.  So we could say
+that the vanilla cookie is evidence in favor of Bowl 1.
+
+The odds form of Bayes's Theorem provides a way to make this
+intuition more precise.  Again
+%
+\[ \o{H|D} = \o{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+%
+Or dividing through by \o{H}:
+%
+\[ \frac{\o{H|D}}{\o{H}} = \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+%
+The term on the left is the ratio of the posterior and prior odds.
+The term on the right is the likelihood ratio, also called the ``Bayes
+factor.''
+
+Suppose that this factor is 2.  Looking at the term on the right,
+we could say, ``The data
+are twice as likely under $H$ than under $\bar{H}$.''  Looking
+at the term on the left, we might say ``The odds of $H$ 
+
+This equation implies that 
+If this value is greater than $1$, that means that the data were more
+likely under $H$ than under $\bar{H}$.  And since the odds ratio is
+also greater than $1$, which means that the odds are greater, in light
+of the data, than they were before.
+
+If the Bayes factor is less than $1$, that means the data
+
+the posterior odds are smaller.
+And if the Bayes factor is exactly $1$ 
+
+If the probability of the hypothesis increases, the odds must
+increase, too.  
+
+
+Returning to the cookie problem, we might say that the vanilla
+
+What does it mean to da
+
+
+What does it mean to say that 
+
+The odds form of Bayes's Theorem is also
 
 
 \end{document}
