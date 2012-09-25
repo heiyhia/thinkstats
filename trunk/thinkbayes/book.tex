@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.4.0}
+\newcommand{\theversion}{0.5.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -240,6 +240,8 @@ Thanks!
 \item This book has also benefited from my interactions with Sanjoy
   Mahajan, especially in Fall 2012, when I audited his class on
   Bayesian Inference at Olin College.
+
+\item Jonathan Edwards sent in the first typo.
 
 % ENDCONTRIB
 
@@ -459,8 +461,7 @@ Next, we write the probability of a conjunction:
 %
 \[ \p{A \AND B} = \p{A}~\p{B|A} \]
 %
-And if we define $A$ and $B$ the other way
-around, we can also write
+If we define $A$ and $B$ the other way around, we can also write
 %
 \[ \p{B \AND A} = \p{B}~\p{A|B} \]
 %
@@ -481,7 +482,7 @@ Finally we can divide through by \p{B}
 And that's Bayes's Theorem!  It doesn't look like much, but
 it is a surprisingly powerful idea.
 
-As an example, we can use it to solve the Cookie Problem.  I'll write
+For example, we can use it to solve the Cookie Problem.  I'll write
 $B_1$ for the hypothesis that the cookie came from Bowl 1
 and $V$ for the vanilla cookie.  Plugging in Bayes's Theorem
 we get
@@ -510,15 +511,16 @@ Putting it together, we have
 %
 \[ \p{B_1|V} = \frac{(1/2)(3/4)}{5/8} \]
 %
-which reduces to 3/5.  So the vanilla cookie is a hint that
-we probably chose Bowl 1, because vanilla cookies are more likely to
-come from Bowl 1.
+which reduces to 3/5.  So the vanilla cookie is evidence in favor of
+the hypothesis that we chose Bowl 1, because vanilla cookies are more
+likely to come from Bowl 1.
 
 This example demonstrates one use of Bayes's Theorem: it provides
 a process to get from \p{B|A} to \p{A|B}.  This strategy is useful
 in cases, like the Cookie Problem, where it is easier to compute
 the terms on the right side of Bayes's Theorem than the term on the
 left.
+
 
 \section{The diachronic interpretation}
 
@@ -641,7 +643,7 @@ are only two:
 \item A: the yellow \MM~is from 1994, which implies that green is
 from 1996.
 
-\item B: the yellow \MM~is from 1996 and green from 1996.
+\item B: the yellow \MM~is from 1996 and green from 1994.
 
 \end{itemize}
 
@@ -2148,7 +2150,7 @@ same information.  Given a probability, you can compute the
 odds like this:
 
 \begin{verbatim}
-def odds(p):
+def Odds(p):
     return p / (1-p)
 \end{verbatim}
 
@@ -2156,7 +2158,7 @@ Given the odds in favor, in decimal form, you can convert to
 probability like this:
 
 \begin{verbatim}
-def probability(o):
+def Probability(o):
     return o / (o+1)
 \end{verbatim}
 
@@ -2253,36 +2255,52 @@ Or dividing through by \o{H}:
 %
 The term on the left is the ratio of the posterior and prior odds.
 The term on the right is the likelihood ratio, also called the ``Bayes
-factor.''
+factor.
 
-Suppose that this factor is 2.  Looking at the term on the right,
-we could say, ``The data
-are twice as likely under $H$ than under $\bar{H}$.''  Looking
-at the term on the left, we might say ``The odds of $H$ 
+If the Bayes factor value is greater than $1$, that means that the
+data were more likely under $H$ than under $\bar{H}$.  And since the
+odds ratio is also greater than $1$, that means that the odds are
+greater, in light of the data, than they were before.
 
-This equation implies that 
-If this value is greater than $1$, that means that the data were more
-likely under $H$ than under $\bar{H}$.  And since the odds ratio is
-also greater than $1$, which means that the odds are greater, in light
-of the data, than they were before.
+If the Bayes factor is less than $1$, that means the data were
+less likely under $H$ than under $\bar{H}$, so the odds in
+favor of $H$ go down.
 
-If the Bayes factor is less than $1$, that means the data
+Finally, if the Bayes factor is exactly $1$, the data are equally
+likely under either hypothesis, so the odds do not change.
 
-the posterior odds are smaller.
-And if the Bayes factor is exactly $1$ 
+Now we can get back to the Oliver's blood problem.  If Oliver is
+one of the people who left blood at the crime scene, then he
+accounts for the 'O' sample, so the probability of the data
+is just the probability that a random member of the population
+has type 'AB' blood, which is 1\%.
 
-If the probability of the hypothesis increases, the odds must
-increase, too.  
+If Oliver did not leave blood at the scence, then we have two
+samples to account for.  If we choose two random people from
+the population, what is the chance of finding one with type 'O'
+and one with type 'AB'?  Well, there are two ways it might happen:
+the first person we choose might have type 'O' and the second
+'AB', or the other way around.  So the total probability is
+$2 (0.6) (0.01)\ = 1.2\%$.
 
+The likelihood of the data is slightly higher if Oliver is
+{\it not} one of the people who left blood at the scence, so
+the blood data is actually evidence against Oliver's guilt.
 
-Returning to the cookie problem, we might say that the vanilla
+This example is a little contrived, but it is an example of
+the counterintuitive result that data {\it consistent} with
+a hypothesis is not necessarily {\it evidence in favor of}
+the hypothesis.
 
-What does it mean to da
+If this result is so counterintuitive that it bothers you,
+this way of thinking might help: the data consist of a common
+event, type 'O' blood, and a rare event, type 'AB' blood.
+If Oliver accounts for the common event, that leaves the rare
+event still unexplained.  If Oliver doesn't account for the
+'O' blood, then we have two chances to find someone in the
+population with 'AB' blood.  And that factor of two makes
+the difference.
 
-
-What does it mean to say that 
-
-The odds form of Bayes's Theorem is also
 
 
 \end{document}
