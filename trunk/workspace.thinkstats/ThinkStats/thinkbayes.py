@@ -23,6 +23,42 @@ import math
 import random
 
 
+def Odds(p):
+    """Computes odds for a given probability.
+
+    Example: p=0.75 means 72 for and 25 against, or 3:1 odds in favor.
+
+    Note: for p=0, odds are undefined.
+
+    p: float 0-1
+
+    Returns: float odds
+    """
+    return p / (1-p)
+
+
+def Probability(o):
+    """Computes the probability corresponding to given odds.
+
+    Example: o=2 means 2:1 odds in favor, or 2/3 probability
+
+    o: float odds, strictly positive
+
+    Returns: float probability
+    """
+    return o / (o+1)
+
+
+def Probability2(yes, no):
+    """Computes the probability corresponding to given odds.
+
+    Example: yes=2, no=1 means 2:1 odds in favor, or 2/3 probability.
+    
+    yes, no: int or float odds in favor
+    """
+    return float(yes) / (yes + no)
+
+
 class _DictWrapper(object):
     """An object that contains a dictionary."""
 
@@ -36,6 +72,10 @@ class _DictWrapper(object):
     def GetDict(self):
         """Gets the dictionary."""
         return self.d
+
+    def SetDict(self, d):
+        """Sets the dictionary."""
+        self.d = d
 
     def Values(self):
         """Gets an unsorted sequence of values.
@@ -257,13 +297,24 @@ class Pmf(_DictWrapper):
         return var
 
     def Log(self):
-        """Log transforms the probabilities."""
+        """Log transforms the probabilities.
+        
+        Removes values with probability 0.
+
+        Normalizes so that the largest logprob is 0.
+        """
         m = self.MaxLike()
         for x, p in self.d.iteritems():
-            self.Set(x, math.log(p/m))
+            if p:
+                self.Set(x, math.log(p/m))
+            else:
+                self.Remove(x)
 
     def Exp(self):
-        """Exponentiates the probabilities."""
+        """Exponentiates the probabilities.
+
+        Normalizes so that the largest prob is 1.
+        """
         m = self.MaxLike()
         for x, p in self.d.iteritems():
             self.Set(x, math.exp(p-m))
@@ -307,8 +358,11 @@ def MakePmfFromList(t, name=''):
     Returns:
         Pmf object
     """
-    hist = MakeHistFromList(t, name)
-    return MakePmfFromHist(hist)
+    hist = MakeHistFromList(t)
+    d = hist.GetDict()
+    pmf = Pmf(d, name)
+    pmf.Normalize()
+    return pmf
 
 
 def MakePmfFromDict(d, name=''):
@@ -601,22 +655,28 @@ def MakeCdfFromList(seq, name=''):
     Returns:
        Cdf object
     """
-    hist = Pmf.MakeHistFromList(seq)
+    hist = MakeHistFromList(seq)
     return MakeCdfFromHist(hist, name)
+
+
+class UnimplementedMethod(Exception):
+    """Exception if someone calls a method that should be overridden."""
 
 
 class Suite(Pmf):
     """Represents a suite of hypotheses and their probabilities."""
 
-    def __init__(self, hypos):
+    def __init__(self, hypos=tuple(), name=''):
         """Initializes the distribution.
 
         hypos: sequence of hypotheses
         """
-        Pmf.__init__(self)
+        Pmf.__init__(self, name=name)
         for hypo in hypos:
             self.Set(hypo, 1)
-        self.Normalize()
+
+        if hypos:
+            self.Normalize()
 
     def Update(self, data):
         """Updates each hypothesis based on the data.
@@ -649,20 +709,103 @@ class Suite(Pmf):
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
 
-        hypo: string name of the door where the prize is
-        data: string name of the door Monty opened
+        hypo: some representation of the hypothesis
+        data: some representation of the data
         """
-        if hypo == data:
-            return 0
-        elif hypo == 'A':
-            return 0.5
-        else:
-            return 1
+        raise UnimplementedMethod('Child class must define this method.')
 
     def Print(self):
         """Prints the hypotheses and their probabilities."""
         for hypo, prob in sorted(self.Items()):
             print hypo, prob
+
+    def MakeOdds(self):
+        """Transforms from probabilities to odds.
+
+        Values with prob=0 are removed.
+        """
+        for hypo, prob in self.Items():
+            if prob:
+                self.Set(hypo, Odds(prob))
+            else:
+                self.Remove(hypo)
+
+    def MakeProbs(self):
+        """Transforms from odds to probabilities."""
+        for hypo, odds in self.Items():
+            self.Set(hypo, Probability(odds))
+
+
+def MakeSuiteFromList(t, name=''):
+    """Makes a suite from an unsorted sequence of values.
+
+    Args:
+        t: sequence of numbers
+        name: string name for this suite
+
+    Returns:
+        Suite object
+    """
+    hist = MakeHistFromList(t)
+    d = hist.GetDict()
+    return MakeSuiteFromDict(d)
+
+
+def MakeSuiteFromHist(hist, name=None):
+    """Makes a normalized suite from a Hist object.
+
+    Args:
+        hist: Hist object
+        name: string name
+
+    Returns:
+        Suite object
+    """
+    if name is None:
+        name = hist.name
+
+    # make a copy of the dictionary
+    d = dict(hist.GetDict())
+    return MakeSuiteFromDict(d, name)
+
+
+def MakeSuiteFromDict(d, name=''):
+    """Makes a suite from a map from values to probabilities.
+
+    Args:
+        d: dictionary that maps values to probabilities
+        name: string name for this suite
+
+    Returns:
+        Suite object
+    """
+    suite = Suite(name=name)
+    suite.SetDict(d)
+    suite.Normalize()
+    return suite
+
+
+def MakeSuiteFromCdf(cdf, name=None):
+    """Makes a normalized Suite from a Cdf object.
+
+    Args:
+        cdf: Cdf object
+        name: string name for the new Suite
+
+    Returns:
+        Suite object
+    """
+    if name is None:
+        name = cdf.name
+
+    suite = Suite(name=name)
+
+    prev = 0.0
+    for val, prob in cdf.Items():
+        suite.Incr(val, prob-prev)
+        prev = prob
+
+    return suite
 
 
 def MaximumLikelihood(pmf):
