@@ -2166,7 +2166,7 @@ If you represent odds with a numerator and denominator, you
 can convert to probability like this:
 
 \begin{verbatim}
-def probability2(yes, no):
+def Probability2(yes, no):
     return yes / (yes + no)
 \end{verbatim}
 
@@ -2289,7 +2289,7 @@ the blood data is actually evidence against Oliver's guilt.
 
 This example is a little contrived, but it is an example of
 the counterintuitive result that data {\it consistent} with
-a hypothesis is not necessarily {\it evidence in favor of}
+a hypothesis are not necessarily {\it in favor of}
 the hypothesis.
 
 If this result is so counterintuitive that it bothers you,
@@ -2300,6 +2300,59 @@ event still unexplained.  If Oliver doesn't account for the
 'O' blood, then we have two chances to find someone in the
 population with 'AB' blood.  And that factor of two makes
 the difference.
+
+
+\chapter{Books and buses}
+
+\section{The hockey problem}
+
+Suppose that my beloved Boston Bruins are playing ice hockey against
+the despised Buffalo Sabres.  After the first period (of three), the
+score is Boston 1, Buffalo 0.  What is the probability that the
+Bruins will win?
+
+As always, to answer a question like this, we need to make some
+assumptions.  First, it is reasonable to believe that goal scoring in
+hockey is at least approximately a Poisson process, which means that
+it is equally likely for a goal to be scored at any time during a
+game.  Second, we can assume that when team A plays team B, each time
+has some long-term average rate of goal scoring, denoted $\lambda$;
+for convenience I will measure $\lambda$ in goals per game.
+
+Given these assumptions, my strategy for answering this question is
+
+\begin{enumerate}
+
+\item Use statistics from previous games to choose a prior
+distribution for $\lambda$.
+
+\item Use the score from the first period to estimate $\lambda$
+for each team.
+
+\item Use the posterior distributions to compute the probability
+that each team wins.
+
+\end{enumerate}
+
+To choose a prior distribution, I got some statistics from
+\url{http://www.nhl.com}, specifically the average goals per game
+for each team in the 2011-2 season.  The distribution is roughly
+normal with mean 2.7 and standard deviation 0.3.
+
+
+
+
+
+
+\section{The Green Tea Press problem}
+
+When I started publishing my own books, I had to decide how many
+copies of the book to print.  Printing a small number of books
+is relatively expensive; when you print in bigger batches, the
+per-unit cost can be much less.  But if you order too many books,
+inventory costs can add up, and you might end up with unsold stock.
+So it is important to be able to forecast sales.
+
 
 
 
