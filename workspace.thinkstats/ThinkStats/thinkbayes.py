@@ -332,6 +332,17 @@ class Pmf(_DictWrapper):
                 pmf.Incr(v1+v2, p1*p2)
         return pmf
 
+    def Max(self, n):
+        """Computes the CDF of the maximum of n selections from this dist.
+
+        n: int
+
+        returns: new Cdf
+        """
+        cdf = MakeCdfFromPmf(self)
+        cdf.ps = [p**n for p in cdf.ps]
+        return cdf
+
 
 def MakeHistFromList(t, name=''):
     """Makes a histogram from an unsorted sequence of values.
@@ -465,6 +476,16 @@ class Cdf(object):
         self.ps = [] if ps is None else ps
         self.name = name
 
+    def Copy(self, name=None):
+        """Returns a copy of this Cdf.
+
+        Args:
+            name: string name for the new Cdf
+        """
+        if name is None:
+            name = self.name
+        return Cdf(list(self.xs), list(self.ps), name)
+
     def Values(self):
         """Returns a sorted list of values.
         """
@@ -589,6 +610,17 @@ class Cdf(object):
             except IndexError:
                 pass
         return xs, ps
+
+    def Max(self, n):
+        """Computes the CDF of the maximum of n selections from this dist.
+
+        n: int
+
+        returns: new Cdf
+        """
+        cdf = self.Copy()
+        cdf.ps = [p**n for p in cdf.ps]
+        return cdf
 
 
 def MakeCdfFromItems(items, name=''):
