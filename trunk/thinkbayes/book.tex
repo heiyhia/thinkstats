@@ -2412,10 +2412,127 @@ The code from this section is available from
 \url{http://thinkbayes.com/dungeons.py}.
 
 
+\section{Maxima}
 
-\chapter{Books and buses}
+Having generated a Dungeons and Dragons character, I would be
+particularly interested in the character's best attributes, so
+I might wonder what is the chance of getting an 18 in one or
+more attributes, or more generally what is the
+distribution of the best attribute.
 
-\section{The hockey problem}
+There are three ways to compute the distribution of a maximum:
+
+\begin{description}
+
+\item[Simulation:] Given a Pmf that represents the distribution
+for a single selection, you can a random samples, find the maximum,
+and accumulate the distribution of simulated maxima.
+
+\item[Convolution:] Given two Pmfs, you can enumerate all possible
+pairs of values and compute the distribution of the maxima.
+
+\item[Exponentiation:] If we convert a Pmf to a Cdf, there is a simple
+and efficient algorithm for finding the Cdf of the maxima.
+
+\end{description}
+
+The code to simulate maxima is almost identical to the code for
+simulating sums:
+
+\begin{verbatim}
+def RandomMax(dists):
+    total = max(dist.Random() for dist in dists)
+    return total
+
+
+def SampleMax(dists, n):
+    pmf = MakePmfFromList(RandomMax(dists) for i in xrange(n))
+    return pmf
+\end{verbatim}
+
+All I did was replace ``sum'' with ``max''.  And the code
+for convolution is almost identical, too:
+
+\begin{verbatim}
+def PmfMax(pmf1, pmf2):
+    res = thinkbayes.Pmf()
+    for v1, p1 in pmf1.Items():
+        for v2, p2 in pmf2.Items():
+            res.Incr(max(v1, v2), p1*p2)
+    return res
+\end{verbatim}
+
+In fact, you could generalize this function by taking the
+appropriate operator as a parameter.
+
+The only problem with this algorithm is that if each Pmf
+has $n$ values, the run time is proportional to $n^2$.
+
+If we convert the Pmfs to Cdfs, we can do the same calculation
+in linear time!  The key is to remember the definition of the
+cumulative distribution function:
+%
+\[ CDF(x) = \p{X \le x} \]
+%
+where $X$ is a random variable that means ``a value chosen
+randomly from this distribution.''  So, for example, $CDF(5)$
+is the probability that a value from this distribution is less
+than or equal to 5.
+
+If I draw $X$ from $CDF_1$ and $Y$ from $CDF_2$, and compute
+the maximum $Z = max(X, Y)$, what is the chance that $Z$ is
+less than or equal to 5?  Well, in that case both $X$ and $Y$
+must be less than or equal to 5.
+
+If the selections of $X$ and $Y$ are independent,
+%
+\[ CDF_3(5) = CDF_1(5) CDF_2(5) \] 
+%
+where $CDF_3$ is the distribution of $Z$.  I chose the value
+5 because I think it makes the formulas easy to read, but we
+can generalize for any value of $z$:
+%
+\[ CDF_3(z) = CDF_1(z) CDF_2(z) \]
+%
+In the special case where we draw $n$ values from the same
+distribution, 
+%
+\[ CDF_n(z) = CDF_1(z)^2 \]
+%
+And \verb"Cdf" provides a method that does just that:
+
+\begin{verbatim}
+    def Max(self, n):
+        cdf = self.Copy()
+        cdf.ps = [p**n for p in cdf.ps]
+        return cdf
+\end{verbatim}
+
+\verb"Max" takes the sample size, {\tt n}, and returns a new
+Cdf that represents the distribution of the maximum of {\tt n}
+values.
+
+\verb"Pmf.Max" does the same thing for Pmfs.  It has to
+do a little more work to convert the Pmf to a Cdf, so the
+run time is proportional to $n \log n$, but that's still
+better than quadratic.
+
+Finally, here's an example that computes the distribution of
+your character's best attribute:
+
+\begin{verbatim}
+    best_attr_cdf = three_exact.Max(6)
+    best_attr_pmf = thinkbayes.MakePmfFromCdf(best_attr_cdf)
+\end{verbatim}
+
+Where \verb"three_exact" is defined in the previous section.
+If we print the results, we see that the chance of generating
+a character with at least one attribute of 18 is about 3\%.
+
+
+\chapter{Hockey}
+
+\section{The Boston Bruins problem}
 
 Suppose that my beloved Boston Bruins are playing ice hockey against
 the despised Buffalo Sabres.  After the first period (of three), the
@@ -2449,21 +2566,6 @@ To choose a prior distribution, I got some statistics from
 \url{http://www.nhl.com}, specifically the average goals per game
 for each team in the 2011-2 season.  The distribution is roughly
 normal with mean 2.7 and standard deviation 0.3.
-
-
-
-
-
-
-\section{The Green Tea Press problem}
-
-When I started publishing my own books, I had to decide how many
-copies of the book to print.  Printing a small number of books
-is relatively expensive; when you print in bigger batches, the
-per-unit cost can be much less.  But if you order too many books,
-inventory costs can add up, and you might end up with unsold stock.
-So it is important to be able to forecast sales.
-
 
 
 
