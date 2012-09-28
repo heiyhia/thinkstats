@@ -2110,7 +2110,9 @@ For this example there is yet another optimization we can apply,
 but we'll come back to that later.
 
 
-\chapter{Odds and ends}
+\chapter{Odds and addends}
+
+\section{Odds}
 
 One way to represent a probability is with a number between
 0 and 1, but that's not the only way.  If you have ever bet
@@ -2300,6 +2302,115 @@ event still unexplained.  If Oliver doesn't account for the
 'O' blood, then we have two chances to find someone in the
 population with 'AB' blood.  And that factor of two makes
 the difference.
+
+\section{Addends}
+
+Dungeons and Dragons is a role-playing game where the results
+of players' decisions are usually determined by rolling dice.
+In fact, before game play starts, players generate each
+attribute of their characters---strength, intelligence, wisdom,
+dexterity, constitution, and charisma---by rolling three
+six-sided dice and adding them up.
+
+So you might be curious to know the distribution of this sum.
+There are two ways you might compute it:
+
+\begin{description}
+
+\item[Simulation:] Given a Pmf that represents the distribution
+for a single die, you can draw random samples, add them up,
+and accumulate the distribution of simulated sums.
+
+\item[Convolution:] Given two Pmfs, you can enumerate all possible
+pairs of values and compute the distribution of the sums.
+
+\end{description}
+
+\verb"thinkbayes" provides functions for both.  Here's an example
+of the first approach.  First, I'll define a class to represent
+a single die as a Pmf:
+
+\begin{verbatim}
+class Die(thinkbayes.Pmf):
+    def __init__(self, sides, name=''):
+        d = dict((i, 1) for i in xrange(1, sides+1))
+        thinkbayes.Pmf.__init__(self, d, name)
+        self.Normalize()
+\end{verbatim}
+
+Now I can create a six-sided die:
+
+\begin{verbatim}
+    d6 = Die(6)
+\end{verbatim}
+
+And use \verb"SampleSum" to generate a sample of 1000 rolls.
+
+\begin{verbatim}
+    dice = [d6] * 3
+    three = thinkbayes.SampleSum(dice, 1000)
+\end{verbatim}
+
+\verb"SampleSum" is based on another function, \verb"RandomSum",
+also in \verb"thinkbayes.py":
+
+\begin{verbatim}
+def RandomSum(dists):
+    total = sum(dist.Random() for dist in dists)
+    return total
+
+
+def SampleSum(dists, n):
+    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
+    return pmf
+\end{verbatim}
+
+\verb"dists" is a list of objects that can be either
+Pmfs or Cdfs (or anything else that provides an appropriate
+\verb"Random" method); \verb"n" is the number of rolls to simulate.
+
+The drawback of estimating this distribution by simulation is that
+it is only approximately correct.  As \verb"n" gets larger, it gets
+more accurate, but of course the run time increases as well.
+
+The other approach is to enumerate all pairs of values and
+compute the sum and probability of each pair.  This is implemented
+in the \verb"Pmf.__add__" method:
+
+\begin{verbatim}
+    def __add__(self, other):
+        pmf = Pmf()
+        for v1, p1 in self.Items():
+            for v2, p2 in other.Items():
+                pmf.Incr(v1+v2, p1*p2)
+        return pmf
+\end{verbatim}
+
+And here's how it's used:
+
+\begin{verbatim}
+    three_exact = d6 + d6 + d6
+\end{verbatim}
+
+The approximate and exact distributions are shown in
+Figure~\ref{fig.dungeons1}.
+
+\begin{figure}
+% dungeons.py
+\centerline{\includegraphics[height=2.5in]{figs/dungeons1.pdf}}
+\caption{Posterior distribution for the Locomotive problem, based
+on a uniform prior.}
+\label{fig.dungeons1}
+\end{figure}
+
+\verb"Pmf.__add__" is based on the assumption that the random
+selections from each Pmf are independent.  In the example of rolling
+several dice, this assumption is pretty good.  In other cases, we
+might have to extend this method to use conditional probabilities.
+
+The code from this section is available from
+\url{http://thinkbayes.com/dungeons.py}.
+
 
 
 \chapter{Books and buses}
