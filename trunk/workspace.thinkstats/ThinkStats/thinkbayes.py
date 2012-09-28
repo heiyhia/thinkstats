@@ -319,6 +319,19 @@ class Pmf(_DictWrapper):
         for x, p in self.d.iteritems():
             self.Set(x, math.exp(p-m))
 
+    def __add__(self, other):
+        """Computes the Pmf of the sum of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
+        pmf = Pmf()
+        for v1, p1 in self.Items():
+            for v2, p2 in other.Items():
+                pmf.Incr(v1+v2, p1*p2)
+        return pmf
+
 
 def MakeHistFromList(t, name=''):
     """Makes a histogram from an unsorted sequence of values.
@@ -905,5 +918,24 @@ def PmfProbEqual(pmf1, pmf2):
     return total
 
 
+def RandomSum(dists):
+    """Chooses a random value from each dist and returns the sum.
+
+    dists: sequence of Pmf or Cdf objects
+
+    returns: numerical sum
+    """
+    total = sum(dist.Random() for dist in dists)
+    return total
 
 
+def SampleSum(dists, n):
+    """Draws a sample of sums from a list of distributions.
+
+    dists: sequence of Pmf or Cdf objects
+    n: sample size
+
+    returns: new Pmf of sums
+    """
+    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
+    return pmf
