@@ -228,6 +228,14 @@ class Pmf(_DictWrapper):
         """Gets an unsorted sequence of probabilities."""
         return self.d.values()
 
+    def ProbGreater(self, x):
+        t = [prob for (val, prob) in self.Items() if val > x]
+        return sum(t)
+
+    def ProbLess(self, x):
+        t = [prob for (val, prob) in self.Items() if val < x]
+        return sum(t)
+
     def Normalize(self, fraction=1.0):
         """Normalizes this PMF so the sum of all probs is fraction.
 
@@ -330,6 +338,19 @@ class Pmf(_DictWrapper):
         for v1, p1 in self.Items():
             for v2, p2 in other.Items():
                 pmf.Incr(v1+v2, p1*p2)
+        return pmf
+
+    def __sub__(self, other):
+        """Computes the Pmf of the diff of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
+        pmf = Pmf()
+        for v1, p1 in self.Items():
+            for v2, p2 in other.Items():
+                pmf.Incr(v1-v2, p1*p2)
         return pmf
 
     def Max(self, n):
