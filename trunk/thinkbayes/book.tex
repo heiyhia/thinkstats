@@ -683,7 +683,7 @@ cancels out when we divide through by the normalizing factor, so
 it doesn't affect the result.
 
 When the set of hypotheses is mutually exclusive and collectively
-exhaustive, you can multiply the probabilities by any factor,
+exhaustive, you can multiply the likelihoods by any factor,
 if it is convenient, as long as you apply the same factor to the entire
 column.
 
@@ -2534,18 +2534,19 @@ a character with at least one attribute of 18 is about 3\%.
 
 \section{The Boston Bruins problem}
 
-Suppose that my beloved Boston Bruins are playing ice hockey against
-the despised Buffalo Sabres.  After the first period (of three), the
-score is Boston 1, Buffalo 0.  What is the probability that the
-Bruins will win?
+In the 2011-2 Stanley Cup Finals, my beloved Boston Bruins played a
+best-of-seven championship series against the despised Vancouver
+Canucks.  Boston lost the first two games 0-1 and 2-3, then won
+the next two games 8-1 and 4-0.  At this point in the series, what
+is the probability that Boston will win the next game, and what
+is their probability of winning the championship?
 
 As always, to answer a question like this, we need to make some
 assumptions.  First, it is reasonable to believe that goal scoring in
 hockey is at least approximately a Poisson process, which means that
 it is equally likely for a goal to be scored at any time during a
-game.  Second, we can assume that when team A plays team B, each time
-has some long-term average rate of goal scoring, denoted $\lambda$;
-for convenience I will measure $\lambda$ in goals per game.
+game.  Second, we can assume that when team A plays team B, each team
+has some long-term average goals per game, denoted $\lambda$.
 
 Given these assumptions, my strategy for answering this question is
 
@@ -2554,11 +2555,14 @@ Given these assumptions, my strategy for answering this question is
 \item Use statistics from previous games to choose a prior
 distribution for $\lambda$.
 
-\item Use the score from the first period to estimate $\lambda$
+\item Use the score from the first four games to estimate $\lambda$
 for each team.
 
 \item Use the posterior distributions to compute the probability
 that each team wins.
+
+\item Simulate the rest of the series to estimate the probability
+of each possible outcome.
 
 \end{enumerate}
 

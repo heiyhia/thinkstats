@@ -47,30 +47,28 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
     return pmf
 
 
-def EvalPoissonPmf(lam, t, k):
+def EvalPoissonPmf(lam, k):
     """Computes the Poisson PMF.
 
     lam: parameter lambda in events per unit time
-    t: duration in units of time
     k: number of events
 
     returns: float probability
     """
-    return (lam*t)**k * math.exp(lam*t) / math.factorial(k)
+    return (lam)**k * math.exp(lam) / math.factorial(k)
 
 
-def MakePoissonPmf(lam, t, high):
+def MakePoissonPmf(lam, high):
     """Makes a PMF discrete approx to a Poisson distribution.
 
     lam: parameter lambda in events per unit time
-    t: duration in units of time
     high: upper bound of the Pmf
 
     returns: normalized Pmf
     """
     pmf = thinkbayes.Pmf()
     for k in xrange(0, high+1):
-        p = EvalPoissonPmf(lam, t, k)
+        p = EvalPoissonPmf(lam, k)
         pmf.Set(k, p)
     pmf.Normalize()
     return pmf
@@ -108,7 +106,7 @@ class Hockey(thinkbayes.Suite):
     def __init__(self):
         thinkbayes.Suite.__init__(self)
 
-        pmf = MakeGaussianPmf(2.7, 0.3, 5)
+        pmf = MakeGaussianPmf(2.7, 0.3, 6)
         for x, p in pmf.Items():
             self.Set(x, p)
             
@@ -137,15 +135,14 @@ def MakeGoalPmf(suite):
 
     returns: Pmf of goals per game
     """
-    pmfs = thinkbayes.Pmf()
-    t = 1.0
+    metapmf = thinkbayes.Pmf()
     high = 10
 
     for lam, prob in suite.Items():
-        pmf = MakePoissonPmf(lam, t, high)
-        pmfs.Set(pmf, prob)
+        pmf = MakePoissonPmf(lam, high)
+        metapmf.Set(pmf, prob)
 
-    mix = thinkbayes.MakeMixture(pmfs, name=suite.name)
+    mix = thinkbayes.MakeMixture(metapmf, name=suite.name)
     return mix
 
 
@@ -156,48 +153,76 @@ def MakeGoalTimePmf(suite):
 
     returns: Pmf of goals per game
     """
-    pmfs = thinkbayes.Pmf()
-    t = 1.0
-    high = 5   # max number of games without a goal
+    metapmf = thinkbayes.Pmf()
 
     for lam, prob in suite.Items():
-        pmf = MakeExponentialPmf(lam, high, 501)
-        pmfs.Set(pmf, prob)
+        pmf = MakeExponentialPmf(lam, high=2, n=2001)
+        metapmf.Set(pmf, prob)
 
-    mix = thinkbayes.MakeMixture(pmfs, name=suite.name)
+    mix = thinkbayes.MakeMixture(metapmf, name=suite.name)
     return mix
 
 
 def main():
     suite1 = Hockey()
     suite1.name = 'bruins'
-    suite1.UpdateSet([5, 3, 1])
+    suite1.UpdateSet([0, 2, 8, 4])
     goal_dist1 = MakeGoalPmf(suite1)
     time_dist1 = MakeGoalTimePmf(suite1)
     
     suite2 = Hockey()
     suite2.name = 'sabres'
-    suite2.UpdateSet([1, 2, 3])
+    suite2.UpdateSet([1, 3, 1, 0])
     goal_dist2 = MakeGoalPmf(suite2)
     time_dist2 = MakeGoalTimePmf(suite2)
+    
+    myplot.Clf()
+    myplot.Pmf(suite1)
+    myplot.Pmf(suite2)
+    myplot.Save(root='hockey1',
+                xlabel='Goals per game',
+                ylabel='Probability',
+                formats=['pdf', 'eps'])
 
-    #myplot.Pmf(suite1)
-    #myplot.Pmf(suite2)    
+    myplot.Clf()
     myplot.Pmf(goal_dist1)
-    myplot.Pmf(goal_dist2)    
-    #myplot.Pmf(time_dist1)
-    #myplot.Pmf(time_dist2)    
-    myplot.Show()
+    myplot.Pmf(goal_dist2)
+    myplot.Save(root='hockey2',
+                xlabel='Goals',
+                ylabel='Probability',
+                formats=['pdf', 'eps'])
+
+    myplot.Clf()
+    myplot.Pmf(time_dist1)
+    myplot.Pmf(time_dist2)    
+    myplot.Save(root='hockey3',
+                xlabel='Games until goal',
+                ylabel='Probability',
+                formats=['pdf', 'eps'])
 
     diff = goal_dist1 - goal_dist2
-    p_win, p_loss, p_tie = diff.ProbGreater(0), diff.Prob(0), diff.ProbLess(0)
+    p_win = diff.ProbGreater(0)
+    p_loss = diff.ProbLess(0)
+    p_tie = diff.Prob(0)
 
     print p_win, p_loss, p_tie
 
     p_overtime = thinkbayes.PmfProbLess(time_dist1, time_dist2)
-    p_tie = thinkbayes.PmfProbEqual(time_dist1, time_dist2)
+    p_adjust = thinkbayes.PmfProbEqual(time_dist1, time_dist2)
+    p_overtime += p_adjust / 2
     print p_overtime 
-    print p_overtime + p_tie
+
+    print p_overtime * p_tie
+    p_win += p_overtime * p_tie
+    print 'p_win', p_win
+
+    # win the next two
+    p_series = p_win**2
+
+    # split the next two, win the third
+    p_series += 2 * p_win * (1-p_win) * p_win
+
+    print 'p_series', p_series
 
 
 if __name__ == '__main__':
