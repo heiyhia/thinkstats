@@ -1133,7 +1133,7 @@ that provides \verb"__init__", \verb"Update" and \verb"Print".
 class Suite(Pmf):
     """Represents a suite of hypotheses and their probabilities."""
 
-    def __init__(self, hypos):
+    def __init__(self, hypo=tuple()):
         """Initializes the distribution."""
 
     def Update(self, data):
@@ -2569,7 +2569,205 @@ of each possible outcome.
 To choose a prior distribution, I got some statistics from
 \url{http://www.nhl.com}, specifically the average goals per game
 for each team in the 2011-2 season.  The distribution is roughly
-normal with mean 2.7 and standard deviation 0.3.
+normal (Gaussian) with mean 2.7 and standard deviation 0.3.
+
+The Gaussian distribution is continuous, but we'll approximate it
+with a discrete Pmf.  \verb"thinkbayes" provides \verb"MakeGaussianPmf"
+to do exactly that:
+
+\begin{verbatim}
+def MakeGaussianPmf(mu, sigma, num_sigmas, n=101):
+    pmf = Pmf()
+    low = mu - num_sigmas*sigma
+    high = mu + num_sigmas*sigma
+
+    for x in numpy.linspace(low, high, n):
+        p = EvalGaussianPdf(mu, sigma, x)
+        pmf.Set(x, p)
+    pmf.Normalize()
+    return pmf
+\end{verbatim}  
+
+{\tt mu} and {\tt sigma} are the mean and standard deviation of
+the Gaussian distribution.  {\tt sigmas} is the number of standard
+deviations above and below the mean that the Pmf will span,
+and {\tt n} is the number of values in the Pmf.
+
+\verb"EvalGaussianPdf" does what it says; it evaluates the
+Gaussian PDF.
+
+\begin{verbatim}
+def EvalGaussianPdf(mu, sigma, x):
+    z = (x - mu) / sigma
+    p = math.exp(-z**2/2)
+    return p
+\end{verbatim}  
+
+If you look up the Gaussian PDF, you'll see that I left out a
+normalizing constant, so this function actually computes
+a likelihood that is proportional to the Gaussian PDF, which is
+fine because I have to normalize the Pmf anyway.
+
+Getting back to the hockey problem, here's the definition for a suite
+of hypotheses about the value of $\lambda$.
+
+\begin{verbatim}
+class Hockey(thinkbayes.Suite):
+
+    def __init__(self):
+        thinkbayes.Suite.__init__(self)
+
+        pmf = thinkbayes.MakeGaussianPmf(2.7, 0.3, 6)
+        for x, p in pmf.Items():
+            self.Set(x, p)
+\end{verbatim}  
+
+So the prior distribution is Gaussian with mean 2.7, standard deviation
+0.3, and it spans six sigmas above and below the mean.
+
+
+\section{Poisson processes}
+
+In mathematical statistics, a ``process'' is a stochastic, or random,
+model of a physical system.  For example, a Bernoulli process is a model
+of a sequence of events, called trials, in which each trial has
+two possible outcomes, like success and failure.  So a Bernoulli
+process is a natural model for a series of coin flips, or a series
+of shots on goal.
+
+A Poisson process is the continuous version of a Bernoulli process,
+where an event can occur at any point in time with equal probability.
+Poisson processes can be used to model customers arriving in a store,
+buses arriving at a bus stop, or goals scored in a hockey game.
+
+In many real systems the probability of an event changes over time.
+Customers are more likely to go to a store at certain times of day,
+buses are supposed to arrive at fixed intervals, and goals are more
+likely during a power play, or at the end of a close game if one
+team replaces the goalie with an additional skater.
+
+But all models are based on simplifications, and in this case modeling
+a hockey game with a Poisson process is probably pretty good.  Heuer
+et al. analyzed scoring in a German soccer league and came to the same
+conclusion; see
+\url{http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf}.
+
+The benefit of using this model is that we can compute the distribution
+of goals per game efficiently, as well as the distribution of time
+between goals.  Specifically, if the average number of goals
+in a game is {\tt lam}, the distribution of goals per game is
+given by the Poisson PMF:
+
+\begin{verbatim}
+def EvalPoissonPmf(lam, k):
+    return (lam)**k * math.exp(lam) / math.factorial(k)
+\end{verbatim}  
+
+And the distribution of time between goals is given by the
+exponential PDF:
+
+\begin{verbatim}
+def EvalExponentialPdf(lam, x):
+    return lam * math.exp(-lam * x)
+\end{verbatim}  
+
+Both of these functions are in \verb"thinkbayes.py".
+
+\section{The posteriors}
+
+Now we can compute the likelihood of seeing a team score
+{\tt k} goals in a game:
+
+\begin{verbatim}
+# class Hockey
+
+    def Likelihood(self, hypo, data):
+        lam = hypo
+        k = data
+        like = thinkbayes.EvalPoissonPmf(lam, k)
+        return like
+\end{verbatim}
+
+Each hypothesis in the suite is represented by a floating-point value
+of $\lambda$.  I use the variable {\tt lam} because {\tt lambda} is a
+reserved keyword in Python.  {\tt data} is the observed
+number of goals, {\tt k}.
+
+With the likelihood function in place, we can make a suite for each
+team and update them with the scores from the first four games.
+
+\begin{verbatim}
+    suite1 = Hockey('bruins')
+    suite1.UpdateSet([0, 2, 8, 4])
+     
+    suite2 = Hockey('canucks')
+    suite2.UpdateSet([1, 3, 1, 0])
+\end{verbatim}  
+
+Figure~\ref{fig.hockey1} shows the resulting posterior distributions
+for {\tt lam}.  Based on the first four games, the most likely
+values for {\tt lam} are 3.2 for the Canucks and 3.4 for the Bruins.
+
+\begin{figure}
+% hockey.py
+\centerline{\includegraphics[height=2.5in]{figs/hockey1.pdf}}
+\caption{Posterior distribution of the number of
+goals per game.}
+\label{fig.hockey1}
+\end{figure}
+
+\begin{figure}
+% hockey.py
+\centerline{\includegraphics[height=2.5in]{figs/hockey2.pdf}}
+\caption{Distribution of goals in a single game.}
+\label{fig.hockey2}
+\end{figure}
+
+\begin{figure}
+% hockey.py
+\centerline{\includegraphics[height=2.5in]{figs/hockey3.pdf}}
+\caption{Distribution of time between goals.}
+\label{fig.hockey3}
+\end{figure}
+
+
+\section{Meta-Pdf}
+
+Next we need to compute the distribution of goals for each team.
+If we knew the value of {\tt lam} exactly, we could use the
+Poisson distribution again.  \verb"thinkbayes" provides a
+method that computes a truncated approximation of a Poisson
+distribution:
+
+\begin{verbatim}
+\end{verbatim}  
+
+
+
+\begin{verbatim}
+lam = 3.2
+goal_dist = 
+\end{verbatim}  
+
+
+\begin{verbatim}
+\end{verbatim}  
+
+
+\begin{verbatim}
+\end{verbatim}  
+
+
+\begin{verbatim}
+\end{verbatim}  
+
+
+\begin{verbatim}
+\end{verbatim}  
+
+
+\begin{verbatim}
+\end{verbatim}  
 
 
 

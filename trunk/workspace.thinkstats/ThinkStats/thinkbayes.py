@@ -20,6 +20,7 @@ Cdf: represents a discrete cumulative distribution function
 import bisect
 import logging
 import math
+import numpy
 import random
 
 
@@ -992,3 +993,95 @@ def SampleSum(dists, n):
     """
     pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
     return pmf
+
+
+def EvalGaussianPdf(mu, sigma, x):
+    """Computes the unnormalized PDF of the normal distribution.
+
+    mu: mean
+    sigma: standard deviation
+    x: value
+    
+    returns: float probability density (unnormalized)
+    """
+    z = (x - mu) / sigma
+    p = math.exp(-z**2/2)
+    return p
+
+
+def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
+    """Makes a PMF discrete approx to a Gaussian distribution.
+    
+    mu: float mean
+    sigma: float standard deviation
+    num_sigmas: how many sigmas to extend in each direction
+    n: number of values in the Pmf
+
+    returns: normalized Pmf
+    """
+    pmf = Pmf()
+    low = mu - num_sigmas*sigma
+    high = mu + num_sigmas*sigma
+
+    for x in numpy.linspace(low, high, n):
+        p = EvalGaussianPdf(mu, sigma, x)
+        pmf.Set(x, p)
+    pmf.Normalize()
+    return pmf
+
+
+def EvalPoissonPmf(lam, k):
+    """Computes the Poisson PMF.
+
+    lam: parameter lambda in events per unit time
+    k: number of events
+
+    returns: float probability
+    """
+    return (lam)**k * math.exp(lam) / math.factorial(k)
+
+
+def MakePoissonPmf(lam, high):
+    """Makes a PMF discrete approx to a Poisson distribution.
+
+    lam: parameter lambda in events per unit time
+    high: upper bound of the Pmf
+
+    returns: normalized Pmf
+    """
+    pmf = Pmf()
+    for k in xrange(0, high+1):
+        p = EvalPoissonPmf(lam, k)
+        pmf.Set(k, p)
+    pmf.Normalize()
+    return pmf
+
+
+def EvalExponentialPdf(lam, x):
+    """Computes the exponential PDF.
+
+    lam: parameter lambda in events per unit time
+    x: value
+
+    returns: float probability density
+    """
+    return lam * math.exp(-lam * x)
+
+
+def MakeExponentialPmf(lam, high, n=200):
+    """Makes a PMF discrete approx to an exponential distribution.
+
+    lam: parameter lambda in events per unit time
+    high: upper bound
+    n: number of values in the Pmf
+
+    returns: normalized Pmf
+    """
+    pmf = Pmf()
+    for x in numpy.linspace(0, high, n):
+        p = EvalExponentialPdf(lam, x)
+        pmf.Set(x, p)
+    pmf.Normalize()
+    return pmf
+
+

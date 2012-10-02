@@ -116,11 +116,12 @@ clean:
 	rm gss.regress.*.db
 
 BAYES_PY = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
-monty.py cookie2.py cookie.py train3.py dungeons.py
+monty.py cookie2.py cookie.py train3.py dungeons.py hockey.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
-BAYES_FIGS = train1.* train2.* euro[123].pdf euro[123].eps dungeons1.*
+BAYES_FIGS = train1.* train2.* euro[123].pdf euro[123].eps dungeons1.* \
+hockey[123].pdf hockey[123].eps
 
 bayes_code:
 	pydoc -w thinkbayes
