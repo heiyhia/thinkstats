@@ -469,17 +469,17 @@ def MakePmfFromCdf(cdf, name=None):
     return pmf
 
 
-def MakeMixture(pmfs, name='mix'):
+def MakeMixture(metapmf, name='mix'):
     """Make a mixture distribution.
 
     Args:
-      pmfs: Pmf that maps from Pmfs to probs.
+      metapmf: Pmf that maps from Pmfs to probs.
       name: string name for the new Pmf.
 
     Returns: Pmf object.
     """
     mix = Pmf(name=name)
-    for pmf, p1 in pmfs.Items():
+    for pmf, p1 in metapmf.Items():
         for x, p2 in pmf.Items():
             mix.Incr(x, p1 * p2)
     return mix
