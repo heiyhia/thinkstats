@@ -2183,7 +2183,7 @@ is $1/6$.
 
 \section{The odds form of Bayes's Theorem}
 
-In Chapter~\ref{bayes} I wrote Bayes's Theorem in the ``probability
+In Chapter~\ref{intro} I wrote Bayes's Theorem in the ``probability
 form'':
 
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
@@ -2332,9 +2332,9 @@ a single die as a Pmf:
 
 \begin{verbatim}
 class Die(thinkbayes.Pmf):
-    def __init__(self, sides, name=''):
+    def __init__(self, sides):
         d = dict((i, 1) for i in xrange(1, sides+1))
-        thinkbayes.Pmf.__init__(self, d, name)
+        thinkbayes.Pmf.__init__(self, d)
         self.Normalize()
 \end{verbatim}
 
@@ -2529,17 +2529,19 @@ Where \verb"three_exact" is defined in the previous section.
 If we print the results, we see that the chance of generating
 a character with at least one attribute of 18 is about 3\%.
 
+[[[Include the figure.]]]
+
 
 \chapter{Hockey}
 
 \section{The Boston Bruins problem}
 
-In the 2011-2 Stanley Cup Finals, my beloved Boston Bruins played a
-best-of-seven championship series against the despised Vancouver
-Canucks.  Boston lost the first two games 0-1 and 2-3, then won
-the next two games 8-1 and 4-0.  At this point in the series, what
-is the probability that Boston will win the next game, and what
-is their probability of winning the championship?
+In the 2011-2 National Hockey League (NHL) Finals, my beloved Boston
+Bruins played a best-of-seven championship series against the despised
+Vancouver Canucks.  Boston lost the first two games 0-1 and 2-3, then
+won the next two games 8-1 and 4-0.  At this point in the series, what
+is the probability that Boston will win the next game, and what is
+their probability of winning the championship?
 
 As always, to answer a question like this, we need to make some
 assumptions.  First, it is reasonable to believe that goal scoring in
@@ -2558,8 +2560,9 @@ distribution for $\lambda$.
 \item Use the score from the first four games to estimate $\lambda$
 for each team.
 
-\item Use the posterior distributions to compute the probability
-that each team wins.
+\item Use the posterior distributions of $\lambda$ to compute 
+distribution of goals for each team, the distribution of the
+goal differential, and the probability that each team wins.
 
 \item Simulate the rest of the series to estimate the probability
 of each possible outcome.
@@ -2571,9 +2574,9 @@ To choose a prior distribution, I got some statistics from
 for each team in the 2011-2 season.  The distribution is roughly
 normal (Gaussian) with mean 2.7 and standard deviation 0.3.
 
-The Gaussian distribution is continuous, but we'll approximate it
-with a discrete Pmf.  \verb"thinkbayes" provides \verb"MakeGaussianPmf"
-to do exactly that:
+The Gaussian distribution is continuous, but we'll approximate it with
+a discrete Pmf.  \verb"thinkbayes" provides \verb"MakeGaussianPmf" to
+do exactly that:
 
 \begin{verbatim}
 def MakeGaussianPmf(mu, sigma, num_sigmas, n=101):
@@ -2588,13 +2591,13 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=101):
     return pmf
 \end{verbatim}  
 
-{\tt mu} and {\tt sigma} are the mean and standard deviation of
-the Gaussian distribution.  {\tt sigmas} is the number of standard
-deviations above and below the mean that the Pmf will span,
-and {\tt n} is the number of values in the Pmf.
+{\tt mu} and {\tt sigma} are the mean and standard deviation of the
+Gaussian distribution.  \verb"num_sigmas" is the number of standard
+deviations above and below the mean that the Pmf will span, and {\tt
+  n} is the number of values in the Pmf.
 
 \verb"EvalGaussianPdf" does what it says; it evaluates the
-Gaussian PDF.
+Gaussian probability density function (PDF).
 
 \begin{verbatim}
 def EvalGaussianPdf(mu, sigma, x):
@@ -2605,8 +2608,8 @@ def EvalGaussianPdf(mu, sigma, x):
 
 If you look up the Gaussian PDF, you'll see that I left out a
 normalizing constant, so this function actually computes
-a likelihood that is proportional to the Gaussian PDF, which is
-fine because I have to normalize the Pmf anyway.
+a likelihood that is proportional to the Gaussian PDF.  But
+that's fine, because I have to normalize the Pmf anyway.
 
 Getting back to the hockey problem, here's the definition for a suite
 of hypotheses about the value of $\lambda$.
@@ -2624,6 +2627,10 @@ class Hockey(thinkbayes.Suite):
 
 So the prior distribution is Gaussian with mean 2.7, standard deviation
 0.3, and it spans six sigmas above and below the mean.
+
+As always, we have to decide how to represent each hypothesis; in
+this case I represent the hypothesis that $\lambda=x$ with the
+floating-point value {\tt x}. 
 
 
 \section{Poisson processes}
@@ -2643,12 +2650,11 @@ buses arriving at a bus stop, or goals scored in a hockey game.
 In many real systems the probability of an event changes over time.
 Customers are more likely to go to a store at certain times of day,
 buses are supposed to arrive at fixed intervals, and goals are more
-likely during a power play, or at the end of a close game if one
-team replaces the goalie with an additional skater.
+or less likely at different times during a game.
 
 But all models are based on simplifications, and in this case modeling
-a hockey game with a Poisson process is probably pretty good.  Heuer
-et al. analyzed scoring in a German soccer league and came to the same
+a hockey game with a Poisson process is a reasonable choice.  Heuer
+et al. analyze scoring in a German soccer league and come to the same
 conclusion; see
 \url{http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf}.
 
@@ -2673,10 +2679,11 @@ def EvalExponentialPdf(lam, x):
 
 Both of these functions are in \verb"thinkbayes.py".
 
+
 \section{The posteriors}
 
-Now we can compute the likelihood of seeing a team score
-{\tt k} goals in a game:
+Now we can compute the likelihood of seeing a team with a hypothetical
+value of {\tt lam} score {\tt k} goals in a game:
 
 \begin{verbatim}
 # class Hockey
@@ -2688,10 +2695,9 @@ Now we can compute the likelihood of seeing a team score
         return like
 \end{verbatim}
 
-Each hypothesis in the suite is represented by a floating-point value
-of $\lambda$.  I use the variable {\tt lam} because {\tt lambda} is a
-reserved keyword in Python.  {\tt data} is the observed
-number of goals, {\tt k}.
+Each hypothesis is a possible value of $\lambda$ (I use the variable
+{\tt lam} because {\tt lambda} is a reserved keyword in Python).  {\tt
+  data} is the observed number of goals, {\tt k}.
 
 With the likelihood function in place, we can make a suite for each
 team and update them with the scores from the first four games.
@@ -2731,40 +2737,172 @@ goals per game.}
 \end{figure}
 
 
-\section{Meta-Pdf}
+\section{The Meta-Pmf}
 
-Next we need to compute the distribution of goals for each team.
+To compute the probability that each team wins the next game,
+we need to compute the distribution of goals for each team.
+
 If we knew the value of {\tt lam} exactly, we could use the
 Poisson distribution again.  \verb"thinkbayes" provides a
 method that computes a truncated approximation of a Poisson
 distribution:
 
 \begin{verbatim}
+def MakePoissonPmf(lam, high):
+    pmf = Pmf()
+    for k in xrange(0, high+1):
+        p = EvalPoissonPmf(lam, k)
+        pmf.Set(k, p)
+    pmf.Normalize()
+    return pmf
 \end{verbatim}  
 
-
+The range of values in the computed Pmf is from 0 to {\tt high}.
+So if the value of {\tt lam} were exactly 3.4, we would compute:
 
 \begin{verbatim}
-lam = 3.2
-goal_dist = 
+lam = 3.4
+goal_dist = thinkbayes.MakePoissonPmf(lam, 10)
+\end{verbatim}
+
+I chose the upper bound, 10, because the probability of scoring
+more than 10 goals in a game is quite low.
+
+That's simple enough so far; the problem is that we don't know
+the value of {\tt lam} exactly.  Instead, we have a distribution
+of possible values for {\tt lam}.
+
+For each value of {\tt lam}, the distribution of goals is Poisson.
+So the overall distribution of goals is a mixture of these
+Poisson distributions, weighted according to the probabilities
+in the distribution of {\tt lam}.
+
+\verb"thinkbayes.py" provides a method that computes mixtures
+of distributions:
+
+\begin{verbatim}
+def MakeMixture(metapmf):
+    mix = Pmf()
+    for pmf, p1 in metapmf.Items():
+        for x, p2 in pmf.Items():
+            mix.Incr(x, p1 * p2)
+    return mix
 \end{verbatim}  
 
+{\tt metapmf} is a Meta-Pmf, which means that it is a Pmf that
+contains Pmfs.  If you find the Meta-Pmf confusing; it might
+help to think about how you would generate a random value from
+a Meta-Pmf.  First you would choose a Pmf according to the
+probabilities in the Meta-Pmf.  Then you would choose a value
+according to the probabilities in the chosen Pmf.
+
+\verb"MakeMixture" computes the distribution of the resulting
+values.
+
+Given the posterior distribution of {\tt lam}, here's the code
+that makes the distribution of goals:
+
+\begin{verbatim}
+def MakeGoalPmf(suite):
+    metapmf = thinkbayes.Pmf()
+    high = 10
+
+    for lam, prob in suite.Items():
+        pmf = thinkbayes.MakePoissonPmf(lam, high)
+        metapmf.Set(pmf, prob)
+
+    mix = thinkbayes.MakeMixture(metapmf)
+    return mix
+\end{verbatim}  
+
+For each value of {\tt lam} we make a Poisson Pmf and add it to the
+Meta-Pmf.  Then we use \verb"MakeMixture" to compute the mixture.  If
+the Meta-Pmf makes your head hurt, don't panic.  We are past the hard
+part of the problem now; everything else is easy.
+
+Figure~\ref{fig.hockey2} shows the resulting distribution of goals for
+the Bruins and Canucks.  As expected, the Bruins are less likely to
+score 3 goals or fewer in the next game, and more likely to score 4 or
+more.
+
+\section{The probability of winning}
+
+To get the probability of winning, we can convolve the distributions
+from the previous section to get the distribution of the goal
+differential:
+
+\begin{verbatim}
+    goal_dist1 = MakeGoalPmf(suite1)
+    goal_dist2 = MakeGoalPmf(suite2)
+    diff = goal_dist1 - goal_dist2
+\end{verbatim}  
+
+If this differential is positive, the Bruins win; if negative,
+the Canucks win; if 0, it's a tie:
+
+\begin{verbatim}
+    p_win = diff.ProbGreater(0)
+    p_loss = diff.ProbLess(0)
+    p_tie = diff.Prob(0)
+\end{verbatim}  
+
+With the distributions from the previous section, \verb"p_win"
+is 46\%, \verb"p_loss" is 39\%, and \verb"p_tie" is 16\%.
+
+In the event of a tie at the end of regulation play, the teams play
+overtime periods until one team scores.  Since the game ends
+immediately when the first goal is scored, this overtime format
+is known as ``sudden death.''
+
+
+\section{Sudden death}
+
+To compute the probability of winning in a sudden death overtime,
+the important statistic is not goals per game, but time until the
+first goal.  The assumption that goal-scoring is a Poisson process
+is helpful here, because it implies that the time between goals
+is exponentially distributed.
+
+Given {\tt lam}, we can compute the time between goals like this: 
+
+\begin{verbatim}
+lam = 3.4
+time_dist = thinkbayes.MakeExponentialPmf(lam, high=2, n=101)
+\end{verbatim}  
+
+{\tt high} is the upper bound of the distribution.  In this case
+I chose 2, because the probability of going more than two games
+without scoring is small.  {\tt n} is the number of values in
+the Pmf.
+
+If we know {\tt lam} exactly, that's all there is to it.
+But we don't; instead we have a posterior
+distribution of possible values.  So as we did with the distribution
+of goals, we have to make a Meta-Pmf and compute a mixture of
+Pmfs.
+
+\begin{verbatim}
+def MakeGoalTimePmf(suite):
+    metapmf = thinkbayes.Pmf()
+
+    for lam, prob in suite.Items():
+        pmf = thinkbayes.MakeExponentialPmf(lam, high=2, n=2001)
+        metapmf.Set(pmf, prob)
+
+    mix = thinkbayes.MakeMixture(metapmf)
+    return mix
+\end{verbatim}  
+
+Why is n so high?
 
 \begin{verbatim}
 \end{verbatim}  
 
-
 \begin{verbatim}
 \end{verbatim}  
 
-
 \begin{verbatim}
 \end{verbatim}  
-
-
-\begin{verbatim}
-\end{verbatim}  
-
 
 \begin{verbatim}
 \end{verbatim}  
