@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.5.0}
+\newcommand{\theversion}{0.6.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -2893,20 +2893,288 @@ def MakeGoalTimePmf(suite):
     return mix
 \end{verbatim}  
 
-Why is n so high?
+Figure~\ref{fig.hockey2} shows the resulting distributions.  For
+time values less than one period (one third of a game), the Bruins
+are more likely to score.  The time until the Canucks score is
+more likely to be longer.
+
+I set the number of values, {\tt n},
+fairly high in order to minimize the number of ties, since it is not
+actually possible for both teams to score simultaneously.
+
+Now we can compute the probability that the Bruins score first:
 
 \begin{verbatim}
+    time_dist1 = MakeGoalTimePmf(suite1)
+    time_dist2 = MakeGoalTimePmf(suite2)
+    p_overtime = thinkbayes.PmfProbLess(time_dist1, time_dist2)
 \end{verbatim}  
+
+For the Bruins, the probability of winning in overtime is 52\%.
+Finally, we can compute the total probability of winning:
 
 \begin{verbatim}
+    p_tie = diff.Prob(0)
+    p_overtime = thinkbayes.PmfProbLess(time_dist1, time_dist2)
+
+    p_win = diff.ProbGreater(0) + p_overtime * p_tie
 \end{verbatim}  
+
+So the overall chance of winning the next game is 54\%.
+To win the series, the Bruins can either win the next two games
+or split the next two and win the third.  Again, we can compute
+the total probability:
 
 \begin{verbatim}
+    # win the next two
+    p_series = p_win**2
+
+    # split the next two, win the third
+    p_series += 2 * p_win * (1-p_win) * p_win
 \end{verbatim}  
 
-\begin{verbatim}
-\end{verbatim}  
+The Bruins chance of winning the series is 56\%.  And in 2012,
+they did.
 
 
+\section{Opportunities for improvement}
+
+Solving problems like this is almost always iterative.  In general
+you want to start with something simple that yields an approximate
+answer, then look for opportunities to improve.
+
+In this example, I would consider these options:
+
+\begin{itemize}
+
+\item I chose a prior based on the average goals per game for each
+  team.  But this statistic is averaged across all opponents.  Against
+  a particular opponent, we might expect more variability.  For
+  example, if the team with the best offense plays the team with the
+  worst defense, the expected goals per game might be several standard
+  deviations above the mean.
+
+\item For data I used only the first four games of the championship
+  series.  Assuming that the same teams played each other during the
+  regular season, I could use the results from those games as well.
+  One complication is that the composition of teams changes during
+  the season due to trades and injuries.  So it might be best to
+  give more weight to recent games.
+
+\item To take advantage of all available information, we could
+  use results from all regular season games to estimate each team's
+  goal scoring rate, possibly adjusted by estimating
+  an additional factor for each pairwise match-up.  This approach
+  would be more complicated, but it is still feasible.
+  [[Forward reference to chess example]]
+
+\end{itemize}
+
+For the first option, we could use the results from the regular
+season to estimate the variability across all pairwise match-ups.
+
+
+\chapter{The variability hypothesis}
+
+I have a soft spot for crank science.  Recently I visited Norumbega
+Tower, which is an enduring monument to the crackpot theories of Eben
+Norton Horsford, inventor of double-acting baking powder and faux
+history.  But that's not what this chapter is about.
+
+This article is about the Variability Hypothesis, which
+
+\begin{quote}
+"originated
+in the early nineteenth century with Johann Meckel, who argued that
+males have a greater range of ability than females, especially in
+intelligence. In other words, he believed that most geniuses and most
+mentally retarded people are men. Because he considered males to be
+the 'superior animal,' Meckel concluded that females' lack of
+variation was a sign of inferiority."
+
+From \url{}.
+\end{quote}
+
+I particularly like that last part, because I suspect that if it turns
+out that women are actually more variable, Meckel would take that as a
+sign of inferiority, too.  Anyway, you will not be surprised to hear
+that evidence for the Variability Hypothesis is mixed at best.
+
+Nevertheless, it came up in my class recently when we looked at data
+from the CDC's Behavioral Risk Factor Surveillance System (BRFSS),
+specifically the self-reported heights of adult American men and women.
+The dataset includes responses from 154407 men and 254722 women.
+Here's what we found:
+
+\begin{itemize}
+
+\item The average height for men is 178 cm; the average height for
+  women is 163 cm.  So men are taller, on average.  No surprises so
+  far.
+
+\item For men the standard deviation is 7.7 cm; for women is it 7.3
+  cm.  So in absolute terms, men's heights are more variable.
+
+\item But to compare
+variability between groups, it is more meaningful to use the
+coefficient of variation (CV), which is the standard deviation divided
+by the mean.  It is a dimensionless measure of variability relative to
+scale.  For men CV is 0.0433; for women it is 0.0444.
+
+\end{itemize}
+
+That's very close, so we could conclude that this dataset provides no
+support for the Variability Hypothesis.  But at the risk of overthinking
+the question, I want to use this problem to demonstrate Bayesian
+estimation in 2 dimensions.
+
+So far we have worked with random processes that can be characterized
+by a single parameter: in the Euro problem it is the probability
+that the coin lands face up; in the Boston Bruin problem it is the
+goal scoring rate.
+
+The techniques we use generalize easily to systems with more than
+one parameter.  With more than two, we will quickly run into some
+performance problems, but we'll come back to that later.
+
+\section{Estimation in 2-D}
+
+In previous articles I have presented Bayesian estimation for the
+number of species in a biological sample and the age of a renal tumor.
+But those are both 1-D problems.  Estimating the mean and variance of
+a sample is a 2-D problem.  There are analytic solutions for several
+forms of the prior distribution, but as usual I will demonstrate a
+computational approach.
+
+I'll present the code for the update first, and get back to the prior.
+Here's what the update looks like:
+
+
+def LogUpdate(suite, evidence):
+    for hypo in suite.Values():
+        likelihood = LogLikelihood(evidence, hypo)
+        suite.Incr(hypo, likelihood)
+
+suite is a Pmf object that maps from each hypothesis to its probability.  While we're performing the update, the probabilities are unnormalized, which is why they are called likelihoods.  And the whole thing happens under a log transform, because otherwise the likelihoods get so small they get rounded off to zero (see underflow).
+
+
+Here's the function that computes likelihoods:
+
+
+def LogLikelihood(evidence, hypo):
+    t = evidence
+    mu, sigma = hypo
+
+
+    total = Summation(t, mu)
+    return -len(t) * math.log(sigma) - total / 2 / sigma**2
+
+evidence is the tuple of heights in centimeters; hypo is a tuple of
+hypothetical values for mu and sigma.  Summation computes the sum of
+the squared deviations from mu; the return value is the log likelihood
+of getting this sample from a Gaussian distribution with the
+hypothetical parameters.
+
+I pulled Summation out into a separate function because it gets called
+repeatedly with the same parameters, so I can improve the run time (a
+lot) by caching previous results:
+
+
+def Summation(t, mu, cache={}):
+    try:
+        return cache[t, mu]
+    except KeyError:
+        total = sum((x-mu)**2 for x in t)
+        cache[t, mu] = total
+        return total
+
+That's it for the update.  Now we need a prior.  One option is a
+uniform prior where mu can be any value and sigma can be any positive
+value.  In practice, there is no point in evaluating values far from
+the true parameters, because their likelihoods will be vanishingly
+small.  So we'll use the data to choose the range for the prior, then
+use the data to update the prior.
+
+That might sound completely bogus, because we are using the same data
+twice.  But choosing the range for the prior is just a computational
+convenience; it has no effect on the result, as long as the range is
+wide enough that the likelihood for values outside the range is
+effectively zero.
+
+To choose the prior range for mu and sigma, I use the conventional
+estimators and their standard errors.  Here's the code:
+
+
+def MakeUniformPrior(t, num_points, label, spread=3.0):
+    
+    # estimate mean and stddev of t
+    n = len(t)
+    xbar, S2 = thinkstats.MeanVar(t)
+    sighat = math.sqrt(S2)
+
+
+    # compute standard error for mu and the range of ms
+    stderr_xbar = sighat / math.sqrt(n)
+    mspread = spread * stderr_xbar
+    ms = numpy.linspace(xbar-mspread, xbar+mspread, num_points)
+
+
+    # compute standard error for sigma and the range of ss
+    stderr_sighat = sighat / math.sqrt(2 * (n-1))
+    sspread = spread * stderr_sighat
+    ss = numpy.linspace(sighat-sspread, sighat+sspread, num_points)
+
+
+    # populate the PMF
+    pmf = Pmf.Pmf(name=label)
+    for m in ms:
+        for s in ss:
+            pmf.Set((m, s), 1)
+    return ms, ss, pmf
+
+Finally, here's the code that makes the prior, updates it, and
+normalizes the posterior:
+
+def EstimateParameters(t, label, num_points=31):
+    xs, ys, suite = MakeUniformPrior(t, num_points, label)
+
+    suite.Log()
+    LogUpdate(suite, tuple(t))
+    suite.Exp()
+    suite.Normalize()
+
+    return xs, ys, suite
+
+Ok, that was more code than I usually put in these articles.  You can
+download it all from thinkcomplex.com/bayes_height.py.
+
+Results
+
+The result is a map from pairs of mu and sigma to probabilities; one
+simple way to display the map is a contour plot.  Here is the result
+for men:
+
+
+And for women:
+
+
+As expected, the central location is near the estimated parameters.
+But with this result in numerical form is that it is easy to compute
+the marginal distributions for mu and sigma, or their confidence
+intervals.  We can also compute posterior distributions for CV, and
+compare the distributions CV for men and women:
+
+
+Since there is no overlap between the distributions, we can conclude
+that the small observed difference is statistically significant; or,
+if we want to be more Bayesian about it, we can compute the
+probability that the CV for women is higher, which is pretty close to
+1.
+
+Finally we conclude: The standard deviation of height for men is
+higher.  But the coefficient of variation is slightly lower.  Even
+though the difference is tiny, it is very unlikely to be due to
+chance.  And therefore women are inferior.  Hey, I told you I have a
+soft spot for crank science.
 
 \end{document}
