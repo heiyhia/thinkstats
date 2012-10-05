@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import math
 
+import columns
 import thinkbayes
 import myplot
 
@@ -71,7 +72,43 @@ def MakeGoalTimePmf(suite):
     return mix
 
 
+class Game(object):
+    """Represents a game."""
+    convert = dict()
+
+    def clean(self):
+        self.goals = self.pd1 + self.pd2 + self.pd3
+
+
+def ReadHockeyData(filename='hockey_data.csv'):
+    game_list = columns.read_csv(filename, Game)
+    games = {}
+    
+    for game in game_list:
+        if game.season != 2012:
+            continue
+        key = game.game
+        games.setdefault(key, []).append(game)
+
+    return games
+
+
+def ProcessHockeyData(games):
+    pairs = {}
+
+    for key, pair in games.iteritems():
+        t1, t2 = pair
+        key = t1.team, t2.team
+        entry = t1.total, t2.total
+        print key, entry
+        pairs.setdefault(key, []).append(entry)
+
+
 def main():
+    games = ReadHockeyData()
+    ProcessHockeyData(games)
+    return
+
     suite1 = Hockey('bruins')
     suite1.UpdateSet([0, 2, 8, 4])
     goal_dist1 = MakeGoalPmf(suite1)
