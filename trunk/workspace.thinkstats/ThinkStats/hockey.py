@@ -15,7 +15,10 @@ class Hockey(thinkbayes.Suite):
     def __init__(self, name=''):
         thinkbayes.Suite.__init__(self, name=name)
 
-        pmf = thinkbayes.MakeGaussianPmf(2.7, 0.3, 6)
+        mu = 2.7
+        sigma = 0.3
+        sigma = 0.9
+        pmf = thinkbayes.MakeGaussianPmf(mu, sigma, 6)
         for x, p in pmf.Items():
             self.Set(x, p)
             
@@ -116,7 +119,7 @@ def main():
     p_overtime = thinkbayes.PmfProbLess(time_dist1, time_dist2)
     p_adjust = thinkbayes.PmfProbEqual(time_dist1, time_dist2)
     p_overtime += p_adjust / 2
-    print p_overtime 
+    print 'p_overtime', p_overtime 
 
     print p_overtime * p_tie
     p_win += p_overtime * p_tie
