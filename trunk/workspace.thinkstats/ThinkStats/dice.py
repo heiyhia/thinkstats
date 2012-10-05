@@ -22,16 +22,12 @@ class Dice(Suite):
 
 
 def main():
-    suite = Dice([4, 6, 8, 12, 20])
+    suite = Dice([4, 6, 8, 20])
 
-    suite.Update(6)
-    print 'After one 6'
-    suite.Print()
-
-    for roll in [6, 8, 7, 7, 5, 4]:
+    for roll in [7]:
         suite.Update(roll)
 
-    print 'After more rolls'
+    print 'Posterior'
     suite.Print()
 
 if __name__ == '__main__':
