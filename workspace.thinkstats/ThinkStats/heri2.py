@@ -1,7 +1,7 @@
 """This file contains code used in "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -18,7 +18,7 @@ import thinkstats
 
 
 def ReadData(filename='heri.csv'):
-    """Reads a CSV file of SAT scores.
+    """Reads a CSV file of data from HERI's CIRP survey.
 
     Args:
       filename: string filename

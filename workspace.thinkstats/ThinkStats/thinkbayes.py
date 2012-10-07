@@ -757,11 +757,29 @@ class Suite(Pmf):
             self.Mult(hypo, like)
         return self.Normalize()
 
+    def LogUpdate(self, data):
+        """Updates a suite of hypotheses based on new data.
+
+        Modifies the suite directly; if you want to keep the original, make
+        a copy.
+
+        Note: unlike Update, LogUpdate does not normalize.
+
+        Args:
+            data: any representation of the data
+        """
+        for hypo in self.Values():
+            like = self.LogLikelihood(hypo, data)
+            self.Incr(hypo, like)
+
     def UpdateSet(self, dataset):
         """Updates each hypothesis based on the dataset.
 
         This is more efficient than calling Update repeatedly because
         it waits until the end to Normalize.
+
+        Modifies the suite directly; if you want to keep the original, make
+        a copy.
 
         dataset: a sequence of data
 
@@ -773,8 +791,29 @@ class Suite(Pmf):
                 self.Mult(hypo, like)
         return self.Normalize()
 
+    def LogUpdateSet(self, dataset):
+        """Updates each hypothesis based on the dataset.
+
+        Modifies the suite directly; if you want to keep the original, make
+        a copy.
+
+        dataset: a sequence of data
+
+        returns: None
+        """
+        for data in dataset:
+            self.LogUpdate(data)
+
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
+
+        hypo: some representation of the hypothesis
+        data: some representation of the data
+        """
+        raise UnimplementedMethod('Child class must define this method.')
+
+    def LogLikelihood(self, hypo, data):
+        """Computes the log likelihood of the data under the hypothesis.
 
         hypo: some representation of the hypothesis
         data: some representation of the data
@@ -995,17 +1034,17 @@ def SampleSum(dists, n):
     return pmf
 
 
-def EvalGaussianPdf(mu, sigma, x):
+def EvalGaussianPdf(mu, sigma, x, denom=math.sqrt(2 * math.pi)):
     """Computes the unnormalized PDF of the normal distribution.
 
     mu: mean
     sigma: standard deviation
     x: value
     
-    returns: float probability density (unnormalized)
+    returns: float probability density
     """
     z = (x - mu) / sigma
-    p = math.exp(-z**2/2)
+    p = math.exp(-z**2/2) / sigma / denom
     return p
 
 
