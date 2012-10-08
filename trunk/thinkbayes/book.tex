@@ -3342,8 +3342,15 @@ instead of {\tt Mult}:
             self.Incr(hypo, like)
 \end{verbatim}
 
-To compute the log-likelihood, we look up the Gaussian
-PDF again and compute the log:
+To compute the log-likelihood, we look up the Gaussian PDF again:
+%
+\[ \frac{1}{\sigma \sqrt{2 \pi}} \exp \left[ -\frac{1}{2} \left( \frac{x-\mu}{\sigma} \right)^2 \right] \]
+%
+compute the log (dropping the constant term):
+%
+\[ -\log \sigma -\frac{1}{2} \left( \frac{x-\mu}{\sigma} \right)^2 \]
+%
+and translate into Python:
 
 \begin{verbatim}
     def LogLikelihood(self, hypo, data):
@@ -3381,6 +3388,74 @@ We can do better.
 
 
 \section{A little optimization}
+
+We can speed things up by providing a new version of \verb"LogUpdateSet"
+that computes the log-likelihood of the entire dataset at once (rather
+than looping through the data).  Given a sequence of values, $x_i$,
+the total log-likelihood is
+%
+\[ \sum_i -\log \sigma - \frac{1}{2} \left( \frac{x_i-\mu}{\sigma} \right)^2 \]
+%
+Pulling out the terms that don't depend on $i$, we get
+%
+\[ -n \log \sigma - \frac{1}{2 \sigma^2} \sum_i \left( x_i-\mu \right)^2 \]
+%
+and translate into Python:
+
+\begin{verbatim}
+    def LogUpdateSet(self, data):
+        xs = tuple(data)
+        n = len(xs)
+
+        for hypo in self.Values():
+            mu, sigma = hypo
+            total = Summation(xs, mu)
+            loglike = -n * math.log(sigma) - total / 2 / sigma**2
+            self.Incr(hypo, loglike)
+\end{verbatim}
+
+By itself, this optimization would be a small improvement, but it
+creates an opportunity for a bigger improvement.  Notice that the
+summation only depends on {\tt mu}, not {\tt sigma}, so we only
+have to evaluate it once for each value of {\tt mu}.  We could hoist
+it out of the loop, but a simpler alternative is to memoize
+{\tt Summation} like this:
+
+\begin{verbatim}
+def Summation(xs, mu, cache={}):
+    try:
+        return cache[xs, mu]
+    except KeyError:
+        ds = [(x-mu)**2 for x in xs]
+        total = sum(ds)
+        cache[xs, mu] = total
+        return total
+\end{verbatim}
+
+{\tt cache} stores previously-computed sums.  The {\tt try} statement
+returns a result from the cache if possible; otherwise it computes
+the summation, then caches and returns the result.
+
+The only catch is that we can't use a list as a key in the cache, because
+it is not a hashable type.  That's why {\tt LogUpdateSet} converts
+the dataset to a tuple.
+
+Together, these optimizations speed up the computation by about a
+factor of 100, making it possible to process the entire dataset (154
+407 men and 254 722 women) in less than a minute on my not-very-fast
+desktop computer.
+
+\section{Who is more variable?}
+
+Finally we are ready to answer the question we started with: is the
+coefficient of variation greater for men than for women?
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
 
 
 \chapter{Hypothesis testing}
