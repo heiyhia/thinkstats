@@ -78,7 +78,7 @@ class Height(thinkbayes.Suite):
             data: sequence of values
         """
         xs = tuple(data)
-        n = len(t)
+        n = len(xs)
 
         for hypo in self.Values():
             mu, sigma = hypo
@@ -130,7 +130,7 @@ def Summation(xs, mu, cache={}):
     except KeyError:
         ds = [(x-mu)**2 for x in xs]
         total = sum(ds)
-        cache[t, mu] = total
+        cache[xs, mu] = total
         return total
 
 
@@ -382,7 +382,7 @@ def UpdateSuite3(suite, xs):
 
 
 def RunEstimate(update_func, num_points=31):
-    #DumpHeights(n=10000)
+    #DumpHeights(n=1000000)
     d = LoadHeights()
 
     labels = {1:'male', 2:'female'}
@@ -412,7 +412,7 @@ def RunEstimate(update_func, num_points=31):
 
 
 def main():
-    func = UpdateSuite2
+    func = UpdateSuite3
     RunEstimate(func)
     return
 
