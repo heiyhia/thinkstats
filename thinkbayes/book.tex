@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.6.0}
+\newcommand{\theversion}{0.7.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -332,9 +332,9 @@ probability that $A$ and $B$ are both true.
 
 If you learned about probability in the context of coin tosses and
 dice, you might have learned the formula
-
+%
 \[ \p{A \AND B} = \p{A}~\p{B} \quad\mbox{WARNING: not always true}\]
-
+%
 For example, if I toss two coins, and $A$ means the first coin lands
 face up, and $B$ means the second coin lands face up, then $\p{A} =
 \p{B} = 0.5$, and sure enough, $\p{A \AND B} = \p{A}~\p{B} = 0.25$.
@@ -1775,13 +1775,13 @@ then $B_{next}$ is 100\%.  But Jacob is not sure about $H_3$.
 Jacob can compute $B_{next}$ using the law of total probability, which
 says that the probability that the next ball is blue is the sum
 of the probabilities for each way it can happen; in this case
-
+%
 \[ B_{next} = \sum \frac{1}{3} \p{H_i | D} \]
-
+%
 Pulling out the factor of $1/3$, we have
-
+%
 \[ B_{next} = \frac{1}{3} \sum i \p{H_i | D} \]
-
+%
 which we recognize as the mean of the posterior distribution, over 3.
 
 \begin{verbatim}
@@ -2185,19 +2185,19 @@ is $1/6$.
 
 In Chapter~\ref{intro} I wrote Bayes's Theorem in the ``probability
 form'':
-
+%
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
-
+%
 If we define $\bar{H}$ as ``hypothesis H is false'', we can write the
 odds in favor of $H$ like this:
-
+%
 \[ \frac{\p{H|D}}{\p{\bar{H}|D}} = \frac{\p{H}~\p{D|H}}
                                         {\p{\bar{H}}~\p{D|\bar{H}}} \]
-
+%
 Or writing \o{H} for odds in favor of H:
-
+%
 \[ \o{H|D} = \o{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
-
+%
 In words, this says that the posterior odds are the prior odds times
 the likelihood ratio.  This is the ``odds form'' of Bayes's Theorem.
 
@@ -2536,7 +2536,7 @@ a character with at least one attribute of 18 is about 3\%.
 
 \section{The Boston Bruins problem}
 
-In the 2011-2 National Hockey League (NHL) Finals, my beloved Boston
+In the 2010-11 National Hockey League (NHL) Finals, my beloved Boston
 Bruins played a best-of-seven championship series against the despised
 Vancouver Canucks.  Boston lost the first two games 0-1 and 2-3, then
 won the next two games 8-1 and 4-0.  At this point in the series, what
@@ -2571,8 +2571,8 @@ of each possible outcome.
 
 To choose a prior distribution, I got some statistics from
 \url{http://www.nhl.com}, specifically the average goals per game
-for each team in the 2011-2 season.  The distribution is roughly
-normal (Gaussian) with mean 2.7 and standard deviation 0.3.
+for each team in the 2010-11 season.  The distribution is roughly
+normal (Gaussian) with mean 2.8 and standard deviation 0.3.
 
 The Gaussian distribution is continuous, but we'll approximate it with
 a discrete Pmf.  \verb"thinkbayes" provides \verb"MakeGaussianPmf" to
@@ -2666,7 +2666,7 @@ given by the Poisson PMF:
 
 \begin{verbatim}
 def EvalPoissonPmf(lam, k):
-    return (lam)**k * math.exp(lam) / math.factorial(k)
+    return (lam)**k * math.exp(-lam) / math.factorial(k)
 \end{verbatim}  
 
 And the distribution of time between goals is given by the
@@ -2712,7 +2712,7 @@ team and update them with the scores from the first four games.
 
 Figure~\ref{fig.hockey1} shows the resulting posterior distributions
 for {\tt lam}.  Based on the first four games, the most likely
-values for {\tt lam} are 3.2 for the Canucks and 3.4 for the Bruins.
+values for {\tt lam} are 2.6 for the Canucks and 2.9 for the Bruins.
 
 \begin{figure}
 % hockey.py
@@ -2847,7 +2847,7 @@ the Canucks win; if 0, it's a tie:
 \end{verbatim}  
 
 With the distributions from the previous section, \verb"p_win"
-is 46\%, \verb"p_loss" is 39\%, and \verb"p_tie" is 16\%.
+is 46\%, \verb"p_loss" is 37\%, and \verb"p_tie" is 17\%.
 
 In the event of a tie at the end of regulation play, the teams play
 overtime periods until one team scores.  Since the game ends
@@ -2920,7 +2920,7 @@ Finally, we can compute the total probability of winning:
     p_win = diff.ProbGreater(0) + p_overtime * p_tie
 \end{verbatim}  
 
-So the overall chance of winning the next game is 54\%.
+So the overall chance of winning the next game is 55\%.
 To win the series, the Bruins can either win the next two games
 or split the next two and win the third.  Again, we can compute
 the total probability:
@@ -2933,7 +2933,7 @@ the total probability:
     p_series += 2 * p_win * (1-p_win) * p_win
 \end{verbatim}  
 
-The Bruins chance of winning the series is 56\%.  And in 2012,
+The Bruins chance of winning the series is 57\%.  And in 2011,
 they did.
 
 
@@ -2972,27 +2972,54 @@ In this example, I would consider these options:
 
 For the first option, we could use the results from the regular
 season to estimate the variability across all pairwise match-ups.
+Thanks to Dirk Hoag at \url{http://forechecker.blogspot.com/},
+I was able to get goals scored during regulation play (not overtime)
+for each game in the regular season.
+
+Teams in different conferences only play each other one or two
+times in the regular season, so I focused on pairs that played
+each other 4--6 times.  For each pair, I computed the average
+goals per game, which is an estimate of $\lambda$, then plotted
+the distribution of these estimates.
+
+The mean of these estimates is 2.8, again, but the standard
+deviation is 0.85 substantially higher than what we got computing
+one estimate for each team.
+
+If we run the analysis again with the higher-variance prior, the
+probability that the Bruins win the series is 80\%, substantially
+higher than the result with the low-variance prior, 57\%.
+
+So this is another example where the results are sensitive to the
+prior.  In general, if the variability in the prior is too high, the
+extreme values will be contradicted by evidence.  But if the
+variability is too low, the effective range of the prior is too
+narrow, and the data may not be able to correct the error.  So it is
+usually a good idea to err on the side of a more generous prior.
+
+The code and data for this chapter are available from
+\url{http://thinkbayes.com/hockey.py} and
+\url{http://thinkbayes.com/hockey_data.csv}.
 
 
 \chapter{The variability hypothesis}
 
 I have a soft spot for crank science.  Recently I visited Norumbega
 Tower, which is an enduring monument to the crackpot theories of Eben
-Norton Horsford, inventor of double-acting baking powder and faux
+Norton Horsford, inventor of double-acting baking powder and fake
 history.  But that's not what this chapter is about.
 
 This article is about the Variability Hypothesis, which
 
 \begin{quote}
-"originated
-in the early nineteenth century with Johann Meckel, who argued that
-males have a greater range of ability than females, especially in
-intelligence. In other words, he believed that most geniuses and most
-mentally retarded people are men. Because he considered males to be
-the 'superior animal,' Meckel concluded that females' lack of
-variation was a sign of inferiority."
+"originated in the early nineteenth century with Johann Meckel, who
+  argued that males have a greater range of ability than females,
+  especially in intelligence. In other words, he believed that most
+  geniuses and most mentally retarded people are men. Because he
+  considered males to be the 'superior animal,' Meckel concluded that
+  females' lack of variation was a sign of inferiority."
 
-From \url{}.
+From \url{http://en.wikipedia.org/wiki/Variability_hypothesis}.
 \end{quote}
 
 I particularly like that last part, because I suspect that if it turns
@@ -3033,148 +3060,334 @@ by a single parameter: in the Euro problem it is the probability
 that the coin lands face up; in the Boston Bruin problem it is the
 goal scoring rate.
 
-The techniques we use generalize easily to systems with more than
-one parameter.  With more than two, we will quickly run into some
-performance problems, but we'll come back to that later.
+The techniques we used generalize easily to systems with more than one
+parameter.  However, because the dataset is so big, we will run into
+some performance problems.  I will proceed in a few steps:
+
+\begin{enumerate}
+
+\item We'll start with the simplest implementation, but it only
+works for datasets smaller than 1000 values.
+
+\item By computing probabilities under a log transform, we can
+scale up to xxx of values, but the computation gets slow.
+
+\item Finally, we speed things up with Approximate Bayesian Computation,
+also known as ABC.
+
+\end{enumerate}
+
 
 \section{Estimation in 2-D}
 
-In previous articles I have presented Bayesian estimation for the
-number of species in a biological sample and the age of a renal tumor.
-But those are both 1-D problems.  Estimating the mean and variance of
-a sample is a 2-D problem.  There are analytic solutions for several
-forms of the prior distribution, but as usual I will demonstrate a
-computational approach.
+Basic estimate in multiple dimensions is easy; we just represent
+each hypothesis with a tuple of parameters.  For the normal
+distribution, the obvious tuple is {\tt mu, sigma}.
 
-I'll present the code for the update first, and get back to the prior.
-Here's what the update looks like:
+For this problem, I defined a Suite called Height that represents
+a map from each {\tt mu, sigma} pair to its probability:
 
+\begin{verbatim}
+class Height(thinkbayes.Suite):
 
-def LogUpdate(suite, evidence):
-    for hypo in suite.Values():
-        likelihood = LogLikelihood(evidence, hypo)
-        suite.Incr(hypo, likelihood)
+    def __init__(self, mus, sigmas):
+        thinkbayes.Suite.__init__(self)
 
-suite is a Pmf object that maps from each hypothesis to its probability.  While we're performing the update, the probabilities are unnormalized, which is why they are called likelihoods.  And the whole thing happens under a log transform, because otherwise the likelihoods get so small they get rounded off to zero (see underflow).
+        self.mus = mus
+        self.sigmas = sigmas
 
+        for mu in self.mus:
+            for sigma in self.sigmas:
+                self.Set((mu, sigma), 1)
+\end{verbatim}
 
-Here's the function that computes likelihoods:
+{\tt mus} is a sequence of possible values for {\tt mu}; {\tt sigmas}
+is a sequence of values for {\tt sigma}.  The prior distribution
+is uniform over all {\tt mu, sigma} pairs.
 
+The likelihood function is also easy.  Given hypothetical values
+of {\tt mu} and {\tt sigma}, we have to compute the likelihood
+of a particular value, {\tt x}.  That's what the Gaussian PDF
+does, so all we have to do is use it:
 
-def LogLikelihood(evidence, hypo):
-    t = evidence
-    mu, sigma = hypo
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        x = data
+        mu, sigma = hypo
 
+        like = thinkbayes.EvalGaussianPdf(mu, sigma, x)
+        return like
+\end{verbatim}
 
-    total = Summation(t, mu)
-    return -len(t) * math.log(sigma) - total / 2 / sigma**2
+If you have studies statistics from a mathematical perspective,
+you know that when you evaluate a PDF, you get a probability
+density.  In order to get a probability, you have to integrate
+probability densities over some range.
 
-evidence is the tuple of heights in centimeters; hypo is a tuple of
-hypothetical values for mu and sigma.  Summation computes the sum of
-the squared deviations from mu; the return value is the log likelihood
-of getting this sample from a Gaussian distribution with the
-hypothetical parameters.
+But for our purposes here, we don't need a probability; we just
+need something that is proportional to the probability we want.
+A probability density does that job nicely.
 
-I pulled Summation out into a separate function because it gets called
-repeatedly with the same parameters, so I can improve the run time (a
-lot) by caching previous results:
+That's pretty much it.  The hardest part of this problem turns
+out to be choosing appropriate ranges for {\tt mus} and
+{\tt sigmas}.  If the range is too small, we neglect some
+possibilities with non-negligible probability, and get the
+answer wrong.  If the range is too big, we get the right answer,
+but we waste computational power.
 
+So this is an opportunity to use classical estimation techniques
+to make Bayesian techniques more efficient.  Specifically, we 
+can use the sample to estimate {\tt mu} and {\tt sigma}, and use
+the standard errors of those estimates to choose the range.
 
-def Summation(t, mu, cache={}):
-    try:
-        return cache[t, mu]
-    except KeyError:
-        total = sum((x-mu)**2 for x in t)
-        cache[t, mu] = total
-        return total
+If the true, but unknown, parameters of the distribution are $\mu$ and
+$\sigma$, and we take a sample of $n$ values, the classical estimator
+of $\mu$ is
+%
+\[ \hat{\mu} = \bar{x} = \frac{1}{n} \sum_i x_i \]
+%
+and the estimator of $\sigma^2$ is
+%
+\[ \hat{\sigma}^2 = S^2 = \frac{1}{n-1} \sum_i (x_i - \bar{x})^2 \]
+%
+The standard error of $\hat{\mu}$ is
+%
+\[ S / \sqrt{n} \]
+%
+and the standard error of $\hat{\sigma}$ is
+%
+\[ S / \sqrt{2 (n-1)}\]
+%
+Here's the code to compute all that:
 
-That's it for the update.  Now we need a prior.  One option is a
-uniform prior where mu can be any value and sigma can be any positive
-value.  In practice, there is no point in evaluating values far from
-the true parameters, because their likelihoods will be vanishingly
-small.  So we'll use the data to choose the range for the prior, then
-use the data to update the prior.
-
-That might sound completely bogus, because we are using the same data
-twice.  But choosing the range for the prior is just a computational
-convenience; it has no effect on the result, as long as the range is
-wide enough that the likelihood for values outside the range is
-effectively zero.
-
-To choose the prior range for mu and sigma, I use the conventional
-estimators and their standard errors.  Here's the code:
-
-
-def MakeUniformPrior(t, num_points, label, spread=3.0):
-    
-    # estimate mean and stddev of t
-    n = len(t)
-    xbar, S2 = thinkstats.MeanVar(t)
+\begin{verbatim}
+def FindPriorRanges(xs, num_points, num_stderrs=3.0):
+    # estimate mean and stddev of xs
+    n = len(xs)
+    xbar, S2 = thinkstats.MeanVar(xs)
     sighat = math.sqrt(S2)
 
-
-    # compute standard error for mu and the range of ms
+    # compute standard error for mu and the range of mus
     stderr_xbar = sighat / math.sqrt(n)
-    mspread = spread * stderr_xbar
-    ms = numpy.linspace(xbar-mspread, xbar+mspread, num_points)
-
+    mspread = num_stderrs * stderr_xbar
+    mus = numpy.linspace(xbar-mspread, xbar+mspread, num_points)
 
     # compute standard error for sigma and the range of ss
     stderr_sighat = sighat / math.sqrt(2 * (n-1))
-    sspread = spread * stderr_sighat
-    ss = numpy.linspace(sighat-sspread, sighat+sspread, num_points)
+    sspread = num_stderrs * stderr_sighat
+    sigmas = numpy.linspace(sighat-sspread, sighat+sspread, num_points)
+
+    return mus, sigmas
+\end{verbatim}
+
+{\tt xs} is the dataset.  \verb"num_points" is the desired number of
+values in the range.  \verb"num_stderrs" is the width of the range on
+each side of the estimate, in number of standard errors.  The return
+value is a pair of sequences, {\tt mus} and {\tt sigmas}.
+
+Finally, here's the code to make and update the suite:
+
+\begin{verbatim}
+    mus, sigmas = FindPriorRanges(xs, num_points)
+    suite = Height(mus, sigmas, name)
+    suite.UpdateSet(xs)
+    print thinkbayes.MaximumLikelihood(suite)    
+\end{verbatim}
+
+This process might seem bogus, because we 
+use the data to choose the range of the prior distribution, and then
+use the data again to do the update.  In general, using the same
+data twice is, in fact, bogus.
+
+But in this case it is ok.  Really.  We use the data to choose
+the range for the prior, but only to avoid computing
+a lot of probabilities that would have been very small anyway.
+We chose a value for \verb"num_stderrs" big enough to
+cover all values with non-negligible likelihood.  After that, making
+it bigger has no effect on the results.
+
+In effect, we are approximating a prior that is uniform over all values 
+of {\tt mu} and {\tt sigma}, but for computational efficiency
+we ignore all the values that don't matter.
+
+Let's look at some results.  Using the first 100 values from the BRFSS
+dataset---which includes 27 men, 71 women, and two people who did not
+report their heights--- the maximum likelihood estimates for men are
+$(179, 8.7)$, and for women $(163, 6.2)$.
 
 
-    # populate the PMF
-    pmf = Pmf.Pmf(name=label)
-    for m in ms:
-        for s in ss:
-            pmf.Set((m, s), 1)
-    return ms, ss, pmf
+\section{The posterior distribution of CV}
 
-Finally, here's the code that makes the prior, updates it, and
-normalizes the posterior:
+These values are identical to the classical estimators, so if
+that's all we care about, we haven't accomplished much.  The
+advantage of the Bayesian approach is that with the posterior
+distribution (not just a single point estimate), we can compute
+the distribution of CV for men and women, and the 
+probability that one exceeds the other.
 
-def EstimateParameters(t, label, num_points=31):
-    xs, ys, suite = MakeUniformPrior(t, num_points, label)
+To compute the distribution of CV, we enumerate pairs of
+{\tt mu} and {\tt sigma}:
 
+\begin{verbatim}
+def ComputeCoefVariation(suite):
+    pmf = thinkbayes.Pmf()
+    for (mu, sigma), p in suite.Items():
+        pmf.Incr(sigma/mu, p)
+    return pmf
+\end{verbatim}
+
+Doesn't get much simpler than that.  Given the distribution of
+CV for men and women, we can use \verb"PmfProbGreater" to
+compute the probability that
+men are more variable.
+
+Using the first 100 values from the BRFSS dataset, we would conclude
+that the probability is 96\%, but there are two problem with
+this conclusion:
+
+\begin{enumerate}
+
+\item When we collapse the distributions to a single probability,
+we lose information about uncertainty.  For example, if we report
+``The probability that men are more variable is 96\%,'' that report
+would not capture the likelihood of the Variability Hypothesis
+before we saw the data or the weight of the evidence due to sample
+size.  We can address these limitations using Bayesian hypothesis
+testing, which is the topic of the next chapter.
+
+\item The first 100 values are not a representative sample
+from the dataset.  Of course, we should use the entire dataset.
+
+\end{enumerate}
+
+So that's what we'll do.
+
+
+\section{Big data, small probability}
+
+If we select the first 1000 values from the dataset and run
+the program again, we get an error in \verb"Pmf.Normalize":
+
+\begin{verbatim}
+ValueError: total probability is zero.
+\end{verbatim}
+
+The problem is that the likelihood function computes
+probability densities, and densities from continuous
+distributions tend to be small.
+
+If you take a large number of small probabilities and multiply
+them together, the result is very small.  In this case it is
+so small it can't be represented by a floating-point number, so
+it gets rounded down to zero, which is called ``underflow.''
+
+If all of the probabilities in the distribution are 0, it's not a
+distribution any more.
+
+A possible solution is to renormalize the Pmf after each update,
+or after each batch of 100.  But that would be slow.
+
+A better alternative is to compute probabilities under a log
+transform.  That way, instead of multiplying probabilities, we can add
+up log probabilities.  {\tt Pmf} provides methods {\tt Log}, {\tt
+  LogUpdateSet} and {\tt Exp} to make this process easy.
+
+Here's what the update looks like:
+
+\begin{verbatim}
     suite.Log()
-    LogUpdate(suite, tuple(t))
+    suite.LogUpdateSet(xs)
     suite.Exp()
     suite.Normalize()
+\end{verbatim}
 
-    return xs, ys, suite
+It's important not to call \verb"Pmf.Normalize" while the Pmf
+is under the log transform; the result would be nonsensical.
 
-Ok, that was more code than I usually put in these articles.  You can
-download it all from thinkcomplex.com/bayes_height.py.
+Here's the implementation of {\tt Log}:
 
-Results
+\begin{verbatim}
+    def Log(self):
+        m = self.MaxLike()
+        for x, p in self.d.iteritems():
+            if p:
+                self.Set(x, math.log(p/m))
+            else:
+                self.Remove(x)
+\end{verbatim}
 
-The result is a map from pairs of mu and sigma to probabilities; one
-simple way to display the map is a contour plot.  Here is the result
-for men:
+{\tt MaxLike} finds the highest probability in the Pmf.  Since we
+divide all probabilities by {\tt m}, the highest probability gets
+normalized to 1, which yields a log of 0.
+
+If there are any values in
+the Pmf with probability 0, they are removed.
+
+{\tt LogUpdateSet} calls {\tt LogUpdate}:
+
+\begin{verbatim}
+    def LogUpdateSet(self, dataset):
+        for data in dataset:
+            self.LogUpdate(data)
+\end{verbatim}
+
+{\tt LogUpdate} is just like {\tt Update} except that it calls
+{\tt LogLikelihood} instead of {\tt Likelihood}, and {\tt Incr}
+instead of {\tt Mult}:
+
+\begin{verbatim}
+    def LogUpdate(self, data):
+        for hypo in self.Values():
+            like = self.LogLikelihood(hypo, data)
+            self.Incr(hypo, like)
+\end{verbatim}
+
+To compute the log-likelihood, we look up the Gaussian
+PDF again and compute the log:
+
+\begin{verbatim}
+    def LogLikelihood(self, hypo, data):
+        x = data
+        mu, sigma = hypo
+
+        z = (x-mu) / sigma
+        loglike = -math.log(sigma) - z**2 / 2
+        return loglike
+\end{verbatim}
+
+One advantage of working under the log transform is that for many
+continuous distributions, it is easier (and a little faster) to
+compute log-likelihoods.  
+
+Finally, here's how {\tt Exp} inverts the transform:
+
+\begin{verbatim}
+    def Exp(self):
+        m = self.MaxLike()
+        for x, p in self.d.iteritems():
+            self.Set(x, math.exp(p-m))
+\end{verbatim}
+
+Before applying {\tt math.exp}, we find the maximum log-likelihood
+and shift so that the largest value in the distribution is 0, which
+yields likelihood 1.  The result is a set of values we can add
+up with minimal loss of precision.
+
+Using the log transform, we can scale the program up to a dataset
+of 10000 values, but the run time is in the range of minutes on
+my computer.  To process the entire dataset might take an hour.
+
+We can do better.
 
 
-And for women:
+\section{A little optimization}
 
 
-As expected, the central location is near the estimated parameters.
-But with this result in numerical form is that it is easy to compute
-the marginal distributions for mu and sigma, or their confidence
-intervals.  We can also compute posterior distributions for CV, and
-compare the distributions CV for men and women:
+\chapter{Hypothesis testing}
 
+\section{Back to the Euro problem}
 
-Since there is no overlap between the distributions, we can conclude
-that the small observed difference is statistically significant; or,
-if we want to be more Bayesian about it, we can compute the
-probability that the CV for women is higher, which is pretty close to
-1.
+\section{Back to the Variability Hypothesis}
 
-Finally we conclude: The standard deviation of height for men is
-higher.  But the coefficient of variation is slightly lower.  Even
-though the difference is tiny, it is very unlikely to be due to
-chance.  And therefore women are inferior.  Hey, I told you I have a
-soft spot for crank science.
 
 \end{document}

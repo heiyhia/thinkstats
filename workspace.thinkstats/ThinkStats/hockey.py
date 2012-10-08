@@ -9,19 +9,29 @@ import math
 
 import columns
 import thinkbayes
+import thinkstats
 import myplot
 
+
+USE_SUMMARY_DATA = True
 
 class Hockey(thinkbayes.Suite):
     def __init__(self, name=''):
         thinkbayes.Suite.__init__(self, name=name)
 
-        mu = 2.7
-        sigma = 0.3
-        sigma = 0.9
+        if USE_SUMMARY_DATA:
+            # prior based on each team's average goals scored
+            mu = 2.8
+            sigma = 0.3
+        else:
+            # prior based on each pair-wise match-up
+            mu = 2.8
+            sigma = 0.85
+
         pmf = thinkbayes.MakeGaussianPmf(mu, sigma, 6)
         for x, p in pmf.Items():
-            self.Set(x, p)
+            if x > 0:
+                self.Set(x, p)
             
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
@@ -81,54 +91,89 @@ class Game(object):
 
 
 def ReadHockeyData(filename='hockey_data.csv'):
+    """Read game scores from the data file.
+
+    filename: string
+    """
     game_list = columns.read_csv(filename, Game)
     games = {}
-    
+
+    # map from gameID to list of two games
     for game in game_list:
-        if game.season != 2012:
+        if game.season != 2011:
             continue
         key = game.game
         games.setdefault(key, []).append(game)
 
-    return games
-
-
-def ProcessHockeyData(games):
     pairs = {}
 
+    # map from (team1, team2) to (score1, score2)
     for key, pair in games.iteritems():
         t1, t2 = pair
         key = t1.team, t2.team
         entry = t1.total, t2.total
-        print key, entry
         pairs.setdefault(key, []).append(entry)
+
+    goals_scored = {}
+
+    # map from (team1, team2) to list of goals scored
+    for key, entries in pairs.iteritems():
+        t1, t2 = key
+        for entry in entries:
+            g1, g2 = entry
+            goals_scored.setdefault((t1, t2), []).append(g1)
+            goals_scored.setdefault((t2, t1), []).append(g2)
+
+    # make a list of average goals scored for each pair of teams
+    lams = []
+    for key, goals in goals_scored.iteritems():
+        if len(goals) < 3:
+            continue
+        lam = thinkstats.Mean(goals)
+        lams.append(lam)
+
+    # make the distribution of average goals scored
+    cdf = thinkbayes.MakeCdfFromList(lams)
+    myplot.Cdf(cdf)
+    myplot.Show()
+
+    mu, var = thinkstats.MeanVar(lams)
+    print 'mu, sig', mu, math.sqrt(var)
+
+    print 'BOS v VAN', pairs['BOS', 'VAN']
 
 
 def main():
-    games = ReadHockeyData()
-    ProcessHockeyData(games)
-    return
+    #ReadHockeyData()
+    #return
+
+    formats = ['pdf', 'eps']
 
     suite1 = Hockey('bruins')
-    suite1.UpdateSet([0, 2, 8, 4])
-    goal_dist1 = MakeGoalPmf(suite1)
-    time_dist1 = MakeGoalTimePmf(suite1)
-    
     suite2 = Hockey('canucks')
+
+    myplot.Clf()
+    myplot.Pmf(suite1)
+    myplot.Pmf(suite2)
+    myplot.Save(root='hockey0',
+                xlabel='Goals per game',
+                ylabel='Probability',
+                formats=formats)
+
+    suite1.UpdateSet([0, 2, 8, 4])
     suite2.UpdateSet([1, 3, 1, 0])
-    goal_dist2 = MakeGoalPmf(suite2)
-    time_dist2 = MakeGoalTimePmf(suite2)
- 
-    print 'MLE bruins', thinkbayes.MaximumLikelihood(suite1)
-    print 'MLE canucks', thinkbayes.MaximumLikelihood(suite2)
-   
+
     myplot.Clf()
     myplot.Pmf(suite1)
     myplot.Pmf(suite2)
     myplot.Save(root='hockey1',
                 xlabel='Goals per game',
                 ylabel='Probability',
-                formats=['pdf', 'eps'])
+                formats=formats)
+
+
+    goal_dist1 = MakeGoalPmf(suite1)
+    goal_dist2 = MakeGoalPmf(suite2)
 
     myplot.Clf()
     myplot.Pmf(goal_dist1)
@@ -136,15 +181,21 @@ def main():
     myplot.Save(root='hockey2',
                 xlabel='Goals',
                 ylabel='Probability',
-                formats=['pdf', 'eps'])
+                formats=formats)
 
+    time_dist1 = MakeGoalTimePmf(suite1)    
+    time_dist2 = MakeGoalTimePmf(suite2)
+ 
+    print 'MLE bruins', thinkbayes.MaximumLikelihood(suite1)
+    print 'MLE canucks', thinkbayes.MaximumLikelihood(suite2)
+   
     myplot.Clf()
     myplot.Pmf(time_dist1)
     myplot.Pmf(time_dist2)    
     myplot.Save(root='hockey3',
                 xlabel='Games until goal',
                 ylabel='Probability',
-                formats=['pdf', 'eps'])
+                formats=formats)
 
     diff = goal_dist1 - goal_dist2
     p_win = diff.ProbGreater(0)

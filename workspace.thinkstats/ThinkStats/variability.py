@@ -17,44 +17,26 @@ import myplot
 import thinkbayes
 import thinkstats
 
-
 import matplotlib.pyplot as pyplot
+
 
 class Height(thinkbayes.Suite):
 
-    def __init__(self, t, num_points, name='', num_sigmas=3.0):
+    def __init__(self, mus, sigmas, name=''):
         """Makes a prior distribution for mu and sigma based on a sample.
 
-        t: sample
-        num_points: number of values in each dimension
-        name: string name for the new Suite
-        num_sigmas: number of standard errors to include
-
-        Returns: Pmf that maps from (mu, sigma) to prob.
+        mus: sequence of possible mus
+        sigmas: sequence of possible sigmas
         """
         thinkbayes.Suite.__init__(self, name=name)
 
-        # estimate mean and stddev of t
-        n = len(t)
-        xbar, S2 = thinkstats.MeanVar(t)
-        sighat = math.sqrt(S2)
-
-        print xbar, sighat, sighat / xbar
-
-        # compute standard error for mu and the range of ms
-        stderr_xbar = sighat / math.sqrt(n)
-        mspread = num_sigmas * stderr_xbar
-        self.ms = numpy.linspace(xbar-mspread, xbar+mspread, num_points)
-
-        # compute standard error for sigma and the range of ss
-        stderr_sighat = sighat / math.sqrt(2 * (n-1))
-        sspread = num_sigmas * stderr_sighat
-        self.ss = numpy.linspace(sighat-sspread, sighat+sspread, num_points)
+        self.mus = mus
+        self.sigmas = sigmas
 
         # populate the Suite
-        for m in self.ms:
-            for s in self.ss:
-                self.Set((m, s), 1)
+        for mu in self.mus:
+            for sigma in self.sigmas:
+                self.Set((mu, sigma), 1)
 
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
@@ -95,29 +77,58 @@ class Height(thinkbayes.Suite):
         Args:
             data: sequence of values
         """
-        t = tuple(data)
+        xs = tuple(data)
         n = len(t)
 
         for hypo in self.Values():
             mu, sigma = hypo
-            total = Summation(t, mu)
+            total = Summation(xs, mu)
             loglike = -n * math.log(sigma) - total / 2 / sigma**2
             self.Incr(hypo, loglike)
 
 
-def Summation(t, mu, cache={}):
+def FindPriorRanges(xs, num_points, num_stderrs=3.0):
+    """Find ranges for mu and sigma with non-negligible likelihood.
+
+    xs: sample
+    num_points: number of values in each dimension
+    num_stderrs: number of standard errors to include on either side
+    
+    Returns: sequence of mus, sequence of sigmas    
+    """
+    # estimate mean and stddev of xs
+    n = len(xs)
+    xbar, S2 = thinkstats.MeanVar(xs)
+    sighat = math.sqrt(S2)
+
+    print 'classical estimators', xbar, sighat
+
+    # compute standard error for mu and the range of mus
+    stderr_xbar = sighat / math.sqrt(n)
+    mspread = num_stderrs * stderr_xbar
+    mus = numpy.linspace(xbar-mspread, xbar+mspread, num_points)
+
+    # compute standard error for sigma and the range of ss
+    stderr_sighat = sighat / math.sqrt(2 * (n-1))
+    sspread = num_stderrs * stderr_sighat
+    sigmas = numpy.linspace(sighat-sspread, sighat+sspread, num_points)
+
+    return mus, sigmas
+
+
+def Summation(xs, mu, cache={}):
     """Computes the sum of (x-mu)**2 for x in t.
 
     Caches previous results.
 
-    t: tuple of values
+    xs: tuple of values
     mu: hypothetical mean
     cache: cache of previous results
     """
     try:
-        return cache[t, mu]
+        return cache[xs, mu]
     except KeyError:
-        ds = [(x-mu)**2 for x in t]
+        ds = [(x-mu)**2 for x in xs]
         total = sum(ds)
         cache[t, mu] = total
         return total
@@ -151,27 +162,17 @@ def ComputeCoefVariation(suite):
     return pmf
 
 
-def ProbBigger(pmf1, pmf2):
-    """Returns the probability that a value from one pmf exceeds another."""
-    total = 0.0
-    for v1, p1 in pmf1.Items():
-        for v2, p2 in pmf2.Items():
-            if v1 > v2:
-                total += p1 * p2
-    return total
-
-
 def PlotPosterior(suite, pcolor=False, contour=True):
     """Makes a contour plot.
     
     suite: Suite that maps (mu, sigma) to probability
     """
-    X, Y = numpy.meshgrid(suite.ms, suite.ss)
+    X, Y = numpy.meshgrid(suite.mus, suite.sigmas)
     func = lambda x, y: suite.Prob((x, y))
     prob = numpy.vectorize(func)
     Z = prob(X, Y)
 
-    pyplot.clf()
+    myplot.Clf()
     if pcolor:
         pyplot.pcolor(X, Y, Z)
     if contour:
@@ -188,7 +189,7 @@ def PlotCoefVariation(suites):
 
     suites: map from label to Pmf of CVs.
     """
-    pyplot.clf()
+    myplot.Clf()
 
     pmfs = {}
     for label, suite in suites.iteritems():
@@ -199,12 +200,13 @@ def PlotCoefVariation(suites):
         pmfs[label] = pmf
 
     myplot.Save(root='bayes_height_cv',
-                title='Coefficient of variation',
-                xlabel='cv',
-                ylabel='CDF')
+                xlabel='Coefficient of variation',
+                ylabel='Probability')
 
-    print 'female bigger', ProbBigger(pmfs['female'], pmfs['male'])
-    print 'male bigger', ProbBigger(pmfs['male'], pmfs['female'])
+    print 'female bigger', thinkbayes.PmfProbGreater(pmfs['female'],
+                                                     pmfs['male'])
+    print 'male bigger', thinkbayes.PmfProbGreater(pmfs['male'],
+                                                   pmfs['female'])
 
 
 def PlotCdfs(samples):
@@ -226,7 +228,7 @@ def PlotCdfs(samples):
 
 def NormalProbPlot(samples):
     """Makes a normal probability plot for each sample in samples."""
-    pyplot.clf()
+    myplot.Clf()
 
     markers = dict(male='b', female='g')
 
@@ -273,7 +275,7 @@ def PlotMarginals(suite):
     """Plot the marginal distributions for a 2-D joint distribution."""
     pmf_m, pmf_s = ComputeMarginals(suite)
 
-    pyplot.clf()
+    myplot.Clf()
     pyplot.figure(1, figsize=(7, 4))
 
     pyplot.subplot(1, 2, 1)
@@ -340,32 +342,32 @@ def Winsorize(xs, p=0.01):
     return wxs
 
 
-def UpdateSuite1(suite, t):
+def UpdateSuite1(suite, xs):
     """Computes the posterior distibution of mu and sigma.
 
     Computes untransformed likelihoods.
 
     suite: Suite that maps from (mu, sigma) to prob
-    t: sequence
+    xs: sequence
     """
-    suite.UpdateSet(t)
+    suite.UpdateSet(xs)
 
 
-def UpdateSuite2(suite, t):
+def UpdateSuite2(suite, xs):
     """Computes the posterior distibution of mu and sigma.
 
     Computes log likelihoods.
 
     suite: Suite that maps from (mu, sigma) to prob
-    t: sequence
+    xs: sequence
     """
     suite.Log()
-    suite.LogUpdateSet(t)
+    suite.LogUpdateSet(xs)
     suite.Exp()
     suite.Normalize()
 
 
-def UpdateSuite3(suite, t):
+def UpdateSuite3(suite, xs):
     """Computes the posterior distibution of mu and sigma.
 
     Computes log likelihoods efficiently.
@@ -374,13 +376,13 @@ def UpdateSuite3(suite, t):
     t: sequence
     """
     suite.Log()
-    suite.LogUpdateSet2(t)
+    suite.LogUpdateSet2(xs)
     suite.Exp()
     suite.Normalize()
 
 
-def RunEstimate(update_func, num_points = 31):
-    DumpHeights(n=1000)
+def RunEstimate(update_func, num_points=31):
+    #DumpHeights(n=10000)
     d = LoadHeights()
 
     labels = {1:'male', 2:'female'}
@@ -388,16 +390,18 @@ def RunEstimate(update_func, num_points = 31):
     samples = {}
     suites = {}
 
-    for key, t in d.iteritems():
+    for key, xs in d.iteritems():
         name = labels[key]
-        print name, len(t)
+        print name, len(xs)
 
-        #t = Winsorize(t, 0.0001)
-        #samples[name] = t
+        #xs = Winsorize(xs, 0.0001)
+        #samples[name] = xs
 
-        suite = Height(t, num_points, name)
+        mus, sigmas = FindPriorRanges(xs, num_points)
+        suite = Height(mus, sigmas, name)
         suites[name] = suite
-        update_func(suite, t)
+        update_func(suite, xs)
+        print 'MLE', thinkbayes.MaximumLikelihood(suite)
 
         PlotPosterior(suite)
         PlotMarginals(suite)
@@ -408,7 +412,7 @@ def RunEstimate(update_func, num_points = 31):
 
 
 def main():
-    func = UpdateSuite3
+    func = UpdateSuite2
     RunEstimate(func)
     return
 
