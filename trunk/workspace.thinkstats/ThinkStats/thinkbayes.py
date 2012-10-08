@@ -1077,7 +1077,7 @@ def EvalPoissonPmf(lam, k):
 
     returns: float probability
     """
-    return (lam)**k * math.exp(lam) / math.factorial(k)
+    return (lam)**k * math.exp(-lam) / math.factorial(k)
 
 
 def MakePoissonPmf(lam, high):
