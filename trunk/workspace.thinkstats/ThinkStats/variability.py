@@ -1,7 +1,7 @@
-"""This file contains code used in "Think Stats",
+"""This file contains code used in "Think Bayes",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2011 Allen B. Downey
+Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -13,10 +13,9 @@ import random
 import brfss
 import correlation
 import myplot
-import thinkstats
-import rankit
 
 import thinkbayes
+import thinkstats
 
 
 import matplotlib.pyplot as pyplot
