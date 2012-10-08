@@ -86,6 +86,37 @@ class Height(thinkbayes.Suite):
             loglike = -n * math.log(sigma) - total / 2 / sigma**2
             self.Incr(hypo, loglike)
 
+    def LogUpdateSet3(self, data):
+        """Computes the log likelihood of the data under the hypothesis.
+
+        Args:
+            data: sequence of values
+        """
+        xs = data
+        n = len(xs)
+        xbar, S2 = thinkstats.MeanVar(xs)
+        sighat = math.sqrt(S2)
+
+        for hypo in sorted(self.Values()):
+            mu, sigma = hypo
+
+            sample_mu = mu
+            sample_sigma = sigma / math.sqrt(n)
+            loglike = GaussianLogLikelihood(sample_mu, sample_sigma, xbar)
+            print 'sample mu, sigma', sample_mu, sample_sigma, loglike
+
+            sample_mu = sigma
+            sample_sigma = sigma / math.sqrt(2 * (n-1))
+            loglike += GaussianLogLikelihood(sample_mu, sample_sigma, sighat)
+            print 'sample mu, sigma', sample_mu, sample_sigma, loglike
+
+            self.Incr(hypo, loglike)
+
+
+def GaussianLogLikelihood(mu, sigma, x):
+    z = (x-mu) / sigma
+    loglike = -math.log(sigma) - z**2 / 2
+    return loglike
 
 def FindPriorRanges(xs, num_points, num_stderrs=3.0):
     """Find ranges for mu and sigma with non-negligible likelihood.
@@ -381,6 +412,20 @@ def UpdateSuite3(suite, xs):
     suite.Normalize()
 
 
+def UpdateSuite4(suite, xs):
+    """Computes the posterior distibution of mu and sigma.
+
+    Computes log likelihoods efficiently.
+
+    suite: Suite that maps from (mu, sigma) to prob
+    t: sequence
+    """
+    suite.Log()
+    suite.LogUpdateSet3(xs)
+    suite.Exp()
+    suite.Normalize()
+
+
 def RunEstimate(update_func, num_points=31):
     #DumpHeights(n=1000000)
     d = LoadHeights()
@@ -412,7 +457,7 @@ def RunEstimate(update_func, num_points=31):
 
 
 def main():
-    func = UpdateSuite3
+    func = UpdateSuite4
     RunEstimate(func)
     return
 
