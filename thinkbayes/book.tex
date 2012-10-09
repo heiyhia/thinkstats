@@ -3163,20 +3163,25 @@ Here's the code to compute all that:
 
 \begin{verbatim}
 def FindPriorRanges(xs, num_points, num_stderrs=3.0):
+
+    def MakeRange(estimate, stderr):
+        spread = stderr * num_stderrs
+        array = numpy.linspace(estimate-spread, estimate+spread, num_points)
+        return array
+
     # estimate mean and stddev of xs
     n = len(xs)
     xbar, S2 = thinkstats.MeanVar(xs)
     sighat = math.sqrt(S2)
 
-    # compute standard error for mu and the range of mus
-    stderr_xbar = sighat / math.sqrt(n)
-    mspread = num_stderrs * stderr_xbar
-    mus = numpy.linspace(xbar-mspread, xbar+mspread, num_points)
+    print 'classical estimators', xbar, sighat
 
-    # compute standard error for sigma and the range of ss
+    # compute ranges for xbar and sighat
+    stderr_xbar = sighat / math.sqrt(n)
+    mus = MakeRange(xbar, stderr_xbar)
+
     stderr_sighat = sighat / math.sqrt(2 * (n-1))
-    sspread = num_stderrs * stderr_sighat
-    sigmas = numpy.linspace(sighat-sspread, sighat+sspread, num_points)
+    sigmas = MakeRange(sighat, stderr_sighat)
 
     return mus, sigmas
 \end{verbatim}
@@ -3186,7 +3191,7 @@ values in the range.  \verb"num_stderrs" is the width of the range on
 each side of the estimate, in number of standard errors.  The return
 value is a pair of sequences, {\tt mus} and {\tt sigmas}.
 
-Finally, here's the code to make and update the suite:
+And here's the code to make and update the suite:
 
 \begin{verbatim}
     mus, sigmas = FindPriorRanges(xs, num_points)
@@ -3203,7 +3208,7 @@ data twice is, in fact, bogus.
 But in this case it is ok.  Really.  We use the data to choose
 the range for the prior, but only to avoid computing
 a lot of probabilities that would have been very small anyway.
-We chose a value for \verb"num_stderrs" big enough to
+I chose a value for \verb"num_stderrs" big enough to
 cover all values with non-negligible likelihood.  After that, making
 it bigger has no effect on the results.
 
@@ -3214,7 +3219,7 @@ we ignore all the values that don't matter.
 Let's look at some results.  Using the first 100 values from the BRFSS
 dataset---which includes 27 men, 71 women, and two people who did not
 report their heights--- the maximum likelihood estimates for men are
-$(179, 8.7)$, and for women $(163, 6.2)$.
+$(179, 8.7)$ cm, and for women $(163, 6.2)$ cm.
 
 
 \section{The posterior distribution of CV}
