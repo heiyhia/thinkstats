@@ -3224,12 +3224,12 @@ $(179, 8.7)$ cm, and for women $(163, 6.2)$ cm.
 
 \section{The posterior distribution of CV}
 
-These values are identical to the classical estimators, so if
-that's all we care about, we haven't accomplished much.  The
-advantage of the Bayesian approach is that with the posterior
-distribution (not just a single point estimate), we can compute
-the distribution of CV for men and women, and the 
-probability that one exceeds the other.
+These values are identical to the classical estimators, so if that's
+all we care about, we haven't accomplished much.  The advantage of the
+Bayesian approach is that with the posterior distribution (not just a
+point estimate or confidence interval), we can compute the
+distribution of CV for men and women, and the probability that one
+exceeds the other.
 
 To compute the distribution of CV, we enumerate pairs of
 {\tt mu} and {\tt sigma}:
@@ -3242,34 +3242,34 @@ def ComputeCoefVariation(suite):
     return pmf
 \end{verbatim}
 
-Doesn't get much simpler than that.  Given the distribution of
+Given the distribution of
 CV for men and women, we can use \verb"PmfProbGreater" to
 compute the probability that
 men are more variable.
 
 Using the first 100 values from the BRFSS dataset, we would conclude
-that the probability is 96\%, but there are two problem with
+that the probability is 96\%, but there are two problems with
 this conclusion:
 
 \begin{enumerate}
 
-\item When we collapse the distributions to a single probability,
-we lose information about uncertainty.  For example, if we report
-``The probability that men are more variable is 96\%,'' that report
-would not capture the likelihood of the Variability Hypothesis
-before we saw the data or the weight of the evidence due to sample
-size.  We can address these limitations using Bayesian hypothesis
-testing, which is the topic of the next chapter.
+\item When we collapse the distributions to a single probability, we
+  lose information about uncertainty.  For example, if we report ``The
+  probability that men are more variable is 96\%,'' that report would
+  not capture the likelihood of the Variability Hypothesis before we
+  saw the data or the weight of the evidence.  We can address these
+  limitations using Bayesian hypothesis testing, which is the topic of
+  the next chapter.
 
-\item The first 100 values are not a representative sample
-from the dataset.  Of course, we should use the entire dataset.
+\item The first 100 values are not a representative sample from the
+  dataset.  Of course, we should use the entire dataset.  But that
+  will turn out to be a little tricky.
 
 \end{enumerate}
 
-So that's what we'll do.
 
 
-\section{Big data, small probability}
+\section{Big data, small likelihood}
 
 If we select the first 1000 values from the dataset and run
 the program again, we get an error in \verb"Pmf.Normalize":
@@ -3282,20 +3282,18 @@ The problem is that the likelihood function computes
 probability densities, and densities from continuous
 distributions tend to be small.
 
-If you take a large number of small probabilities and multiply
-them together, the result is very small.  In this case it is
-so small it can't be represented by a floating-point number, so
-it gets rounded down to zero, which is called ``underflow.''
-
-If all of the probabilities in the distribution are 0, it's not a
-distribution any more.
+If you take a large number of small values and multiply them together,
+the result is very small.  In this case it is so small it can't be
+represented by a floating-point number, so it gets rounded down to
+zero, which is called ``underflow.''  And if all of the probabilities
+in the distribution are 0, it's not a distribution any more.
 
 A possible solution is to renormalize the Pmf after each update,
 or after each batch of 100.  But that would be slow.
 
-A better alternative is to compute probabilities under a log
-transform.  That way, instead of multiplying probabilities, we can add
-up log probabilities.  {\tt Pmf} provides methods {\tt Log}, {\tt
+A better alternative is to compute likelihoods under a log
+transform.  That way, instead of multiplying small values, we can add
+up log likelihoods.  {\tt Pmf} provides methods {\tt Log}, {\tt
   LogUpdateSet} and {\tt Exp} to make this process easy.
 
 Here's what the update looks like:
@@ -3376,9 +3374,9 @@ def GaussianLogLikelihood(mu, sigma, x):
     return loglike
 \end{verbatim}
 
-One advantage of working under the log transform is that for many
-continuous distributions, it is easier (and a little faster) to
-compute log-likelihoods.  
+One advantage of this approach is that for many
+continuous distributions, it is easier to
+compute the log-likelihood than the likelihood.
 
 Finally, here's how {\tt Exp} inverts the transform:
 
@@ -3418,7 +3416,7 @@ Pulling out the terms that don't depend on $i$, we get
 and translate into Python:
 
 \begin{verbatim}
-    def LogUpdateSet(self, data):
+    def LogUpdateSetFast(self, data):
         xs = tuple(data)
         n = len(xs)
 
@@ -3452,13 +3450,13 @@ returns a result from the cache if possible; otherwise it computes
 the summation, then caches and returns the result.
 
 The only catch is that we can't use a list as a key in the cache, because
-it is not a hashable type.  That's why {\tt LogUpdateSet} converts
+it is not a hashable type.  That's why {\tt LogUpdateSetFast} converts
 the dataset to a tuple.
 
 Together, these optimizations speed up the computation by about a
-factor of 100, making it possible to process the entire dataset (154
+factor of 100, processing the entire dataset (154
 407 men and 254 722 women) in less than a minute on my not-very-fast
-desktop computer.
+computer.
 
 
 \section{ABC}
@@ -3470,12 +3468,12 @@ ABC is that the likelihood of a particular dataset is:
 \begin{itemize}
 
 \item Very small, especially for large datasets, which is why we had
-to switch to a log transform,
+to use the log transform,
 
 \item Expensive to compute, which is why we had to do so much
 optimization, and
 
-\item Not really what we are interested in anyway.
+\item Not really what we want anyway.
 
 \end{itemize}
 
