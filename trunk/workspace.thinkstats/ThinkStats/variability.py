@@ -84,7 +84,7 @@ class Height(thinkbayes.Suite):
             loglike = -n * math.log(sigma) - total / 2 / sigma**2
             self.Incr(hypo, loglike)
 
-    def LogUpdateSetABC(self, data):
+    def LogUpdateSetMeanVar(self, data):
         """Computes the log likelihood of the data under the hypothesis.
 
         Estimates log likelihood using Approximate Bayesian Computation (ABC).
@@ -99,6 +99,27 @@ class Height(thinkbayes.Suite):
         xbar, S2 = thinkstats.MeanVar(xs)
         sighat = math.sqrt(S2)
 
+        self.LogUpdateSetABC(n, xbar, sighat)
+
+    def LogUpdateSetMedianIQR(self, data):
+        """Computes the log likelihood of the data under the hypothesis.
+
+        Estimates log likelihood using Approximate Bayesian Computation (ABC).
+
+        Args:
+            data: sequence of values
+        """
+        xs = data
+        n = len(xs)
+
+        # compute summary stats
+        median, iqr = MedianIQR(xs)
+        sighat = iqr / 1.349
+        print 'median, sighat', median, sighat
+
+        self.LogUpdateSetABC(n, median, sighat)
+
+    def LogUpdateSetABC(self, n, xbar, sighat):
         for hypo in sorted(self.Values()):
             mu, sigma = hypo
 
@@ -348,7 +369,34 @@ def UpdateSuite4(suite, xs):
     t: sequence
     """
     suite.Log()
-    suite.LogUpdateSetABC(xs)
+    suite.LogUpdateSetMeanVar(xs)
+    suite.Exp()
+    suite.Normalize()
+
+
+def MedianIQR(xs):
+    """Computes the median and interquartile range.
+
+    xs: sequence of values
+
+    returns: tuple of float (median, IQR)
+    """
+    cdf = thinkbayes.MakeCdfFromList(xs)
+    median = cdf.Percentile(50)
+    iqr = cdf.Percentile(75) - cdf.Percentile(25)
+    return median, iqr
+
+
+def UpdateSuite5(suite, xs):
+    """Computes the posterior distibution of mu and sigma.
+
+    Computes log likelihoods efficiently.
+
+    suite: Suite that maps from (mu, sigma) to prob
+    t: sequence
+    """
+    suite.Log()
+    suite.LogUpdateSetMedianIQR(xs)
     suite.Exp()
     suite.Normalize()
 
@@ -377,13 +425,16 @@ def RunEstimate(update_func, num_points=31):
         update_func(suite, xs)
 
         PlotPosterior(suite)
-        PlotMarginals(suite)
+
+        pmf_m, pmf_s = ComputeMarginals(suite)
+        print 'marginal mu', pmf_m.Mean(), pmf_m.Var()
+        print 'marginal sigma', pmf_s.Mean(), pmf_s.Var()
 
     PlotCoefVariation(suites)
 
 
 def main():
-    func = UpdateSuite4
+    func = UpdateSuite5
     RunEstimate(func)
 
 
@@ -424,6 +475,9 @@ UpdateSuite4 (all):
 marginal mu 163.223475004 0.000203281499857
 marginal sigma 7.26916693422 0.000101640932082
 
+UpdateSuite5 (all):
+marginal mu 163.1805214 7.9399898468e-07
+marginal sigma 7.29969524118 3.26257030869e-14
 
 """
 
