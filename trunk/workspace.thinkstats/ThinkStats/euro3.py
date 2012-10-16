@@ -32,21 +32,6 @@ class Euro(thinkbayes.Suite):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the probability of heads (0-100)
-        data: string 'H' or 'T'
-        """
-        x = hypo / 100.0
-        if data == 'H':
-            return x
-        else:
-            return 1-x
-
-
-class Euro2(thinkbayes.Suite):
-
-    def Likelihood(self, hypo, data):
-        """Computes the likelihood of the data under the hypothesis.
-
-        hypo: integer value of x, the probability of heads (0-100)
         data: tuple of (number of heads, number of tails)
         """
         x = hypo / 100.0
@@ -55,41 +40,23 @@ class Euro2(thinkbayes.Suite):
         return like
 
 
-def Version1():
-    suite = Euro(xrange(0, 101))
-    heads, tails = 140, 110
-    dataset = 'H' * heads + 'T' * tails
-
-    for data in dataset:
-        suite.Update(data)
-
-    return suite
-
-
-def Version2():
-    suite = Euro(xrange(0, 101))
-    heads, tails = 140, 110
-    dataset = 'H' * heads + 'T' * tails
-
-    suite.UpdateSet(dataset)
-    return suite
-
-
-def Version3():
-    suite = Euro2(xrange(0, 101))
-    heads, tails = 140, 110
-
-    suite.Update((heads, tails))
-    return suite
-
 
 def Main():
+    data = 140, 110
 
-    suite = Version3()
-    print suite.Mean()
+    suite1 = Euro()
+    likelihoodF = suite1.Likelihood(50, data)
+    print 'p(D|F)', likelihoodF
 
-    myplot.Pmf(suite)
-    myplot.Show()
+    actual_percent = 100.0 * 140 / 250
+    likelihood = suite1.Likelihood(actual_percent, data)
+    print 'p(D|B_cheat)', likelihood
+    print 'p(D|B_cheat) / p(D|F)', likelihood / likelihoodF
+
+    suite_uniform = Euro(xrange(0, 101))
+    likelihood = suite_uniform.Update(data)
+    print 'p(D|B_uniform)', likelihood
+
     
 
 
