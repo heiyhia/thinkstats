@@ -34,5 +34,6 @@ def main():
     print 'After more rolls'
     suite.Print()
 
+
 if __name__ == '__main__':
     main()

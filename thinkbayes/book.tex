@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.7.0}
+\newcommand{\theversion}{0.10.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -243,6 +243,10 @@ Thanks!
 
 \item Jonathan Edwards sent in the first typo.
 
+\item George Purkins found a markup error.
+
+\item Olivier Yiptong send several helpful suggestions.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -363,68 +367,6 @@ In general, the probability of a conjunction is
 for any $A$ and $C$.  In this example, \p{A \AND C} = (0.5)(0.5) = 0.25.
 
 
-\section{The girl named Florida problem}
-
-Conditional probability is a simple enough idea, but it can be
-tricky to apply.  One example is the ``girl named Florida problem,''
-which I found in Leonard Mlodinow's book {\it The Drunkard's Walk}.
-
-Before we get to Mlodinow's version of the problem, let's work
-up to it with some simpler versions.
-
-Suppose I tell you that I have two children (which is true) and
-that the older one is a girl (also true).  If you don't know anything
-else about my family, what is the probability that both of
-my children are girls?
-
-To keep things simple, you can assume that my children are not twins,
-and that the probability that any child is a girl is 50\%.
-
-The fact that the first child is a girl does not affect the probability
-for the second girl, so
-%
-\[ \p{\T{two girls} | \T{older child is a girl}} = 1/2 \]
-%
-No problem so far.  Let's change it just a little.  Suppose that instead
-of telling you that my older child is a girl, I mentioned something
-about ``my daughter,'' which implies that at least one of my children
-is a girl, but it doesn't tell you which one, and it doesn't tell
-you anything about the other child.  In that case, what is the probability
-that both children are girls?
-
-You might be tempted to say that it doesn't make any difference and
-the chance is still $1/2$.  But that's not right.
-
-To see why, imagine 100 families with two children.
-You would expect 25 of them to have two girls and 25 to have two
-boys; another 25 would have an older daughter and a younger son,
-and 25 would have an older son and a younger daughter.
-
-If we select the families with at least one girl, that eliminates
-25 families with two boys, leaving 75 families.  Of those, 25
-have two girls, so:
-%
-\[ \p{\T{two girls} | \T{at least one child is a girl}} = 1/3 \]
-%
-And now we're ready for the girl named Florida.  Suppose I tell
-you that I have two children, and one of them is a girl named
-Florida.  What is the probability that both children are girls?
-
-Most people have a strong intuition that the name of the child
-is irrelevant, and therefore the answer is $1/3$.  But that's
-not right (at least for the interpretation of the problem that
-I think is most natural).
-
-You can find a solution to this problem in my blog, {\it Probably
-  Overthinking It} at
-\url{http://allendowney.blogspot.com/2011/11/girl-named-florida-solutions.html}.
-
-This problem is fun, in part because the result is
-counterintuitive, but it comes with a warning.  Our
-intuition for probability is sometimes very good, but sometimes
-misleading.  So we will need to be careful.
-
-
 \section{The Cookie Problem}
 
 We'll get to Bayes's Theorem soon, but I want to motivate it with an
@@ -503,7 +445,7 @@ from Bowl 1, which is 3/4.
 
 \item \p{V}: This is the probability of drawing a vanilla cookie from
 either bowl.  If we combine the two bowls, we get 50 vanilla and 30
-chocolate cookies, so \p(V) = 5/8.
+chocolate cookies, so \p{V} = 5/8.
 
 \end{itemize}
 
@@ -1632,7 +1574,7 @@ probabilities in the posterior distribution and record the values
 that correspond to probabilities 5\% and 95\%.  In other words,
 the 5th and 95th percentiles.
 
-\verb"thinkbayes.py" provides a function that computes percentiles:
+\verb"thinkbayes" provides a function that computes percentiles:
 
 \begin{verbatim}
 def Percentile(pmf, percentage):
@@ -1669,7 +1611,7 @@ same information about the distribution, and you can always convert
 from one to the other.  The advantage of the Cdf is that you can
 compute percentiles more efficiently.
 
-{\tt thinkbayes.py} provides a {\tt Cdf} class that represents a
+{\tt thinkbayes} provides a {\tt Cdf} class that represents a
 cumulative distribution function.  It also provides functions for
 converting from a Pmf to a Cdf (and back). 
 
@@ -1904,7 +1846,7 @@ The result is in Figure~\ref{fig.euro1}.
 
 Again, there are several ways to summarize the posterior distribution.
 One option is to find the most likely value in the posterior
-distribution.  \verb"thinkbayes.py" provides a function that does 
+distribution.  \verb"thinkbayes" provides a function that does 
 that:
 
 \begin{verbatim}
@@ -1947,7 +1889,7 @@ fair?''  To answer that question, we will have to be more precise
 about what it means to say that data constitute evidence for
 a hypothesis.  And that is the subject of the next chapter.
 
-But before we go, I want to address on possible source of confusion.
+But before we go, I want to address one possible source of confusion.
 Since we want to know whether the coin is fair, it might be tempting
 to ask for the probability that {\tt x} is 50\%:
 
@@ -1957,7 +1899,7 @@ to ask for the probability that {\tt x} is 50\%:
 
 The result is 0.021, but that value is pretty much meaningless.  The
 decision to evaluate 101 hypotheses was arbitrary; we could have
-divided the range into more or fewer pieces, and if we had the
+divided the range into more or fewer pieces, and if we had, the
 probability for any given hypothesis would be greater or less.
 
 
@@ -2679,6 +2621,8 @@ def EvalExponentialPdf(lam, x):
     return lam * math.exp(-lam * x)
 \end{verbatim}  
 
+I use the variable
+{\tt lam} because {\tt lambda} is a reserved keyword in Python.
 Both of these functions are in \verb"thinkbayes.py".
 
 
@@ -2697,8 +2641,7 @@ value of {\tt lam} score {\tt k} goals in a game:
         return like
 \end{verbatim}
 
-Each hypothesis is a possible value of $\lambda$ (I use the variable
-{\tt lam} because {\tt lambda} is a reserved keyword in Python).  {\tt
+Each hypothesis is a possible value of $\lambda$;  {\tt
   data} is the observed number of goals, {\tt k}.
 
 With the likelihood function in place, we can make a suite for each
@@ -2779,7 +2722,7 @@ So the overall distribution of goals is a mixture of these
 Poisson distributions, weighted according to the probabilities
 in the distribution of {\tt lam}.
 
-\verb"thinkbayes.py" provides a method that computes mixtures
+\verb"thinkbayes" provides a method that computes mixtures
 of distributions:
 
 \begin{verbatim}
@@ -2941,7 +2884,7 @@ they did.
 
 \section{Opportunities for improvement}
 
-Solving problems like this is almost always iterative.  In general
+Solving problems like this is almost always iterative.  In general,
 you want to start with something simple that yields an approximate
 answer, then look for opportunities to improve.
 
@@ -2972,11 +2915,11 @@ In this example, I would consider these options:
 
 \end{itemize}
 
-For the first option, we could use the results from the regular
-season to estimate the variability across all pairwise match-ups.
-Thanks to Dirk Hoag at \url{http://forechecker.blogspot.com/},
-I was able to get goals scored during regulation play (not overtime)
-for each game in the regular season.
+For the first option, we could use the results from the regular season
+to estimate the variability across all pairwise match-ups.  Thanks to
+Dirk Hoag at \url{http://forechecker.blogspot.com/}, I was able to get
+the number of goals scored during regulation play (not overtime) for
+each game in the regular season.
 
 Teams in different conferences only play each other one or two
 times in the regular season, so I focused on pairs that played
@@ -2985,7 +2928,7 @@ goals per game, which is an estimate of $\lambda$, then plotted
 the distribution of these estimates.
 
 The mean of these estimates is 2.8, again, but the standard
-deviation is 0.85 substantially higher than what we got computing
+deviation is 0.85, substantially higher than what we got computing
 one estimate for each team.
 
 If we run the analysis again with the higher-variance prior, the
@@ -3647,10 +3590,25 @@ is exactly 50\%.
 To make a legitimate comparison, we have to define $B$ without looking
 at the data.  So let's try a different definition.  If you inspect
 a Belgian Euro coin, you might notice that the ``heads'' side is more
-prominent than the ``tails'' side, and you might expect that to effect
-$x$, but you might not be sure whether it makes heads more or less
+prominent than the ``tails'' side.  You might expect that to effect
+$x$, but be unsure whether it makes heads more or less
 likely.  So you might say ``I think the coin is biased so that
 $x$ is either 0.6 or 0.4, but I am not sure which.''
+
+
+
+The likelihood that $x=0.6$ is xxx (which is better than the
+likelihood of $F$), but the likelihood of $x=0.4$ is xxx,
+which is worse.  So how should we compare this version of $B$
+with $F$?
+
+We can think of $B$ as a hypothesis that is made up of two
+sub-hypotheses.  We can compute the likelihood for each
+sub-hypothesis and the compute the average likelihood.
+
+
+One natural option is to take average of the likelihoods.
+In this case, the weights might be equal
 
 , We can use the data to form the hypothesis
 
