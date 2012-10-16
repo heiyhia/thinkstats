@@ -1811,7 +1811,7 @@ more ``weight,'' because she is more confident about which urn U is.
 
 For Joyce the point of this example is to probe what we mean
 when we talk about the ``weight'' or ``force,'' of
-evidence.  We will come back to this question, from a Bayesian
+evidence.  We come back to this question, from a Bayesian
 perspective, in the next chapter.
 
 For us, the point of this example is to provide a warm-up exercise
@@ -1819,6 +1819,7 @@ that will help with the next problem.
 
 
 \section{The Euro coin problem}
+\label{euro}
 
 In {\it Information Theory, Inference, and Learning Algorithms}, David MacKay
 poses this question:
@@ -2009,7 +2010,7 @@ and the confidence intervals are identical; the means differ by
 less than 0.5\%.
 
 This is an example of ``swamping the priors:'' with enough
-evidence, people who start with different priors will tend to
+data, people who start with different priors will tend to
 converge on the same posterior.
 
 
@@ -2222,6 +2223,7 @@ $3/5$.
 
 
 \section{Oliver's blood}
+\label{evidence}
 
 Here is another problem from MacKay's {\it Information Theory,
   Inference, and Learning Algorithms}:
@@ -2992,7 +2994,7 @@ higher than the result with the low-variance prior, 57\%.
 
 So this is another example where the results are sensitive to the
 prior.  In general, if the variability in the prior is too high, the
-extreme values will be contradicted by evidence.  But if the
+extreme values will be contradicted by data.  But if the
 variability is too low, the effective range of the prior is too
 narrow, and the data may not be able to correct the error.  So it is
 usually a good idea to err on the side of a more generous prior.
@@ -3565,6 +3567,145 @@ coefficient of variation greater for men than for women?
 \chapter{Hypothesis testing}
 
 \section{Back to the Euro problem}
+
+In Section~\ref{euro} I presented a question from MacKay's {\it Information
+  Theory, Inference, and Learning Algorithms}:
+
+\begin{quote}
+A statistical statement appeared in ``The Guardian" on Friday January 4, 2002:
+
+  \begin{quote}
+        When spun on edge 250 times, a Belgian one-euro coin came
+        up heads 140 times and tails 110.  `It looks very suspicious
+        to me,' said Barry Blight, a statistics lecturer at the London
+        School of Economics.  `If the coin were unbiased, the chance of
+        getting a result as extreme as that would be less than 7\%.'
+        \end{quote}
+
+But do these data give evidence that the coin is biased rather than fair?
+\end{quote}
+
+We used this data to estimate the probability that the coin would
+land face up, but we didn't really answer MacKay's question.  Let's
+get back to that now.
+
+In Section~\ref{evidence} I proposed that data are in favor of
+a hypothesis if the data are more likely under the hypothesis than
+under the alternative or, equivalently, if the Bayes factor is greater
+than 1.
+
+In the Euro example, we have two hypotheses to consider: I'll use
+$F$ for the hypothesis that the coin is fair and $B$ for the hypothesis
+that it is biased.
+
+If the coin is fair, it is easy to compute the likelihood of the
+data, \p{D|F}.  In fact, we already wrote the {\tt Likelihood}
+that does it.
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        x = hypo / 100.0
+        head, tails = data
+        like = x**heads * (1-x)**tails
+        return like
+\end{verbatim}
+
+All we have to do is create a {\tt Euro} suite and use
+it's {\tt Likelihood} method:
+
+\begin{verbatim}
+    suite = Euro()
+    likelihood = suite.Likelihood(50, data)
+\end{verbatim}
+
+The result is $5.5 \cdot 10^{-76}$, which doesn't tell us much except
+that the probability of seeing any particular dataset is very small.
+As always, it takes two likelihoods to make a ratio, so we have to
+compute \p{D|B}.
+
+It is not obvious how to compute the likelihood of $B$, because
+it's not obvious what it means to say that the coin is ``biased.''
+
+One possibility is to cheat and look at the data before we define
+the hypothesis.  In that case we would say that ``biased'' means that
+the probability of heads is 140/250.
+
+\begin{verbatim}
+    actual_percent = 100.0 * 140 / 250
+    likelihood = suite.Likelihood(actual_percent, data)
+\end{verbatim}
+
+The likelihood of
+$B$ is $34 \cdot 10^{-76}$ and the likelihood ratio is 6.1. So
+we would say that the data are evidence in favor of $B$.
+
+But using the data to formulate the hypothesis
+is obviously bogus.  By that definition, any dataset would
+be evidence in favor of $B$, unless the observed percentage of heads
+is exactly 50\%.
+
+To make a legitimate comparison, we have to define $B$ without looking
+at the data.  So let's try a different definition.  If you inspect
+a Belgian Euro coin, you might notice that the ``heads'' side is more
+prominent than the ``tails'' side, and you might expect that to effect
+$x$, but you might not be sure whether it makes heads more or less
+likely.  So you might say ``I think the coin is biased so that
+$x$ is either 0.6 or 0.4, but I am not sure which.''
+
+, We can use the data to form the hypothesis
+
+To refresh your memory, here's the {\tt Update} function:
+
+\begin{verbatim}
+    def Update(self, data):
+        for hypo in self.Values():
+            like = self.Likelihood(hypo, data)
+            self.Mult(hypo, like)
+        return self.Normalize()
+\end{verbatim}
+
+And here's {\tt Normalize}:
+
+\begin{verbatim}
+    def Normalize(self):
+        total = self.Total()
+        
+        factor = 1.0 / total
+        for x in self.d:
+            self.d[x] *= factor
+
+        return total
+\end{verbatim}
+
+The return value from {\tt Normalize} is the total of the probabilities
+in the Suite.
+
+After we do an update 
+
+
+is the normalization constant, which is the
+sum of the probabilities
+
+In the prior distribution, the probability of 50\% is 1.  It
+gets multiplied by the likelihood, and then the distribution
+gets normalized
+The {\tt Update} function returns the normalization constant
+
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
 
 \section{Back to the Variability Hypothesis}
 
