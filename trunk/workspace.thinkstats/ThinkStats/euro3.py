@@ -25,7 +25,6 @@ rather than fair?"
 import thinkbayes
 import myplot
 
-
 class Euro(thinkbayes.Suite):
 
     def Likelihood(self, hypo, data):
@@ -40,22 +39,66 @@ class Euro(thinkbayes.Suite):
         return like
 
 
+def TrianglePrior():
+    """Makes a Suite with a triangular prior."""
+    suite = Euro(xrange(0, 101))
+    for x in range(0, 51):
+        suite.Set(x, x)
+    for x in range(51, 101):
+        suite.Set(x, 100-x) 
+    suite.Normalize()
+    return suite
+
+
+def SuiteLikelihood(suite, data):
+    """Computes the weighted average of likelihoods for sub-hypotheses.
+
+    suite: Suite that maps sub-hypotheses to probability
+    data: some representation of the data
+   
+    returns: float likelihood
+    """
+    total = 0
+    for hypo, prob in suite.Items():
+        like = suite.Likelihood(hypo, data)
+        total += prob * like
+    return total
+
 
 def Main():
     data = 140, 110
 
-    suite1 = Euro()
-    likelihoodF = suite1.Likelihood(50, data)
+    suite = Euro()
+    likelihoodF = suite.Likelihood(50, data)
     print 'p(D|F)', likelihoodF
 
     actual_percent = 100.0 * 140 / 250
-    likelihood = suite1.Likelihood(actual_percent, data)
+    likelihood = suite.Likelihood(actual_percent, data)
     print 'p(D|B_cheat)', likelihood
     print 'p(D|B_cheat) / p(D|F)', likelihood / likelihoodF
 
-    suite_uniform = Euro(xrange(0, 101))
-    likelihood = suite_uniform.Update(data)
+    like40 = suite.Likelihood(40, data)
+    like60 = suite.Likelihood(40, data)
+    likelihood = 0.5 * like40 + 0.5 * like60
+    print 'p(D|B_two)', likelihood
+    print 'p(D|B_two) / p(D|F)', likelihood / likelihoodF
+
+    b_uniform = Euro(xrange(0, 101))
+    b_uniform.Remove(50)
+    b_uniform.Normalize()
+    likelihood = SuiteLikelihood(b_uniform, data)
+    likelihood2 = b_uniform.Update(data)
+    print likelihood == likelihood2
     print 'p(D|B_uniform)', likelihood
+    print 'p(D|B_uniform) / p(D|F)', likelihood / likelihoodF
+
+    b_tri = TrianglePrior()
+    b_tri.Remove(50)
+    b_tri.Normalize()
+    likelihood = b_tri.Update(data)
+    print 'p(D|B_tri)', likelihood
+    print 'p(D|B_tri) / p(D|F)', likelihood / likelihoodF
+
 
     
 
