@@ -3532,6 +3532,8 @@ We used this data to estimate the probability that the coin would
 land face up, but we didn't really answer MacKay's question.  Let's
 get back to that now.
 
+\section{Bayesian hypothesis testing}
+
 In Section~\ref{evidence} I proposed that data are in favor of
 a hypothesis if the data are more likely under the hypothesis than
 under the alternative or, equivalently, if the Bayes factor is greater
@@ -3561,13 +3563,13 @@ it's {\tt Likelihood} method:
     likelihood = suite.Likelihood(50, data)
 \end{verbatim}
 
-The result is $5.5 \cdot 10^{-76}$, which doesn't tell us much except
+\p{D|F} is $5.5 \cdot 10^{-76}$, which doesn't tell us much except
 that the probability of seeing any particular dataset is very small.
 As always, it takes two likelihoods to make a ratio, so we have to
 compute \p{D|B}.
 
 It is not obvious how to compute the likelihood of $B$, because
-it's not obvious what it means to say that the coin is ``biased.''
+it's not obvious what ``biased'' means.
 
 One possibility is to cheat and look at the data before we define
 the hypothesis.  In that case we would say that ``biased'' means that
@@ -3578,14 +3580,17 @@ the probability of heads is 140/250.
     likelihood = suite.Likelihood(actual_percent, data)
 \end{verbatim}
 
-The likelihood of
-$B$ is $34 \cdot 10^{-76}$ and the likelihood ratio is 6.1. So
-we would say that the data are evidence in favor of $B$.
+This version of $B$ I call \verb"B_cheat"; the likelihood of
+\verb"b_cheat" is $34 \cdot 10^{-76}$ and the likelihood ratio is
+6.1.  So we would say that the data are evidence in favor of this
+version of $B$.
 
 But using the data to formulate the hypothesis
 is obviously bogus.  By that definition, any dataset would
 be evidence in favor of $B$, unless the observed percentage of heads
 is exactly 50\%.
+
+\section{Making a fair comparison}
 
 To make a legitimate comparison, we have to define $B$ without looking
 at the data.  So let's try a different definition.  If you inspect
@@ -3595,24 +3600,51 @@ $x$, but be unsure whether it makes heads more or less
 likely.  So you might say ``I think the coin is biased so that
 $x$ is either 0.6 or 0.4, but I am not sure which.''
 
-
-
-The likelihood that $x=0.6$ is xxx (which is better than the
-likelihood of $F$), but the likelihood of $x=0.4$ is xxx,
-which is worse.  So how should we compare this version of $B$
-with $F$?
-
-We can think of $B$ as a hypothesis that is made up of two
+We can think of this version, which I'll call \verb"B_two"
+as a hypothesis made up of two
 sub-hypotheses.  We can compute the likelihood for each
-sub-hypothesis and the compute the average likelihood.
+sub-hypothesis and then compute the average likelihood.
 
+\begin{verbatim}
+    like40 = suite.Likelihood(40, data)
+    like60 = suite.Likelihood(40, data)
+    likelihood = 0.5 * like40 + 0.5 * like60
+\end{verbatim}
 
-One natural option is to take average of the likelihoods.
-In this case, the weights might be equal
+The likelihood ratio (or Bayes factor) for \verb"b_two" is 1.4, which
+means the data provide weak evidence in favor of \verb"b_two".
 
-, We can use the data to form the hypothesis
+More generally, suppose you suspect that the coin is biased,
+but you have no clue about the value of $x$.  In that case you
+might build a Suite to represent sub-hypotheses from 0 to 100.
 
-To refresh your memory, here's the {\tt Update} function:
+\begin{verbatim}
+    b_uniform = Euro(xrange(0, 101))
+    b_uniform.Remove(50)
+    b_uniform.Normalize()
+\end{verbatim}
+
+I removed the sub-hypothesis that $x$ is 50\%, but it doesn't
+really matter if you include it.  To compute the likelihood of
+\verb"b_uniform" we compute the likelihood of the sub-hypotheses
+and compute a weighted average.
+
+\begin{verbatim}
+def SuiteLikelihood(suite, data):
+    total = 0
+    for hypo, prob in suite.Items():
+        like = suite.Likelihood(hypo, data)
+        total += prob * like
+    return total
+\end{verbatim}
+
+The likelihood ratio for \verb"b_uniform" is 0.47, which means
+that the data are weak evidence against \verb"b_uniform" at
+least compared to $F$.
+
+If you think about the computation performed by
+\verb"SuiteLikelihood", you might notice that it is similar to an
+update.  To refresh your memory, here's the {\tt Update} function:
 
 \begin{verbatim}
     def Update(self, data):
@@ -3636,36 +3668,55 @@ And here's {\tt Normalize}:
 \end{verbatim}
 
 The return value from {\tt Normalize} is the total of the probabilities
-in the Suite.
-
-After we do an update 
-
-
-is the normalization constant, which is the
-sum of the probabilities
-
-In the prior distribution, the probability of 50\% is 1.  It
-gets multiplied by the likelihood, and then the distribution
-gets normalized
-The {\tt Update} function returns the normalization constant
-
-
-
+in the Suite, which is the average of the likelihoods for the
+sub-hypotheses, weighted by the prior probabilities.  And {\tt Update}
+passes this value along, so we could compute the likelihood
+of \verb"b_uniform" like this:
 
 \begin{verbatim}
+    likelihood = b_uniform.Update(data)
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+
+
+\section{The triangle prior}
+
+In Chapter~\ref{euro} we also considered a triangle-shaped prior that
+gives higher probability to values of $x$ near 50\%.  If we think of
+this prior as a suite of sub-hypotheses, we can compute its likelihood
+like this:
 
 \begin{verbatim}
+    b_tri = TrianglePrior()
+    likelihood = b_tri.Update(data)
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+The likelihood ratio for \verb"b_tri" is 0.84, compared to $F$, so
+again we would say that the data are weak evidence against $B$.
+
+In summary, we can use Bayesian hypothesis testing to compare the
+likelihood of $F$ and $B$, but we have to do some work to specify
+precisely what $B$ means.  This specification depends on background
+information about coins and their behavior when spun, so people
+could reasonably disagree about the ``right'' definition.
+
+Depending on which definition we choose, the data might provide
+evidence for or against the hypothesis that the coin is biased, but
+in either case it is relatively weak evidence.
+
+I should acknowledge that my presentation of this example follows
+David MacKay's discussion, and comes to the same conclusion.
+
+You can download the code I used in this chapter from
+\url{http://thinkbayes.com/euro3.py}.
 
 
 \section{Back to the Variability Hypothesis}
 
+Maybe.
+
+\section{Interpreting test scores}
+
+Maybe.
 
 \end{document}
