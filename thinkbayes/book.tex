@@ -16,7 +16,6 @@
 \usepackage{textcomp}
 \usepackage{mathpazo}
 \usepackage{url}
-\usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{subfig}
 \usepackage{amsmath}
@@ -25,12 +24,13 @@
 \usepackage{setspace}
 \usepackage{hevea}                           
 \usepackage{upquote}
+\usepackage{fancyhdr}
 
 \title{Think Bayes}
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.10.0}
+\newcommand{\theversion}{0.11.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -247,6 +247,8 @@ Thanks!
 
 \item Olivier Yiptong send several helpful suggestions.
 
+\item Yuriy Pasichnyk found several errors.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -403,7 +405,8 @@ Next, we write the probability of a conjunction:
 %
 \[ \p{A \AND B} = \p{A}~\p{B|A} \]
 %
-If we define $A$ and $B$ the other way around, we can also write
+Since we have not said anything about what $A$ and $B$ mean, they
+are interchangeable.  Interchanging them yields
 %
 \[ \p{B \AND A} = \p{B}~\p{A|B} \]
 %
@@ -711,9 +714,9 @@ care we can be confident that we have it right:
 \begin{itemize}
 
 \item If the car is actually behind A, Monty could safely open Doors
-B or C.  So the probability that he chooses B is 1/2.  Since he
-knows where the car is, the probability that there is no car there
-is 1.
+B or C.  So the probability that he chooses B is 1/2.  And since
+the car is actually behind A, the probability that the car is not
+behind B is 1.
 
 \item If the car is actually behind B, Monty does not open B, so the
 probability of the data we saw is 0.
@@ -1280,7 +1283,7 @@ almost a 12\% chance for the 20-sided die.
 What if we roll a few more times and get 6, 8, 7, 7, 5, and 4?
 
 \begin{verbatim}
-    for roll in [4, 8, 7, 7, 2, 6]:
+    for roll in [6, 8, 7, 7, 5, 4]:
         suite.Update(roll)
 \end{verbatim}
 
@@ -2342,8 +2345,8 @@ Figure~\ref{fig.dungeons1}.
 \begin{figure}
 % dungeons.py
 \centerline{\includegraphics[height=2.5in]{figs/dungeons1.pdf}}
-\caption{Posterior distribution for the Locomotive problem, based
-on a uniform prior.}
+\caption{Approximate and exact distibutions for the sum of
+three six-sided dice.}
 \label{fig.dungeons1}
 \end{figure}
 
@@ -2441,7 +2444,7 @@ can generalize for any value of $z$:
 In the special case where we draw $n$ values from the same
 distribution, 
 %
-\[ CDF_n(z) = CDF_1(z)^2 \]
+\[ CDF_n(z) = CDF_1(z)^n \]
 %
 And \verb"Cdf" provides a method that does just that:
 
@@ -3607,11 +3610,11 @@ sub-hypothesis and then compute the average likelihood.
 
 \begin{verbatim}
     like40 = suite.Likelihood(40, data)
-    like60 = suite.Likelihood(40, data)
+    like60 = suite.Likelihood(60, data)
     likelihood = 0.5 * like40 + 0.5 * like60
 \end{verbatim}
 
-The likelihood ratio (or Bayes factor) for \verb"b_two" is 1.4, which
+The likelihood ratio (or Bayes factor) for \verb"b_two" is 1.3, which
 means the data provide weak evidence in favor of \verb"b_two".
 
 More generally, suppose you suspect that the coin is biased,
@@ -3687,12 +3690,30 @@ this prior as a suite of sub-hypotheses, we can compute its likelihood
 like this:
 
 \begin{verbatim}
-    b_tri = TrianglePrior()
-    likelihood = b_tri.Update(data)
+    b_triangle = TrianglePrior()
+    likelihood = b_triangle.Update(data)
 \end{verbatim}
 
-The likelihood ratio for \verb"b_tri" is 0.84, compared to $F$, so
+The likelihood ratio for \verb"b_triangle" is 0.84, compared to $F$, so
 again we would say that the data are weak evidence against $B$.
+
+The following table shows the different priors we have considered, the
+likelihood of each, and the likelihood ratio (or Bayes factor)
+relative to $F$.
+
+\begin{tabular}{|l|r|r|}
+\hline
+Hypothesis   & Likelihood & Bayes  \\
+             & $\times 10^{-76}$ & Factor  \\
+\hline
+$F$              & 5.5   & --   \\
+\verb"B_cheat"  & 34   &  6.1   \\
+\verb"B_two"     & 7.4   &  1.3   \\
+\verb"B_uniform"  & 2.6   &  0.47   \\
+\verb"B_triangle"  & 4.6   &  0.84   \\
+\hline
+\end{tabular}
+
 
 In summary, we can use Bayesian hypothesis testing to compare the
 likelihood of $F$ and $B$, but we have to do some work to specify
