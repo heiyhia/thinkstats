@@ -78,7 +78,7 @@ def Main():
     print 'p(D|B_cheat) / p(D|F)', likelihood / likelihoodF
 
     like40 = suite.Likelihood(40, data)
-    like60 = suite.Likelihood(40, data)
+    like60 = suite.Likelihood(60, data)
     likelihood = 0.5 * like40 + 0.5 * like60
     print 'p(D|B_two)', likelihood
     print 'p(D|B_two) / p(D|F)', likelihood / likelihoodF
