@@ -1124,3 +1124,48 @@ def MakeExponentialPmf(lam, high, n=200):
     return pmf
 
 
+def EvalBinomialPmf(p, yes, no):
+    """Computes the unnormalized Binomial PMF.
+
+    Does not include the binomial coefficient.
+
+    p: probability of success
+    yes: number of successes
+    no: number of failures
+
+    returns: float likelihood
+    """
+    return p**yes * (1-p)**no
+
+
+class Interpolator(object):
+    """Represents a mapping between sorted sequences; performs linear interp.
+
+    Attributes:
+        xs: sorted list
+        ys: sorted list
+    """
+    def __init__(self, xs, ys):
+        self.xs = xs
+        self.ys = ys
+
+    def Lookup(self, x):
+        """Looks up x and returns the corresponding value of y."""
+        return self._Bisect(x, self.xs, self.ys)
+
+    def Reverse(self, y):
+        """Looks up y and returns the corresponding value of x."""
+        return self._Bisect(y, self.ys, self.xs)
+
+    def _Bisect(self, x, xs, ys):
+        """Helper function."""
+        if x <= xs[0]:
+            return ys[0]
+        if x >= xs[-1]:
+            return ys[-1]
+        i = bisect.bisect(xs, x)
+        frac = 1.0 * (x - xs[i-1]) / (xs[i] - xs[i-1])
+        y = ys[i-1] + frac * 1.0 * (ys[i] - ys[i-1])
+        return y
+
+
