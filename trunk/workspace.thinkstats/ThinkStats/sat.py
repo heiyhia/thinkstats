@@ -1,25 +1,15 @@
-"""This file contains code used in "Think Stats",
+"""This file contains code used in "Think Bayes",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import csv
-import datetime
-import math
-import random
 import sys
 
-import matplotlib.pyplot as pyplot
-
-import bayes
-import correlation
-import Cdf
+import thinkbayes
 import myplot
-import Pmf
-import rankit
-import thinkstats
 
 
 def ReadScale(filename='sat_scale.csv', col=2):
@@ -29,8 +19,7 @@ def ReadScale(filename='sat_scale.csv', col=2):
       filename: string filename
       col: which column to start with (0=Reading, 2=Math, 4=Writing)
 
-    Returns:
-      list of (raw score, standardize score) pairs
+    Returns: thinkbayes.Interpolator object
     """
     def ParseRange(s):
         t = [int(x) for x in s.split('-')]
@@ -52,7 +41,7 @@ def ReadScale(filename='sat_scale.csv', col=2):
 
     raws.sort()
     scores.sort()
-    return thinkstats.Interpolator(raws, scores)
+    return thinkbayes.Interpolator(raws, scores)
 
 
 def ReadRanks(filename='sat_ranks.csv'):
@@ -62,7 +51,7 @@ def ReadRanks(filename='sat_ranks.csv'):
       filename: string filename
 
     Returns:
-      list of (score, number) pairs
+      list of (score, freq) pairs
     """
     fp = open(filename)
     reader = csv.reader(fp)
@@ -71,149 +60,26 @@ def ReadRanks(filename='sat_ranks.csv'):
     for t in reader:
         try:
             score = int(t[0])
-            number = int(t[1])
-            res.append((score, number))
+            freq = int(t[1])
+            res.append((score, freq))
         except ValueError:
             pass
 
     return res
 
 
-def Summarize(pmf):
-    mu, var = pmf.Mean(), pmf.Var()
-    sigma = math.sqrt(var)
-    print 'mu, sigma', mu, sigma
-    return mu, sigma
-
-
-def ApplyLogistic(pmf, inter=-2.5, slope=10):
-    mu, sigma = Summarize(pmf)
-    new = Pmf.Pmf()
-    for val, prob in sorted(pmf.Items()):
-        z = inter + slope * StandardScore(val, mu, sigma)
-        
-        prob_admit = bayes.Logistic(z)
-        new.Incr(val, prob * prob_admit)
-
-        print val, z, prob_admit
-
-    new.Normalize()
-    mu, sigma = Summarize(new)
-    return new
-
-
-def StandardScore(val, mu, sigma):
-    return (val-mu) / sigma
-
-
-def SummarizeR(r, sigma):
-    """Prints summary statistics about a correlation."""
-
-    r2 = r**2
-    var = sigma**2
-
-    rmse_without = sigma
-    rmse_with = math.sqrt(var * (1 - r2))
-
-    reduction = 1.0 - (rmse_with / rmse_without)
-    print 'r, R^2', r, r2
-    print 'RMSE (reduction)', rmse_with, reduction
-
-
-def ApplyLogit(pmf, denom):
-    new = Pmf.Pmf()
-    for val, prob in pmf.Items():
-        if val > 0 and val < denom:
-            x = bayes.Logit(val/denom)
-            new.Incr(x, prob)
-    return new
-
-
-def ReverseScale(pmf, scale):
-    """Applies the reverse scale to the values of a PMF.
-
-    Args:
-        pmf: Pmf object
-        scale: Interpolator object
-
-    Returns:
-        new Pmf
-    """
-    new = Pmf.Pmf()
-    for val, prob in pmf.Items():
-        raw = scale.Reverse(val)
-        new.Incr(raw, prob)
-    return new
-
-
-def SamplePmf(pmf, total, fraction=0.001):
-    """Generates a sample from a PMF by making copies of each value."""
-    t = []
-    for val, prob in pmf.Items():
-        n = int(prob * total * fraction)
-        t.extend([val] * n)
-    return t
-
-
-def MakeNormalPlot(ys, root=None, lineoptions={}, **options):
-    """Makes a normal probability plot.
-    
-    Args:
-        ys: sequence of values
-        lineoptions: dictionary of options for pyplot.plot        
-        options: dictionary of options for myplot.Save
-    """
-    n = len(ys)
-    ys.sort()
-    xs = [random.normalvariate(0.0, 1.0) for i in range(n)]
-    xs.sort()
-
-    inter, slope = correlation.LeastSquares(xs, ys)
-    print 'inter, slope', inter, slope
-    x_fit = [-4, 4]
-    y_fit = [inter + slope*x for x in x_fit]
-
-    pyplot.clf()
-    pyplot.plot(x_fit, y_fit, 'r-')
-    pyplot.plot(sorted(xs), sorted(ys), 'b.', markersize=2, **lineoptions)
- 
-    myplot.Save(root,
-                xlabel = 'Standard normal values',
-                legend=False,
-                **options)
-
-
-def ShiftValues(pmf, shift):
-    """Shifts the values in a PMF by shift.  Returns a new PMF."""
-    new = Pmf.Pmf()
-    for val, prob in pmf.Items():
-        if val >= shift:
-            x = val - shift
-            new.Incr(x, prob)
-    return new
-
-
 def DivideValues(pmf, denom):
     """Divides the values in a PMF by denom.  Returns a new PMF."""
-    new = Pmf.Pmf()
+    new = thinkbayes.Pmf()
+    denom = float(denom)
     for val, prob in pmf.Items():
         if val >= 0:
-            x = 1.0 * val / denom
-            new.Incr(x, prob)
+            x = val / denom
+            new.Set(x, prob)
     return new
 
 
-def ProbBigger(pmf1, pmf2):
-    """Returns the probability that a value from one pmf exceeds another."""
-    total = 0.0
-    for v1, p1 in pmf1.Items():
-        for v2, p2 in pmf2.Items():
-            if v1 > v2:
-                total += p1 * p2
-    return total
-
-
-class Exam:
+class Exam(object):
     """Encapsulates information about an exam.
 
     Contains the distribution of scaled scores and an
@@ -221,117 +87,145 @@ class Exam:
     """
     def __init__(self):
         self.scale = ReadScale()
-        self.scores = ReadRanks()
-        self.hist = Pmf.MakeHistFromDict(dict(self.scores))
 
-        self.scaled = Pmf.MakePmfFromHist(self.hist)
+        scores = ReadRanks()
+        hist = thinkbayes.MakeHistFromDict(dict(scores))
+        score_dist = thinkbayes.MakePmfFromHist(hist)
 
-        self.raw = ReverseScale(self.scaled, self.scale)
-        self.shift = 0
+        raw = self.ReverseScale(score_dist)
+        self.max_score = max(raw.Values())
+        self.prior = DivideValues(raw, denom=self.max_score)
 
-        self.max_score = max(self.raw.Values())
-        self.log = ApplyLogit(self.raw, denom=self.max_score)
+    def Lookup(self, raw):
+        """Looks up a raw score and returns a scaled score."""
+        return self.scale.Lookup(raw)
         
-        self.prior = DivideValues(self.raw, denom=self.max_score)
+    def Reverse(self, score):
+        """Looks up a scaled score and returns a raw score."""
+        return self.scale.Reverse(score)
+        
+    def ReverseScale(self, pmf):
+        """Applies the reverse scale to the values of a PMF.
 
-    def NormalPlot(self):
-        """Makes a normal probability plot for the raw scores."""
-        total = self.hist.Total()
-        raw_sample = SamplePmf(self.raw, total, fraction=0.01)
-        MakeNormalPlot(raw_sample, 
-                       root='sat_normal',
-                       ylabel='Raw scores (math)',)
+        Args:
+            pmf: Pmf object
+            scale: Interpolator object
 
-    def Shift(self, shift):
-        """Shifts the values in the raw distribution."""
-        self.shift = 0
-        self.raw = ShiftValues(self.raw, shift=shift)
+        Returns:
+            new Pmf
+        """
+        new = thinkbayes.Pmf()
+        for val, prob in pmf.Items():
+            raw = self.Reverse(val)
+            new.Incr(raw, prob)
+        return new
 
-    def Update(self, score):
-        """Computes the posterior distribution based on score."""
-        raw = self.scale.Reverse(score) - self.shift
-        evidence = raw, self.max_score-raw
 
-        updater = bayes.Binomial()
-        posterior = updater.Posterior(self.prior, evidence)
 
-        return posterior
+class Sat(thinkbayes.Suite):
+    """Represents the distribution of efficacy for a test-taker."""
 
-    def ScaledCredibleInterval(self, score):
+    def __init__(self, exam, score):
+        thinkbayes.Suite.__init__(self)
+
+        self.exam = exam
+        self.score = score
+
+        # start with the prior distribution
+        for efficacy, prob in exam.prior.Items():
+            self.Set(efficacy, prob)
+
+        # update based on an exam score
+        self.Update(score)
+
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of a test score, given efficacy."""
+        efficacy = hypo
+        score = data
+
+        raw = self.exam.Reverse(score)
+        yes, no = raw, self.exam.max_score - raw
+
+        like = thinkbayes.EvalBinomialPmf(efficacy, yes, no)
+        return like
+
+    def ScaledConfidenceInterval(self):
         """Computes the credible interval for someone with the given score."""
-        posterior = self.Update(score)
-        low, high = bayes.CredibleInterval(posterior, 90)
-        scale_low = self.scale.Lookup(low * self.max_score)
-        scale_high = self.scale.Lookup(high * self.max_score)
+        low, high = thinkbayes.ConfidenceInterval(self, 90)
+        scale_low = self.exam.Lookup(low * self.exam.max_score)
+        scale_high = self.exam.Lookup(high * self.exam.max_score)
         return scale_low, scale_high
+
+
+def PlotPosteriors(sat1, sat2):
+    """Plots posterior distributions of efficacy.
+
+    sat1, sat2: Sat objects.
+    """
+    cdf1 = thinkbayes.MakeCdfFromPmf(sat1, 'posterior %d' % sat1.score)
+    cdf2 = thinkbayes.MakeCdfFromPmf(sat2, 'posterior %d' % sat2.score)
+
+    myplot.Cdfs([cdf1, cdf2])
+    myplot.Save(xlabel='efficacy', 
+                ylabel='CDF', 
+                axis=[0.6, 1.0, 0.0, 1.0],
+                root='sat_posteriors')
+
+
+def PlotPriorDist(pmf):
+    cdf1 = thinkbayes.MakeCdfFromPmf(pmf, 'prior')
+    myplot.Cdf(cdf1)
+    myplot.Save(root='sat_prior',
+                xlabel='efficacy', 
+                ylabel='CDF')
+
+
+def PlotRawDist(raw):
+    cdf2 = thinkbayes.MakeCdfFromPmf(raw, 'raw')
+    myplot.Cdf(cdf2)
+    myplot.Show(xlabel='score', 
+               ylabel='CDF')
+
+
+class TopLevel(thinkbayes.Suite):
+
+    def Update(self, data):
+        a_score, b_score = data
+
+        exam = Exam()
+        a_sat = Sat(exam, a_score)
+        b_sat = Sat(exam, b_score)
+
+        a_like = thinkbayes.PmfProbGreater(a_sat, b_sat)
+        b_like = thinkbayes.PmfProbGreater(b_sat, a_sat)
         
-    def PlotPosteriors(self, low, high):
-        """Computes posteriors for the given scores and plots them."""
-        posterior_low = self.Update(low)
-        posterior_high = self.Update(high)
+        self.Mult('Alice', a_like)
+        self.Mult('Bob', b_like)
 
-        prob_bigger = ProbBigger(posterior_high, posterior_low)
-        print "prob_bigger:", prob_bigger
+        self.Normalize()
 
-        cdf1 = Cdf.MakeCdfFromPmf(posterior_low, 'posterior %d' % low)
-        cdf2 = Cdf.MakeCdfFromPmf(posterior_high, 'posterior %d' % high)
-
-        myplot.Cdfs([cdf1, cdf2],
-                    xlabel='P', 
-                    ylabel='CDF', 
-                    axis=[0.6, 1.0, 0.0, 1.0],
-                    root='sat_posteriors')
-
-
+        
 def main(script):
 
-    SummarizeR(r=0.53, sigma=0.71)
-
     exam = Exam()
-
-    exam.NormalPlot()
-
-    low = 700
-    high = low+70
-
-    low_range = exam.ScaledCredibleInterval(low)
-    print low, low_range, (low_range[1] - low_range[0]) / 2.0
-
-    high_range = exam.ScaledCredibleInterval(high)
-    print high, high_range, (high_range[1] - high_range[0]) / 2.0
-
-    exam.PlotPosteriors(low, high)
-
-
-def PlotScaledDist():
-    cdf1 = Cdf.MakeCdfFromPmf(pmf, 'scaled')
-    myplot.Cdfs([cdf1],
-               xlabel='score', 
-               ylabel='CDF', 
-               show=False)
-
-
-def PlotRawDist():
-    cdf2 = Cdf.MakeCdfFromPmf(raw, 'raw')
-    myplot.Cdfs([cdf2],
-               xlabel='score', 
-               ylabel='CDF', 
-               show=False)
-
-
-def InferLogit(pmf):
-    admitted = ApplyLogistic(pmf)
-
-    cdf1 = Cdf.MakeCdfFromPmf(pmf)
-    cdf2 = Cdf.MakeCdfFromPmf(admitted)
-
-    quartiles = cdf2.Percentile(25), cdf2.Percentile(50), cdf2.Percentile(75)
-    print 'quartiles', quartiles
-
-    myplot.Cdfs([cdf1, cdf2],
-               xlabel='score', 
-               ylabel='CDF', 
-               show=True)
+    PlotPriorDist(exam.prior)
     
+    a_score, b_score = 780, 740
+
+    a_sat = Sat(exam, a_score)
+    low_range = a_sat.ScaledConfidenceInterval()
+    print a_score, low_range, (low_range[1] - low_range[0]) / 2.0
+
+    b_sat = Sat(exam, b_score)
+    high_range = b_sat.ScaledConfidenceInterval()
+    print b_score, high_range, (high_range[1] - high_range[0]) / 2.0
+
+    PlotPosteriors(a_sat, b_sat)
+
+    top = TopLevel(['Alice', 'Bob'])
+    top.Update((a_score, b_score))
+    top.Print()
+
+
 if __name__ == '__main__':
     main(*sys.argv)
