@@ -201,13 +201,13 @@ probably full of errors.
 If you find some of those errors, please let me know.  But it is
 probably too early to bother with typos.
 
-\subsection*{Who is this book for?}
+\subsection*{My theory, which is mine}
 
 The premise of this book is that if you know how to program, you
 can use that skill to help you learn other topics, including
 Bayesian statistics.
 
-Most books on Bayesian statistics use mathematical notation, and
+Most books on Bayesian statistics use mathematical notation and
 present ideas in terms of mathematical concepts like calculus.
 This book uses Python code instead of math, and discrete approximations
 instead of continuous mathematics.  As a result, what would
@@ -237,7 +237,7 @@ substantial performance advantages, for example by replacing a
 linear- or quadratic-time computation with a constant-time
 solution.
 
-Therefore, I recommend a general approach with these steps:
+Therefore, I recommend a general process with these steps:
 
 \begin{enumerate}
 
@@ -247,11 +247,24 @@ correct.  Focus your attention on good modeling decisions, not
 optimization.
 
 \item If the performance of your solution is good enough for your
-application, stop!
+application, stop!  Or if you insist, review and refine your modeling
+decisions.
 
-\item If opt
+\item If you really feel the need for speed, there are two approaches
+to consider.  You can review your code and look for optimizations; for
+example, caching previously computed results to avoid redundant
+computation.  Or you can look for mathematical short-cuts.  
 
 \end{enumerate}
+
+One benefit of this process is that Step 1 tends to be fast, so
+you can explore alternative models before investing heavily in
+any of them.
+
+Another benefit is that if you get to Step 3, you will be starting
+with a reference implementation that is likely to be correct, so
+you can use for regression testing (that is, checking that the
+optimized code yields the same answer, at least approximately).
 
 
 \subsection*{Code style}
@@ -3806,12 +3819,225 @@ You can download the code I used in this chapter from
 \url{http://thinkbayes.com/euro3.py}.
 
 
-\section{Back to the Variability Hypothesis}
+\section{Interpreting SAT scores}
 
-Maybe.
+Suppose you are the Dean of Admission at a small engineering
+college in Massachusetts, and you are considering two candidates,
+Alice and Bob, whose qualifications are similar in many ways,
+with the exception that Alice got a higher score on the Math
+portion of the SAT, a standardized test intended to measure
+preparation for college-level work in mathematics.
 
-\section{Interpreting test scores}
+If Alice got 780 and Bob got a 740 (out of a possible 800), you might
+want to know whether that difference is evidence that Alice is better
+prepared than Bob, and what the strength of that evidence is.
 
-Maybe.
+Now in reality, both scores are very good, and both 
+candidates are probably well prepared for college math.  So
+the real Dean of Admission would probably suggest that we choose
+the candidate who best demonstrates the other skills and
+attitudes we look for in students.  But as an example of
+Bayesian hypothesis testing, let's stick with a narrower question:
+``How strong is the evidence that Alice is better prepared
+than Bob.''
+
+To answer this question, we need to make some modeling decisions.
+
+\begin{itemize}
+
+\item First, let's assume that each test-taker has some personal
+  characteristic, which I'll call ``efficacy'' that relates to their
+  ability to answer the kinds of questions that appear on the SAT.
+
+\item Second, let's assume that each question has some level of
+  difficulty, and that the probability a question is answered
+  correctly depends on the difficulty of the question and the efficacy
+  of the test-taker.
+
+\item Finally, let's assume that efficacy is related to college
+  preparation, so that we expect a test-taker with higher efficacy
+  to be better prepared for college math. 
+
+\end{itemize}
+
+The first two assumptions should be uncontroversial, if we 
+believe that some questions are harder than others, and some
+people are better at answering them than others.
+
+The third assumption is the topic of some debate, but whatever
+you think of the SAT, there is considerable evidence that SAT
+scores are correlated with first-year college grades.  The
+strength of the correlation might be lower than you expect or
+hope, but there is little doubt that the test is measuring
+some factors that contribute to success in college.
+
+Now I want to make an additional assumption that I know is wrong.
+I am going to pretend, initially, that all SAT questions are
+equally difficult.  In reality, the designers of the SAT choose
+questions with a range of difficulty, because that improves
+the ability to measure statistical difference between test-takers
+at the high and low ends of the range.  But I am going to ignore
+that for now; later we will come back and evaluate the effect
+of this assumption on the results.
+
+With this simplification, we can be more precise about the
+meaning of ``efficacy.''  Specifically, I will define efficacy
+as the probability of answering any question correctly.
+
+With that, we are ready to start.
+
+
+\section{The scale}
+
+In order to understand SAT scores, we have to understand the scoring
+and scaling process.  Each test-taker gets a raw score based on the
+number of correct and incorrect questions.  The raw score is converted
+to the range 200--800 based on a scale that normalizes for the
+difficulty of the questions.
+
+In 2009, there were 54 questions on the math SAT.  The raw score
+for each test-taker is the number of questions answered correctly
+minus a penalty of $1/4$ point for each question answered incorrectly.
+
+The College Board, which administers the SAT, publishes the
+mapping from raw scores to scaled scores.  I have downloaded that
+data and wrapped it in an Interpolater object that do a forward
+lookup (from raw score to scaled) and a reverse lookup (from scaled
+score to raw).
+
+You can download the code for this example from
+\url{http://thinkbayes.com/sat.py}.
+
+
+\section{The prior}
+
+The College Board also publishes the distribution of scaled scores
+for all test-takers.  If we convert them to raw scores, we can
+estimate the number of questions each test-taker got right, which
+is an estimate of their efficacy.
+
+So we can use the distribution of raw scores as a prior distribution
+for efficacy.  Here is the code that reads and processes the
+data:
+
+\begin{verbatim}
+class Exam(object):
+
+    def __init__(self):
+        self.scale = ReadScale()
+
+        scores = ReadRanks()
+        hist = Pmf.MakeHistFromDict(dict(scores))
+        score_dist = Pmf.MakePmfFromHist(hist)
+
+        raw = self.ReverseScale(score_dist)
+        self.prior = DivideValues(raw, 54)
+\end{verbatim}
+
+{\tt Exam} encapsulates the information we have about the offering
+of an exam.  {\tt scale} is the {\tt Interpolater} that converts
+from raw to scaled scores and back.  {\tt prior} is a {\tt Pmf}
+that maps from each raw score to a fraction of test-takers.
+
+\begin{figure}
+% sat.py
+\centerline{\includegraphics[height=2.5in]{figs/sat_prior.pdf}}
+\caption{Prior distribution of efficacy for SAT test-takers.}
+\label{fig.satprior}
+\end{figure}
+
+Figure~\ref{fig.satprior} shows the prior distribution of
+efficacy.  This distribution is approximately normal, but it is
+compressed at the extremes.  By design, the SAT has the most
+power to discriminate between test-takers within two standard
+deviations of the mean, and less power outside that range.
+
+For each test-taker, I'll define a Suite called {\tt Sat} that
+represents the distribution of efficacy.  Here's the definition:
+
+\begin{verbatim}
+class Sat(thinkbayes.Suite):
+
+    def __init__(self, exam, score):
+        thinkbayes.Suite.__init__(self)
+
+        self.exam = exam
+        self.score = score
+
+        # start with the prior distribution
+        for efficacy, prob in exam.prior.Items():
+            self.Set(efficacy, prob)
+
+        # update based on an exam score
+        self.Update(score)
+\end{verbatim}
+
+\verb"__init__" takes the Exam object that encapsulates data
+about the exam, and a scale score.  It makes a copy of the
+prior distribution and then updates itself based on the exam
+score.
+
+As usual, we inherit {\tt Update} from {\tt Suite} and provide
+{\tt Likelihood}:
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        efficacy = hypo
+        score = data
+
+        raw = self.exam.Reverse(score)
+        yes, no = raw, 54 - raw
+
+        like = thinkbayes.EvalBinomialPmf(efficacy, yes, no)
+        return like
+\end{verbatim}
+
+And as usual, {\tt Likelihood} computes the likelihood of the
+data under a given hypothesis.  In this case {\tt hypo} is a
+hypothetical value of efficacy.  And the data are a raw score.
+
+To keep things simple, I interpret the raw score as the number of
+correct answers, ignoring the penalty for wrong answers.  With
+this simplification, the likelihood is given by the binomial
+distribution, which computes the probability of {\tt yes} correct
+answers and {\tt no} incorrect.
+
+
+\section{Posterior}
+
+Figure~\ref{fig.satposterior} shows the posterior distributions
+of efficacy for Alice and Bob based on their exam scores.
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+The probability of getting a question right depends
+on difficulty and efficiacy
+
+As usual, we will start with something simple and then come back
+to consider ways to make it more realistic.
+
+
+test measures what it is supposed to measure
+efficacy
+
+all questions equally difficult
+
+penalty
+
+
+
+
+example, let's answer the question as asked.
+
+
 
 \end{document}
