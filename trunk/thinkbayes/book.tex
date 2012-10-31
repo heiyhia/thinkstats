@@ -201,6 +201,80 @@ probably full of errors.
 If you find some of those errors, please let me know.  But it is
 probably too early to bother with typos.
 
+\subsection*{Who is this book for?}
+
+The premise of this book is that if you know how to program, you
+can use that skill to help you learn other topics, including
+Bayesian statistics.
+
+Most books on Bayesian statistics use mathematical notation, and
+present ideas in terms of mathematical concepts like calculus.
+This book uses Python code instead of math, and discrete approximations
+instead of continuous mathematics.  As a result, what would
+be an integral in a math book becomes a simple summation, and
+most operations on distributions are simple loops.
+
+This presentation is easier to understand, at least for people with
+programming skills.  It is also more general, because when we make
+modeling decisions, we can choose the most appropriate model without
+excessive concern about whether the model lends itself to conventional
+analysis.
+
+And while it's true that the discrete computations I present here
+yield approximations of the results we would get from continuous
+functions, it is important to remember that both computations are
+based on models of a real system, and that any approximation errors
+(differences between the models) are almost always negligible compared
+to modeling errors (differences between the models and reality).
+
+If, as is often the case, the discrete approach allows us to make
+better modeling decisions, then it would be more fair to say that
+the continuous functions yield an approximation of the
+more reliable computational results.
+
+However, I have to acknowledge that continuous analysis often yields
+substantial performance advantages, for example by replacing a
+linear- or quadratic-time computation with a constant-time
+solution.
+
+Therefore, I recommend a general approach with these steps:
+
+\begin{enumerate}
+
+\item While you are exploring a problem, start with simple models
+and implement them in code that is clear, readable, and demonstrably
+correct.  Focus your attention on good modeling decisions, not
+optimization.
+
+\item If the performance of your solution is good enough for your
+application, stop!
+
+\item If opt
+
+\end{enumerate}
+
+
+\subsection*{Code style}
+
+Experienced Python programmers will notice that the code in this
+book does not comply with PEP 8, which is the most common
+style guide for Python (\url{http://www.python.org/dev/peps/pep-0008/}).
+
+In particular, PEP 8 calls for lowercase function names with
+underscores between words, \verb"like_this".  In this book and
+the accompanying code, function and method names begin with
+a capital letter and use camel case, \verb"LikeThis".
+
+The reason I broke this rule is that I developed some of the
+code while I was a Visiting Scientist at Google, Inc. in 2009-10.
+So I followed the Google style guide for Python, which deviates
+from PEP 8 in a few places.
+
+Also, once I got used to function names with capital letters, I
+found that I liked it.  Finally, at this point, it would be too
+much trouble to change.
+
+
 Allen B. Downey \\*
 Needham MA \\*
 
