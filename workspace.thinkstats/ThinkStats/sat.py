@@ -87,22 +87,51 @@ class Exam(object):
     Contains the distribution of scaled scores and an
     Interpolator that maps between scaled and raw scores.
     """
-    def __init__(self, diff_std=1.0):
+    def __init__(self):
         self.scale = ReadScale()
 
         scores = ReadRanks()
         hist = thinkbayes.MakeHistFromDict(dict(scores))
         score_dist = thinkbayes.MakePmfFromHist(hist)
 
-        raw = self.ReverseScale(score_dist)
-        self.max_score = max(raw.Values())
-        self.prior = DivideValues(raw, denom=self.max_score)
+        self.raw = self.ReverseScale(score_dist)
+        self.max_score = max(self.raw.Values())
+        self.prior = DivideValues(self.raw, denom=self.max_score)
         
-        low, high = -diff_std * 2, diff_std * 2
-        self.difficulties = MakeDifficulties(low, high, self.max_score)
+        center = -0.05
+        width = 1.8
+        self.difficulties = MakeDifficulties(center, width, self.max_score)
 
-    def MakeRawScoreDist(self, eff_std):
-        efficacies = thinkbayes.MakeGaussianPmf(0, eff_std, 3)
+    def CompareScores(self, a_score, b_score):
+        """Computes posteriors for two test scores and the likelihood ratio.
+
+        a_score, b_score: scales SAT scores
+        """
+        a_sat = constructor(self, a_score)
+        b_sat = constructor(self, b_score)
+
+        a_sat.PlotPosteriors(b_sat)
+
+        top = TopLevel(['Alice', 'Bob'])
+        top.Update((a_score, b_score))
+        top.Print()
+
+        ratio = top.Prob('Alice') / top.Prob('Bob')
+        
+        print 'Likelihood ratio', ratio
+
+
+    def MakeRawScoreDist(self):
+        """Makes the distribution of raw scores for given difficulty.
+
+        Assumes that efficacy is Gaussian(0, 1)
+        """
+        efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
+
+        #diff_pmf = thinkbayes.MakePmfFromList(self.difficulties)
+        #myplot.Pmf(diff_pmf)
+        #myplot.Pmf(efficacies)
+        #myplot.Show()
 
         pmfs = thinkbayes.Pmf()
         for efficacy, prob in efficacies.Items():
@@ -111,6 +140,16 @@ class Exam(object):
 
         mix = thinkbayes.MakeMixture(pmfs)
         return mix
+
+    def CalibrateDifficulty(self):
+        cdf = thinkbayes.MakeCdfFromPmf(self.raw, name='raw')
+        myplot.Cdf(cdf)
+
+        pmf = self.MakeRawScoreDist()
+        cdf = thinkbayes.MakeCdfFromPmf(pmf, name='model')
+        myplot.Cdf(cdf)
+        
+        myplot.Show()
 
     def PmfCorrect(self, efficacy):
         pmf = PmfCorrect(efficacy, self.difficulties)
@@ -152,7 +191,49 @@ class Sat(thinkbayes.Suite):
         self.score = score
 
         # start with the prior distribution
-        for efficacy, prob in exam.prior.Items():
+        for p_correct, prob in exam.prior.Items():
+            self.Set(p_correct, prob)
+
+        # update based on an exam score
+        self.Update(score)
+
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of a test score, given efficacy."""
+        p_correct = hypo
+        score = data
+        raw = self.exam.Reverse(score)
+
+        yes, no = raw, self.exam.max_score - raw
+        like = thinkbayes.EvalBinomialPmf(p_correct, yes, no)
+        return like
+
+    def PlotPosteriors(self, other):
+        """Plots posterior distributions of efficacy.
+
+        self, other: Sat objects.
+        """
+        cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
+        cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
+
+        myplot.Cdfs([cdf1, cdf2])
+        myplot.Save(xlabel='p_correct', 
+                    ylabel='CDF', 
+                    axis=[0.7, 1.0, 0.0, 1.0],
+                    root='sat_posteriors_p_corr')
+
+
+
+class Sat2(Sat):
+
+    def __init__(self, exam, score):
+        thinkbayes.Suite.__init__(self)
+
+        self.exam = exam
+        self.score = score
+
+        # start with the prior distribution
+        efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
+        for efficacy, prob in efficacies.Items():
             self.Set(efficacy, prob)
 
         # update based on an exam score
@@ -162,46 +243,25 @@ class Sat(thinkbayes.Suite):
         """Computes the likelihood of a test score, given efficacy."""
         efficacy = hypo
         score = data
-
         raw = self.exam.Reverse(score)
-        yes, no = raw, self.exam.max_score - raw
-
-        like = thinkbayes.EvalBinomialPmf(efficacy, yes, no)
-        return like
-
-    def ScaledConfidenceInterval(self):
-        """Computes the credible interval for someone with the given score."""
-        low, high = thinkbayes.ConfidenceInterval(self, 90)
-        scale_low = self.exam.Lookup(low * self.exam.max_score)
-        scale_high = self.exam.Lookup(high * self.exam.max_score)
-        return scale_low, scale_high
-
-
-class Sat2(Sat):
-    def Likelihood(self, hypo, data):
-        """Computes the likelihood of a test score, given efficacy."""
-        efficacy = hypo
-        score = data
 
         pmf = self.exam.PmfCorrect(efficacy)
-        raw = self.exam.Reverse(score)
         like = pmf.Prob(raw)
         return like
     
+    def PlotPosteriors(self, other):
+        """Plots posterior distributions of efficacy.
 
-def PlotPosteriors(sat1, sat2):
-    """Plots posterior distributions of efficacy.
+        self, other: Sat objects.
+        """
+        cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
+        cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
 
-    sat1, sat2: Sat objects.
-    """
-    cdf1 = thinkbayes.MakeCdfFromPmf(sat1, 'posterior %d' % sat1.score)
-    cdf2 = thinkbayes.MakeCdfFromPmf(sat2, 'posterior %d' % sat2.score)
-
-    myplot.Cdfs([cdf1, cdf2])
-    myplot.Save(xlabel='efficacy', 
-                ylabel='CDF', 
-                axis=[0.6, 1.0, 0.0, 1.0],
-                root='sat_posteriors')
+        myplot.Cdfs([cdf1, cdf2])
+        myplot.Save(xlabel='efficacy', 
+                    ylabel='CDF', 
+                    axis=[0, 4.6, 0.0, 1.0],
+                    root='sat_posteriors_eff')
 
 
 def PlotPriorDist(pmf):
@@ -225,8 +285,8 @@ class TopLevel(thinkbayes.Suite):
         a_score, b_score = data
 
         exam = Exam()
-        a_sat = Sat(exam, a_score)
-        b_sat = Sat(exam, b_score)
+        a_sat = constructor(exam, a_score)
+        b_sat = constructor(exam, b_score)
 
         a_like = thinkbayes.PmfProbGreater(a_sat, b_sat)
         b_like = thinkbayes.PmfProbGreater(b_sat, a_sat)
@@ -234,7 +294,7 @@ class TopLevel(thinkbayes.Suite):
         self.Mult('Alice', a_like)
         self.Mult('Bob', b_like)
 
-        self.Normalize()
+        # self.Normalize()
 
 
 def ProbCorrect(efficacy, difficulty, a=1.0):
@@ -277,7 +337,12 @@ def PmfCorrect(efficacy, difficulties):
     return dist
 
 
-def MakeDifficulties(low, high, n):
+def MakeDifficulties(center, width, n):
+    """Makes a list of n difficulties with a given center and width.
+
+    Returns: list of n floats between center-width and center+width
+    """
+    low, high = center-width, center+width
     return numpy.linspace(low, high, n)
 
 
@@ -296,37 +361,17 @@ def TestEfficacy():
     myplot.Show()
 
 
+# which version of the Sat class to use, Sat or Sat2
+constructor = Sat2
+
 def main(script):
+
     exam = Exam()
+
     #PlotPriorDist(exam.prior)
+    #exam.CalibrateDifficulty()
 
-    cdf = thinkbayes.MakeCdfFromPmf(exam.prior)
-    myplot.Cdf(cdf)
-
-    pmf = exam.MakeRawScoreDist(1.6)
-    pmf = DivideValues(pmf, 54)
-
-    cdf = thinkbayes.MakeCdfFromPmf(pmf, name='mix')
-    myplot.Cdf(cdf)
-
-    myplot.Show()
-    return
-
-    a_score, b_score = 780, 740
-
-    a_sat = Sat(exam, a_score)
-    low_range = a_sat.ScaledConfidenceInterval()
-    print a_score, low_range, (low_range[1] - low_range[0]) / 2.0
-
-    b_sat = Sat(exam, b_score)
-    high_range = b_sat.ScaledConfidenceInterval()
-    print b_score, high_range, (high_range[1] - high_range[0]) / 2.0
-
-    PlotPosteriors(a_sat, b_sat)
-
-    top = TopLevel(['Alice', 'Bob'])
-    top.Update((a_score, b_score))
-    top.Print()
+    exam.CompareScores(780, 740)
 
 
 if __name__ == '__main__':

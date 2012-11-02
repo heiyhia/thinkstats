@@ -3839,52 +3839,21 @@ the candidate who best demonstrates the other skills and
 attitudes we look for in students.  But as an example of
 Bayesian hypothesis testing, let's stick with a narrower question:
 ``How strong is the evidence that Alice is better prepared
-than Bob.''
+than Bob?''
 
-To answer this question, we need to make some modeling decisions.
-
-\begin{itemize}
-
-\item First, let's assume that each test-taker has some personal
-  characteristic, which I'll call ``efficacy'' that relates to their
-  ability to answer the kinds of questions that appear on the SAT.
-
-\item Second, let's assume that each question has some level of
-  difficulty, and that the probability a question is answered
-  correctly depends on the difficulty of the question and the efficacy
-  of the test-taker.
-
-\item Finally, let's assume that efficacy is related to college
-  preparation, so that we expect a test-taker with higher efficacy
-  to be better prepared for college math. 
-
-\end{itemize}
-
-The first two assumptions should be uncontroversial, if we 
-believe that some questions are harder than others, and some
-people are better at answering them than others.
-
-The third assumption is the topic of some debate, but whatever
-you think of the SAT, there is considerable evidence that SAT
-scores are correlated with first-year college grades.  The
-strength of the correlation might be lower than you expect or
-hope, but there is little doubt that the test is measuring
-some factors that contribute to success in college.
-
-Now I want to make an additional assumption that I know is wrong.
-I am going to pretend, initially, that all SAT questions are
-equally difficult.  In reality, the designers of the SAT choose
+To answer that question, we need to make some modeling decisions.
+I'll start with a simplification I know is wrong; then we'll come
+back and improve the model.  Specifically, I will temporarily
+pretend that all SAT questions are equally difficult.
+In reality, the designers of the SAT choose
 questions with a range of difficulty, because that improves
 the ability to measure statistical difference between test-takers
-at the high and low ends of the range.  But I am going to ignore
-that for now; later we will come back and evaluate the effect
-of this assumption on the results.
+at the high and low ends of the range.
 
-With this simplification, we can be more precise about the
-meaning of ``efficacy.''  Specifically, I will define efficacy
-as the probability of answering any question correctly.
-
-With that, we are ready to start.
+But if we choose a model where all questions are equally difficult, we
+can define a characteristic, \verb"p_correct", for each test-taker,
+which is the probablity of answering any question correctly.  This
+simplification makes it easy to compute the likelihood of a given score.
 
 
 \section{The scale}
@@ -4009,6 +3978,42 @@ Figure~\ref{fig.satposterior} shows the posterior distributions
 of efficacy for Alice and Bob based on their exam scores.
 
 
+\section{A better model}
+
+\begin{itemize}
+
+\item First, let's assume that each test-taker has some personal
+  characteristic, which I'll call ``efficacy'' that relates to their
+  ability to answer the kinds of questions that appear on the SAT.
+
+\item Second, let's assume that each question has some level of
+  difficulty, and that the probability a question is answered
+  correctly depends on the difficulty of the question and the efficacy
+  of the test-taker.
+
+\item Finally, let's assume that efficacy is related to college
+  preparation, so that we expect a test-taker with higher efficacy
+  to be better prepared for college math. 
+
+\end{itemize}
+
+The first two assumptions should be uncontroversial, if we 
+believe that some questions are harder than others, and some
+people are better at answering them than others.
+
+The third assumption is the topic of some debate, but whatever
+you think of the SAT, there is considerable evidence that SAT
+scores are correlated with first-year college grades.  The
+strength of the correlation might be lower than you expect or
+hope, but there is little doubt that the test is measuring
+some factors that contribute to success in college.
+
+
+With this simplification, we can be more precise about the
+meaning of ``efficacy.''  Specifically, I will define efficacy
+as the probability of answering any question correctly.
+
+With that, we are ready to start.
 
 \begin{verbatim}
 \end{verbatim}
