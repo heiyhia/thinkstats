@@ -71,13 +71,15 @@ def ReadRanks(filename='sat_ranks.csv'):
 
 
 def DivideValues(pmf, denom):
-    """Divides the values in a PMF by denom.  Returns a new PMF."""
+    """Divides the values in a Pmf by denom.
+
+    Returns a new Pmf.
+    """
     new = thinkbayes.Pmf()
     denom = float(denom)
     for val, prob in pmf.Items():
-        if val >= 0:
-            x = val / denom
-            new.Set(x, prob)
+        x = val / denom
+        new.Set(x, prob)
     return new
 
 
@@ -120,6 +122,8 @@ class Exam(object):
         
         print 'Likelihood ratio', ratio
 
+        posterior = ratio / (ratio + 1)
+        print 'Posterior', posterior
 
     def MakeRawScoreDist(self):
         """Makes the distribution of raw scores for given difficulty.
@@ -142,14 +146,20 @@ class Exam(object):
         return mix
 
     def CalibrateDifficulty(self):
-        cdf = thinkbayes.MakeCdfFromPmf(self.raw, name='raw')
+        """Make a plot showing the model distribution of raw scores."""
+        myplot.Clf()
+
+        cdf = thinkbayes.MakeCdfFromPmf(self.raw, name='data')
         myplot.Cdf(cdf)
 
         pmf = self.MakeRawScoreDist()
         cdf = thinkbayes.MakeCdfFromPmf(pmf, name='model')
         myplot.Cdf(cdf)
         
-        myplot.Show()
+        myplot.Save(root='sat_calibrate',
+                    xlabel='raw score',
+                    ylabel='CDF',
+                    formats=['pdf', 'eps'])
 
     def PmfCorrect(self, efficacy):
         pmf = PmfCorrect(efficacy, self.difficulties)
@@ -160,8 +170,12 @@ class Exam(object):
         return self.scale.Lookup(raw)
         
     def Reverse(self, score):
-        """Looks up a scaled score and returns a raw score."""
-        return self.scale.Reverse(score)
+        """Looks up a scaled score and returns a raw score.
+
+        Since we ignore the penalty, negative scores round up to zero.
+        """
+        raw = self.scale.Reverse(score)
+        return raw if raw > 0 else 0
         
     def ReverseScale(self, pmf):
         """Applies the reverse scale to the values of a PMF.
@@ -215,12 +229,13 @@ class Sat(thinkbayes.Suite):
         cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
         cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
 
+        myplot.Clf()
         myplot.Cdfs([cdf1, cdf2])
         myplot.Save(xlabel='p_correct', 
                     ylabel='CDF', 
                     axis=[0.7, 1.0, 0.0, 1.0],
-                    root='sat_posteriors_p_corr')
-
+                    root='sat_posteriors_p_corr',
+                    formats=['pdf', 'eps'])
 
 
 class Sat2(Sat):
@@ -257,19 +272,24 @@ class Sat2(Sat):
         cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
         cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
 
+        myplot.Clf()
         myplot.Cdfs([cdf1, cdf2])
         myplot.Save(xlabel='efficacy', 
                     ylabel='CDF', 
                     axis=[0, 4.6, 0.0, 1.0],
-                    root='sat_posteriors_eff')
+                    root='sat_posteriors_eff',
+                    formats=['pdf', 'eps'])
 
 
 def PlotPriorDist(pmf):
+    """Plot the prior distribution of p_correct."""
+    myplot.Clf()
     cdf1 = thinkbayes.MakeCdfFromPmf(pmf, 'prior')
     myplot.Cdf(cdf1)
     myplot.Save(root='sat_prior',
-                xlabel='efficacy', 
-                ylabel='CDF')
+                xlabel='p_correct', 
+                ylabel='CDF',
+                formats=['pdf', 'eps'])
 
 
 def PlotRawDist(raw):
@@ -365,12 +385,17 @@ def TestEfficacy():
 constructor = Sat2
 
 def main(script):
+    global constructor
 
     exam = Exam()
 
-    #PlotPriorDist(exam.prior)
-    #exam.CalibrateDifficulty()
+    PlotPriorDist(exam.prior)
+    exam.CalibrateDifficulty()
 
+    constructor = Sat
+    exam.CompareScores(780, 740)
+
+    constructor = Sat2
     exam.CompareScores(780, 740)
 
 
