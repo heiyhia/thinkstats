@@ -3861,8 +3861,7 @@ simplification makes it easy to compute the likelihood of a given score.
 In order to understand SAT scores, we have to understand the scoring
 and scaling process.  Each test-taker gets a raw score based on the
 number of correct and incorrect questions.  The raw score is converted
-to the range 200--800 based on a scale that normalizes for the
-difficulty of the questions.
+to a scaled score in the range 200--800.
 
 In 2009, there were 54 questions on the math SAT.  The raw score
 for each test-taker is the number of questions answered correctly
@@ -3870,7 +3869,7 @@ minus a penalty of $1/4$ point for each question answered incorrectly.
 
 The College Board, which administers the SAT, publishes the
 mapping from raw scores to scaled scores.  I have downloaded that
-data and wrapped it in an Interpolater object that do a forward
+data and wrapped it in an Interpolater object that provides a forward
 lookup (from raw score to scaled) and a reverse lookup (from scaled
 score to raw).
 
@@ -3882,12 +3881,12 @@ You can download the code for this example from
 
 The College Board also publishes the distribution of scaled scores
 for all test-takers.  If we convert them to raw scores, we can
-estimate the number of questions each test-taker got right, which
-is an estimate of their efficacy.
+compute the fraction of questions each test-taker got right, which
+is an estimate \verb"p_correct".
 
-So we can use the distribution of raw scores as a prior distribution
-for efficacy.  Here is the code that reads and processes the
-data:
+Then we can use the distribution of raw scores to model the
+prior distribution of \verb"p_correct".
+Here is the code that reads and processes the data:
 
 \begin{verbatim}
 class Exam(object):
@@ -3904,25 +3903,25 @@ class Exam(object):
 \end{verbatim}
 
 {\tt Exam} encapsulates the information we have about the offering
-of an exam.  {\tt scale} is the {\tt Interpolater} that converts
-from raw to scaled scores and back.  {\tt prior} is a {\tt Pmf}
+of an exam.  {\tt self.scale} is the {\tt Interpolater} that converts
+from raw to scaled scores and back.  {\tt self.prior} is a {\tt Pmf}
 that maps from each raw score to a fraction of test-takers.
 
 \begin{figure}
 % sat.py
 \centerline{\includegraphics[height=2.5in]{figs/sat_prior.pdf}}
-\caption{Prior distribution of efficacy for SAT test-takers.}
+\caption{Prior distribution of {\tt p\_correct} for SAT test-takers.}
 \label{fig.satprior}
 \end{figure}
 
 Figure~\ref{fig.satprior} shows the prior distribution of
-efficacy.  This distribution is approximately normal, but it is
-compressed at the extremes.  By design, the SAT has the most
-power to discriminate between test-takers within two standard
-deviations of the mean, and less power outside that range.
+\verb"p_correct".  This distribution is approximately normal, but it
+is compressed at the extremes.  By design, the SAT has the most power
+to discriminate between test-takers within two standard deviations of
+the mean, and less power outside that range.
 
-For each test-taker, I'll define a Suite called {\tt Sat} that
-represents the distribution of efficacy.  Here's the definition:
+For each test-taker, I define a Suite called {\tt Sat} that
+represents the distribution of \verb"p_correct".  Here's the definition:
 
 \begin{verbatim}
 class Sat(thinkbayes.Suite):
@@ -3934,8 +3933,8 @@ class Sat(thinkbayes.Suite):
         self.score = score
 
         # start with the prior distribution
-        for efficacy, prob in exam.prior.Items():
-            self.Set(efficacy, prob)
+        for p_correct, prob in exam.prior.Items():
+            self.Set(p_correct, prob)
 
         # update based on an exam score
         self.Update(score)
@@ -3951,19 +3950,19 @@ As usual, we inherit {\tt Update} from {\tt Suite} and provide
 
 \begin{verbatim}
     def Likelihood(self, hypo, data):
-        efficacy = hypo
+        p_correct = hypo
         score = data
 
         raw = self.exam.Reverse(score)
         yes, no = raw, 54 - raw
 
-        like = thinkbayes.EvalBinomialPmf(efficacy, yes, no)
+        like = thinkbayes.EvalBinomialPmf(p_correct, yes, no)
         return like
 \end{verbatim}
 
-And as usual, {\tt Likelihood} computes the likelihood of the
-data under a given hypothesis.  In this case {\tt hypo} is a
-hypothetical value of efficacy.  And the data are a raw score.
+And as usual, {\tt Likelihood} computes the likelihood of the data
+under a given hypothesis.  In this case {\tt hypo} is a hypothetical
+value of \verb"p_correct".  And {\tt data} is a scaled score.
 
 To keep things simple, I interpret the raw score as the number of
 correct answers, ignoring the penalty for wrong answers.  With
@@ -3971,31 +3970,157 @@ this simplification, the likelihood is given by the binomial
 distribution, which computes the probability of {\tt yes} correct
 answers and {\tt no} incorrect.
 
-
 \section{Posterior}
 
-Figure~\ref{fig.satposterior} shows the posterior distributions
-of efficacy for Alice and Bob based on their exam scores.
+\begin{figure}
+% sat.py
+\centerline{\includegraphics[height=2.5in]{figs/sat_posteriors_p_corr.pdf}}
+\caption{Posterior distributions of {\tt p\_correct} for Alice and Bob.}
+\label{fig.satposterior1}
+\end{figure}
+
+\begin{figure}
+% sat.py
+\centerline{\includegraphics[height=2.5in]{figs/sat_posteriors_eff.pdf}}
+\caption{Posterior distributions of efficacy for Alice and Bob.}
+\label{fig.satposterior2}
+\end{figure}
+
+Figure~\ref{fig.satposterior1} shows the posterior distributions
+of \verb"p_correct" for Alice and Bob based on their exam scores.
+We can see that they overlap, so it is possible that \verb"p_correct"
+is actually higher for Bob, but it looks unlikely.
+
+And that brings us back to the original question, ``How strong is the
+evidence that Alice is better prepared than Bob?''  We can use the
+posterior distributions of \verb"p_correct" to answer this question.
+
+To formulate the question in terms of Bayesian hypothesis testing,
+I define two hypotheses:
+
+\begin{itemize}
+
+\item A: \verb"p_correct" is higher for Alice than for Bob.
+
+\item B: \verb"p_correct" is higher for Bob than for Alice.
+
+\end{itemize}
+
+To compute the likelihood of A, we can enumerate all pairs of values
+from the posterior distributions, and add up the total probability of
+the cases where \verb"p_correct" is higher for Alice than for Bob.
+And we already have a function, \verb"thinkbayes.PmfProbGreater"
+that does that.
+
+So we can define a Suite that computes the posterior probabilities
+of $A$ and $B$:
+
+\begin{verbatim}
+class TopLevel(thinkbayes.Suite):
+
+    def Update(self, data):
+        a_score, b_score = data
+
+        exam = Exam()
+        a_sat = Sat(exam, a_score)
+        b_sat = Sat(exam, b_score)
+
+        a_like = thinkbayes.PmfProbGreater(a_sat, b_sat)
+        b_like = thinkbayes.PmfProbGreater(b_sat, a_sat)
+        
+        self.Mult('A', a_like)
+        self.Mult('B', b_like)
+\end{verbatim}
+
+Usually when we define a new Suite, we inherit {\tt Update}
+and provide {\tt Likelihood}.  In this case I override {\tt Update}.
+Because there are only two hypotheses, I was able to
+simplify the code.
+
+Here is the code that creates {\tt TopLevel} and updates it:
+
+\begin{verbatim}
+    top = TopLevel(['A', 'B'])
+    top.Update((780, 740))
+    ratio = top.Prob('A') / top.Prob('B')
+\end{verbatim}
+
+The likelihood of $A$ is 0.38 and the likelihood of $B$ is 0.08.
+The likelihood ratio is 4.5, which means that these test scores are
+evidence that Alice is actually better than Bob at answering
+SAT questions.  If we believed, before seeing the test scores,
+that $A$ and $B$ were equally likely, then after seeing the scores
+we should believe that the probability of $A$ is 82\%, which
+means there is still an 18\% chance that Bob is actually better
+prepared.
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
 
 
 \section{A better model}
 
+But remember that the analysis we have done so far is based on
+the simplification that all SAT questions are equally difficult.
+In reality, some are easier than others, which means that the
+difference between Alice and Bob might be even smaller.
+
+To see why, consider a test where most questions are so easy that
+Alice and Bob are nearly certain to answer them correctly.  In that
+case, the difference between their scores is determined by a small
+number of difficult questions, so it is more likely to be due to
+chance.
+
+To determine the effect of questions with different difficulty,
+we need a better model.
+
 \begin{itemize}
 
-\item First, let's assume that each test-taker has some personal
-  characteristic, which I'll call ``efficacy'' that relates to their
-  ability to answer the kinds of questions that appear on the SAT.
+\item First, let's assume that each test-taker has some 
+  degree of {\tt efficacy}, that measures their
+  ability to answer SAT questions.
 
-\item Second, let's assume that each question has some level of
-  difficulty, and that the probability a question is answered
-  correctly depends on the difficulty of the question and the efficacy
-  of the test-taker.
+\item Second, assume that each question has some level of
+  {\tt difficulty}.
 
-\item Finally, let's assume that efficacy is related to college
-  preparation, so that we expect a test-taker with higher efficacy
-  to be better prepared for college math. 
+\item Finally, assume that the chance that a test-taker answers
+a question correctly is related to $e$ and $d$ according to this
+function:
+
+\begin{verbatim}
+def ProbCorrect(efficacy, difficulty):
+    return 1 / (1 + math.exp(efficacy - difficulty))
+\end{verbatim}
 
 \end{itemize}
+
+This function is a simplified version of the curve used in item
+response theory, which you can read about at
+\url{http://en.wikipedia.org/wiki/Item_response_theory}.  {\tt
+  efficacy} and {\tt difficulty} are considered to be on the same
+scale, and the probability of getting a question right depends only on
+the difference between them.
+
+When {\tt efficacy} and {\tt difficulty} are equal, the
+probability of getting the question right is 50\%.  As
+{\tt efficacy} increases, this probability approaches 100\%.
+As it decreases (or as {\tt difficulty} increases), the
+probability approaches 0\%.
+
+Given the distribution of {\tt efficacy} across test-takers
+and the distribution of {\tt difficulty} across questions, we
+can compute the expected distribution of raw scores.
+
+Before we can proceed, we have to calibrate the model by choosing
+distributions for {\tt efficacy} and {\tt difficulty} that yield
+a distribution of scores close to what we actually observed.
+
+  In order
+to model the scenario, we
 
 The first two assumptions should be uncontroversial, if we 
 believe that some questions are harder than others, and some
