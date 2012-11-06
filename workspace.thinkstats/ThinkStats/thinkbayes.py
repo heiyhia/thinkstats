@@ -956,7 +956,6 @@ def ConfidenceInterval(pmf, percentage):
     return interval
 
 
-
 def PmfProbLess(pmf1, pmf2):
     """Probability that a value from pmf1 is less than a value from pmf2.
 
