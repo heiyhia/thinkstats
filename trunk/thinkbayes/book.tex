@@ -2773,6 +2773,7 @@ goals per game.}
 
 
 \section{The Meta-Pmf}
+\label{meta-pmf}
 
 To compute the probability that each team wins the next game,
 we need to compute the distribution of goals for each team.
@@ -4092,8 +4093,8 @@ a question correctly is related to $e$ and $d$ according to this
 function:
 
 \begin{verbatim}
-def ProbCorrect(efficacy, difficulty):
-    return 1 / (1 + math.exp(efficacy - difficulty))
+def ProbCorrect(efficacy, difficulty, a=1):
+    return 1 / (1 + math.exp(-a * (efficacy - difficulty)))
 \end{verbatim}
 
 \end{itemize}
@@ -4113,7 +4114,163 @@ probability approaches 0\%.
 
 Given the distribution of {\tt efficacy} across test-takers
 and the distribution of {\tt difficulty} across questions, we
-can compute the expected distribution of raw scores.
+can compute the expected distribution of raw scores.  We'll do that
+in two steps.  First, for person with given {\tt efficacy},
+we'll compute the distribution of raw scores.
+
+\begin{verbatim}
+def PmfCorrect(efficacy, difficulties):
+    pmf0 = thinkbayes.Suite([0])
+
+    ps = [ProbCorrect(efficacy, diff) for diff in difficulties]
+    pmfs = [BinaryPmf(p) for p in ps]
+    dist = sum(pmfs, pmf0)
+    return dist
+\end{verbatim}
+
+{\tt difficulties} is a list of difficulties, one for each question.
+{\tt ps} is a list of probabilities, and {\tt pmfs} is a list of
+two-valued Pmf objects; here's the function that makes them:
+
+\begin{verbatim}
+def BinaryPmf(p):
+    pmf = thinkbayes.Pmf()
+    pmf.Set(1, p)
+    pmf.Set(0, 1-p)
+    return pmf
+\end{verbatim}
+
+{\tt dist} is the sum of these Pmfs.  Remember from Section~\ref{}
+that when we add up Pmf objects, the result is the distribution
+of the sums.  In order to use Python's {\tt sum} to add up Pmfs,
+we have to provide {\tt pmf0} which is the identity for Pmfs,
+so {\tt pmf + pmf0} is always {\tt pmf}.
+
+So if we know a person's efficacy, we can compute their distribution
+of raw scores.  For a group of people with a different
+efficacies, the resulting distribution of raw scores is a mixture.
+Here's the code that computes the mixture:
+
+\begin{verbatim}
+class Exam:
+
+    def MakeRawScoreDist(self):
+        efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
+
+        pmfs = thinkbayes.Pmf()
+        for efficacy, prob in efficacies.Items():
+            scores = PmfCorrect(efficacy, self.difficulties)
+            pmfs.Set(scores, prob)
+
+        mix = thinkbayes.MakeMixture(pmfs)
+        return mix
+\end{verbatim}
+
+{\tt efficacies} is a Pmf that represents the distribution
+of efficacy.  I assume that it is Gaussian with mean 0 and
+standard deviation 1.5.  This choice is mostly arbitrary.
+The probablility of getting a question correct depends on
+the difference between efficacy and difficulty, so we can
+choose the units of efficacy and then calibrate the units
+of difficulty accordingly.
+
+{\tt pmfs} is a Meta-Pmf that contains one Pmf for each level of
+efficacy, and maps to the fraction of test-takers at that level.  {\tt
+  thinkbayes.MakeMixture} takes the meta-pmf and compute the
+distribution of the mixture (see Section~\ref{meta-pmf}).
+
+So now if we are given the distribution of difficulty, we
+can compute the distribution of raw scores.  But in reality
+it is the other way around: we are given the distribution of
+raw scores and we want to infer the distribution of difficulty.
+
+\begin{figure}
+% sat.py
+\centerline{\includegraphics[height=2.5in]{figs/sat_calibrate.pdf}}
+\caption{Actual distribution of raw scores and a model to fit it.}
+\label{fig.satcalibrate}
+\end{figure}
+
+I assume that the distribution of difficulty is uniform with
+parameters {\tt center} and {\tt width}.  {\tt MakeDifficulties}
+makes a list of difficulties with these parameters.
+
+\begin{verbatim}
+def MakeDifficulties(center, width, n):
+    low, high = center-width, center+width
+    return numpy.linspace(low, high, n)
+\end{verbatim}
+
+The values {\tt center=-0.05} and {\tt width=1.8} yield a distribution
+of raw scores similar to the actual data.
+Figure~\ref{fig.satcalibrate} shows the actual data and the results
+from this model.
+
+So we infer that if the distribution of difficulty is uniform,
+the range is approximately
+{\tt -1.85} to {\tt 1.75}, on a scale with a distribution of
+efficacy that is Gaussian with mean 0 and standard deviation 1.5.
+
+The following table shows the range of {\tt ProbCorrect} for
+test-takers at different levels of efficacy:
+
+\begin{tabular}{|r|r|r|r|}
+\hline
+           & \multicolumn{3}{|c|}{Difficulty} \\
+\hline
+Efficacy   & -1.85   &   -0.05   &      1.75  \\
+\hline
+3.00 &  0.99 &  0.95 &  0.78   \\
+1.50 &  0.97 &  0.82 &  0.44   \\
+0.00 &  0.86 &  0.51 &  0.15   \\
+-1.50 &  0.59 &  0.19 &  0.04   \\
+-3.00 &  0.24 &  0.05 &  0.01   \\
+\hline
+\end{tabular}
+
+So someone with efficacy 3, which is two standard deviations above
+the mean, has a 99\% chance of answering the easiest questions on
+the exam, and a 78\% chance of answering the hardest.  On the other
+end of the range, someone two standard deviations below the mean
+has only a 24\% chance of answering the easiest questions.
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
+
+???
+
+When we compute {\tt ProbCorrect}, we only care about the
+difference
+
+
+The units of efficacy are arbitrary;
+
+
+
+because
+efficacy and difficulty are on the same scale, we only care
+about the difference between them.  So I can choose the
+efficacy scale and find the 
+
+
+
+
 
 Before we can proceed, we have to calibrate the model by choosing
 distributions for {\tt efficacy} and {\tt difficulty} that yield
