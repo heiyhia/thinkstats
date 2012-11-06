@@ -114,11 +114,11 @@ class Exam(object):
 
         a_sat.PlotPosteriors(b_sat)
 
-        top = TopLevel(['Alice', 'Bob'])
+        top = TopLevel('AB')
         top.Update((a_score, b_score))
         top.Print()
 
-        ratio = top.Prob('Alice') / top.Prob('Bob')
+        ratio = top.Prob('A') / top.Prob('B')
         
         print 'Likelihood ratio', ratio
 
@@ -309,15 +309,19 @@ class TopLevel(thinkbayes.Suite):
         b_sat = constructor(exam, b_score)
 
         a_like = thinkbayes.PmfProbGreater(a_sat, b_sat)
-        b_like = thinkbayes.PmfProbGreater(b_sat, a_sat)
-        
-        self.Mult('Alice', a_like)
-        self.Mult('Bob', b_like)
+        b_like = thinkbayes.PmfProbLess(a_sat, b_sat)
+        c_like = thinkbayes.PmfProbEqual(a_sat, b_sat)
 
-        # self.Normalize()
+        a_like += c_like / 2
+        b_like += c_like / 2
+
+        self.Mult('A', a_like)
+        self.Mult('B', b_like)
+
+        self.Normalize()
 
 
-def ProbCorrect(efficacy, difficulty, a=1.0):
+def ProbCorrect(efficacy, difficulty, a=1):
     """Returns the probability that a person gets a question right.
 
     efficacy: personal ability to answer questions
@@ -381,11 +385,26 @@ def TestEfficacy():
     myplot.Show()
 
 
+def ProbCorrectTable():
+    """Makes a table of p_correct for a range of efficacy and difficulty."""
+    efficacies = [3, 1.5, 0, -1.5, -3]
+    difficulties = [-1.85, -0.05, 1.75]
+
+    for eff in efficacies:
+        print '%0.2f & ' % eff, 
+        for diff in difficulties:
+            p = ProbCorrect(eff, diff)
+            print '%0.2f & ' % p, 
+        print r'\\'
+
+
 # which version of the Sat class to use, Sat or Sat2
 constructor = Sat2
 
 def main(script):
     global constructor
+
+    ProbCorrectTable()
 
     exam = Exam()
 
