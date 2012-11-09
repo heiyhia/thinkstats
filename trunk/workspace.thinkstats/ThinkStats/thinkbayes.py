@@ -1010,6 +1010,23 @@ def PmfProbEqual(pmf1, pmf2):
     return total
 
 
+def JointPmf(pmf1, pmf2):
+    """Joint distribution of values from pmf1 and pmf2.
+
+    Args:
+        pmf1: Pmf object
+        pmf2: Pmf object
+
+    Returns:
+        Pmf of value pairs
+    """
+    pmf = Pmf()
+    for v1, p1 in pmf1.Items():
+        for v2, p2 in pmf2.Items():
+            pmf.Set((v1, v2), p1 * p2)
+    return pmf
+
+
 def RandomSum(dists):
     """Chooses a random value from each dist and returns the sum.
 

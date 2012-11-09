@@ -10,6 +10,8 @@ import math
 import numpy
 import sys
 
+import matplotlib
+
 import thinkbayes
 import myplot
 
@@ -114,8 +116,11 @@ class Exam(object):
 
         a_sat.PlotPosteriors(b_sat)
 
+        if constructor is Sat:
+            PlotJointDist(a_sat, b_sat)
+
         top = TopLevel('AB')
-        top.Update((a_score, b_score))
+        top.Update((a_sat, b_sat))
         top.Print()
 
         ratio = top.Prob('A') / top.Prob('B')
@@ -125,18 +130,14 @@ class Exam(object):
         posterior = ratio / (ratio + 1)
         print 'Posterior', posterior
 
-    def MakeRawScoreDist(self):
+        if constructor is Sat2:
+            ComparePosteriorPredictive(a_sat, b_sat)
+
+    def MakeRawScoreDist(self, efficacies):
         """Makes the distribution of raw scores for given difficulty.
 
-        Assumes that efficacy is Gaussian(0, 1)
+        efficacies: Pmf of efficacy
         """
-        efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
-
-        #diff_pmf = thinkbayes.MakePmfFromList(self.difficulties)
-        #myplot.Pmf(diff_pmf)
-        #myplot.Pmf(efficacies)
-        #myplot.Show()
-
         pmfs = thinkbayes.Pmf()
         for efficacy, prob in efficacies.Items():
             scores = self.PmfCorrect(efficacy)
@@ -152,7 +153,8 @@ class Exam(object):
         cdf = thinkbayes.MakeCdfFromPmf(self.raw, name='data')
         myplot.Cdf(cdf)
 
-        pmf = self.MakeRawScoreDist()
+        efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
+        pmf = self.MakeRawScoreDist(efficacies)
         cdf = thinkbayes.MakeCdfFromPmf(pmf, name='model')
         myplot.Cdf(cdf)
         
@@ -192,7 +194,6 @@ class Exam(object):
             raw = self.Reverse(val)
             new.Incr(raw, prob)
         return new
-
 
 
 class Sat(thinkbayes.Suite):
@@ -238,7 +239,7 @@ class Sat(thinkbayes.Suite):
                     formats=['pdf', 'eps'])
 
 
-class Sat2(Sat):
+class Sat2(thinkbayes.Suite):
 
     def __init__(self, exam, score):
         thinkbayes.Suite.__init__(self)
@@ -263,6 +264,11 @@ class Sat2(Sat):
         pmf = self.exam.PmfCorrect(efficacy)
         like = pmf.Prob(raw)
         return like
+
+    def MakePredictiveDist(self):
+        """Returns the distribution of raw scores expected on a re-test."""
+        raw_pmf = self.exam.MakeRawScoreDist(self)
+        return raw_pmf
     
     def PlotPosteriors(self, other):
         """Plots posterior distributions of efficacy.
@@ -281,8 +287,63 @@ class Sat2(Sat):
                     formats=['pdf', 'eps'])
 
 
+def PlotJointDist(pmf1, pmf2, thresh=0.8):
+    """Plot the joint distribution of p_correct.
+
+    pmf1, pmf2: posterior distributions
+    thresh: lower bound of the range to be plotted
+    """
+    def Clean(pmf):
+        """Removes values below thresh."""
+        vals = [val for val in pmf.Values() if val < thresh]
+        t = [pmf.Remove(val) for val in vals]
+
+    myplot.Clf()
+    Clean(pmf1)
+    Clean(pmf2)
+    pmf = thinkbayes.JointPmf(pmf1, pmf2)
+
+    myplot.Contour(pmf.GetDict(), contour=False, imshow=True,
+                   aspect='equal', cmap=matplotlib.cm.Blues)
+
+    myplot.Plot([thresh, 1.0], [thresh, 1.0],
+                color='gray', alpha=0.2, linewidth=4)
+
+    myplot.Save(root='sat_joint',
+                xlabel='p_correct Alice', 
+                ylabel='p_correct Bob',
+                axis=[thresh, 1.0, thresh, 1.0],
+                formats=['pdf', 'eps'])
+
+
+def ComparePosteriorPredictive(a_sat, b_sat):
+    """Compares the predictive distributions of raw scores.
+
+    a_sat: posterior distribution
+    b_sat:
+    """
+    a_pred = a_sat.MakePredictiveDist()
+    b_pred = b_sat.MakePredictiveDist()
+
+    #myplot.Clf()
+    #myplot.Pmfs([a_pred, b_pred])
+    #myplot.Show()
+
+    a_like = thinkbayes.PmfProbGreater(a_pred, b_pred)
+    b_like = thinkbayes.PmfProbLess(a_pred, b_pred)
+    c_like = thinkbayes.PmfProbEqual(a_pred, b_pred)
+
+    print 'Posterior predictive'
+    print 'A', a_like
+    print 'B', b_like
+    print 'C', c_like
+
+
 def PlotPriorDist(pmf):
-    """Plot the prior distribution of p_correct."""
+    """Plot the prior distribution of p_correct.
+
+    pmf: prior
+    """
     myplot.Clf()
     cdf1 = thinkbayes.MakeCdfFromPmf(pmf, 'prior')
     myplot.Cdf(cdf1)
@@ -292,21 +353,15 @@ def PlotPriorDist(pmf):
                 formats=['pdf', 'eps'])
 
 
-def PlotRawDist(raw):
-    cdf2 = thinkbayes.MakeCdfFromPmf(raw, 'raw')
-    myplot.Cdf(cdf2)
-    myplot.Show(xlabel='score', 
-               ylabel='CDF')
-
-
 class TopLevel(thinkbayes.Suite):
+    """Evaluates the top-level hypotheses about Alice and Bob.
+
+    Uses the bottom-level posterior distribution about p_correct
+    (or efficacy).
+    """
 
     def Update(self, data):
-        a_score, b_score = data
-
-        exam = Exam()
-        a_sat = constructor(exam, a_score)
-        b_sat = constructor(exam, b_score)
+        a_sat, b_sat = data
 
         a_like = thinkbayes.PmfProbGreater(a_sat, b_sat)
         b_like = thinkbayes.PmfProbLess(a_sat, b_sat)
@@ -370,21 +425,6 @@ def MakeDifficulties(center, width, n):
     return numpy.linspace(low, high, n)
 
 
-def TestEfficacy():
-    efficacy = 0
-    difficulties = [0] * 54
-    dist = PmfCorrect(efficacy, difficulties)
-    dist.name = 'constant'
-    myplot.Pmf(dist)
-
-    difficulties = MakeDifficulties(-1, 1, 54)
-    dist = PmfCorrect(efficacy, difficulties)
-    dist.name = 'uniform'
-    myplot.Pmf(dist)
-
-    myplot.Show()
-
-
 def ProbCorrectTable():
     """Makes a table of p_correct for a range of efficacy and difficulty."""
     efficacies = [3, 1.5, 0, -1.5, -3]
@@ -398,8 +438,8 @@ def ProbCorrectTable():
         print r'\\'
 
 
-# which version of the Sat class to use, Sat or Sat2
-constructor = Sat2
+# which version of the Sat class to use, Sat or Sat2?
+constructor = Sat
 
 def main(script):
     global constructor

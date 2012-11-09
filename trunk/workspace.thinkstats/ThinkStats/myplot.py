@@ -198,7 +198,7 @@ def Cdfs(cdfs, complement=False, transform=None, **options):
         Cdf(cdf, complement, transform, **options)
 
 
-def Contour(d, pcolor=False, contour=True, **options):
+def Contour(d, pcolor=False, contour=True, imshow=False, **options):
     """Makes a contour plot.
     
     d: map from (x, y) to z
@@ -210,16 +210,24 @@ def Contour(d, pcolor=False, contour=True, **options):
     xs = sorted(list(xs))
     ys = sorted(list(ys))
 
+    print 'Preparing'
+
     X, Y = np.meshgrid(xs, ys)
     func = lambda x, y: d.get((x, y))
     func = np.vectorize(func)
     Z = func(X, Y)
 
+    print 'Making the contour'
+
     if pcolor:
-        pyplot.pcolor(X, Y, Z, **options)
+        pyplot.pcolormesh(X, Y, Z, **options)
     if contour:
         cs = pyplot.contour(X, Y, Z, **options)
         pyplot.clabel(cs, inline=1, fontsize=10)
+    if imshow:
+        extent = xs[0], xs[-1], ys[0], ys[-1]
+        pyplot.imshow(Z, extent=extent, **options)
+        
 
 
 def Config(**options):
