@@ -1,7 +1,7 @@
-"""This file contains code for use with "Think Stats",
+"""This file contains code for use with "Think Bayes",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2011 Allen B. Downey
+Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -20,8 +20,9 @@ import matplotlib.pyplot as pyplot
 import cProfile
 
 INTERVAL = 245/365.0
-FORMATS = ['png', 'pdf']
+FORMATS = ['pdf', 'eps']
 MINSIZE = 0.2
+
 
 def DoTheMath():
     interval = 3291.0
@@ -58,7 +59,7 @@ def DoTheMath():
 
 
 def MakeCdf():
-    """Use the data from Zhang et al. to construct a CDF."""
+    """Uses the data from Zhang et al. to construct a CDF."""
     n = 53.0
     freqs = [0, 2, 31, 42, 48, 51, 52, 53]
     ps = [freq/n for freq in freqs]
@@ -69,7 +70,11 @@ def MakeCdf():
 
 
 def PlotCdf(cdf, fit):
-    """Plots the actual and fitted distributions."""
+    """Plots the actual and fitted distributions.
+
+    cdf:
+    fit:
+    """
     xs, ps = cdf.xs, cdf.ps
     cps = [1-p for p in ps]
 
@@ -103,7 +108,11 @@ def PlotCdf(cdf, fit):
 
 
 def QQPlot(cdf, fit):
-    """Makes a QQPlot of the values from actual and fitted distributions."""
+    """Makes a QQPlot of the values from actual and fitted distributions.
+
+    cdf:
+    fit:
+    """
     xs = [-1.5, 5.5]
     myplot.Plot(xs, xs, 'b-')
 
@@ -119,7 +128,10 @@ def QQPlot(cdf, fit):
     
 
 def FitCdf(cdf):
-    """Fits a line to the log CCDF and returns the slope."""
+    """Fits a line to the log CCDF and returns the slope.
+
+    cdf: Cdf of 
+    """
     xs, ps = cdf.xs, cdf.ps
     cps = [1-p for p in ps]
 
@@ -140,13 +152,17 @@ def CorrelatedGenerator(cdf, rho):
     rho: target coefficient of correlation
     """
     def Transform(x):
+        """Maps from a normal variate to a variate with the given CDF."""
         p = erf.NormalCdf(x)
         y = cdf.Value(p)
         return y
 
+    # for the first value, choose from a Gaussian and transform it
     x = random.gauss(0, 1)
     yield Transform(x)
 
+    # for subsequent values, choose from the conditional distribution
+    # based on the previous value
     sigma = math.sqrt(1 - rho**2);    
     while True:
         x = random.gauss(x * rho, sigma)
@@ -154,13 +170,13 @@ def CorrelatedGenerator(cdf, rho):
 
 
 def UncorrelatedGenerator(cdf, rho):
-    """Generates a sequence of values from cdf with correlation.
+    """Generates a sequence of values from cdf with no correlation.
 
-    Generates a correlated standard normal series, then transforms to
-    values from cdf
+    Ignores rho, which is accepted as a parameter to provide the
+    same interface as CorrelatedGenerator
 
     cdf: distribution to choose from
-    rho: target coefficient of correlation
+    rho: ignored
     """
     while True:
         x = cdf.Random()
@@ -183,7 +199,7 @@ def RdtGenerator(n, rho, cdf):
 def GenerateRdt(pc, lam1, lam2):
     """Generate an RDT from a mixture of exponential distributions.
 
-    With prob p, generate a negative value with param lam2;
+    With prob pc, generate a negative value with param lam2;
     otherwise generate a positive value with param lam1.
     """
     if random.random() < pc:
@@ -193,19 +209,43 @@ def GenerateRdt(pc, lam1, lam2):
 
 
 def GenerateSample(n, pc, lam1, lam2):
-    """Generates a sample of RDTs."""
+    """Generates a sample of RDTs.
+
+    n: sample size
+    pc: probablity of negative growth
+    lam1: exponential parameter of positive growth
+    lam2: exponential parameter of negative growth
+
+    Returns: list of random variates
+    """
     xs = [GenerateRdt(pc, lam1, lam2) for i in xrange(n)]
     return xs
 
 
 def GenerateCdf(n=1000, pc=0.35, lam1=0.79, lam2=5.0):
-    """Generates a sample of RDTs and returns its CDF."""
+    """Generates a sample of RDTs and returns its CDF.
+
+    n: sample size
+    pc: probablity of negative growth
+    lam1: exponential parameter of positive growth
+    lam2: exponential parameter of negative growth
+
+    Returns: Cdf of generated sample
+    """
     xs = GenerateSample(n, pc, lam1, lam2)
     cdf = Cdf.MakeCdfFromList(xs)
     return cdf
 
 
 def ModelCdf(pc=0.35, lam1=0.79, lam2=5.0):
+    """
+
+    pc: probablity of negative growth
+    lam1: exponential parameter of positive growth
+    lam2: exponential parameter of negative growth
+
+    Returns: list of xs, list of ys
+    """
     x1 = numpy.arange(-2, 0, 0.1)
     y1 = [pc * (1 - continuous.ExpoCdf(-x, lam2)) for x in x1]
     x2 = numpy.arange(0, 7, 0.1)
@@ -214,11 +254,23 @@ def ModelCdf(pc=0.35, lam1=0.79, lam2=5.0):
 
 
 def BinToCm(y, factor=10):
-    """Computes the linear dimension for a given bin."""
+    """Computes the linear dimension for a given bin.
+
+    t: bin number
+    factor: multiplicitive factor from one bin to the next
+
+    Returns: linear dimension in cm
+    """
     return math.exp(y / factor)
 
 def CmToBin(x, factor=10):
-    """Computes the bin for a given linear dimension."""
+    """Computes the bin for a given linear dimension.
+
+    x: linear dimension in cm
+    factor: multiplicitive factor from one bin to the next
+
+    Returns: float bin number
+    """
     return factor * math.log(x)
 
 
@@ -239,6 +291,7 @@ def Volume(diameter, factor=4*math.pi/3):
 
 
 class Cache(object):
+
     def __init__(self):
         """cache: maps from size bin to a list of sequences that could be
            observed in that bin.
@@ -249,13 +302,21 @@ class Cache(object):
         self.initial_rdt = []
 
     def GetKeys(self):
+        """Returns an iterator for the keys in the cache."""
         return self.cache.iterkeys()
 
     def GetBin(self, bin):
+        """Looks up a bin in the cache."""
         return self.cache[bin]
 
     def Add(self, rdt, initial, final, seq):
-        """Adds a sequence to the bin the corresponds to final."""
+        """Adds a sequence to the bin that corresponds to final.
+
+        rdt:
+        initial:
+        final:
+        seq:
+        """
         cm = Diameter(final)
         bin = round(CmToBin(cm))
         self.cache.setdefault(bin, []).append(seq)
@@ -269,6 +330,7 @@ class Cache(object):
             print diameter, len(ss)
         
     def Correlation(self):
+        """Computes the correlation between volumes and rdts."""
         vs, rdts = zip(*self.initial_rdt)
         lvs = [math.log(v) for v in vs]
         return correlation.Corr(vs, rdts)
@@ -298,9 +360,10 @@ def ExtendSequence(t, rdt, interval):
 def MakeSequence(iterator, v0=0.01, interval=INTERVAL, vmax=Volume(20.0)):
     """Simulate the growth of a tumor.
 
-    n: number of time steps
+    iterator: iterator of rdts
     v0: initial volume in mL (cm^3)
     interval: timestep in years
+    vmax: volume to stop at
     """
     vs = v0,
 
@@ -313,7 +376,15 @@ def MakeSequence(iterator, v0=0.01, interval=INTERVAL, vmax=Volume(20.0)):
 
 
 def MakeSequences(n, rho, cdf):
-    """Returns a sequence of times and a list of sequences of volumes."""
+    """Returns a sequence of times and a list of sequences of volumes.
+
+    n: sequence length
+    rho: serial correlation
+    cdf: Cdf of rdts
+
+    Returns: list of n iterators of n rdts
+    """
+    # TODO: why are we using n here in two ways?
     sequences = []
     for i in range(n):
         iterator = RdtGenerator(n, rho, cdf)
@@ -340,10 +411,10 @@ def PlotSequence(ts, vs, color='blue'):
                 yscale='log',
                 clf=False)
 
+
 def PlotSequences(ss):
     """Plots linear measurement vs time.
 
-    ts: sequence of times
     ss: list of sequences of volumes
     """
     pyplot.clf()
@@ -365,7 +436,11 @@ def PlotSequences(ss):
 
 
 def PlotBin(bin, color='blue'):
-    "Plots the set of sequences for the given bin."""
+    "Plots the set of sequences for the given bin.
+
+    bin: int bin number
+    color: string
+    """
     ss = cache.GetBin(bin)
     for vs in ss:
         n = len(vs)
