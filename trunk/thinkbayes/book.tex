@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.11.0}
+\newcommand{\theversion}{0.12.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -2338,6 +2338,7 @@ population with 'AB' blood.  And that factor of two makes
 the difference.
 
 \section{Addends}
+\label{addends}
 
 Dungeons and Dragons is a role-playing game where the results
 of players' decisions are usually determined by rolling dice.
@@ -3588,14 +3589,14 @@ question.
 Finally we are ready to answer the question we started with: is the
 coefficient of variation greater for men than for women?
 
+TO BE CONTINUED.
+\begin{verbatim}
+\end{verbatim}
+
 \begin{verbatim}
 \end{verbatim}
 
 
-\begin{verbatim}
-\end{verbatim}
-
-\section{Log weights}
 
 
 \chapter{Hypothesis testing}
@@ -3820,6 +3821,8 @@ You can download the code I used in this chapter from
 \url{http://thinkbayes.com/euro3.py}.
 
 
+\chapter{The SAT problem}
+
 \section{Interpreting SAT scores}
 
 Suppose you are the Dean of Admission at a small engineering
@@ -3843,18 +3846,18 @@ Bayesian hypothesis testing, let's stick with a narrower question:
 than Bob?''
 
 To answer that question, we need to make some modeling decisions.
-I'll start with a simplification I know is wrong; then we'll come
-back and improve the model.  Specifically, I will temporarily
-pretend that all SAT questions are equally difficult.
-In reality, the designers of the SAT choose
-questions with a range of difficulty, because that improves
-the ability to measure statistical difference between test-takers
-at the high and low ends of the range.
+I'll start with a simplification I know is wrong; then we'll come back
+and improve the model.  Specifically, I will temporarily pretend that
+all SAT questions are equally difficult.  In reality, the designers of
+the SAT choose questions with a range of difficulty, because that
+improves the ability to measure statistical differences between
+test-takers.
 
 But if we choose a model where all questions are equally difficult, we
 can define a characteristic, \verb"p_correct", for each test-taker,
 which is the probablity of answering any question correctly.  This
-simplification makes it easy to compute the likelihood of a given score.
+simplification makes it easy to compute the likelihood of a given
+score.
 
 
 \section{The scale}
@@ -3971,6 +3974,7 @@ this simplification, the likelihood is given by the binomial
 distribution, which computes the probability of {\tt yes} correct
 answers and {\tt no} incorrect.
 
+
 \section{Posterior}
 
 \begin{figure}
@@ -3980,19 +3984,12 @@ answers and {\tt no} incorrect.
 \label{fig.satposterior1}
 \end{figure}
 
-\begin{figure}
-% sat.py
-\centerline{\includegraphics[height=2.5in]{figs/sat_posteriors_eff.pdf}}
-\caption{Posterior distributions of efficacy for Alice and Bob.}
-\label{fig.satposterior2}
-\end{figure}
-
 Figure~\ref{fig.satposterior1} shows the posterior distributions
 of \verb"p_correct" for Alice and Bob based on their exam scores.
 We can see that they overlap, so it is possible that \verb"p_correct"
 is actually higher for Bob, but it looks unlikely.
 
-And that brings us back to the original question, ``How strong is the
+Which brings us back to the original question, ``How strong is the
 evidence that Alice is better prepared than Bob?''  We can use the
 posterior distributions of \verb"p_correct" to answer this question.
 
@@ -4020,52 +4017,65 @@ of $A$ and $B$:
 class TopLevel(thinkbayes.Suite):
 
     def Update(self, data):
-        a_score, b_score = data
-
-        exam = Exam()
-        a_sat = Sat(exam, a_score)
-        b_sat = Sat(exam, b_score)
+        a_sat, b_sat = data
 
         a_like = thinkbayes.PmfProbGreater(a_sat, b_sat)
-        b_like = thinkbayes.PmfProbGreater(b_sat, a_sat)
-        
+        b_like = thinkbayes.PmfProbLess(a_sat, b_sat)
+        c_like = thinkbayes.PmfProbEqual(a_sat, b_sat)
+
+        a_like += c_like / 2
+        b_like += c_like / 2
+
         self.Mult('A', a_like)
         self.Mult('B', b_like)
+
+        self.Normalize()
 \end{verbatim}
 
 Usually when we define a new Suite, we inherit {\tt Update}
-and provide {\tt Likelihood}.  In this case I override {\tt Update}.
-Because there are only two hypotheses, I was able to
-simplify the code.
+and provide {\tt Likelihood}.  In this case I override {\tt Update},
+because it is easier to evaluate the likelihood of both
+hypotheses at the same time.
+
+The data passed to {\tt Update} are Sat objects that represent
+the posterior distributions of \verb"p_correct".
+
+\verb"a_like" is the total probability that
+\verb"p_correct" is higher for Alice; \verb"b_like" is that
+probability that it is higher for Bob.
+
+\verb"c_like" is the probability that they are ``equal,'' but this
+equality is an artifact of the decision to model \verb"p_correct" with
+a set of discrete values.  If we chose more values, \verb"c_like"
+would be smaller, and in the extreme, if \verb"p_correct" were
+continuous, \verb"c_like" would be zero.  So I treat \verb"c_like" as
+a kind of round-off error, and split it evenly between \verb"a_like"
+and \verb"b_like".
 
 Here is the code that creates {\tt TopLevel} and updates it:
 
 \begin{verbatim}
-    top = TopLevel(['A', 'B'])
-    top.Update((780, 740))
-    ratio = top.Prob('A') / top.Prob('B')
+    exam = Exam()
+    a_sat = Sat(exam, 780)
+    b_sat = Sat(exam, 740)
+
+    top = TopLevel('AB')
+    top.Update((a_sat, b_sat))
+    top.Print()
 \end{verbatim}
 
-The likelihood of $A$ is 0.38 and the likelihood of $B$ is 0.08.
-The likelihood ratio is 4.5, which means that these test scores are
-evidence that Alice is actually better than Bob at answering
-SAT questions.  If we believed, before seeing the test scores,
-that $A$ and $B$ were equally likely, then after seeing the scores
-we should believe that the probability of $A$ is 82\%, which
-means there is still an 18\% chance that Bob is actually better
-prepared.
-
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
+The likelihood of $A$ is 0.79 and the likelihood of $B$ is 0.21.  The
+likelihood ratio (or Bayes factor) is 3.8, which means that these test
+scores are evidence that Alice is better than Bob at answering SAT
+questions.  If we believed, before seeing the test scores, that $A$
+and $B$ were equally likely, then after seeing the scores we should
+believe that the probability of $A$ is 79\%, which means there is
+still an 21\% chance that Bob is actually better prepared.
 
 
 \section{A better model}
 
-But remember that the analysis we have done so far is based on
+Remember that the analysis we have done so far is based on
 the simplification that all SAT questions are equally difficult.
 In reality, some are easier than others, which means that the
 difference between Alice and Bob might be even smaller.
@@ -4076,8 +4086,16 @@ case, the difference between their scores is determined by a small
 number of difficult questions, so it is more likely to be due to
 chance.
 
-To determine the effect of questions with different difficulty,
+But how big is the difference?  If it is small, we would conclude
+that the first model---based on the simplification that all questions
+are equally difficult---is probably good enough.  If it's large,
 we need a better model.
+
+In the next few sections, I develop a better model and we will
+discover (spoiler alert!) that the difference is small.  So if
+you are satisfied with the simpler model, you can skip to the next
+chapter.  If you want to see how the more realistic model works,
+read on...
 
 \begin{itemize}
 
@@ -4088,9 +4106,9 @@ we need a better model.
 \item Second, assume that each question has some level of
   {\tt difficulty}.
 
-\item Finally, assume that the chance that a test-taker answers
-a question correctly is related to $e$ and $d$ according to this
-function:
+\item Finally, assume that the chance that a test-taker answers a
+  question correctly is related to {\tt efficacy} and {\tt difficulty}
+  according to this function:
 
 \begin{verbatim}
 def ProbCorrect(efficacy, difficulty, a=1):
@@ -4115,7 +4133,7 @@ probability approaches 0\%.
 Given the distribution of {\tt efficacy} across test-takers
 and the distribution of {\tt difficulty} across questions, we
 can compute the expected distribution of raw scores.  We'll do that
-in two steps.  First, for person with given {\tt efficacy},
+in two steps.  First, for a person with given {\tt efficacy},
 we'll compute the distribution of raw scores.
 
 \begin{verbatim}
@@ -4140,23 +4158,21 @@ def BinaryPmf(p):
     return pmf
 \end{verbatim}
 
-{\tt dist} is the sum of these Pmfs.  Remember from Section~\ref{}
+{\tt dist} is the sum of these Pmfs.  Remember from Section~\ref{addends}
 that when we add up Pmf objects, the result is the distribution
 of the sums.  In order to use Python's {\tt sum} to add up Pmfs,
 we have to provide {\tt pmf0} which is the identity for Pmfs,
 so {\tt pmf + pmf0} is always {\tt pmf}.
 
 So if we know a person's efficacy, we can compute their distribution
-of raw scores.  For a group of people with a different
-efficacies, the resulting distribution of raw scores is a mixture.
-Here's the code that computes the mixture:
+of raw scores.  For a group of people with a different efficacies, the
+resulting distribution of raw scores is a mixture.  Here's the code
+that computes the mixture:
 
 \begin{verbatim}
 class Exam:
 
-    def MakeRawScoreDist(self):
-        efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
-
+    def MakeRawScoreDist(self, efficacies):
         pmfs = thinkbayes.Pmf()
         for efficacy, prob in efficacies.Items():
             scores = PmfCorrect(efficacy, self.difficulties)
@@ -4166,23 +4182,26 @@ class Exam:
         return mix
 \end{verbatim}
 
-{\tt efficacies} is a Pmf that represents the distribution
-of efficacy.  I assume that it is Gaussian with mean 0 and
-standard deviation 1.5.  This choice is mostly arbitrary.
-The probablility of getting a question correct depends on
-the difference between efficacy and difficulty, so we can
-choose the units of efficacy and then calibrate the units
-of difficulty accordingly.
+{\tt efficacies} is a Pmf that represents the distribution of efficacy
+across test-takers.  I assume that it is Gaussian with mean 0 and
+standard deviation 1.5.  This choice is mostly arbitrary.  The
+probablility of getting a question correct depends on the difference
+between efficacy and difficulty, so we can choose the units of
+efficacy and then calibrate the units of difficulty accordingly.
 
 {\tt pmfs} is a Meta-Pmf that contains one Pmf for each level of
 efficacy, and maps to the fraction of test-takers at that level.  {\tt
   thinkbayes.MakeMixture} takes the meta-pmf and compute the
 distribution of the mixture (see Section~\ref{meta-pmf}).
 
-So now if we are given the distribution of difficulty, we
-can compute the distribution of raw scores.  But in reality
-it is the other way around: we are given the distribution of
-raw scores and we want to infer the distribution of difficulty.
+
+\section{Calibration}
+
+If we were given the distribution of difficulty, we could use
+\verb"MakeRawScoreDist" to compute the distribution of raw scores.
+But for us the problem is the other way around: we are given the
+distribution of raw scores and we want to infer the distribution of
+difficulty.
 
 \begin{figure}
 % sat.py
@@ -4201,12 +4220,13 @@ def MakeDifficulties(center, width, n):
     return numpy.linspace(low, high, n)
 \end{verbatim}
 
-The values {\tt center=-0.05} and {\tt width=1.8} yield a distribution
+By trying out a few combinations, I found that
+the values {\tt center=-0.05} and {\tt width=1.8} yield a distribution
 of raw scores similar to the actual data.
 Figure~\ref{fig.satcalibrate} shows the actual data and the results
 from this model.
 
-So we infer that if the distribution of difficulty is uniform,
+So, assuming that the distribution of difficulty is uniform,
 the range is approximately
 {\tt -1.85} to {\tt 1.75}, on a scale with a distribution of
 efficacy that is Gaussian with mean 0 and standard deviation 1.5.
@@ -4228,103 +4248,194 @@ Efficacy   & -1.85   &   -0.05   &      1.75  \\
 \hline
 \end{tabular}
 
-So someone with efficacy 3, which is two standard deviations above
-the mean, has a 99\% chance of answering the easiest questions on
+Someone with efficacy 3 (two standard deviations above
+the mean) has a 99\% chance of answering the easiest questions on
 the exam, and a 78\% chance of answering the hardest.  On the other
 end of the range, someone two standard deviations below the mean
 has only a 24\% chance of answering the easiest questions.
 
 
+\section{Posterior distribution of efficacy}
+
+\begin{figure}
+% sat.py
+\centerline{\includegraphics[height=2.5in]{figs/sat_posteriors_eff.pdf}}
+\caption{Posterior distributions of efficacy for Alice and Bob.}
+\label{fig.satposterior2}
+\end{figure}
+
+Now that the model is calibrated, we can compute the posterior
+distribution of efficacy for Alice and Bob.  Here is a version of the
+Sat class that works with the new model:
 
 \begin{verbatim}
+class Sat2(thinkbayes.Suite):
+
+    def __init__(self, exam, score):
+        thinkbayes.Suite.__init__(self)
+
+        self.exam = exam
+        self.score = score
+
+        # start with the prior distribution
+        efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
+        for efficacy, prob in efficacies.Items():
+            self.Set(efficacy, prob)
+
+        # update based on an exam score
+        self.Update(score)
 \end{verbatim}
+
+The prior distribution of efficacy is
+Gaussian with mean 0 and standard deviation 1.5 (and the suite of
+hypotheses spans 3 standard deviations in each direction).
+
+\verb"Sat2.Likelihood" computes the likelihood of a given test score
+for a hypothetical level of efficacy.
 
 \begin{verbatim}
+    def Likelihood(self, hypo, data):
+        efficacy = hypo
+        score = data
+        raw = self.exam.Reverse(score)
+
+        pmf = self.exam.PmfCorrect(efficacy)
+        like = pmf.Prob(raw)
+        return like
 \end{verbatim}
+
+{\tt pmf} is the distribution of raw scores for a test-taker
+with the given efficacy; {\tt like} is the probability of
+the observed score.
+
+Figure~\ref{fig.satposterior2} shows the posterior distributions
+of efficacy for Alice and Bob.  As expected, the location
+of Alice's distribution is farther to the right, but again there
+is some overlap.
+
+Using {\tt TopLevel} again, we compare $A$, the
+hypothesis that Alice's efficacy is higher, and $B$, the
+hypothesis that Bob's is higher.  The likelihood ratio is
+3.4, a bit smaller than what we got from the simple model (3.8).
+So this model indicates that the data are evidence in favor
+of $A$, but a little weaker than the previous estimate.
+
+If our prior belief is that $A$ and $B$ are equally likely,
+then in light of this evidence we would give $A$ a posterior
+probability of 77\%, leaving a 23\% chance that Bob's efficacy
+is higher.
+
+
+\section{Predictive distribution}
+
+The analysis we have done so far generates estimates for
+Alice and Bob's efficacy, but since efficacy is not directly
+observable, it is hard to validate the results.
+
+To give the model predictive power, we can use it to answer
+another related question: ``If Alice and Bob take the math SAT
+again, what is the chance that Alice will do better again?''
+
+We'll answer this question in two steps:
+
+\begin{itemize}
+
+\item We'll use the posterior distribution of efficacy to
+generate a predictive distribution of raw score for each test-taker.
+
+\item We'll compare the two predictive distributions to compute
+the probability that Alice gets a higher score again.
+
+\end{itemize}
+
+We already have most of the code we need.  To compute
+the predictive distributions, we can use \verb"MakeRawScoreDist" again:
 
 \begin{verbatim}
+    exam = Exam()
+    a_sat = Sat(exam, 780)
+    b_sat = Sat(exam, 740)
+
+    a_pred = exam.MakeRawScoreDist(a_sat)
+    b_pred = exam.MakeRawScoreDist(b_sat)
 \end{verbatim}
+
+Then we can find the likelihood that Alice does better on the second
+test, Bob does better, or they tie:
 
 \begin{verbatim}
+    a_like = thinkbayes.PmfProbGreater(a_pred, b_pred)
+    b_like = thinkbayes.PmfProbLess(a_pred, b_pred)
+    c_like = thinkbayes.PmfProbEqual(a_pred, b_pred)
 \end{verbatim}
+
+The probability that Alice does better on the second exam is 63\%,
+which means that Bob has a 37\% chance of doing as well or better.
+
+Notice that we have more confidence about Alice's efficacy than we do
+about the outcome of the next test.  The posterior odds are 3:1 that
+Alice's efficacy is higher, but only 2:1 that Alice will do better on
+the next exam.
+
+
+\section{Nuisance parameters}
+
+\begin{figure}
+% sat.py
+\centerline{\includegraphics[height=2.5in]{figs/sat_joint.pdf}}
+\caption{Joint posterior distribution of {\tt p\_correct} for Alice and Bob.}
+\label{fig.satjoint}
+\end{figure}
+
+In this chapter we started with the question,
+``How strong is the evidence that Alice is better prepared
+than Bob?''  On the face of it, that sounds like we want to
+test two hypotheses: either Alice is more prepared or Bob is.
+
+But in order to compute likelihoods for these hypotheses, we
+have to solve an estimation problem.  For each test-taker
+we have to find the posterior distribution of either
+\verb"p_correct" or \verb"efficacy".
+
+We don't really care about these values, but we have
+to estimate them to solve the problem we care about.  Which
+is why values like this are called ``nuisance parameters.''
+
+One way to visualize the analysis we did in this chapter is
+to plot the space of these parameters.  \verb"thinkbayes.JoinPmf"
+takes two Pmfs, computes their joint distribution, and returns
+a Pmf of each possible pair of values and its probability.
 
 \begin{verbatim}
+def JointPmf(pmf1, pmf2):
+    pmf = Pmf()
+    for v1, p1 in pmf1.Items():
+        for v2, p2 in pmf2.Items():
+            pmf.Set((v1, v2), p1 * p2)
+    return pmf
 \end{verbatim}
 
+This function assumes that the two distributions are independent.
+
+Figure~\ref{fig.satjoint} shows the joint posterior distribution of
+\verb"p_correct" for Alice and Bob.  The diagonal like indicates the
+part of the space where \verb"p_correct" is the same for Alice and
+Bob.  To the right of this line, Alice is more prepared; to the left
+Bob is more prepared.
+
+In {\tt TopLevel.Update}, when we computed the likelihoods of $A$ and
+$B$, we added up the probability mass each side of this line.  For the
+cells that fall on the line, we added up the total mass and split it
+between $A$ and $B$.
+
+The process we used in this chapter---estimating a nuisance
+variable in order to evaluate the likelihood of competing
+hypotheses---is a common Bayesian approach to problems like this.
 
 
-???
+\chapter{The Kidney Problem}
 
-When we compute {\tt ProbCorrect}, we only care about the
-difference
-
-
-The units of efficacy are arbitrary;
-
-
-
-because
-efficacy and difficulty are on the same scale, we only care
-about the difference between them.  So I can choose the
-efficacy scale and find the 
-
-
-
-
-
-Before we can proceed, we have to calibrate the model by choosing
-distributions for {\tt efficacy} and {\tt difficulty} that yield
-a distribution of scores close to what we actually observed.
-
-  In order
-to model the scenario, we
-
-The first two assumptions should be uncontroversial, if we 
-believe that some questions are harder than others, and some
-people are better at answering them than others.
-
-The third assumption is the topic of some debate, but whatever
-you think of the SAT, there is considerable evidence that SAT
-scores are correlated with first-year college grades.  The
-strength of the correlation might be lower than you expect or
-hope, but there is little doubt that the test is measuring
-some factors that contribute to success in college.
-
-
-With this simplification, we can be more precise about the
-meaning of ``efficacy.''  Specifically, I will define efficacy
-as the probability of answering any question correctly.
-
-With that, we are ready to start.
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
-
-The probability of getting a question right depends
-on difficulty and efficiacy
-
-As usual, we will start with something simple and then come back
-to consider ways to make it more realistic.
-
-
-test measures what it is supposed to measure
-efficacy
-
-all questions equally difficult
-
-penalty
-
-
-
-
-example, let's answer the question as asked.
-
+\chapter{The Unseen Species Problem}
 
 
 \end{document}
