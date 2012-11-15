@@ -24,38 +24,54 @@ FORMATS = ['pdf', 'eps']
 MINSIZE = 0.2
 
 
+def log2(x, denom=math.log(2)):
+    return math.log(x) / denom
+
+
 def DoTheMath():
+    # time between discharge and diagnosis, in days
     interval = 3291.0
+
+    # doubling time in linear measure is doubling time in volume * 3
     dt = 811.0 * 3
 
+    # number of doublings since discharge
     doublings = interval / dt
 
-    d0 = 15.5
-    d1 = d0 / math.pow(2.0, doublings)
+    # how big was the tumor at time of discharge (diameter in cm)
+    d1 = 15.5
+    d0 = d1 / 2.0 ** doublings
 
-    print 'interval', interval
+    print 'interval (days)', interval
+    print 'interval (years)', interval / 365
     print 'dt', dt
     print 'doublings', doublings
-    print 'd0', d0
     print 'd1', d1
+    print 'd0', d0
 
-    def log2(x):
-        return math.log(x) / math.log(2)
-
+    # assume an initial linear measure of 0.1 cm
     d0 = 0.1
     d1 = 15.5
 
-    doublings = log2(15.5 / 0.1)
-    dt = interval/doublings
+    # how many doublings would it take to get from d0 to d1
+    doublings = log2(d1 / d0)
+
+    # what linear doubling time does that imply?
+    dt = interval / doublings
 
     print 'doublings', doublings
     print 'dt', dt
 
+    # compute the volumetric doubling time and RDT
     vdt = dt / 3
-    rdt = 365/vdt
+    rdt = 365 / vdt
 
     print 'vdt', vdt
     print 'rdt', rdt
+
+    cdf = MakeCdf()
+    p = cdf.Prob(rdt)
+    print 'Prob{RDT > 2.4}' 1-p
 
 
 def MakeCdf():
@@ -79,26 +95,22 @@ def PlotCdf(cdf, fit):
     cps = [1-p for p in ps]
 
     # CCDF on logy scale: shows exponential behavior
-    myplot.Plot(xs, cps, 'bo-',
-                root='kidney1',
+    myplot.Clf()
+    myplot.Plot(xs, cps, 'bo-')
+    myplot.Save(root='kidney1',
                 formats=FORMATS,
                 xlabel='RDT',
                 ylabel='CCDF (log scale)',
-                yscale='log',
-                )
+                yscale='log')
 
     # CDF, model and data
-    #myplot.Cdf(fit,
-    #           axis=[-2, 7, 0, 1])
 
+    myplot.Clf()
     mxs, mys = ModelCdf()
-    myplot.Plot(mxs, mys, 'b-', 
-                line_options=dict(label='model'))
+    myplot.Plot(mxs, mys, 'b-', label='model') 
 
-    myplot.Plot(xs, ps, 'gs',
-                line_options=dict(label='data'),
-                clf=False,
-                root='kidney2',
+    myplot.Plot(xs, ps, 'gs', label='data')
+    myplot.Save(root='kidney2',
                 formats=FORMATS,
                 xlabel='RDT (volume doublings per year)',
                 ylabel='CDF',
@@ -110,18 +122,18 @@ def PlotCdf(cdf, fit):
 def QQPlot(cdf, fit):
     """Makes a QQPlot of the values from actual and fitted distributions.
 
-    cdf:
-    fit:
+    cdf: actual Cdf of RDT
+    fit: model
     """
     xs = [-1.5, 5.5]
+    myplot.Clf()
     myplot.Plot(xs, xs, 'b-')
 
     xs, ps = cdf.xs, cdf.ps
     fs = [fit.Value(p) for p in ps]
 
-    myplot.Plot(xs, fs, 'gs',
-                clf=False,
-                root = 'kidney3',
+    myplot.Plot(xs, fs, 'gs')
+    myplot.Save(root = 'kidney3',
                 formats=FORMATS,
                 xlabel='Actual',
                 ylabel='Model')
@@ -130,7 +142,7 @@ def QQPlot(cdf, fit):
 def FitCdf(cdf):
     """Fits a line to the log CCDF and returns the slope.
 
-    cdf: Cdf of 
+    cdf: Cdf of RDT
     """
     xs, ps = cdf.xs, cdf.ps
     cps = [1-p for p in ps]
@@ -404,12 +416,10 @@ def PlotSequence(ts, vs, color='blue'):
     vs: sequence of columes
     color: color string
     """
-    line_options = dict(color=color, linewidth=1, alpha=0.2)
+    options = dict(color=color, linewidth=1, alpha=0.2)
     xs = [Diameter(v) for v in vs]
-    myplot.Plot(ts, xs,
-                line_options=line_options,
-                yscale='log',
-                clf=False)
+
+    myplot.Plot(ts, xs, **options)
 
 
 def PlotSequences(ss):
@@ -417,9 +427,11 @@ def PlotSequences(ss):
 
     ss: list of sequences of volumes
     """
-    pyplot.clf()
-    line_options = dict(color='gray', linewidth=1, linestyle='dashed')
-    myplot.Plot([0, 40], [10, 10], line_options=line_options)
+    myplot.Clf()
+
+    options = dict(color='gray', linewidth=1, linestyle='dashed')
+    myplot.Plot([0, 40], [10, 10], **options)
+
     for vs in ss:
         n = len(vs)
         age = n * INTERVAL
@@ -432,11 +444,12 @@ def PlotSequences(ss):
                 title='Simulations of tumor growth',
                 xlabel='tumor age (years)',
                 yticks=MakeTicks([0.2, 0.5, 1, 2, 5, 10, 20]),
-                ylabel='diameter (cm, log scale)')
+                ylabel='diameter (cm, log scale)',
+                yscale='log')
 
 
 def PlotBin(bin, color='blue'):
-    "Plots the set of sequences for the given bin.
+    """Plots the set of sequences for the given bin.
 
     bin: int bin number
     color: string
@@ -450,26 +463,31 @@ def PlotBin(bin, color='blue'):
 
 
 def PlotCache():
-    """Plots the set of sequences for each bin."""
-    # 9.97 cm
+    """Plots the set of sequences that ended in a given bin."""
+    # 2.01, 4.95 cm, 9.97 cm
+    bins = [7.0, 16.0, 23.0]
     bins = [23.0]
     colors = ['blue', 'green', 'red', 'cyan']
     cdfs = []
 
-    pyplot.clf()
+    myplot.Clf()
     for bin, color in zip(bins, colors):
         PlotBin(bin, color)
 
     myplot.Save(root='kidney5',
                 formats=FORMATS,
                 title='History of simulated tumors',
-                axis=[-40, 1, MINSIZE, 20],
+                axis=[-40, 1, MINSIZE, 12],
                 xlabel='years',
                 ylabel='diameter (cm, log scale)')
 
 
 def CdfBin(bin, name=''):
-    """Forms the cdf of ages for the sequences in this bin."""
+    """Forms the cdf of ages for the sequences in this bin.
+
+    bin: int bin number
+    name: string
+    """
     ss = cache.GetBin(bin)
     ages = []
     for vs in ss:
@@ -492,8 +510,9 @@ def CdfCache():
         cdf = CdfBin(bin, name)
         cdfs.append(cdf)
 
-    myplot.Cdfs(cdfs,
-                root='kidney6',
+    myplot.Clf()
+    myplot.Cdfs(cdfs)
+    myplot.Save(root='kidney6',
                 title='Distribution of age for several diameters',
                 formats=FORMATS,
                 xlabel='tumor age (years)',
@@ -585,27 +604,21 @@ def ConfidenceIntervalFigure(xscale='linear'):
     labels = ['95th', '75th', '50th', '25th', '5th']
 
     # transpose the ts so we have sequences for each percentile rank
-    pyplot.clf()
+    myplot.Clf()
     yys = zip(*ts)
 
     for ys, linewidth, alpha, label in zip(yys, linewidths, alphas, labels):
-        line_options = dict(color='blue', linewidth=linewidth, 
+        options = dict(color='blue', linewidth=linewidth, 
                             alpha=alpha, label=label, markersize=2)
 
         # plot the data points
-        myplot.Plot(xs, ys, 'bo',
-                    line_options=line_options,
-                    clf=False,
-                    legend=False)
+        myplot.Plot(xs, ys, 'bo', **options)
 
         # plot the fit lines
         fxs = [min_size, 20.0]
         fys = FitLine(xs, ys, fxs)
 
-        myplot.Plot(fxs, fys,
-                    clf=False,
-                    line_options=line_options,
-                    legend=False)
+        myplot.Plot(fxs, fys, **options)
 
         # put a label at the end of each line
         x, y = fxs[-1], fys[-1]
@@ -651,10 +664,14 @@ def TestCorrelation(cdf):
     print rho, rho2
     cdf2 = Cdf.MakeCdfFromList(xs)
 
-    myplot.Cdfs([cdf, cdf2], show=True)
+    myplot.Cdfs([cdf, cdf2])
+    myplot.Show()
 
 
 def main(script):
+    DoTheMath()
+    return
+
     random.seed(17)
 
     cdf = MakeCdf()
@@ -662,16 +679,16 @@ def main(script):
     lam1 = FitCdf(cdf)
     fit = GenerateCdf(lam1=lam1)
 
-    #TestCorrelation(fit)
+    # TestCorrelation(fit)
 
     PlotCdf(cdf, fit)
     QQPlot(cdf, fit)
 
     rho = 0.0
-
     ss = MakeSequences(100, rho, fit)
 
     PlotSequences(ss)
+    
     PlotCache()
 
     ss = MakeSequences(1900, rho, fit)
