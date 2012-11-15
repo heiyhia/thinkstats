@@ -4433,9 +4433,310 @@ variable in order to evaluate the likelihood of competing
 hypotheses---is a common Bayesian approach to problems like this.
 
 
-\chapter{The Kidney Problem}
 
-\chapter{The Unseen Species Problem}
+
+\chapter{Simulation}
+
+In this chapter I describe my solution to a problem posed
+by a patient with a kidney tumor.  I think the problem is interesting,
+and important, because it is relevant to both the patient and
+doctors treating other patients with these tumors.
+
+And I think the solution is interesting because, although it
+is a Bayesian approach to the problem, the use of Bayes's Theorem
+is implicit.  I present the solution and my code; at the end
+of the chapter I will explain the Bayesian part.
+
+If you want more technical detail than I present here, you can
+read my paper on this work at \url{http://arxiv.org/abs/1203.6890}.
+
+
+\section{The Kidney Tumor problem}
+
+I am a frequent reader and occasional contributor to the online statistics
+forum at \url{http://reddit.com/r/statistics}.  In November 2011, I read
+the following message:
+
+\begin{quote}
+"I have Stage IV Kidney Cancer and am trying to determine if the
+  cancer formed before I retired from the military. ... Given the
+  dates of retirement and detection is it possible to determine when
+  there was a 50/50 chance that I developed the disease? Is it
+  possible to determine the probability on the retirement date?  My
+  tumor was 15.5 cm x 15 cm at detection. Grade II."
+\end{quote}
+
+I contacted the original poster and got more information; I learned
+that veterans get different benefits if it is "more likely than not"
+that a tumor formed while they were in military service (among other
+considerations).
+
+Because renal tumors grow slowly, and often do not cause symptoms,
+they are sometimes left untreated.  As a result, doctors can observe
+the rate of growth for untreated tumors by comparing scans from the
+same patient at different times.  Several papers have reported these
+growth rates.
+
+I collected data from a paper by Zhang et al \footnote{}.  I contacted the
+authors to see if I could get raw data, but they refused on grounds of
+medical privacy.  Nevertheless, I was able to extract the data I
+needed by printing one of their graphs and measuring it with a ruler.
+It's silly, but it works.
+
+They report growth rates in reciprocal doubling time (RDT),
+which is in units of doublings per year.  So a tumor with $RDT=1$
+doubles in volume each year; with $RDT=2$ it quadruples in the same
+time, and with $RDT=-1$, it halves.  The following figure shows the
+distribution of RDT for 53 patients:
+
+The squares are the data points from the paper; the line is a model I
+fit to the data.  The positive tail fits an exponential distribution
+well, so I used a mixture of two exponentials.
+
+
+\section{A simple model}
+
+It is usually a good idea to start with a simple model before
+trying something more challenging.  Sometimes the simple model is
+sufficient for the problem at hand, and if not, you can use it
+to validate the more complex model.
+
+For my simple model, I assume that tumors grow with a constant
+doubling time, and that they are three-dimensional in the sense that
+if the maximum linear measurement doubles, the volume is multiplied by
+eight.
+
+I learned from my correspondent that the time between his discharge
+from the military and his diagnosis was 3291 days (about 9 years).
+So my first calculation was, ``If this tumor grew at the median
+rate, how big would it have been at the date of discharge?''
+
+The median volume doubling time reported by Zhang et al is 811 days.
+Assuming 3-dimensional geometry, the doubling time for a linear
+measure is three times longer.
+
+\begin{verbatim}
+    # time between discharge and diagnosis, in days 
+    interval = 3291.0
+
+    # doubling time in linear measure is doubling time in volume * 3
+    dt = 811.0 * 3
+
+    # number of doublings since discharge
+    doublings = interval / dt
+
+    # how big was the tumor at time of discharge (diameter in cm)
+    d1 = 15.5
+    d0 = d1 / 2.0 ** doublings
+\end{verbatim}
+
+You can download the code in this chapter from
+\url{http://thinkbayes.com/kidney.py}.
+
+The result, {\tt d0}, is about 6 cm.  So if this tumor formed after
+the date of discharge, it must have grown substantially faster than
+the median rate.  Therefore I concluded that it is ``more likely than
+not'' that this tumor formed before the date of discharge.
+
+In addition, I computed the growth rate that would be implied
+if this tumor had formed after the date of discharge.  If we
+assume an initial size of 0.1 cm, we can compute the number of
+doublings to get to a final size of 15.5 cm:
+
+\begin{verbatim}
+    # assume an initial linear measure of 0.1 cm
+    d0 = 0.1
+    d1 = 15.5
+
+    # how many doublings would it take to get from d0 to d1
+    doublings = log2(d1 / d0)
+
+    # what linear doubling time does that imply?
+    dt = interval / doublings
+
+    # compute the volumetric doubling time and RDT
+    vdt = dt / 3
+    rdt = 365 / vdt
+\end{verbatim}
+
+The number of doublings, in linear measure, is 7.3, which implies
+an RDT of 2.4.  In the data from Zhang et al, only 20\% of tumors
+grew this fast during a period of observation.  So again,
+I concluded that is ``more likely than not'' that the tumor
+formed prior to the date of discharge.
+
+These calculations are sufficient to answer the question as
+posed, and on behalf of my correspondent, I wrote a letter explaining
+my conclusions to the Veterans' Benefit Administration.
+
+Later I told a friend, who is an oncologist, about my results.  He was
+surprised by the growth rates observed by Zhang et al, and by what
+they imply about the ages of these tumors.  He suggested that the
+results might be interesting to researchers and doctors.
+
+But in order to make them useful, I wanted a more general model
+of the relationship between age and size.
+
+\section{A more general model}
+
+Given the size of a tumor at time of diagnosis, it would be most
+useful to know the probability that the tumor formed before
+any given date; in other words, the distribution of ages.
+
+To find it, I will run simulation of tumor growth to get the
+distribution of size, conditioned on age.  Then we can get the
+distribution of age, conditioned on size.
+
+The simulation starts with a small tumor and runs these steps:
+
+\begin{itemize}
+
+\item Choose a growth rate from the distribution of RDT.
+
+\item Compute the size of the tumor at the end of an interval.
+
+\item Record the size of the tumor at each interval
+
+\item Repeat until the tumor exceeds the maximum relevant size.
+
+\end{itemize}
+
+For the initial size I chose 0.3 cm, because carcinomas smaller than
+that are less likely to be invasive and less likely to have the blood
+supply needed for rapid growth (see
+\url{http://en.wikipedia.org/wiki/Carcinoma_in_situ}).  
+
+I chose an interval of 245 days (about 8 months) because that is the
+median time between measurements in the data source.
+
+For the maximum size I chose 20 cm.  In the data source, the range of
+observed sizes is 1.0 to 12.0 cm, so we extrapolating beyond
+the observed range at each end, but not by far, and not in a way
+likely to have a strong effect on the results.
+
+But the simulation is based on one big simplification:
+the growth rate is chosen independently during each interval,
+so it does not depend on age, size, or growth rate during
+previous intervals.
+
+That assumption is more realistic than it might seem.  Zhang et al
+found no statistically significant relationship between the size
+of the tumors the observed and their growth rate.  So if there is
+a relationship, it is likely to be weak.
+
+And while there might be a serial correlation in growth rate, it can't
+be very strong, because if it were, we would see a relationship
+between size at diagnosis and growth rate.  For simplicity I will
+start with no serial correlation, but we will come back to this later.
+
+Here is the kernel of the simulation:
+
+\begin{verbatim}
+def MakeSequence(iterator, v0=0.01, interval=0.67, vmax=Volume(20.0)):
+    vs = v0,
+
+    for rdt in iterator:
+        final, vs = ExtendSequence(vs, rdt, interval)
+        if final > vmax:
+            break
+
+    return vs
+\end{verbatim}
+
+{\tt iterator} is an iterator object that yields a series of
+random values from the CDF of growth rate.  {\tt v0} is the
+initial volume in mL.  {\tt interval} is the time step in years.
+{\tt vmax} is the final volume corresponding to a linear measurement
+of 20 cm.
+
+{\tt Volume} converts from linear measurement in cm to volume
+in mL, based on the simplification that the tumor is a sphere:
+
+\begin{verbatim}
+def Volume(diameter, factor=4*math.pi/3):
+    return factor * (diameter/2.0)**3
+\end{verbatim}
+
+{\tt ExtendSequence} computes the volume of the tumor at the
+end of the interval.
+
+\begin{verbatim}
+def ExtendSequence(t, rdt, interval):
+    initial = t[-1]
+    doublings = rdt * interval
+    final = initial * 2**doublings
+    res = t + (final,)
+    cache.Add(rdt, initial, final, res)
+    
+    return final, res
+\end{verbatim}
+
+{\tt t} is a tuple that contains the volumes so far.  {\tt rdt} is
+the growth rate during the interval, in doublings per year.
+{\tt interval} is the size of the time step in years.
+
+The return values are {\tt final}, the volume of the
+tumor at the end of the interval, and {\tt res} a new
+tuple containing the volumes in {\tt t} plus the new volume
+{\tt final}.
+
+I am using a tuple so I can store it in the cache without
+worrying about it being modified later.  The purpose of the
+cache is to record the size and age of each tumor at the end
+of each interval.  I'll explain why soon, but first I want to
+look at some results.
+
+This figure shows 100 simulated growth trajectories:
+
+The line at 10 cm shows the range of ages for tumors at that size: the
+fastest-growing tumor gets there in 8 years; the slowest takes more
+than 35.
+
+By drawing that line at different sizes, we can estimate the
+distribution of age as a function of size.
+
+
+\section{}
+
+
+  There's an implicit use of
+Bayes's Theorem in there, but because I did everything discretely, I
+didn't have to think too hard.  This figure shows the distribution of
+age for a few different sizes:
+
+Not surprisingly, bigger tumors are likely to be older.  For any size, we can generate the CDF and compute the median, interquartile range, and 90\% confidence interval.  Here's what that looks like (with size on a log scale):
+
+The points are data from simulation, which produces some variability due to discrete approximation.  The lines are fitted to the data.
+
+With these results, doctors can look up the size of a tumor and get the distribution of ages; for example, the median age of a 15 cm tumor is 27 years, with interquartile range 22-31 and 90\% confidence interval 16-39 years.
+
+This model yields more detail than the simple model I started with, but the results are qualitatively similar; a tumor this size is more likely than not to have formed prior to the original poster's date of discharge.  It looks like there is also a good chance that it formed prior to enlistment, but I don't know what the VBA makes of that.
+
+-----
+
+I think this model makes the best use of the available data, but there are several limitations:
+
+1) The factors that limit tumor growth are different for very small tumors, so the observed data doesn't apply.  We can extrapolate back to when the tumor was small (I chose 0.3 cm, a bit smaller than the smallest tumor in the study).  That gives us a lower bound on the age of the tumor, but we can't say much about when the first cancer cell appeared.
+
+2) The distribution of growth rates is based on a sample of 53 patients.  A different sample would yield a different distribution.  I could use resampling to characterize this source of error, but haven't.
+
+3) The growth model does not take into account tumor subtype or grade, which is consistent with the conclusion of Zhang et al: “Growth rates in renal tumors of different sizes, subtypes and grades represent a wide range and overlap substantially.”  
+
+4) In our model of tumor growth, the growth rate during each interval is independent of previous growth rates.  It is plausible that, in reality, tumors that have grown quickly in the past are more likely to grow quickly.
+
+If this correlation exists, it affects the location and spread of the results.  For example, running simulations with ρ = 0.4 increases the estimated median age by about a year, and the interquartile range
+by about 3 years.  However, if there were a strong serial correlation in growth rate, there would be also be a correlation between tumor volume and growth rate, and prior work has shown no such relationship.
+
+There could still be a weak serial correlation, but since there is currently no evidence for it, I ran these simulations with ρ  = 0.
+
+
+\chapter{Future chapters}
+
+Hierarchical models: Unseen species problem
+
+Change point detection: 
+
+Deconvolution: Estimating round trip times
 
 
 \end{document}
