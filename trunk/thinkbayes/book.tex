@@ -4483,11 +4483,18 @@ medical privacy.  Nevertheless, I was able to extract the data I
 needed by printing one of their graphs and measuring it with a ruler.
 It's silly, but it works.
 
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney2.pdf}}
+\caption{CDF of RDT in doublings per year.}
+\label{fig.kidney2}
+\end{figure}
+
 They report growth rates in reciprocal doubling time (RDT),
 which is in units of doublings per year.  So a tumor with $RDT=1$
 doubles in volume each year; with $RDT=2$ it quadruples in the same
-time, and with $RDT=-1$, it halves.  The following figure shows the
-distribution of RDT for 53 patients:
+time, and with $RDT=-1$, it halves.  Figure~\ref{fig.kidney2} shows the
+distribution of RDT for 53 patients.
 
 The squares are the data points from the paper; the line is a model I
 fit to the data.  The positive tail fits an exponential distribution
@@ -4577,6 +4584,7 @@ results might be interesting to researchers and doctors.
 But in order to make them useful, I wanted a more general model
 of the relationship between age and size.
 
+
 \section{A more general model}
 
 Given the size of a tumor at time of diagnosis, it would be most
@@ -4628,6 +4636,26 @@ And while there might be a serial correlation in growth rate, it can't
 be very strong, because if it were, we would see a relationship
 between size at diagnosis and growth rate.  For simplicity I will
 start with no serial correlation, but we will come back to this later.
+
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney4.pdf}}
+\caption{Simulations of tumor growth, size vs. time.}
+\label{fig.kidney4}
+\end{figure}
+
+Figure~\ref{fig.kidney4} shows what the results look like.  Each line
+shows the size of simulated tumor (on a log scale) as a function of
+age.  The dashed line at 10 cm shows the range of ages for tumors at
+that size: the fastest-growing tumor gets there in 8 years; the
+slowest takes more than 35.
+
+\section{Implementation}
+
+I am presenting results in terms of linear measurements, but the
+calculations are in terms of volume.  To convert from one to the
+other, again, I use the volume of a sphere with the given
+diameter.
 
 Here is the kernel of the simulation:
 
@@ -4683,17 +4711,16 @@ tuple containing the volumes in {\tt t} plus the new volume
 I am using a tuple so I can store it in the cache without
 worrying about it being modified later.  The purpose of the
 cache is to record the size and age of each tumor at the end
-of each interval.  I'll explain why soon, but first I want to
+of each interval.
+
+
+\section{Caching the joint distribution}
+
+
+
+  I'll explain why soon, but first I want to
 look at some results.
 
-This figure shows 100 simulated growth trajectories:
-
-The line at 10 cm shows the range of ages for tumors at that size: the
-fastest-growing tumor gets there in 8 years; the slowest takes more
-than 35.
-
-By drawing that line at different sizes, we can estimate the
-distribution of age as a function of size.
 
 
 \section{}
