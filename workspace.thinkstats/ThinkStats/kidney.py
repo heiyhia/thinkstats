@@ -71,7 +71,7 @@ def DoTheMath():
 
     cdf = MakeCdf()
     p = cdf.Prob(rdt)
-    print 'Prob{RDT > 2.4}' 1-p
+    print 'Prob{RDT > 2.4}', 1-p
 
 
 def MakeCdf():
@@ -265,23 +265,24 @@ def ModelCdf(pc=0.35, lam1=0.79, lam2=5.0):
     return list(x1) + list(x2), y1+y2
 
 
-def BinToCm(y, factor=10):
-    """Computes the linear dimension for a given bin.
+def BucketToCm(y, factor=10):
+    """Computes the linear dimension for a given bucket.
 
-    t: bin number
-    factor: multiplicitive factor from one bin to the next
+    t: bucket number
+    factor: multiplicitive factor from one bucket to the next
 
     Returns: linear dimension in cm
     """
     return math.exp(y / factor)
 
-def CmToBin(x, factor=10):
-    """Computes the bin for a given linear dimension.
+
+def CmToBucket(x, factor=10):
+    """Computes the bucket for a given linear dimension.
 
     x: linear dimension in cm
-    factor: multiplicitive factor from one bin to the next
+    factor: multiplicitive factor from one bucket to the next
 
-    Returns: float bin number
+    Returns: float bucket number
     """
     return factor * math.log(x)
 
@@ -305,44 +306,44 @@ def Volume(diameter, factor=4*math.pi/3):
 class Cache(object):
 
     def __init__(self):
-        """cache: maps from size bin to a list of sequences that could be
-           observed in that bin.
+        """sequences: maps from size bucket to a list of sequences that could be
+           observed in that bucket.
 
-           init_rdt: sequence of (V0, rdt) pairs
+           initial_rdt: sequence of (V0, rdt) pairs
         """
-        self.cache = {}
+        self.sequences = {}
         self.initial_rdt = []
 
     def GetKeys(self):
         """Returns an iterator for the keys in the cache."""
-        return self.cache.iterkeys()
+        return self.sequences.iterkeys()
 
-    def GetBin(self, bin):
-        """Looks up a bin in the cache."""
-        return self.cache[bin]
+    def GetBucket(self, bucket):
+        """Looks up a bucket in the cache."""
+        return self.sequences[bucket]
 
     def Add(self, rdt, initial, final, seq):
-        """Adds a sequence to the bin that corresponds to final.
+        """Adds a sequence to the bucket that corresponds to final.
 
-        rdt:
-        initial:
-        final:
-        seq:
+        rdt: RDT during this interval
+        initial: volume at the beginning of the interval
+        final: volume at the end of the interval
+        seq: sequence of volumes that got us to this final volume
         """
         cm = Diameter(final)
-        bin = round(CmToBin(cm))
-        self.cache.setdefault(bin, []).append(seq)
+        bucket = round(CmToBucket(cm))
+        self.sequences.setdefault(bucket, []).append(seq)
         self.initial_rdt.append((initial, rdt))
 
     def Print(self):
-        """Prints the size (cm) for each bin, and the number of sequences."""
-        for bin in sorted(cache.GetKeys()):
-            ss = cache.GetBin(bin)
-            diameter = BinToCm(bin)
+        """Prints the size (cm) for each bucket, and the number of sequences."""
+        for bucket in sorted(self.GetKeys()):
+            ss = self.GetBucket(bucket)
+            diameter = BucketToCm(bucket)
             print diameter, len(ss)
         
     def Correlation(self):
-        """Computes the correlation between volumes and rdts."""
+        """Computes the correlation between log volumes and rdts."""
         vs, rdts = zip(*self.initial_rdt)
         lvs = [math.log(v) for v in vs]
         return correlation.Corr(vs, rdts)
@@ -448,13 +449,13 @@ def PlotSequences(ss):
                 yscale='log')
 
 
-def PlotBin(bin, color='blue'):
-    """Plots the set of sequences for the given bin.
+def PlotBucket(bucket, color='blue'):
+    """Plots the set of sequences for the given bucket.
 
-    bin: int bin number
+    bucket: int bucket number
     color: string
     """
-    ss = cache.GetBin(bin)
+    ss = cache.GetBucket(bucket)
     for vs in ss:
         n = len(vs)
         age = n * INTERVAL
@@ -463,16 +464,16 @@ def PlotBin(bin, color='blue'):
 
 
 def PlotCache():
-    """Plots the set of sequences that ended in a given bin."""
+    """Plots the set of sequences that ended in a given bucket."""
     # 2.01, 4.95 cm, 9.97 cm
-    bins = [7.0, 16.0, 23.0]
-    bins = [23.0]
+    buckets = [7.0, 16.0, 23.0]
+    buckets = [23.0]
     colors = ['blue', 'green', 'red', 'cyan']
     cdfs = []
 
     myplot.Clf()
-    for bin, color in zip(bins, colors):
-        PlotBin(bin, color)
+    for bucket, color in zip(buckets, colors):
+        PlotBucket(bucket, color)
 
     myplot.Save(root='kidney5',
                 formats=FORMATS,
@@ -482,13 +483,13 @@ def PlotCache():
                 ylabel='diameter (cm, log scale)')
 
 
-def CdfBin(bin, name=''):
-    """Forms the cdf of ages for the sequences in this bin.
+def CdfBucket(bucket, name=''):
+    """Forms the cdf of ages for the sequences in this bucket.
 
-    bin: int bin number
+    bucket: int bucket number
     name: string
     """
-    ss = cache.GetBin(bin)
+    ss = cache.GetBucket(bucket)
     ages = []
     for vs in ss:
         n = len(vs)
@@ -500,14 +501,14 @@ def CdfBin(bin, name=''):
 
 
 def CdfCache():
-    """Plots the cdf of ages for each bin."""
+    """Plots the cdf of ages for each bucket."""
     # 2.01, 4.95 cm, 9.97 cm, 14.879 cm
-    bins = [7.0, 16.0, 23.0, 27.0]
+    buckets = [7.0, 16.0, 23.0, 27.0]
     names = ['2 cm', '5 cm', '10 cm', '15 cm']
     cdfs = []
 
-    for bin, name in zip(bins, names):
-        cdf = CdfBin(bin, name)
+    for bucket, name in zip(buckets, names):
+        cdf = CdfBucket(bucket, name)
         cdfs.append(cdf)
 
     myplot.Clf()
@@ -575,21 +576,21 @@ def FitLine(xs, ys, fxs):
 
 
 def ConfidenceIntervalFigure(xscale='linear'):
-    """Plots the confidence interval for each bin."""
+    """Plots the confidence interval for each bucket."""
     xs = []
     ts = []
     percentiles = [95, 75, 50, 25, 5]
     min_size = 0.3
     
-    # loop through the bins, accumulate
+    # loop through the buckets, accumulate
     # xs: sequence of sizes in cm
     # ts: sequence of percentile tuples
-    for i, bin in enumerate(sorted(cache.GetKeys())):
-        cm = BinToCm(bin)
+    for i, bucket in enumerate(sorted(cache.GetKeys())):
+        cm = BucketToCm(bucket)
         if cm < min_size or cm > 20.0:
             continue
         xs.append(cm)
-        cdf = CdfBin(bin)      
+        cdf = CdfBucket(bucket)      
         ps = [cdf.Percentile(p) for p in percentiles]
         ts.append(ps)
 
@@ -670,7 +671,6 @@ def TestCorrelation(cdf):
 
 def main(script):
     DoTheMath()
-    return
 
     random.seed(17)
 
