@@ -206,18 +206,19 @@ def Contour(d, pcolor=False, contour=True, imshow=False, **options):
     contour: boolean, whether to make a contour plot
     options: keyword args passed to pyplot.pcolor and/or pyplot.contour
     """
-    xs, ys = zip(*d.iterkeys())
-    xs = sorted(list(xs))
-    ys = sorted(list(ys))
+    Underride(options, cmap=matplotlib.cm.Blues)
 
-    print 'Preparing'
+    xs, ys = zip(*d.iterkeys())
+    xs = sorted(set(xs))
+    ys = sorted(set(ys))
+
+    # print 'xs', len(xs), min(xs), max(xs)
+    # print 'ys', len(ys), min(ys), max(ys)
 
     X, Y = np.meshgrid(xs, ys)
-    func = lambda x, y: d.get((x, y))
+    func = lambda x, y: d.get((x, y), 0)
     func = np.vectorize(func)
     Z = func(X, Y)
-
-    print 'Making the contour'
 
     if pcolor:
         pyplot.pcolormesh(X, Y, Z, **options)

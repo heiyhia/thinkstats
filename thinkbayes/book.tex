@@ -4618,24 +4618,9 @@ I chose an interval of 245 days (about 8 months) because that is the
 median time between measurements in the data source.
 
 For the maximum size I chose 20 cm.  In the data source, the range of
-observed sizes is 1.0 to 12.0 cm, so we extrapolating beyond
+observed sizes is 1.0 to 12.0 cm, so we are extrapolating beyond
 the observed range at each end, but not by far, and not in a way
 likely to have a strong effect on the results.
-
-But the simulation is based on one big simplification:
-the growth rate is chosen independently during each interval,
-so it does not depend on age, size, or growth rate during
-previous intervals.
-
-That assumption is more realistic than it might seem.  Zhang et al
-found no statistically significant relationship between the size
-of the tumors the observed and their growth rate.  So if there is
-a relationship, it is likely to be weak.
-
-And while there might be a serial correlation in growth rate, it can't
-be very strong, because if it were, we would see a relationship
-between size at diagnosis and growth rate.  For simplicity I will
-start with no serial correlation, but we will come back to this later.
 
 \begin{figure}
 % kidney.py
@@ -4644,31 +4629,43 @@ start with no serial correlation, but we will come back to this later.
 \label{fig.kidney4}
 \end{figure}
 
-Figure~\ref{fig.kidney4} shows what the results look like.  Each line
-shows the size of simulated tumor (on a log scale) as a function of
+The simulation is based on one big simplification:
+the growth rate is chosen independently during each interval,
+so it does not depend on age, size, or growth rate during
+previous intervals.
+
+In Section~\ref{serial} I will review these assumptions and
+consider more detailed models.  But first let's look at some
+examples.
+
+Figure~\ref{fig.kidney4} shows 
+the size of simulated tumors as a function of
 age.  The dashed line at 10 cm shows the range of ages for tumors at
 that size: the fastest-growing tumor gets there in 8 years; the
 slowest takes more than 35.
-
-\section{Implementation}
 
 I am presenting results in terms of linear measurements, but the
 calculations are in terms of volume.  To convert from one to the
 other, again, I use the volume of a sphere with the given
 diameter.
 
+
+\section{Implementation}
+
 Here is the kernel of the simulation:
 
 \begin{verbatim}
 def MakeSequence(iterator, v0=0.01, interval=0.67, vmax=Volume(20.0)):
-    vs = v0,
+    seq = v0,
+    age = 0
 
     for rdt in iterator:
-        final, vs = ExtendSequence(vs, rdt, interval)
+        age += interval
+        final, seq = ExtendSequence(age, seq, rdt, interval)
         if final > vmax:
             break
 
-    return vs
+    return seq
 \end{verbatim}
 
 {\tt iterator} is an iterator object that yields a series of
@@ -4689,23 +4686,24 @@ def Volume(diameter, factor=4*math.pi/3):
 end of the interval.
 
 \begin{verbatim}
-def ExtendSequence(t, rdt, interval):
-    initial = t[-1]
+def ExtendSequence(age, seq, rdt, interval):
+    initial = seq[-1]
     doublings = rdt * interval
     final = initial * 2**doublings
-    res = t + (final,)
-    cache.Add(rdt, initial, final, res)
+    new_seq = seq + (final,)
+    cache.Add(age, new_seq, rdt)
     
-    return final, res
+    return final, new_seq
 \end{verbatim}
 
-{\tt t} is a tuple that contains the volumes so far.  {\tt rdt} is
+{\tt age} is the age of the tumor at the end of the interval.
+{\tt seq} is a tuple that contains the volumes so far.  {\tt rdt} is
 the growth rate during the interval, in doublings per year.
 {\tt interval} is the size of the time step in years.
 
 The return values are {\tt final}, the volume of the
-tumor at the end of the interval, and {\tt res} a new
-tuple containing the volumes in {\tt t} plus the new volume
+tumor at the end of the interval, and \verb"new_seq" a new
+tuple containing the volumes in {\tt seq} plus the new volume
 {\tt final}.
 
 I am using a tuple so I can store it in the cache without
@@ -4716,45 +4714,238 @@ of each interval.
 
 \section{Caching the joint distribution}
 
+Here's how the cache works.  
+
+\begin{verbatim}
+class Cache(object):
+
+    def __init__(self):
+        self.joint = thinkbayes.Pmf()
+\end{verbatim}
+
+{\tt joint} is a Pmf that records 
+frequency of each age-size pair, which approximates the
+joint distribution of age and size.
+
+At the end of each simulated interval, {\tt ExtendSequence} calls
+{\tt Cache.Add}:
+
+\begin{verbatim}
+    def Add(self, age, seq):
+        final = seq[-1]
+        cm = Diameter(final)
+        bucket = round(CmToBucket(cm))
+        self.joint.Incr((age, bucket))
+\end{verbatim}
+
+Again, {\tt age} is the age of the tumor, and {\tt seq} is the
+sequence of volumes so far.
+
+Before adding the new data to the joint distribution, we use {\tt
+  Diameter} to convert from volume to diameter in centimeters, and
+{\tt CmToBucket} to convert from centimeters to a discrete bucket
+number:
+
+\begin{verbatim}
+def CmToBucket(x, factor=10):
+    return factor * math.log(x)
+\end{verbatim}
+
+The buckets are equally spaced on a log scale.  I chose the
+factor 10 to yield a reasonable number of buckets.  For example,
+1 cm maps to bucket 0; 10 cm maps to bucket 23.
+
+After running the simulations, we can plot the joint distribution
+as a pseudocolor plot, where each cell represents the number of
+tumors observed at a given size-age pair.
+
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney8.pdf}}
+\caption{Joint distribution of age and tumor size.}
+\label{fig.kidney8}
+\end{figure}
 
 
-  I'll explain why soon, but first I want to
-look at some results.
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney6.pdf}}
+\caption{Distributions of age, conditioned on size.}
+\label{fig.kidney6}
+\end{figure}
+
+
+Figure~\ref{fig.kidney8} shows the joint distribution after 1000
+simulations.  As expected, the size of tumors typically increases
+with age.
+
+\section{Conditional distributions}
+
+By taking a vertical slice from the joint distribution, we can get the
+distribution of sizes for any given age.  By taking a horizontal
+slice, we can get the distribution of ages conditioned on size.
+
+Here's the code that reads the joint distribution and builds
+the conditional distribution for a given size bucket.
+
+\begin{verbatim}
+def CdfBucket(target):
+    pmf = thinkbayes.Pmf()
+    for val, prob in cache.GetItems():
+        age, bucket = val
+        if bucket == target:
+            pmf.Set(age, prob)
+
+    pmf.Normalize()
+    cdf = thinkbayes.MakeCdfFromPmf(pmf)
+    return cdf
+\end{verbatim}
+
+{\tt target} is the integer bucket number corresponding to a
+particular size.  The return value is the CDF of age, conditioned
+on the given size.
+
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney7.pdf}}
+\caption{Percentiles of tumor age as a function of size.}
+\label{fig.kidney7}
+\end{figure}
+
+Figure~\ref{fig.kidney6} shows several of these CDFs, for
+a range of sizes.  To summarize these distributions, we can
+compute percentiles as a function of size.
+
+\begin{verbatim}
+    percentiles = [95, 75, 50, 25, 5]
+
+    for bucket in cache.GetBuckets():
+        cdf = CdfBucket(bucket)      
+        ps = [cdf.Percentile(p) for p in percentiles]
+\end{verbatim}
+
+Figure~\ref{fig.kidney7} shows these percentiles for each
+size bucket.  The data points are computed from the estimated
+joint distribution.  There is some variability caused by making
+time and size discrete, so I also show a least squares fit for
+each sequence of percentiles.
+
+%We can represent the same data in table form:
+
+%\begin{table}
+%\input{kidney_table}
+%\caption{Percentiles of tumor age conditioned on size.}
+%\end{table}
+
+
+\section{Serial Correlation}
+
+The results so far are based on a number of modeling decisions;
+let's review them and consider which ones are the most
+likely sources of error, and which we might be able to mitigate.
+
+\begin{itemize}
+
+\item The distribution of growth rates in our simulations are based on
+  a continuous model we chose to fit the PMF reported by Zhang et al,
+  which is based on 53 patients.  A different sample would yield a
+  different distribution.
+
+\item The growth model does not take into account tumor subtype or
+  grade, which is consistent with the conclusion of Zhang et al:
+  ``Growth rates in renal tumors of different sizes, subtypes and
+  grades represent a wide range and overlap substantially.''
+
+\item The distribution of growth rate does not depend on the size of
+  the tumor.  This assumption is probably not very good for very
+  small and very large tumors, which might be limited by blood supply.
+
+  But tumors observed by Zhang et al ranged from 1 to 12 cm, and they
+  found no statistically significant relationship between
+  size and growth rate.  So if there is a relationship, it is
+  likely to be weak, at least in this size range.
+  
+\item In the model, the growth rate during each interval is
+  independent of previous growth rates.  It is plausible that, in
+  reality, tumors that have grown quickly in the past are more likely
+  to grow quickly.  In other words, there is probably
+  a serial correlation in growth rate.
+
+\end{itemize}
+
+If there is serial correlation, it can't be very strong, because if it
+were, we would see a relationship between size at diagnosis and growth
+rate.  But there could be a weak correlation, which would affect the
+location and spread of the results.
+
+To investigate this possibility, wrote a generator that yields
+a series of samples from a given CDF, with a given serial correlation.
+Here's how the algorithm works:
+
+\begin{enumerate}
+
+\item Generate correlated variates from a Gaussian distribution.
+
+\item Transform each value to its cumulative probability, using
+the Gaussian CDF.
+
+\item Transform each cumulative probability to a random variate
+by inverting the given CDF.
+
+\end{enumerate}
+
+Here's what that looks like in code:
+
+\begin{verbatim}
+def CorrelatedGenerator(cdf, rho):
+    # for the first value, choose from a Gaussian and transform it
+    x = random.gauss(0, 1)
+    yield Transform(x)
+
+    # for subsequent values, choose from the conditional distribution
+    # based on the previous value
+    sigma = math.sqrt(1 - rho**2);    
+    while True:
+        x = random.gauss(x * rho, sigma)
+        yield Transform(x)
+\end{verbatim}
+
+
+\begin{verbatim}
+    def Transform(x):
+        p = erf.NormalCdf(x)
+        y = cdf.Value(p)
+        return y
+\end{verbatim}
+
+For example, running simulations with ρ = 0.4 increases the
+estimated median age by about a year, and the interquartile range by
+about 3 years.  However, if there were a strong serial correlation in
+growth rate, there would be also be a correlation between tumor volume
+and growth rate, and prior work has shown no such relationship.
+
+There could still be a weak serial correlation, but since there is
+currently no evidence for it, I ran these simulations with ρ = 0.
+
+And finally we can give a more precise answer to the question
+we started with: given a tumor with a linear dimension of
+15.5 cm, what is the probability that it formed more than
+8 years ago?
+
+\begin{verbatim}
+def ProbOlder(cm, age):
+    bucket = CmToBucket(cm)
+    cdf = CdfBucket(bucket)
+    p = cdf.Prob(age)
+    return 1-p
+\end{verbatim}
 
 
 
-\section{}
+\section{Where's Bayes?}
 
 
-  There's an implicit use of
-Bayes's Theorem in there, but because I did everything discretely, I
-didn't have to think too hard.  This figure shows the distribution of
-age for a few different sizes:
 
-Not surprisingly, bigger tumors are likely to be older.  For any size, we can generate the CDF and compute the median, interquartile range, and 90\% confidence interval.  Here's what that looks like (with size on a log scale):
-
-The points are data from simulation, which produces some variability due to discrete approximation.  The lines are fitted to the data.
-
-With these results, doctors can look up the size of a tumor and get the distribution of ages; for example, the median age of a 15 cm tumor is 27 years, with interquartile range 22-31 and 90\% confidence interval 16-39 years.
-
-This model yields more detail than the simple model I started with, but the results are qualitatively similar; a tumor this size is more likely than not to have formed prior to the original poster's date of discharge.  It looks like there is also a good chance that it formed prior to enlistment, but I don't know what the VBA makes of that.
-
------
-
-I think this model makes the best use of the available data, but there are several limitations:
-
-1) The factors that limit tumor growth are different for very small tumors, so the observed data doesn't apply.  We can extrapolate back to when the tumor was small (I chose 0.3 cm, a bit smaller than the smallest tumor in the study).  That gives us a lower bound on the age of the tumor, but we can't say much about when the first cancer cell appeared.
-
-2) The distribution of growth rates is based on a sample of 53 patients.  A different sample would yield a different distribution.  I could use resampling to characterize this source of error, but haven't.
-
-3) The growth model does not take into account tumor subtype or grade, which is consistent with the conclusion of Zhang et al: “Growth rates in renal tumors of different sizes, subtypes and grades represent a wide range and overlap substantially.”  
-
-4) In our model of tumor growth, the growth rate during each interval is independent of previous growth rates.  It is plausible that, in reality, tumors that have grown quickly in the past are more likely to grow quickly.
-
-If this correlation exists, it affects the location and spread of the results.  For example, running simulations with ρ = 0.4 increases the estimated median age by about a year, and the interquartile range
-by about 3 years.  However, if there were a strong serial correlation in growth rate, there would be also be a correlation between tumor volume and growth rate, and prior work has shown no such relationship.
-
-There could still be a weak serial correlation, but since there is currently no evidence for it, I ran these simulations with ρ  = 0.
 
 
 \chapter{Future chapters}
