@@ -10,25 +10,29 @@ import numpy
 import random
 import sys
 
-import Cdf
 import continuous
 import correlation
 import erf
 import myplot
 import matplotlib.pyplot as pyplot
+import thinkbayes
+
 
 import cProfile
 
 INTERVAL = 245/365.0
 FORMATS = ['pdf', 'eps']
 MINSIZE = 0.2
+MAXSIZE = 20
+BUCKET_FACTOR = 10
 
 
 def log2(x, denom=math.log(2)):
+    """Computes log base 2."""
     return math.log(x) / denom
 
 
-def DoTheMath():
+def SimpleModel():
     # time between discharge and diagnosis, in days
     interval = 3291.0
 
@@ -81,7 +85,7 @@ def MakeCdf():
     ps = [freq/n for freq in freqs]
     xs = numpy.arange(-1.5, 6.5, 1.0)
 
-    cdf = Cdf.Cdf(xs, ps)
+    cdf = thinkbayes.Cdf(xs, ps)
     return cdf
 
 
@@ -245,7 +249,7 @@ def GenerateCdf(n=1000, pc=0.35, lam1=0.79, lam2=5.0):
     Returns: Cdf of generated sample
     """
     xs = GenerateSample(n, pc, lam1, lam2)
-    cdf = Cdf.MakeCdfFromList(xs)
+    cdf = thinkbayes.MakeCdfFromList(xs)
     return cdf
 
 
@@ -265,7 +269,7 @@ def ModelCdf(pc=0.35, lam1=0.79, lam2=5.0):
     return list(x1) + list(x2), y1+y2
 
 
-def BucketToCm(y, factor=10):
+def BucketToCm(y, factor=BUCKET_FACTOR):
     """Computes the linear dimension for a given bucket.
 
     t: bucket number
@@ -276,7 +280,7 @@ def BucketToCm(y, factor=10):
     return math.exp(y / factor)
 
 
-def CmToBucket(x, factor=10):
+def CmToBucket(x, factor=BUCKET_FACTOR):
     """Computes the bucket for a given linear dimension.
 
     x: linear dimension in cm
@@ -284,7 +288,7 @@ def CmToBucket(x, factor=10):
 
     Returns: float bucket number
     """
-    return factor * math.log(x)
+    return round(factor * math.log(x))
 
 
 def Diameter(volume, factor=3/math.pi/4, exp=1/3.0):
@@ -304,41 +308,75 @@ def Volume(diameter, factor=4*math.pi/3):
 
 
 class Cache(object):
+    """Records each observation point for each tumor."""
 
     def __init__(self):
-        """sequences: maps from size bucket to a list of sequences that could be
-           observed in that bucket.
-
-           initial_rdt: sequence of (V0, rdt) pairs
         """
+        joint: Pmf that maps from (age, size bucket) to frequency
+
+        sequences: map from size bucket to a list of sequences
+
+        initial_rdt: sequence of (V0, rdt) pairs
+        """
+        self.joint = thinkbayes.Pmf()
         self.sequences = {}
         self.initial_rdt = []
 
-    def GetKeys(self):
+    def GetItems(self):
+        """Returns an iterator of (value, prob) pairs.
+
+        Each value is an (age, bucket) pair.
+
+        Returns: iterator of ((age, bucket), prob) pairs
+        """
+        return self.joint.Items()
+
+    def GetBuckets(self):
         """Returns an iterator for the keys in the cache."""
         return self.sequences.iterkeys()
 
-    def GetBucket(self, bucket):
+    def GetSequence(self, bucket):
         """Looks up a bucket in the cache."""
         return self.sequences[bucket]
 
-    def Add(self, rdt, initial, final, seq):
-        """Adds a sequence to the bucket that corresponds to final.
+    def Add(self, age, seq, rdt):
+        """Adds this observation point to the cache.
 
+        age: age of the tumor in years
+        seq: sequence of volumes
         rdt: RDT during this interval
-        initial: volume at the beginning of the interval
-        final: volume at the end of the interval
-        seq: sequence of volumes that got us to this final volume
         """
+        final = seq[-1]
         cm = Diameter(final)
-        bucket = round(CmToBucket(cm))
+        bucket = CmToBucket(cm)
+        self.joint.Incr((age, bucket))
+
         self.sequences.setdefault(bucket, []).append(seq)
+
+        initial = seq[-2]
         self.initial_rdt.append((initial, rdt))
+
+    def GetJointDist(self, size_thresh=MAXSIZE):
+        """Gets the current joint distribution.
+        
+        Returns: new Pmf object
+        """
+        joint = thinkbayes.Pmf()
+
+        for val, freq in cache.GetItems():
+            age, bucket = val
+            cm = BucketToCm(bucket)
+            if cm > size_thresh:
+                continue
+            log_cm = math.log10(cm)
+            joint.Set((age, log_cm), math.log(freq) * 10)
+
+        return joint
 
     def Print(self):
         """Prints the size (cm) for each bucket, and the number of sequences."""
-        for bucket in sorted(self.GetKeys()):
-            ss = self.GetBucket(bucket)
+        for bucket in sorted(self.GetBuckets()):
+            ss = self.GetSequence(bucket)
             diameter = BucketToCm(bucket)
             print diameter, len(ss)
         
@@ -352,25 +390,26 @@ class Cache(object):
 
 cache = Cache()
 
-def ExtendSequence(t, rdt, interval):
-    """Generates a new random value and adds it to the end of t.
+def ExtendSequence(age, seq, rdt, interval):
+    """Generates a new random value and adds it to the end of seq.
 
     Side-effect: adds sub-sequences to the cache.
 
-    t: sequence of values so far
+    age: age of tumor at the end of this interval
+    seq: sequence of values so far
     rdt: reciprocal doubling time in doublings per year
     interval: timestep in years
     """
-    initial = t[-1]
+    initial = seq[-1]
     doublings = rdt * interval
     final = initial * 2**doublings
-    res = t + (final,)
-    cache.Add(rdt, initial, final, res)
+    new_seq = seq + (final,)
+    cache.Add(age, new_seq, rdt)
     
-    return final, res
+    return final, new_seq
 
 
-def MakeSequence(iterator, v0=0.01, interval=INTERVAL, vmax=Volume(20.0)):
+def MakeSequence(iterator, v0=0.01, interval=INTERVAL, vmax=Volume(MAXSIZE)):
     """Simulate the growth of a tumor.
 
     iterator: iterator of rdts
@@ -378,14 +417,16 @@ def MakeSequence(iterator, v0=0.01, interval=INTERVAL, vmax=Volume(20.0)):
     interval: timestep in years
     vmax: volume to stop at
     """
-    vs = v0,
+    seq = v0,
+    age = 0
 
     for rdt in iterator:
-        final, vs = ExtendSequence(vs, rdt, interval)
+        age += interval
+        final, seq = ExtendSequence(age, seq, rdt, interval)
         if final > vmax:
             break
 
-    return vs
+    return seq
 
 
 def MakeSequences(n, rho, cdf):
@@ -401,8 +442,8 @@ def MakeSequences(n, rho, cdf):
     sequences = []
     for i in range(n):
         iterator = RdtGenerator(n, rho, cdf)
-        vs = MakeSequence(iterator)
-        sequences.append(vs)
+        seq = MakeSequence(iterator)
+        sequences.append(seq)
 
         if i % 100 == 0:
             print i
@@ -410,34 +451,34 @@ def MakeSequences(n, rho, cdf):
     return sequences
 
 
-def PlotSequence(ts, vs, color='blue'):
+def PlotSequence(ts, seq, color='blue'):
     """Plots a time series of linear measurements.
 
     ts: sequence of times in years
-    vs: sequence of columes
+    seq: sequence of columes
     color: color string
     """
     options = dict(color=color, linewidth=1, alpha=0.2)
-    xs = [Diameter(v) for v in vs]
+    xs = [Diameter(v) for v in seq]
 
     myplot.Plot(ts, xs, **options)
 
 
-def PlotSequences(ss):
+def PlotSequences(sequences):
     """Plots linear measurement vs time.
 
-    ss: list of sequences of volumes
+    sequences: list of sequences of volumes
     """
     myplot.Clf()
 
     options = dict(color='gray', linewidth=1, linestyle='dashed')
     myplot.Plot([0, 40], [10, 10], **options)
 
-    for vs in ss:
-        n = len(vs)
+    for seq in sequences:
+        n = len(seq)
         age = n * INTERVAL
         ts = numpy.linspace(0, age, n)
-        PlotSequence(ts, vs)
+        PlotSequence(ts, seq)
 
     myplot.Save(root='kidney4',
                 formats=FORMATS,
@@ -455,15 +496,15 @@ def PlotBucket(bucket, color='blue'):
     bucket: int bucket number
     color: string
     """
-    ss = cache.GetBucket(bucket)
-    for vs in ss:
-        n = len(vs)
+    sequences = cache.GetSequence(bucket)
+    for seq in sequences:
+        n = len(seq)
         age = n * INTERVAL
         ts = numpy.linspace(-age, 0, n)
-        PlotSequence(ts, vs, color)
+        PlotSequence(ts, seq, color)
 
 
-def PlotCache():
+def PlotBuckets():
     """Plots the set of sequences that ended in a given bucket."""
     # 2.01, 4.95 cm, 9.97 cm
     buckets = [7.0, 16.0, 23.0]
@@ -480,30 +521,47 @@ def PlotCache():
                 title='History of simulated tumors',
                 axis=[-40, 1, MINSIZE, 12],
                 xlabel='years',
+                ylabel='diameter (cm, log scale)',
+                yscale='log')
+
+
+def PlotJointDist():
+    """Makes a pcolor plot of the age-size joint distribution."""
+    myplot.Clf()
+
+    joint = cache.GetJointDist()
+
+    myplot.Contour(joint.GetDict(), contour=False, pcolor=True)
+
+    myplot.Save(root='kidney8',
+                formats=FORMATS,
+                axis=[0, 41, -0.7, 1.31],
+                yticks=MakeLogTicks([0.2, 0.5, 1, 2, 5, 10, 20]),
+                xlabel='ages',
                 ylabel='diameter (cm, log scale)')
 
 
-def CdfBucket(bucket, name=''):
+def CdfBucket(target, name=''):
     """Forms the cdf of ages for the sequences in this bucket.
 
-    bucket: int bucket number
+    target: int bucket number
     name: string
     """
-    ss = cache.GetBucket(bucket)
-    ages = []
-    for vs in ss:
-        n = len(vs)
-        age = n * INTERVAL
-        ages.append(age)
+    pmf = thinkbayes.Pmf(name=name)
+    for val, prob in cache.GetItems():
+        age, bucket = val
+        if bucket == target:
+            pmf.Set(age, prob)
 
-    cdf = Cdf.MakeCdfFromList(ages, name=name)
+    pmf.Normalize()
+    cdf = thinkbayes.MakeCdfFromPmf(pmf)
     return cdf
 
 
-def CdfCache():
+def PlotConditionalCdfs():
     """Plots the cdf of ages for each bucket."""
-    # 2.01, 4.95 cm, 9.97 cm, 14.879 cm
     buckets = [7.0, 16.0, 23.0, 27.0]
+    # 2.01, 4.95 cm, 9.97 cm, 14.879 cm
     names = ['2 cm', '5 cm', '10 cm', '15 cm']
     cdfs = []
 
@@ -575,7 +633,7 @@ def FitLine(xs, ys, fxs):
     return fys
 
 
-def ConfidenceIntervalFigure(xscale='linear'):
+def PlotConfidenceIntervals(xscale='linear'):
     """Plots the confidence interval for each bucket."""
     xs = []
     ts = []
@@ -585,7 +643,7 @@ def ConfidenceIntervalFigure(xscale='linear'):
     # loop through the buckets, accumulate
     # xs: sequence of sizes in cm
     # ts: sequence of percentile tuples
-    for i, bucket in enumerate(sorted(cache.GetKeys())):
+    for i, bucket in enumerate(sorted(cache.GetBuckets())):
         cm = BucketToCm(bucket)
         if cm < min_size or cm > 20.0:
             continue
@@ -650,6 +708,18 @@ def MakeTicks(xs):
     return xs, labels
 
 
+def MakeLogTicks(xs):
+    """Makes a pair of sequences for use as pyplot ticks.
+
+    xs: sequence of floats
+
+    Returns (xs, labels), where labels is a sequence of strings.
+    """
+    lxs = [math.log10(x) for x in xs]
+    labels = [str(x) for x in xs]
+    return lxs, labels
+
+
 def TestCorrelation(cdf):
     """Tests the correlated generator.
 
@@ -663,14 +733,30 @@ def TestCorrelation(cdf):
     
     rho2 = correlation.SerialCorr(xs)
     print rho, rho2
-    cdf2 = Cdf.MakeCdfFromList(xs)
+    cdf2 = thinkbayes.MakeCdfFromList(xs)
 
     myplot.Cdfs([cdf, cdf2])
     myplot.Show()
 
 
+def ProbOlder(cm, age):
+    """Computes the probability of exceeding age, given size.
+
+    cm: size in cm
+    age: age in years
+    """
+    bucket = CmToBucket(cm)
+    cdf = CdfBucket(bucket)
+    p = cdf.Prob(age)
+    return 1-p
+
+
 def main(script):
-    DoTheMath()
+    for size in [1, 5, 10]:
+        bucket = CmToBucket(size)
+        print 'Size, bucket', size, bucket
+
+    SimpleModel()
 
     random.seed(17)
 
@@ -685,19 +771,23 @@ def main(script):
     QQPlot(cdf, fit)
 
     rho = 0.0
-    ss = MakeSequences(100, rho, fit)
+    sequences = MakeSequences(100, rho, fit)
 
-    PlotSequences(ss)
-    
-    PlotCache()
+    PlotSequences(sequences)
+    PlotBuckets()
 
-    ss = MakeSequences(1900, rho, fit)
+    sequences = MakeSequences(1900, rho, fit)
     print 'V0-RDT correlation', cache.Correlation()
 
-    CdfCache()
+    print 'Probability age > 8 year', ProbOlder(15.5, 8)
 
-    ConfidenceIntervalFigure(xscale='log')
-    #cache.Print()
+    PlotConditionalCdfs()
+
+    PlotConfidenceIntervals(xscale='log')
+
+    PlotJointDist()
+
+
 
 
 if __name__ == '__main__':
