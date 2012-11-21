@@ -161,15 +161,15 @@ def FitCdf(cdf):
 def CorrelatedGenerator(cdf, rho):
     """Generates a sequence of values from cdf with correlation.
 
-    Generates a correlated standard normal series, then transforms to
+    Generates a correlated standard Gaussian series, then transforms to
     values from cdf
 
     cdf: distribution to choose from
     rho: target coefficient of correlation
     """
     def Transform(x):
-        """Maps from a normal variate to a variate with the given CDF."""
-        p = erf.NormalCdf(x)
+        """Maps from a Gaussian variate to a variate with the given CDF."""
+        p = thinkbayes.GaussianCdf(x)
         y = cdf.Value(p)
         return y
 
@@ -199,12 +199,11 @@ def UncorrelatedGenerator(cdf, rho):
         yield x
 
 
-def RdtGenerator(n, rho, cdf):
+def RdtGenerator(cdf, rho):
     """Returns an iterator with n values from cdf and the given correlation.
 
-    n: number of elements
-    rho: coefficient of correlation
     cdf: Cdf object
+    rho: coefficient of correlation
     """
     if rho == 0.0:
         return UncorrelatedGenerator(cdf, rho)
@@ -438,10 +437,9 @@ def MakeSequences(n, rho, cdf):
 
     Returns: list of n iterators of n rdts
     """
-    # TODO: why are we using n here in two ways?
     sequences = []
     for i in range(n):
-        iterator = RdtGenerator(n, rho, cdf)
+        iterator = RdtGenerator(cdf, rho)
         seq = MakeSequence(iterator)
         sequences.append(seq)
 
@@ -541,16 +539,16 @@ def PlotJointDist():
                 ylabel='diameter (cm, log scale)')
 
 
-def CdfBucket(target, name=''):
+def ConditionalCdf(size_bucket, name=''):
     """Forms the cdf of ages for the sequences in this bucket.
 
-    target: int bucket number
+    size_bucket: int bucket number
     name: string
     """
     pmf = thinkbayes.Pmf(name=name)
     for val, prob in cache.GetItems():
         age, bucket = val
-        if bucket == target:
+        if bucket == size_bucket:
             pmf.Set(age, prob)
 
     pmf.Normalize()
@@ -566,7 +564,7 @@ def PlotConditionalCdfs():
     cdfs = []
 
     for bucket, name in zip(buckets, names):
-        cdf = CdfBucket(bucket, name)
+        cdf = ConditionalCdf(bucket, name)
         cdfs.append(cdf)
 
     myplot.Clf()
@@ -648,7 +646,7 @@ def PlotConfidenceIntervals(xscale='linear'):
         if cm < min_size or cm > 20.0:
             continue
         xs.append(cm)
-        cdf = CdfBucket(bucket)      
+        cdf = ConditionalCdf(bucket)      
         ps = [cdf.Percentile(p) for p in percentiles]
         ts.append(ps)
 
@@ -746,7 +744,7 @@ def ProbOlder(cm, age):
     age: age in years
     """
     bucket = CmToBucket(cm)
-    cdf = CdfBucket(bucket)
+    cdf = ConditionalCdf(bucket)
     p = cdf.Prob(age)
     return 1-p
 
@@ -768,7 +766,7 @@ def main(script):
     # TestCorrelation(fit)
 
     PlotCdf(cdf, fit)
-    QQPlot(cdf, fit)
+    # QQPlot(cdf, fit)
 
     rho = 0.0
     sequences = MakeSequences(100, rho, fit)
@@ -779,15 +777,14 @@ def main(script):
     sequences = MakeSequences(1900, rho, fit)
     print 'V0-RDT correlation', cache.Correlation()
 
-    print 'Probability age > 8 year', ProbOlder(15.5, 8)
+    print '15.5 Probability age > 8 year', ProbOlder(15.5, 8)
+    print '6.0 Probability age > 8 year', ProbOlder(6.0, 8)
 
     PlotConditionalCdfs()
 
     PlotConfidenceIntervals(xscale='log')
 
     PlotJointDist()
-
-
 
 
 if __name__ == '__main__':

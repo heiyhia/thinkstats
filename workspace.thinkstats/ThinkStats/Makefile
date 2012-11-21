@@ -124,7 +124,7 @@ BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 BAYES_FIGS = train1.* train2.* euro[123].pdf euro[123].eps dungeons1.* \
 hockey[123].pdf hockey[123].eps sat*.eps sat*.pdf kidney*.eps kidney*.pdf
 
-BAYES_TABLES = kidney_table.tex
+BAYES_TABLES = kidney_table*.tex
 
 bayes_code:
 	pydoc -w thinkbayes
