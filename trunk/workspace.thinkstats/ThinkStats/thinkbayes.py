@@ -23,6 +23,8 @@ import math
 import numpy
 import random
 
+from scipy.special import erf, erfinv
+
 
 def Odds(p):
     """Computes odds for a given probability.
@@ -58,6 +60,37 @@ def Probability2(yes, no):
     yes, no: int or float odds in favor
     """
     return float(yes) / (yes + no)
+
+
+class Interpolator(object):
+    """Represents a mapping between sorted sequences; performs linear interp.
+
+    Attributes:
+        xs: sorted list
+        ys: sorted list
+    """
+    def __init__(self, xs, ys):
+        self.xs = xs
+        self.ys = ys
+
+    def Lookup(self, x):
+        """Looks up x and returns the corresponding value of y."""
+        return self._Bisect(x, self.xs, self.ys)
+
+    def Reverse(self, y):
+        """Looks up y and returns the corresponding value of x."""
+        return self._Bisect(y, self.ys, self.xs)
+
+    def _Bisect(self, x, xs, ys):
+        """Helper function."""
+        if x <= xs[0]:
+            return ys[0]
+        if x >= xs[-1]:
+            return ys[-1]
+        i = bisect.bisect(xs, x)
+        frac = 1.0 * (x - xs[i-1]) / (xs[i] - xs[i-1])
+        y = ys[i-1] + frac * 1.0 * (ys[i] - ys[i-1])
+        return y
 
 
 class _DictWrapper(object):
@@ -1154,34 +1187,126 @@ def EvalBinomialPmf(p, yes, no):
     return p**yes * (1-p)**no
 
 
-class Interpolator(object):
-    """Represents a mapping between sorted sequences; performs linear interp.
+def StandardGaussianCdf(x, root2=math.sqrt(2)):
+    """Evaluates the CDF of the standard Gaussian distribution.
+    
+    See http://en.wikipedia.org/wiki/Normal_distribution
+    #Cumulative_distribution_function
 
-    Attributes:
-        xs: sorted list
-        ys: sorted list
+    Args:
+        x: float
+                
+    Returns:
+        float
     """
-    def __init__(self, xs, ys):
-        self.xs = xs
-        self.ys = ys
+    return (erf(x / root2) + 1) / 2
 
-    def Lookup(self, x):
-        """Looks up x and returns the corresponding value of y."""
-        return self._Bisect(x, self.xs, self.ys)
 
-    def Reverse(self, y):
-        """Looks up y and returns the corresponding value of x."""
-        return self._Bisect(y, self.ys, self.xs)
+def GaussianCdf(x, mu=0, sigma=1):
+    """Evaluates the CDF of the gaussian distribution.
+    
+    Args:
+        x: float
 
-    def _Bisect(self, x, xs, ys):
-        """Helper function."""
-        if x <= xs[0]:
-            return ys[0]
-        if x >= xs[-1]:
-            return ys[-1]
-        i = bisect.bisect(xs, x)
-        frac = 1.0 * (x - xs[i-1]) / (xs[i] - xs[i-1])
-        y = ys[i-1] + frac * 1.0 * (ys[i] - ys[i-1])
-        return y
+        mu: mean parameter
+        
+        sigma: standard deviation parameter
+                
+    Returns:
+        float
+    """
+    return StandardGaussianCdf(float(x - mu) / sigma)
 
+
+def GaussianCdfInverse(p, mu=0, sigma=1):
+    """Evaluates the inverse CDF of the gaussian distribution.
+
+    See http://en.wikipedia.org/wiki/Normal_distribution#Quantile_function  
+
+    Args:
+        p: float
+
+        mu: mean parameter
+        
+        sigma: standard deviation parameter
+                
+    Returns:
+        float
+    """
+    x = root2 * erfinv(2*p - 1)
+    return mu + x * sigma
+
+
+class Beta(object):
+    """Represents a Beta distribution.
+
+    See http://en.wikipedia.org/wiki/Beta_distribution
+    """
+    def __init__(self, alpha=1, beta=1, name=''):
+        """Initializes a Beta distribution."""
+        self.alpha = alpha
+        self.beta = beta
+        self.name = name
+
+    def Update(self, data):
+        """Updates a Beta distribution.
+
+        data: pair of int (heads, tails)
+        """
+        heads, tails = data
+        self.alpha += heads
+        self.beta += tails
+        
+    def Mean(self):
+        """Computes the mean of this distribution."""
+        return float(self.alpha) / (self.alpha + self.beta)
+
+    def Random(self):
+        """Generates a random variate from this distribution."""
+        return random.betavariate(self.alpha, self.beta)
+
+    def EvalPdf(self, x):
+        """Evaluates the PDF at x."""
+        return x**(self.alpha-1) * (1-x)**(self.beta-1)
+        
+    def MakePmf(self, steps=101):
+        """Returns a Pmf of this distribution."""
+        xs = [i / (steps-1.0) for i in xrange(steps)]
+        probs = [self.EvalPdf(x) for x in xs]
+        pmf = MakePmfFromDict(dict(zip(xs, probs)))
+        return pmf
+
+    def MakeCdf(self, steps=101):
+        """Returns the CDF of this distribution."""
+        pmf = self.MakePmf(steps=steps)
+        cdf = MakeCdfFromPmf(pmf)
+        return cdf
+
+
+class Dirichlet(object):
+    """Represents a Dirichlet distribution.
+
+    See http://en.wikipedia.org/wiki/Dirichlet_distribution
+    """
+    def __init__(self, n, name=''):
+        """Initializes a Dirichlet distribution.
+
+        n: number of dimensions
+        name: string name
+        """
+        self.n = n
+        self.params = numpy.ones(n, dtype=numpy.int)
+        self.name = name
+
+    def Update(self, data):
+        """Updates a Beta distribution."""
+        self.params += data
+        
+    def Random(self):
+        """Generates a random variate from this distribution.
+
+        Returns: normalized vector of fractions
+        """
+        x = numpy.random.gamma(self.params)
+        return x / x.sum()
 
