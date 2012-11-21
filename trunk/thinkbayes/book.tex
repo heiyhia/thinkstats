@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.12.0}
+\newcommand{\theversion}{0.13.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -321,7 +321,7 @@ Thanks!
 \item First, I have to acknowledge David MacKay's excellent book,
   {\it Information Theory, Inference, and Learning Algorithms} which is
   where I first came to understand Bayesian methods.  With his
-  permission (and with acknowledgement) I use several problems from
+  permission (and with acknowledgment) I use several problems from
   his book as examples.
 
 \item This book has also benefited from my interactions with Sanjoy
@@ -371,7 +371,7 @@ Thanks!
 The fundamental idea behind all Bayesian statistics is Bayes's Theorem,
 which is surprisingly easy to derive, provided that you understand
 conditional probability.  So we'll start with probability, then
-conditional probabilty, then Bayes's Theorem, and on to Bayesian
+conditional probability, then Bayes's Theorem, and on to Bayesian
 statistics.
 
 A probability is a number between 0 and 1 (including both) that
@@ -1405,25 +1405,13 @@ locomotive with the number 60.  Estimate how many locomotives the
 railroad has.''
 \end{quote}
 
-To solve this problem,
-we have to make some assumptions about the numbers on the locomotives.
-Do they start at 1?  Are they assigned sequentially, or do they
-skip around?  Are all of the locomotives in operation?  And are
-they all equally likely to be seen in a given location?
-
-That's a lot of questions!  Well, we have to start somewhere, so let's
-start simple: assume that the numbers are sequential from 1 to $N$,
-where $N$ is the unknown number of locomotives.  And assume that
-the location of trains in space is unrelated to their numbers.
-
-If these assumptions are correct, we know the railroad has 60 or more
+Based on this observation, we know the railroad has 60 or more
 locomotives.  But how many more?  To apply Bayesian reasoning, we
 can break this problem into two steps:
 
 \begin{itemize}
 
-\item What did we know about $N$ before we saw the
-data?
+\item What did we know about $N$ before we saw the data?
 
 \item For any given value of $N$, what is the likelihood of
 seeing the data (a locomotive with number 60)?
@@ -1431,7 +1419,7 @@ seeing the data (a locomotive with number 60)?
 \end{itemize}
 
 The answer to the first question is the prior.  The answer to the
-second question is the likelihood.
+second is the likelihood.
 
 \begin{figure}
 % train.py
@@ -1441,8 +1429,8 @@ on a uniform prior.}
 \label{fig.train1}
 \end{figure}
 
-The question doesn't give us much basis to choose a prior, but
-again we can start with something simple, see what we get, and
+We don't have much basis to choose a prior, but we can
+start with something simple and
 then evaluate some alternatives.  So let's assume that $N$ is less
 than 1000, and equally likely to be any value from 1 to 1000.
 
@@ -2047,6 +2035,7 @@ converge on the same posterior.
 
 
 \section{Optimization}
+\label{optimization}
 
 The code I have shown so far is meant to be easy to read, but it
 is not very efficient.  In general, I like to develop code that
@@ -2140,7 +2129,7 @@ this version takes the same time for any number of spins (up
 to a point).
 
 For this example there is yet another optimization we can apply,
-but we'll come back to that later.
+but we'll come back to that in Section~\ref{beta}.
 
 
 \chapter{Odds and addends}
@@ -2311,7 +2300,7 @@ accounts for the 'O' sample, so the probability of the data
 is just the probability that a random member of the population
 has type 'AB' blood, which is 1\%.
 
-If Oliver did not leave blood at the scence, then we have two
+If Oliver did not leave blood at the scene, then we have two
 samples to account for.  If we choose two random people from
 the population, what is the chance of finding one with type 'O'
 and one with type 'AB'?  Well, there are two ways it might happen:
@@ -2320,7 +2309,7 @@ the first person we choose might have type 'O' and the second
 $2 (0.6) (0.01)\ = 1.2\%$.
 
 The likelihood of the data is slightly higher if Oliver is
-{\it not} one of the people who left blood at the scence, so
+{\it not} one of the people who left blood at the scene, so
 the blood data is actually evidence against Oliver's guilt.
 
 This example is a little contrived, but it is an example of
@@ -2433,7 +2422,7 @@ Figure~\ref{fig.dungeons1}.
 \begin{figure}
 % dungeons.py
 \centerline{\includegraphics[height=2.5in]{figs/dungeons1.pdf}}
-\caption{Approximate and exact distibutions for the sum of
+\caption{Approximate and exact distributions for the sum of
 three six-sided dice.}
 \label{fig.dungeons1}
 \end{figure}
@@ -2689,7 +2678,7 @@ or less likely at different times during a game.
 
 But all models are based on simplifications, and in this case modeling
 a hockey game with a Poisson process is a reasonable choice.  Heuer
-et al. analyze scoring in a German soccer league and come to the same
+et al analyze scoring in a German soccer league and come to the same
 conclusion; see
 \url{http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf}.
 
@@ -3855,7 +3844,7 @@ test-takers.
 
 But if we choose a model where all questions are equally difficult, we
 can define a characteristic, \verb"p_correct", for each test-taker,
-which is the probablity of answering any question correctly.  This
+which is the probability of answering any question correctly.  This
 simplification makes it easy to compute the likelihood of a given
 score.
 
@@ -4185,7 +4174,7 @@ class Exam:
 {\tt efficacies} is a Pmf that represents the distribution of efficacy
 across test-takers.  I assume that it is Gaussian with mean 0 and
 standard deviation 1.5.  This choice is mostly arbitrary.  The
-probablility of getting a question correct depends on the difference
+probability of getting a question correct depends on the difference
 between efficacy and difficulty, so we can choose the units of
 efficacy and then calibrate the units of difficulty accordingly.
 
@@ -4402,7 +4391,7 @@ to estimate them to solve the problem we care about.  Which
 is why values like this are called ``nuisance parameters.''
 
 One way to visualize the analysis we did in this chapter is
-to plot the space of these parameters.  \verb"thinkbayes.JoinPmf"
+to plot the space of these parameters.  \verb"thinkbayes.JointPmf"
 takes two Pmfs, computes their joint distribution, and returns
 a Pmf of each possible pair of values and its probability.
 
@@ -4477,11 +4466,13 @@ the rate of growth for untreated tumors by comparing scans from the
 same patient at different times.  Several papers have reported these
 growth rates.
 
-I collected data from a paper by Zhang et al \footnote{}.  I contacted the
-authors to see if I could get raw data, but they refused on grounds of
-medical privacy.  Nevertheless, I was able to extract the data I
-needed by printing one of their graphs and measuring it with a ruler.
-It's silly, but it works.
+I collected data from a paper by Zhang et al \footnote{Zhang et al,
+  Distribution of Renal Tumor Growth Rates Determined by Using Serial
+  Volumetric CT Measurements, January 2009 {\it Radiology}, 250,
+  137-144.}.  I contacted the authors to see if I could get raw data,
+but they refused on grounds of medical privacy.  Nevertheless, I was
+able to extract the data I needed by printing one of their graphs and
+measuring it with a ruler.
 
 \begin{figure}
 % kidney.py
@@ -4669,10 +4660,13 @@ def MakeSequence(iterator, v0=0.01, interval=0.67, vmax=Volume(20.0)):
 \end{verbatim}
 
 {\tt iterator} is an iterator object that yields a series of
-random values from the CDF of growth rate.  {\tt v0} is the
-initial volume in mL.  {\tt interval} is the time step in years.
-{\tt vmax} is the final volume corresponding to a linear measurement
-of 20 cm.
+random values from the CDF of growth rate.  {\tt MakeSequence}
+takes the iterator as an argument so we can run it with
+different random number generators, as you will see soon.
+
+{\tt v0} is the initial volume in mL.  {\tt interval} is the time step
+in years.  {\tt vmax} is the final volume corresponding to a linear
+measurement of 20 cm.
 
 {\tt Volume} converts from linear measurement in cm to volume
 in mL, based on the simplification that the tumor is a sphere:
@@ -4789,11 +4783,11 @@ Here's the code that reads the joint distribution and builds
 the conditional distribution for a given size bucket.
 
 \begin{verbatim}
-def CdfBucket(target):
-    pmf = thinkbayes.Pmf()
+def ConditionalCdf(size_bucket):
+    pmf = thinkbayes.Pmf(name=name)
     for val, prob in cache.GetItems():
         age, bucket = val
-        if bucket == target:
+        if bucket == size_bucket:
             pmf.Set(age, prob)
 
     pmf.Normalize()
@@ -4801,7 +4795,7 @@ def CdfBucket(target):
     return cdf
 \end{verbatim}
 
-{\tt target} is the integer bucket number corresponding to a
+\verb"size_bucket" is the integer bucket number corresponding to a
 particular size.  The return value is the CDF of age, conditioned
 on the given size.
 
@@ -4820,7 +4814,7 @@ compute percentiles as a function of size.
     percentiles = [95, 75, 50, 25, 5]
 
     for bucket in cache.GetBuckets():
-        cdf = CdfBucket(bucket)      
+        cdf = ConditionalCdf(bucket)      
         ps = [cdf.Percentile(p) for p in percentiles]
 \end{verbatim}
 
@@ -4842,30 +4836,37 @@ each sequence of percentiles.
 
 The results so far are based on a number of modeling decisions;
 let's review them and consider which ones are the most
-likely sources of error, and which we might be able to mitigate.
+likely sources of error:
 
 \begin{itemize}
 
-\item The distribution of growth rates in our simulations are based on
-  a continuous model we chose to fit the PMF reported by Zhang et al,
-  which is based on 53 patients.  A different sample would yield a
+\item To convert from linear measure to volume, we assume that
+  tumors are approximately spherical.  This assumption is probably
+  fine for tumors up to a few centimeters, but not for very
+  large tumors.
+
+\item The distribution of growth rates in the simulations are based on
+  a continuous model we chose to fit the data reported by Zhang et al,
+  which is based on 53 patients.  The fit is only approximate and, more
+  importantly, a larger sample would yield a
   different distribution.
 
 \item The growth model does not take into account tumor subtype or
   grade, which is consistent with the conclusion of Zhang et al:
   ``Growth rates in renal tumors of different sizes, subtypes and
   grades represent a wide range and overlap substantially.''
+  But again, with a larger sample, difference might become apparent.
 
 \item The distribution of growth rate does not depend on the size of
-  the tumor.  This assumption is probably not very good for very
-  small and very large tumors, which might be limited by blood supply.
+  the tumor.  This assumption is not realistic for very
+  small and very large tumors, whose growth is limited by blood supply.
 
   But tumors observed by Zhang et al ranged from 1 to 12 cm, and they
   found no statistically significant relationship between
   size and growth rate.  So if there is a relationship, it is
   likely to be weak, at least in this size range.
   
-\item In the model, the growth rate during each interval is
+\item In the simulations, growth rate during each interval is
   independent of previous growth rates.  It is plausible that, in
   reality, tumors that have grown quickly in the past are more likely
   to grow quickly.  In other words, there is probably
@@ -4873,24 +4874,25 @@ likely sources of error, and which we might be able to mitigate.
 
 \end{itemize}
 
-If there is serial correlation, it can't be very strong, because if it
-were, we would see a relationship between size at diagnosis and growth
-rate.  But there could be a weak correlation, which would affect the
-location and spread of the results.
+Of these, the first and last seem the most problematic.  I'll
+investigate serial correlation first, then come back to
+spherical geometry.
 
-To investigate this possibility, wrote a generator that yields
-a series of samples from a given CDF, with a given serial correlation.
+To simulate correlated growth, I wrote a generator that yields
+a correlated series from a given CDF.
 Here's how the algorithm works:
 
 \begin{enumerate}
 
 \item Generate correlated variates from a Gaussian distribution.
+  This is easy to do because we can compute the distribution
+  of the next value conditioned on the previous value.
 
 \item Transform each value to its cumulative probability, using
-the Gaussian CDF.
+  the Gaussian CDF.
 
 \item Transform each cumulative probability to a random variate
-by inverting the given CDF.
+  by inverting the given CDF.
 
 \end{enumerate}
 
@@ -4898,59 +4900,264 @@ Here's what that looks like in code:
 
 \begin{verbatim}
 def CorrelatedGenerator(cdf, rho):
-    # for the first value, choose from a Gaussian and transform it
     x = random.gauss(0, 1)
     yield Transform(x)
 
-    # for subsequent values, choose from the conditional distribution
-    # based on the previous value
     sigma = math.sqrt(1 - rho**2);    
     while True:
         x = random.gauss(x * rho, sigma)
         yield Transform(x)
 \end{verbatim}
 
+{\tt cdf} is the desired CDF; {\tt rho} is the desired correlation.
+
+The first value is Gaussian with mean 0 and standard deviation 1.
+
+For subsequent values, the mean and standard deviation depend on the
+previous value.  Given the previous $x$, the mean of the next value is
+$\rho x$, and the variance is $1 - \rho^2$.
+
+{\tt Transform} is the function that maps from a Gaussian
+variate to a variate with the given CDF.
 
 \begin{verbatim}
     def Transform(x):
-        p = erf.NormalCdf(x)
+        p = thinkbayes.GaussianCdf(x)
         y = cdf.Value(p)
         return y
 \end{verbatim}
 
-For example, running simulations with ρ = 0.4 increases the
-estimated median age by about a year, and the interquartile range by
-about 3 years.  However, if there were a strong serial correlation in
-growth rate, there would be also be a correlation between tumor volume
-and growth rate, and prior work has shown no such relationship.
+{\tt GaussianCdf} computes the CDF of the standard Gaussian
+distribution at {\tt x}, returning a cumulative probability.
+{\tt Cdf.Value} maps from a cumulative probability to the
+corresponding value in {\tt cdf}.
 
-There could still be a weak serial correlation, but since there is
-currently no evidence for it, I ran these simulations with ρ = 0.
+Depending on the shape of {\tt cdf}, information can
+be lost in transformation, so the actual correlation might be
+lower than the target.  For example, when I generate
+10000 values from the distribution of growth rates with
+target correlation 0.4, the actual correlation is 0.37.
 
-And finally we can give a more precise answer to the question
+Remember that {\tt MakeSequence} takes an iterator as an argument.
+That interface allows it to work with different generators:
+
+\begin{verbatim}
+    iterator = UncorrelatedGenerator(cdf, rho)
+    seq1 = MakeSequence(iterator)
+
+    iterator = CorrelatedGenerator(cdf, rho)
+    seq2 = MakeSequence(iterator)
+\end{verbatim}
+
+Now we can see what effect serial correlation has on the results;
+the following table shows percentiles of age for a 6 cm tumor,
+using the uncorrelated generator and a correlated generator
+with target $\rho = 0.4$.
+
+\begin{table}
+\input{kidney_table2}
+\caption{Percentiles of tumor age conditioned on size.}
+\end{table}
+
+Correlation makes the fastest growing tumors faster and the slowest
+slower, so the range of ages is wider.  The difference is modest for
+low percentiles, but for the 95th percentile it is more than 6 years.
+To compute these percentiles precisely, we would need a better
+estimate of the actual serial correlation.
+
+However, this model is sufficient to answer the question
 we started with: given a tumor with a linear dimension of
 15.5 cm, what is the probability that it formed more than
 8 years ago?
 
+Here's the code:
+
 \begin{verbatim}
 def ProbOlder(cm, age):
     bucket = CmToBucket(cm)
-    cdf = CdfBucket(bucket)
+    cdf = ConditionalCdf(bucket)
     p = cdf.Prob(age)
     return 1-p
 \end{verbatim}
 
+{\tt cm} is the size of the tumor; {\tt age} is the age threshold
+in years.  With no serial correlation, the probability that a
+15.5 cm tumor is older than 8 years is 0.999, or almost certain.
+With correlation 0.4, faster-growing tumors are more likely, but
+the probability is still 0.995.  Even with correlation 0.8, the
+probability is 0.978.
+
+Another likely source of error is the assumption that tumors are
+approximately spherical.  For a tumor with linear dimensions 15.5 x 15
+cm, this assumption is probably not valid.  If, as seems likely, it
+were relatively flat, it might have the same volume as a 6 cm sphere.
+But with this smaller volume and correlation 0.8, the probability of age
+greater than 8 is still 95\%.
+
+So even taking into account modeling errors, it is unlikely that such
+a large tumor could have formed less than 8 years prior to the date of
+diagnosis.
 
 
 \section{Where's Bayes?}
 
+Well, we got through a whole chapter without using Bayes's Theorem or
+the {\tt Suite} class that encapsulates Bayesian updates.  What
+happened?
+
+One way to think about Bayes's Theorem is as an algorithm for
+inverting conditional probabilities.  Given \p{B|A}, we can compute
+\p{A|B}, provided we know \p{A} and \p{B}.  Of course this algorithm
+is only useful if, for some reason, it is easier to compute \p{B|A}
+than \p{A|B}.
+
+In this example, it is.  By running simulations, we can estimate the
+distribution of size conditioned on age, or \p{size|age}.  But it is
+harder to get the distribution of age conditioned on size, or
+\p{age|size}.  So this seems like a perfect opportunity to use Bayes's
+Theorem.
+
+The reason I didn't is computational efficiency.  To estimate
+\p{size|age} for any given size, you have to run a lot of simulations.
+Along the way, you end up computing \p{size|age} for a lot of sizes.
+In fact, you end up computing the entire joint distribution of size
+and age, \p{size, age}.
+
+And once you have the joint distribution, you don't really need
+Bayes's Theorem, you can extract \p{age|size} by taking slices from
+the joint distribution, as demonstrated in {\tt ConditionalCdf}.
+
+So we side-stepped Bayes, but he was with us in spirit.
+
+\chapter{Hierarchical models}
+
+\section{The Beta distribution}
+\label{beta}
+
+In Section~\ref{optimization} I promised yet another way to solve the
+Euro problem.  At last the time has come.
+
+Remember that in the Belgian Euro problem we try to estimate the
+probability, denoted {\tt x}, that a coin spun on edge lands heads up.
+For data we have the results of 250 spins: 140 heads and 110 tails.
+
+The goal is to compute the distribution of {\tt x}; that is, for
+any given value, denoted {\tt y}, we would like to know the probability
+that the true value of {\tt x} is {\tt y}.
+
+In Chapter~\ref{euro} we solved this problem using a Pmf object to
+represent a discrete set of possible values for {\tt x}.  In this
+chapter we will use a continuous distribution, specifically the beta
+distribution (see
+\url{http://en.wikipedia.org/wiki/Beta_distribution}).
+
+The beta distribution is defined on the interval from 0 to 1
+(including both), so it is a natural choice for describing
+proportions and probabilities.  But wait, it gets better.
+
+It turns out that if you do a Bayesian update with a binomial
+likelihood function, which is what we did in Section~\ref{optimization},
+the beta distribution is a ``conjugate prior.''
+
+That means that if the prior distribution for {\tt x} is a beta
+distribution, the posterior is also a beta distribution.
+But wait, it gets even better.
+
+The shape of the distribution depends on two parameters,
+conventionally written $\alpha$ and $\beta$, or
+{\tt alpha} and {\tt beta}.  And it turns out that if
+the prior is a beta distribution with parameters {\tt alpha} and {\tt beta},
+and we see data with {\tt h} heads and {\tt t} tails, the posterior is a beta
+distribution with parameters {\tt alpha+h} and {\tt beta+t}.  In other
+words, we can do an update with two additions.
+
+So that's great, but it only works if the prior is beta.
+If beta distributions were unrealistic priors, they would not be
+very useful.  But for many realistic priors there is a beta
+distribution that is at least close, and for a uniform prior
+there is a perfect match.  The beta distribution with
+{\tt alpha=1} and {\tt beta=1} is uniform from 0 to 1.
+
+So let's see how we can take advantage of all this.  Here's
+a class that represents a beta distribution:
+
+\begin{verbatim}
+class Beta(object):
+
+    def __init__(self, alpha=1, beta=1):
+        self.alpha = alpha
+        self.beta = beta
+\end{verbatim}
+
+By default \verb"__init__" makes a uniform distribution.
+{\tt Update} performs a Bayesian update:
+
+\begin{verbatim}
+    def Update(self, data):
+        heads, tails = data
+        self.alpha += heads
+        self.beta += tails
+\end{verbatim}
+
+{\tt data} is a pair of integers representing the number of
+heads and tails, or in the language of Bernoulli trials, successes
+and failures.
+
+The mean of a beta distribution is a simple function of
+{\tt alpha} and {\tt beta}:
+
+\begin{verbatim}
+    def Mean(self):
+        """Computes the mean of this distribution."""
+        return float(self.alpha) / (self.alpha + self.beta)
+\end{verbatim}
+
+Now we have yet another way to solve the Euro problem:
+
+\begin{verbatim}
+    beta = Beta()
+    beta.Update((140, 110))
+    print beta.Mean()
+\end{verbatim}
+
+The posterior mean is 56\% (again).  To get the probability for
+any value of {\tt x}, we can evaluate the PDF of the beta
+distribution:
+
+\begin{verbatim}
+    def EvalPdf(self, x):
+        return x**(self.alpha-1) * (1-x)**(self.beta-1)
+\end{verbatim}
+
+This expression might look familiar.  Here's {\tt thinkbayes.EvalBinomialPmf}
+
+\begin{verbatim}
+def EvalBinomialPmf(p, yes, no): 
+    return p**yes * (1-p)**no
+\end{verbatim}
+
+It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
+random variable and {\tt alpha} and {\tt beta} as parameters; in 
+{\tt EvalBinomialPmf}, {\tt p} is the parameter, and {\tt yes} and
+{\tt no} are random variables.
+
+There are efficient ways to generate random values from a beta
+distribution, and the random module knows about them.  The
+following method returns a random variate from a {\tt Beta}
+object:
+
+\begin{verbatim}
+    def Random(self):
+        return random.betavariate(self.alpha, self.beta)
+\end{verbatim}
+
+{\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
 
 
+\section{The unseen species problem}
 
 
 \chapter{Future chapters}
-
-Hierarchical models: Unseen species problem
 
 Change point detection: 
 
