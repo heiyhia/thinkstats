@@ -1269,11 +1269,11 @@ class Beta(object):
         """Evaluates the PDF at x."""
         return x**(self.alpha-1) * (1-x)**(self.beta-1)
         
-    def MakePmf(self, steps=101):
+    def MakePmf(self, steps=101, name=''):
         """Returns a Pmf of this distribution."""
         xs = [i / (steps-1.0) for i in xrange(steps)]
         probs = [self.EvalPdf(x) for x in xs]
-        pmf = MakePmfFromDict(dict(zip(xs, probs)))
+        pmf = MakePmfFromDict(dict(zip(xs, probs)), name)
         return pmf
 
     def MakeCdf(self, steps=101):
@@ -1339,3 +1339,18 @@ class Dirichlet(object):
         x = self.Random()
         y = numpy.log(x[:m]) * data
         return y.sum()
+
+    def MarginalBeta(self, i):
+        """Computes the marginal distribution of the ith element.
+
+        See http://en.wikipedia.org/wiki/Dirichlet_distribution
+        #Marginal_distributions
+
+        i: int
+
+        Returns: Beta object
+        """
+        alpha = self.params[i]
+        beta = sum(self.params) - alpha - self.n + 2
+        print sum(self.params), alpha, self.n
+        return Beta(alpha, beta)
