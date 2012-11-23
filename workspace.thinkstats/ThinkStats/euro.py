@@ -89,7 +89,7 @@ def Summarize(suite):
     """Prints summary statistics for the suite."""
     print suite.Prob(50)
 
-    print 'MLE', thinkbayes.MaximumLikelihood(suite)
+    print 'MLE', suite.MaximumLikelihood()
 
     print 'Mean', suite.Mean()
     print 'Median', thinkbayes.Percentile(suite, 50) 

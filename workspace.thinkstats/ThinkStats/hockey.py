@@ -186,8 +186,8 @@ def main():
     time_dist1 = MakeGoalTimePmf(suite1)    
     time_dist2 = MakeGoalTimePmf(suite2)
  
-    print 'MLE bruins', thinkbayes.MaximumLikelihood(suite1)
-    print 'MLE canucks', thinkbayes.MaximumLikelihood(suite2)
+    print 'MLE bruins', suite1.MaximumLikelihood()
+    print 'MLE canucks', suite2.MaximumLikelihood()
    
     myplot.Clf()
     myplot.Pmf(time_dist1)
