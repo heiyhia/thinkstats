@@ -338,6 +338,15 @@ class Pmf(_DictWrapper):
             var += p * (x - mu)**2
         return var
 
+    def MaximumLikelihood(self):
+        """Returns the value with the highest probability.
+
+        Returns: float probability
+        """
+        prob, val = max((prob, val) for val, prob in self.Items())
+        return val
+
+
     def Log(self):
         """Log transforms the probabilities.
         
@@ -947,17 +956,6 @@ def MakeSuiteFromCdf(cdf, name=None):
     return suite
 
 
-def MaximumLikelihood(pmf):
-    """Returns the value with the highest probability.
-
-    pmf: Pmf object
-
-    Returns: float probability
-    """
-    prob, val = max((prob, val) for val, prob in pmf.Items())
-    return val
-
-
 def Percentile(pmf, percentage):
     """Computes a percentile of a given Pmf.
 
@@ -1299,7 +1297,10 @@ class Dirichlet(object):
         self.name = name
 
     def Update(self, data):
-        """Updates a Beta distribution."""
+        """Updates a Beta distribution.
+
+        data: sequence of observations, in order corresponding to params
+        """
         self.params += data
         
     def Random(self):
@@ -1350,7 +1351,7 @@ class Dirichlet(object):
 
         Returns: Beta object
         """
-        alpha = self.params[i]
-        beta = sum(self.params) - alpha - self.n + 2
-        print sum(self.params), alpha, self.n
-        return Beta(alpha, beta)
+        observations = self.params - 1
+        yes = observations[i]
+        no = sum(observations) - yes
+        return Beta(yes+1, no+1)

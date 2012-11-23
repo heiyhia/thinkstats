@@ -214,20 +214,36 @@ class Species(thinkbayes.Suite):
         return pmf
         
 
-def main(script, flag=1, *args):
+def SimpleDirichletExample():
+    beta = thinkbayes.Beta()
+    beta.Update((3, 3))
+    print beta.Mean()
 
     data = [3, 2, 1]
     dirichlet = thinkbayes.Dirichlet(3)
     dirichlet.Update(data)
 
+    names = ['lions',  'tigers', 'bears']
+
     for i in range(3):
         beta = dirichlet.MarginalBeta(i)
-        pmf = beta.MakePmf(name=str(i))
+        print names[i], beta.Mean()
+
+        pmf = beta.MakePmf(name=names[i])
+        print names[i], pmf.MaximumLikelihood()
         myplot.Pmf(pmf)
 
-    myplot.Show()
-    return
+    myplot.Save(root='species1',
+                xlabel='Prevalence',
+                ylabel='Prob')
 
+
+
+
+
+def main(script, flag=1, *args):
+    SimpleDirichletExample()
+    return
 
     data = [1, 1]
 

@@ -30,7 +30,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.13.0}
+\newcommand{\theversion}{0.14.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -5035,19 +5035,19 @@ So we side-stepped Bayes, but he was with us in spirit.
 \label{beta}
 
 In Section~\ref{optimization} I promised yet another way to solve the
-Euro problem.  At last the time has come.
+Belgian Euro problem.  At last the time has come.
 
-Remember that in the Belgian Euro problem we try to estimate the
-probability, denoted {\tt x}, that a coin spun on edge lands heads up.
+Remember that in the Euro problem we try to estimate {\tt x}, the
+probability that a coin spun on edge lands heads up.
 For data we have the results of 250 spins: 140 heads and 110 tails.
 
-The goal is to compute the distribution of {\tt x}; that is, for
-any given value, denoted {\tt y}, we would like to know the probability
-that the true value of {\tt x} is {\tt y}.
+The goal is to compute the distribution of {\tt x}; that is, for any
+value, {\tt y}, we would like to know the
+probability that the true value of {\tt x} is {\tt y}.
 
 In Chapter~\ref{euro} we solved this problem using a Pmf object to
 represent a discrete set of possible values for {\tt x}.  In this
-chapter we will use a continuous distribution, specifically the beta
+chapter we use a continuous distribution, specifically the beta
 distribution (see
 \url{http://en.wikipedia.org/wiki/Beta_distribution}).
 
@@ -5056,15 +5056,14 @@ The beta distribution is defined on the interval from 0 to 1
 proportions and probabilities.  But wait, it gets better.
 
 It turns out that if you do a Bayesian update with a binomial
-likelihood function, which is what we did in Section~\ref{optimization},
-the beta distribution is a ``conjugate prior.''
+likelihood function, which is what we did in
+Section~\ref{optimization}, the beta distribution is a ``conjugate
+prior.''  That means that if the prior distribution for {\tt x} is a
+beta distribution, the posterior is also a beta distribution.  But
+wait, it gets even better.
 
-That means that if the prior distribution for {\tt x} is a beta
-distribution, the posterior is also a beta distribution.
-But wait, it gets even better.
-
-The shape of the distribution depends on two parameters,
-conventionally written $\alpha$ and $\beta$, or
+The shape of the beta distribution depends on two parameters,
+written $\alpha$ and $\beta$, or
 {\tt alpha} and {\tt beta}.  And it turns out that if
 the prior is a beta distribution with parameters {\tt alpha} and {\tt beta},
 and we see data with {\tt h} heads and {\tt t} tails, the posterior is a beta
@@ -5078,7 +5077,7 @@ distribution that is at least close, and for a uniform prior
 there is a perfect match.  The beta distribution with
 {\tt alpha=1} and {\tt beta=1} is uniform from 0 to 1.
 
-So let's see how we can take advantage of all this.  Here's
+Let's see how we can take advantage of all this.  Here's
 a class that represents a beta distribution:
 
 \begin{verbatim}
@@ -5132,13 +5131,13 @@ distribution:
 This expression might look familiar.  Here's {\tt thinkbayes.EvalBinomialPmf}
 
 \begin{verbatim}
-def EvalBinomialPmf(p, yes, no): 
-    return p**yes * (1-p)**no
+def EvalBinomialPmf(x, yes, no): 
+    return x**yes * (1-x)**no
 \end{verbatim}
 
 It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
 random variable and {\tt alpha} and {\tt beta} as parameters; in 
-{\tt EvalBinomialPmf}, {\tt p} is the parameter, and {\tt yes} and
+{\tt EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and
 {\tt no} are random variables.
 
 There are efficient ways to generate random values from a beta
@@ -5155,6 +5154,161 @@ object:
 
 
 \section{The unseen species problem}
+
+
+
+\section{}
+
+I'll start with a simplified version of the problem where we know
+that there are exactly three species.  Let's call them lions and tigers
+and bears.
+
+Suppose we visit a wild animal preserve and see 3 lions, 2 tigers and
+one bear.  We would like to estimate the prevalence of each species, which
+is the fraction of the total animal population that belongs to each
+species.
+
+If we assume that we have an equal chance of observing any animal
+in the preserve, then the number of each species we see is governed
+by the multinomial distribution.  If the prevalence of lions and tigers
+and bears is \verb"p_lion" and \verb"p_tiger" and \verb"p_bear",
+the likelihood of seeing  3 lions, 2 tigers and one bear is
+
+\begin{verbatim}
+p_lion**3 * p_tiger**2 * p_bear**1
+\end{verbatim}
+
+To estimate the prevalence of one species, we can use a beta
+distribution.  For example, we saw 3 lions and 3 non-lions, so the
+posterior distribution of \verb"p_lion" is:
+
+\begin{verbatim}
+    beta = thinkbayes.Beta()
+    beta.Update((3, 3))
+    print beta.MaximumLikelihood()
+\end{verbatim}
+
+The maximum likelihood estimate for \verb"p_lion" is the observed
+rate, 50\%.  Similarly the MLEs for  \verb"p_tiger" and \verb"p_bear"
+are 33\% and 17\%.
+
+Each of these marginal distributions is correct, but they are
+not independent, because they have to add up to 1.  So if you wanted
+to generate a random sample from the posterior distribution, it would
+not be correct to sample independently from the three marginal
+distributions.  You would have to do something to make them add
+up.
+
+That's where the Dirichlet distribution comes in (see
+\url{http://en.wikipedia.org/wiki/Dirichlet_distribution}).  In the
+same way we use the beta distribution to describe the distribution of
+{\tt x}, we can use a Dirichlet distribution to describe the joint
+posterior distribution of \verb"p_lion" and \verb"p_tiger" and
+\verb"p_bear".
+
+The Dirichlet distribution is the multi-dimensional generalization
+of the beta distribution.  Instead of two possible outcomes, like
+heads and tails, the Dirichlet distribution handles any number of
+outcomes: in this example, three species.
+
+If there are {\tt n} outcomes, the Dirichlet distribution is
+described by {\tt n} parameters, written $\alpha_i$.
+
+Here's the definition, from {\tt thinkbayes.py}, of a class that
+represents a Dirichlet distribution:
+
+\begin{verbatim}
+class Dirichlet(object):
+
+    def __init__(self, n):
+        self.n = n
+        self.params = numpy.ones(n, dtype=numpy.int)
+\end{verbatim}
+
+{\tt n} is the number of dimensions.  Initially the parameters
+are all 1, which makes the marginal prior distributions uniform
+from 0 to 1.  I use a {\tt numpy} array to store the parameters
+so I can take advantage of array operations.
+
+To update the Dirichlet distribution, we add the number of
+observations to each parameter, like this:
+
+\begin{verbatim}
+    def Update(self, data):
+        self.params += data
+\end{verbatim}
+
+Here {\tt data} needs to be a sequence of counts, the same length
+as {\tt params} and in the same order.  So in this example, it
+should be the number of lions and tigers and bears, in that order.
+
+Given the posterior Dirichlet distribution, we can compute
+any of the marginal distributions like this:
+
+\begin{verbatim}
+    def MarginalBeta(self, i):
+        observations = self.params - 1
+        yes = observations[i]
+        no = sum(observations) - yes
+        return Beta(yes+1, no+1)
+\end{verbatim}
+
+{\tt i} is the index of the marginal distribution we want.
+{\tt MarginalBata} converts from {\tt params} to
+{\tt observations}, counts the number of successes and
+failures for the given species, and returns a Beta object with
+the corresponding parameters.
+
+In the example, {\tt params = [4, 3, 2]}, so {\tt observations = [3, 2, 1]}.
+To get the marginal distribution of \verb"p_lion", we set {\tt i=0},
+so {\tt yes} is 3 and {\tt no} is 3, and the beta
+distribution has {\tt alpha = beta = 4}.
+
+Here's code that makes a Dirichlet object, updates it with
+the observed data, and plots the marginal distributions.
+
+\begin{verbatim}
+    data = [3, 2, 1]
+    dirichlet = thinkbayes.Dirichlet(3)
+    dirichlet.Update(data)
+
+    for i in range(3):
+        beta = dirichlet.MarginalBeta(i)
+        pmf = beta.MakePmf()
+        print pmf.MaximumLikelihood()
+\end{verbatim}
+
+Figure~\ref{} shows the results.  As expected, the maximum
+likelihood estimates are 50\%, 33\% and 17\%.
+
+
+\section{Random sampling}
+
+There are two good ways to generate a random sample from
+a Dirichlet distribution.  One option is to use the marginal
+beta distributions, but in that case you have to select one
+at a time and scale the rest so they add up to one.
+
+A less obvious, but faster, way is to select values from {\tt n} gamma
+distributions with parameters {\tt (params[i], 1)} (see
+\url{http://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation})
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
 
 
 \chapter{Future chapters}
