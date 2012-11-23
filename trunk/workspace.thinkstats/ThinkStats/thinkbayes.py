@@ -1310,3 +1310,32 @@ class Dirichlet(object):
         x = numpy.random.gamma(self.params)
         return x / x.sum()
 
+    def Likelihood(self, data):
+        """Computes the likelihood of the data.
+
+        Selects a random vector of probabilities from this distribution.
+
+        Returns: float probability
+        """
+        m = len(data)
+        if self.n < m:
+            return 0
+
+        x = self.Random()
+        y = x[:m]**data
+        return y.prod()
+
+    def LogLikelihood(self, data):
+        """Computes the log likelihood of the data.
+
+        Selects a random vector of probabilities from this distribution.
+
+        Returns: float log probability
+        """
+        m = len(data)
+        if self.n < m:
+            return float('-inf')
+
+        x = self.Random()
+        y = numpy.log(x[:m]) * data
+        return y.sum()

@@ -186,7 +186,85 @@ def MakeFigures(root, sample, meta, m=15, iters=100):
                 ylabel='prob of more taxa')
 
 
+class Species(thinkbayes.Suite):
+    
+    def Update(self, data):
+        thinkbayes.Suite.Update(self)
+        for hypo in self.Values():
+            hypo.Update(data)
+
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of the data under this hypothesis.
+
+        hypo: Dirichlet object
+        data: sequence of frequencies
+        """
+        dirichlet = hypo
+        like = 0
+        for i in range(1000):
+            like += dirichlet.Likelihood(data)
+
+        return like
+
+    def DistOfN(self):
+        """Computes the distribution of n."""
+        pmf = thinkbayes.Pmf()
+        for hypo, prob in self.Items():
+            pmf.Set(hypo.n, prob)
+        return pmf
+        
+
 def main(script, flag=1, *args):
+
+    data = [3, 2, 1]
+    dirichlet = thinkbayes.Dirichlet(3)
+    dirichlet.Update(data)
+
+    for i in range(3):
+        beta = dirichlet.MarginalBeta(i)
+        pmf = beta.MakePmf(name=str(i))
+        myplot.Pmf(pmf)
+
+    myplot.Show()
+    return
+
+
+    data = [1, 1]
+
+    hypos = [thinkbayes.Dirichlet(i) for i in range(len(data), 10)]
+    suite = Species(hypos)
+
+    suite.Update(data)
+
+    pmf = suite.DistOfN()
+    myplot.Pmf(pmf)
+    myplot.Show()
+    return
+    
+    random.seed(17)
+    p = dirichlet.Likelihood(data)
+    print p
+
+    random.seed(17)
+    lp = dirichlet.LogLikelihood(data)
+    print lp, math.exp(lp)
+
+    return
+
+
+    xs = []
+    for i in range(10000):
+        x = dirichlet.Random()
+        xs.append(x)
+
+    cols = zip(*xs)
+    for col in cols:
+        cdf = thinkbayes.MakeCdfFromList(col)
+        myplot.Cdf(cdf)
+
+    myplot.Show()
+    return
+
 
     beta = thinkbayes.Beta()
     beta.Update((140, 110))
