@@ -1301,15 +1301,15 @@ class Dirichlet(object):
 
         data: sequence of observations, in order corresponding to params
         """
-        self.params += data
+        self.params[:len(data)] += data
         
     def Random(self):
         """Generates a random variate from this distribution.
 
         Returns: normalized vector of fractions
         """
-        x = numpy.random.gamma(self.params)
-        return x / x.sum()
+        p = numpy.random.gamma(self.params)
+        return p / p.sum()
 
     def Likelihood(self, data):
         """Computes the likelihood of the data.
@@ -1322,9 +1322,10 @@ class Dirichlet(object):
         if self.n < m:
             return 0
 
-        x = self.Random()
-        y = x[:m]**data
-        return y.prod()
+        x = data
+        p = self.Random()
+        q = p[:m]**x
+        return q.prod()
 
     def LogLikelihood(self, data):
         """Computes the log likelihood of the data.
@@ -1353,5 +1354,5 @@ class Dirichlet(object):
         """
         observations = self.params - 1
         yes = observations[i]
-        no = sum(observations) - yes
+        no = observations.sum() - yes
         return Beta(yes+1, no+1)

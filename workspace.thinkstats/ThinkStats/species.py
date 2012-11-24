@@ -187,9 +187,18 @@ def MakeFigures(root, sample, meta, m=15, iters=100):
 
 
 class Species(thinkbayes.Suite):
+    """Represents hypotheses about the number of species."""
     
+    def __init__(self, ns):
+        hypos = [thinkbayes.Dirichlet(n) for n in ns]
+        thinkbayes.Suite.__init__(self, hypos)
+
     def Update(self, data):
-        thinkbayes.Suite.Update(self)
+        """Updates the suite based on the data.
+
+        data: list of observed frequencies
+        """
+        thinkbayes.Suite.Update(self, data)
         for hypo in self.Values():
             hypo.Update(data)
 
@@ -197,7 +206,7 @@ class Species(thinkbayes.Suite):
         """Computes the likelihood of the data under this hypothesis.
 
         hypo: Dirichlet object
-        data: sequence of frequencies
+        data: list of observed frequencies
         """
         dirichlet = hypo
         like = 0
@@ -213,6 +222,126 @@ class Species(thinkbayes.Suite):
             pmf.Set(hypo.n, prob)
         return pmf
         
+
+class Species2(object):
+    """Represents hypotheses about the number of species."""
+    
+    def __init__(self, ns):
+        self.ns = ns
+        self.probs = numpy.ones(len(ns), dtype=numpy.double)
+
+        self.low, self.high = ns[0], ns[-1]
+        self.params = numpy.ones(self.high, dtype=numpy.int)
+
+    def Update(self, data):
+        """Updates the suite based on the data.
+
+        data: list of observations
+        """
+        like = numpy.zeros(len(self.ns), dtype=numpy.double)
+        for i in range(1000):
+            like += self.SampleLikelihood(data)
+
+        self.probs *= like
+        self.probs /= self.probs.sum()
+
+        m = len(data)
+        self.params[:m] += data
+
+    def SampleLikelihood(self, data):
+        """Computes the likelihood of the data under all hypotheses.
+
+        data: list of observations
+        """
+        # get a random sample of p
+        p = numpy.random.gamma(self.params)
+
+        # row is just the first m elements of p
+        m = len(data)
+        row = p[:m]
+
+        # col is the cumulative sum of p
+        col = numpy.cumsum(p)
+
+        log_likes = []
+        for n in range(self.low, self.high+1):
+            ps = row / col[n-1]
+            factors = numpy.log(ps) * data
+            log_like = factors.sum()
+            log_likes.append(log_like)
+
+        log_likes -= numpy.max(log_likes)
+        likes = numpy.exp(log_likes)
+
+        return likes
+
+    def DistOfN(self):
+        """Computes the distribution of n."""
+        pmf = thinkbayes.MakePmfFromDict(dict(zip(self.ns, self.probs)))
+        return pmf
+
+
+class Species3(Species2):
+    """Represents hypotheses about the number of species."""
+    
+    def SampleLikelihood(self, data):
+        """Computes the likelihood of the data under all hypotheses.
+
+        data: list of observations
+        """
+        # get a random sample of p
+        p = numpy.random.gamma(self.params)
+
+        # row is just the first m elements of p
+        m = len(data)
+        row = p[:m]
+
+        # col is the cumulative sum of p
+        col = numpy.cumsum(p)[self.low-1:self.high]
+
+        # each row of the array is a set of ps, normalized
+        # for each hypothetical value of n
+        array = row / col[:, numpy.newaxis]
+
+        # computing the multinomial PDF under a log transform
+        # take the log of the ps and multiply by the data
+        factors = numpy.log(array) * data
+
+        # add up the rows
+        log_likes = factors.sum(axis=1)
+
+        # before exponentiating, scale into a reasonable range
+        log_likes -= numpy.max(log_likes)
+        likes = numpy.exp(log_likes)
+
+        return likes
+
+
+def MakePosterior(constructor):
+    ns = range(3, 10)
+    suite = constructor(ns)
+
+    data = [3, 2, 1]
+    suite.Update(data)
+
+    pmf = suite.DistOfN()
+
+    return pmf
+
+
+def PlotPosteriors():
+    for constructor in [Species, Species2, Species3]:
+        pmf = MakePosterior(constructor)
+        pmf.name = constructor.__name__
+        myplot.Pmf(pmf)
+
+    myplot.Show()
+    return
+
+    myplot.Save(root='species3',
+                xlabel='Number of species',
+                ylabel='Prob')
+
 
 def SimpleDirichletExample():
     beta = thinkbayes.Beta()
@@ -238,25 +367,33 @@ def SimpleDirichletExample():
                 ylabel='Prob')
 
 
+def HierarchicalExample():
+    ns = range(3, 10)
+    suite = Species(ns)
 
-
-
-def main(script, flag=1, *args):
-    SimpleDirichletExample()
-    return
-
-    data = [1, 1]
-
-    hypos = [thinkbayes.Dirichlet(i) for i in range(len(data), 10)]
-    suite = Species(hypos)
-
+    data = [3, 2, 1]
     suite.Update(data)
 
     pmf = suite.DistOfN()
     myplot.Pmf(pmf)
-    myplot.Show()
+    myplot.Save(root='species2',
+                xlabel='Number of species',
+                ylabel='Prob')
+
+
+
+
+def main(script, flag=1, *args):
+    PlotPosteriors()
     return
-    
+
+    SimpleDirichletExample()
+    return
+
+    HierarchicalExample()
+    return
+
+
     random.seed(17)
     p = dirichlet.Likelihood(data)
     print p
