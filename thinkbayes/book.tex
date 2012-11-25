@@ -5235,12 +5235,17 @@ observations to each parameter, like this:
 
 \begin{verbatim}
     def Update(self, data):
-        self.params += data
+        m = len(data)
+        self.params[:m] += data
 \end{verbatim}
 
-Here {\tt data} needs to be a sequence of counts, the same length
-as {\tt params} and in the same order.  So in this example, it
-should be the number of lions and tigers and bears, in that order.
+Here {\tt data} is a sequence of counts in the same order
+as {\tt params}, so in this example, it
+should be the number of lions and tigers and bears.
+
+But the {\tt data} can be shorter than {\tt params}; in that
+case there are some hypothetical species that have not been
+observed.
 
 Given the posterior Dirichlet distribution, we can compute
 any of the marginal distributions like this:
@@ -5282,19 +5287,358 @@ Figure~\ref{} shows the results.  As expected, the maximum
 likelihood estimates are 50\%, 33\% and 17\%.
 
 
+\section{A hierarchical model}
+
+We have solved a simplified version of the problem: if we
+know how many species there are, we can estimate the prevalence
+of each.
+
+Now let's get back to the original problem, estimating the total
+number of species.  To solve this problem I'll define a metasuite,
+which is a Suite that contains other Suites as hypotheses.  In this
+case, the top-level Suite contains hypotheses about the number of
+species; the bottom level contains hypotheses about prevalences.
+A multi-level model like this is called ``hierarchical.''
+
+Here's the class definition:
+
+\begin{verbatim}
+class Species(thinkbayes.Suite):
+
+    def __init__(self, ns):
+        hypos = [thinkbayes.Dirichlet(n) for n in ns]
+        thinkbayes.Suite.__init__(self, hypos)
+\end{verbatim}
+
+\verb"__init__" takes a list of possible values for {\tt n} and
+makes a list of Dirichlet objects.
+
+Here's the code that creates the top-level suite:
+
+\begin{verbatim}
+    ns = range(3, 10)
+    suite = Species(ns)
+\end{verbatim}
+
+In this example, we have seen 3 species, so there have to be at
+least that many.  I chose an upper bound that seemed reasonable, but
+we can come back an confirm that the probability of exceeding this
+bound is low.
+
+To update a hierarchical model, you have to update all levels.
+Sometimes it is necessary, or more efficient, to update the bottom
+level first and work up.  But in this case it doesn't matter, so
+I update the top level first:
+
+\begin{verbatim}
+    def Update(self, data):
+        thinkbayes.Suite.Update(self, data)
+        for hypo in self.Values():
+            hypo.Update(data)
+\end{verbatim}
+
+Now all we need is a likelihood function.  As usual,
+{\tt Likelihood} get a hypothesis and a dataset as arguments:
+
+\begin{verbatim}
+# class Species
+
+    def Likelihood(self, hypo, data):
+        dirichlet = hypo
+        like = 0
+        for i in range(1000):
+            like += dirichlet.Likelihood(data)
+
+        return like
+\end{verbatim}
+
+{\tt hypo} is a Dirichlet object; {\tt data} is a sequence of
+observed frequencies.  {\tt Species.Likelihood} calls
+{\tt Dirichlet.Likelihood} 1000 times and returns the total.
+Why do we have to call it 1000 times?  Because {\tt Dirichlet.Likelihood}
+doesn't actually compute the likelihood of the data under the
+Dirichlet distribution.  Rather, it draws one sample from the
+hypothetical distribution and compute the likelihood of the
+data under the sampled set of prevalences.  
+
+Here's what it looks like:
+
+\begin{verbatim}
+# class Dirichlet
+
+    def Likelihood(self, data):
+        m = len(data)
+        if self.n < m:
+            return 0
+
+        x = data
+        p = self.Random()
+        q = p[:m]**x
+        return q.prod()
+\end{verbatim}
+
+The length of {\tt data} is the number of species observed.  If
+we see more species than we though existed, the likelihood is 0.
+
+Otherwise we select a random set of prevalences, {\tt p}, and
+compute the multinomial PDF, which is
+
+\[ c(x) \prod_i p_i^{x_i}\]
+
+where $p_i$ is the prevalence of the $i$th species, and $x_i$ is the
+observed number.  The first term, $c(x)$, is the multinomial
+coefficient; I left it out of the computation because it is
+a multiplicative factor that depends only
+on the data, not the hypothesis, so it gets normalized away
+(see \url{http://en.wikipedia.org/wiki/Multinomial_distribution}).
+
+Also, I truncated {\tt p} at {\tt m}, which is the number of
+observed species.  For the unseen species, $x_i$ is 0, so
+$p_i^{x_i}$ is 1, so we can leave them out of the product.
+
+
 \section{Random sampling}
 
-There are two good ways to generate a random sample from
-a Dirichlet distribution.  One option is to use the marginal
-beta distributions, but in that case you have to select one
-at a time and scale the rest so they add up to one.
+There are two ways to generate a random sample from a Dirichlet
+distribution.  One is to use the marginal beta distributions,
+but in that case you have to select one at a time and scale the rest
+so they add up to 1.
 
 A less obvious, but faster, way is to select values from {\tt n} gamma
-distributions with parameters {\tt (params[i], 1)} (see
+distributions with shape parameter {\tt params[i]} and scale parameter
+1, then normalize by dividing through by the total. (see
 \url{http://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation})
 
+Which is easier to write in Python than English:
+
 \begin{verbatim}
+# class Dirichlet
+
+    def Random(self):
+        p = numpy.random.gamma(self.params)
+        return p / p.sum()
 \end{verbatim}
+
+Now we're ready to look at some results.  Here is the code that
+updates the top-level suite and extracts the posterior PMF of {\tt n}:
+
+\begin{verbatim}
+    data = [3, 2, 1]
+    suite.Update(data)
+    pmf = suite.DistOfN()
+\end{verbatim}
+
+To get the distribution of {\tt n}, {\tt DistOfN} iterates through the
+top-level hypotheses:
+
+\begin{verbatim}
+    def DistOfN(self):
+        pmf = thinkbayes.Pmf()
+        for hypo, prob in self.Items():
+            pmf.Set(hypo.n, prob)
+        return pmf
+\end{verbatim}
+
+Figure~\ref{} shows the result.  The most likely estimate is that
+there are 3 three species, but after only 6 observations there is
+non-negligible probability that there are several unseen species.
+
+The probability that there are 9 species in total is quite small,
+so the upper bound we chose seems reasonable.  But remember that
+we started with a uniform prior for {\tt n}.  If we have background
+information about the number of species in the environment, we might
+choose a different prior.
+
+\section{Optimization}
+
+I have to admit that I am proud of this example.  The unseen species
+problem is not easy, and I think this solution is simple and clear,
+and takes surprisingly few lines of code (about 50 so far).
+
+The only problem is that it is slow.  It's good enough for the example
+with only 3 observed species, but not good enough for the belly button
+data, with more than 100 species in some samples.
+
+Fortunately, there are a number of opportunities for optimization:
+
+\begin{itemize}
+
+\item As I noted above, when the hypothetical number of species, {\tt n},
+exceeds the observed number, {\tt m}, we only need the first {\tt m}
+terms of the multinomial PDF; the rest are 1.
+
+\item Since all of the bottom-level Dirichlet distributions are updated
+with the same data, the first {\tt m} parameters are the same for
+all of them.
+
+\item Each time we draw a random sample from a Dirichlet distribution,
+we generate values from {\tt n} gamma distributions.  Generating
+random numbers is moderately expensive, so we can save some time by
+using the same random numbers for each bottom-level distribution.
+
+\item If the number of species is large, the likelihood of the data
+might be too small for floating-point.  So it is safer to compute
+log-likelihoods.  For the multinomial PDF, it is also faster.
+
+\end{itemize}
+
+Again, the multinomial PDF is
+%
+\[ c(x) \prod_i p_i^{x_i}\]
+%
+So the log-likelihood is
+
+\[ log(c(x)) + \sum_i \log(p_i) * x_i \]
+%
+which is fast and easy to compute.
+
+Since the bottom-level Dirichlet distributions all contain the same
+information, we can eliminate them and merge the parameters into
+the top-level suite.  Here's the optimized version of {\tt Species}:
+
+\begin{verbatim}
+class Species2(object):
+    
+    def __init__(self, ns):
+        self.ns = ns
+        self.probs = numpy.ones(len(ns), dtype=numpy.double)
+
+        self.low, self.high = ns[0], ns[-1]
+        self.params = numpy.ones(self.high, dtype=numpy.int)
+\end{verbatim}
+
+{\tt ns} is the list of hypothetical values for {\tt n};
+{\tt probs} is the list of corresponding probabilities.  And
+{\tt params} is the sequence of Dirichlet parameters, initially
+all 1.
+
+Here's the {\tt Update} function that updates both levels of
+the hierarchy: first the probability for each value of {\tt n},
+then the Dirichlet parameters:
+
+\begin{verbatim}
+    def Update(self, data):
+        like = numpy.zeros(len(self.ns), dtype=numpy.double)
+        for i in range(1000):
+            like += self.SampleLikelihood(data)
+
+        self.probs *= like
+        self.probs /= self.probs.sum()
+
+        m = len(data)
+        self.params[:m] += data
+\end{verbatim}
+
+{\tt SampleLikelihood} returns an array of likelihoods, one for
+each value of {\tt n}.  {\tt like} accumulates the total likelihood
+for 1000 samples from the Dirichlet distribution.  {\tt self.probs}
+is multiplied by the total likelihood, then normalized.
+
+Updating the parameters is identical to what we saw in {\tt
+  Dirichlet.Update}.
+
+Now let's see what {\tt SampleLikelihood} looks like:
+
+\begin{verbatim}
+    def SampleLikelihood(self, data):
+        gammas = numpy.random.gamma(self.params)
+
+        m = len(data)
+        row = gammas[:m]
+
+        col = numpy.cumsum(gammas)
+
+        log_likes = []
+        for n in range(self.low, self.high+1):
+            p = row / col[n-1]
+            terms = numpy.log(p) * data
+            log_like = terms.sum()
+            log_likes.append(log_like)
+
+        log_likes -= numpy.max(log_likes)
+        likes = numpy.exp(log_likes)
+
+        return likes
+\end{verbatim}
+
+{\tt gammas} is an array of gamma variates; its length is the largest
+hypothetical value of {\tt n}.  {\tt row} is just the first {\tt m}
+elements of {\tt gammas}; since these are the only elements that depend on
+the data, they are the only ones we need.
+
+But for each value of {\tt n} we need to divide {\tt row} by the
+total of the first {\tt n} values from {\tt gamma}.  {\tt cumsum}
+computes these cumulative sums and stores them in {\tt col}.
+In the next section you will see why I called these variables
+{\tt row} and {\tt col}.
+
+The loop iterates through the values of {\tt n} and accumulates
+a list of log-likelihoods.
+
+Inside the loop, {\tt p} contains the row of probabilities, normalized
+with the appropriate cumulative sum.  {\tt terms} contains the
+terms of the summation, $\log(p_i) x_i$, and \verb"log_like" contains
+their sum.
+
+After the loop, we want to convert the log-likelihoods to linear
+likelihoods, but first it's a good idea to shift them so the largest
+log-likelihood is 0; that way the linear likelihoods are not too
+small. 
+
+As often happens, the optimized version is less readable and more
+error-prone than the original.  But that's one reason I think it is
+a good idea to start with the simple version; we can use it for
+regression testing.  I plotted results from both versions and confirmed
+that they are approximately equal, and that they converge as the
+sample size increases.
+
+But wait, there's more!  Now that we've made the computation nicely
+rectangular, we can re-write the loop as an array operation.
+
+\begin{verbatim}
+    def SampleLikelihood(self, data):
+        gammas = numpy.random.gamma(self.params)
+
+        m = len(data)
+        row = gammas[:m]
+
+        col = numpy.cumsum(gammas)[self.low-1:self.high]
+
+        array = row / col[:, numpy.newaxis]
+
+        terms = numpy.log(array) * data
+        log_likes = terms.sum(axis=1)
+
+
+        log_likes -= numpy.max(log_likes)
+        likes = numpy.exp(log_likes)
+
+        return likes
+\end{verbatim}
+
+{\tt gammas}, {\tt row} and {\tt col} are unchanged, except that
+we've selected just the elements of {\tt col} we need.
+
+{\tt numpy.axis} makes a ``slice'' of {\tt col} that is two
+dimensional, with the length of the new dimension being 1.
+As a result, when we divide {\tt row} by {\tt col}, {\tt row}
+gets ``broadcast,'' which means making a copy of {\tt row}
+for each element in {\tt col}, and then dividing through.
+
+The result is an array with one row of {\tt p} for each value
+of {\tt n} in {\tt col}.  This operation is similar to a linear
+algebra ``outer product,'' except in this case it's an outer
+quotient.
+
+{\tt terms} is an array of multinomial terms; when we add them
+up, {\tt axis=1} says we want to add up the rows, so the result
+is a 1-D array of the total log-likelihood for each value of n.
+
+Finally, we shift the log-likelihoods into a comfortable range
+before transform to linear likelihoods.
+
+Again, I confimed that this version yields the same results as
+the other two.
 
 \begin{verbatim}
 \end{verbatim}
@@ -5305,9 +5649,8 @@ distributions with parameters {\tt (params[i], 1)} (see
 \begin{verbatim}
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
 
+\section{The belly button data}
 
 
 

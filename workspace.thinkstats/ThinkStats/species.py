@@ -254,20 +254,20 @@ class Species2(object):
         data: list of observations
         """
         # get a random sample of p
-        p = numpy.random.gamma(self.params)
+        gammas = numpy.random.gamma(self.params)
 
         # row is just the first m elements of p
         m = len(data)
-        row = p[:m]
+        row = gammas[:m]
 
         # col is the cumulative sum of p
-        col = numpy.cumsum(p)
+        col = numpy.cumsum(gammas)
 
         log_likes = []
         for n in range(self.low, self.high+1):
-            ps = row / col[n-1]
-            factors = numpy.log(ps) * data
-            log_like = factors.sum()
+            p = row / col[n-1]
+            terms = numpy.log(p) * data
+            log_like = terms.sum()
             log_likes.append(log_like)
 
         log_likes -= numpy.max(log_likes)
@@ -289,15 +289,15 @@ class Species3(Species2):
 
         data: list of observations
         """
-        # get a random sample of p
-        p = numpy.random.gamma(self.params)
+        # get a random sample
+        gammas = numpy.random.gamma(self.params)
 
-        # row is just the first m elements of p
+        # row is just the first m elements of gammas
         m = len(data)
-        row = p[:m]
+        row = gammas[:m]
 
-        # col is the cumulative sum of p
-        col = numpy.cumsum(p)[self.low-1:self.high]
+        # col is the cumulative sum of gammas
+        col = numpy.cumsum(gammas)[self.low-1:self.high]
 
         # each row of the array is a set of ps, normalized
         # for each hypothetical value of n
@@ -305,10 +305,10 @@ class Species3(Species2):
 
         # computing the multinomial PDF under a log transform
         # take the log of the ps and multiply by the data
-        factors = numpy.log(array) * data
+        terms = numpy.log(array) * data
 
         # add up the rows
-        log_likes = factors.sum(axis=1)
+        log_likes = terms.sum(axis=1)
 
         # before exponentiating, scale into a reasonable range
         log_likes -= numpy.max(log_likes)
