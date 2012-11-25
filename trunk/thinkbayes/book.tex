@@ -5637,20 +5637,28 @@ is a 1-D array of the total log-likelihood for each value of n.
 Finally, we shift the log-likelihoods into a comfortable range
 before transform to linear likelihoods.
 
+This version performs the same computation as the previous one,
+but I expect it to run faster because it does less of the work
+in Python, and more inside {\tt numpy}, which is written in C.
+
 Again, I confimed that this version yields the same results as
 the other two.
 
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
-
 
 \section{The belly button data}
+
+Well, that's enough about the lions and tigers and bears.
+Let's get back to the belly buttons.
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
 
 
 
