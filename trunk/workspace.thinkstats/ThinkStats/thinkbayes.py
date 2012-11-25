@@ -1301,7 +1301,8 @@ class Dirichlet(object):
 
         data: sequence of observations, in order corresponding to params
         """
-        self.params[:len(data)] += data
+        m = len(data)
+        self.params[:m] += data
         
     def Random(self):
         """Generates a random variate from this distribution.
