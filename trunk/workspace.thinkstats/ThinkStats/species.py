@@ -11,12 +11,46 @@ import matplotlib.pyplot as pyplot
 import myplot
 import numpy
 
+import csv
 import math
 import random
 import sys
 
 
+class Subject(object):
+    def __init__(self, code):
+        self.code = code
+        self.species = []
 
+    def add(self, species, count):
+        self.species.append((count, species))
+        
+
+def ReadData(filename='journal.pone.0047712.s001.csv'):
+    fp = open(filename)
+    reader = csv.reader(fp)
+    header = reader.next()
+    
+    subject = Subject('')
+    subjects = []
+
+    for t in reader:
+        code = t[0]
+        if code != subject.code:
+            subject = Subject(code)
+            subjects.append(subject)
+
+        species = t[1]
+        count = int(t[2])
+        subject.add(species, count)
+
+    for subject in subjects:
+        print subject.code, len(subject.species)
+        subject.species.sort(reverse=True)
+        for count, species in subject.species[:10]:
+            print count, species
+
+    return subjects
 
 def PlotMixture(pmfs, show=False):
     for dist in pmfs.Values():
@@ -297,7 +331,7 @@ class Species3(Species2):
         row = gammas[:m]
 
         # col is the cumulative sum of gammas
-        col = numpy.cumsum(gammas)[self.low-1:self.high]
+        col = numpy.cumsum(gammas)[self.low-1:]
 
         # each row of the array is a set of ps, normalized
         # for each hypothetical value of n
@@ -384,6 +418,9 @@ def HierarchicalExample():
 
 
 def main(script, flag=1, *args):
+    ReadData()
+    return
+
     PlotPosteriors()
     return
 

@@ -5602,7 +5602,7 @@ rectangular, we can re-write the loop as an array operation.
         m = len(data)
         row = gammas[:m]
 
-        col = numpy.cumsum(gammas)[self.low-1:self.high]
+        col = numpy.cumsum(gammas)[self.low-1:]
 
         array = row / col[:, numpy.newaxis]
 
@@ -5641,8 +5641,9 @@ This version performs the same computation as the previous one,
 but I expect it to run faster because it does less of the work
 in Python, and more inside {\tt numpy}, which is written in C.
 
-Again, I confimed that this version yields the same results as
-the other two.
+The price of all this optimization is that this version is even less
+readable; nevertheless I confimed that this version yields the
+same results as the other two.
 
 
 \section{The belly button data}
