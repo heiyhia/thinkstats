@@ -1357,3 +1357,36 @@ class Dirichlet(object):
         yes = observations[i]
         no = observations.sum() - yes
         return Beta(yes+1, no+1)
+
+
+def BinomialCoef(n, k, d={}):
+    """Compute the binomial coefficient "n choose k".
+
+    Args:
+      n: number of trials
+      k: number of successes
+      d: map from (n,k) tuples to cached results
+
+    Returns:
+      int
+    """
+    if k == 0:
+        return 1
+    if n == 0:
+        return 0
+
+    try:
+        return d[n, k]
+    except KeyError:
+        res = BinomialCoef(n-1, k) + BinomialCoef(n-1, k-1)
+        d[n, k] = res
+        return res
+
+
+def LogBinomialCoef(n, m):
+    """
+
+    http://math.stackexchange.com/questions/64716/
+    approximating-the-logarithm-of-the-binomial-coefficient
+    """
+    return n * log(n) - m * log(m) - (n-m) * log(n-m)
