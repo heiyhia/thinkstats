@@ -22,9 +22,13 @@ class Subject(object):
         self.code = code
         self.species = []
 
-    def add(self, species, count):
+    def Add(self, species, count):
         self.species.append((count, species))
         
+    def GetCounts(self):
+        self.species.sort(reverse=True)
+        return [count for (count, _) in self.species]
+
 
 def ReadData(filename='journal.pone.0047712.s001.csv'):
     fp = open(filename)
@@ -42,13 +46,7 @@ def ReadData(filename='journal.pone.0047712.s001.csv'):
 
         species = t[1]
         count = int(t[2])
-        subject.add(species, count)
-
-    for subject in subjects:
-        print subject.code, len(subject.species)
-        subject.species.sort(reverse=True)
-        for count, species in subject.species[:10]:
-            print count, species
+        subject.Add(species, count)
 
     return subjects
 
@@ -224,7 +222,8 @@ class Species(thinkbayes.Suite):
     """Represents hypotheses about the number of species."""
     
     def __init__(self, ns):
-        hypos = [thinkbayes.Dirichlet(n) for n in ns]
+        #hypos = [thinkbayes.Dirichlet(n) for n in ns]
+        hypos = [OversampledDirichlet(n) for n in ns]
         thinkbayes.Suite.__init__(self, hypos)
 
     def Update(self, data):
@@ -247,6 +246,8 @@ class Species(thinkbayes.Suite):
         for i in range(1000):
             like += dirichlet.Likelihood(data)
 
+        m = len(data)
+        like *= thinkbayes.BinomialCoef(dirichlet.n, m)
         return like
 
     def DistOfN(self):
@@ -298,7 +299,8 @@ class Species2(object):
         col = numpy.cumsum(gammas)
 
         log_likes = []
-        for n in range(self.low, self.high+1):
+
+        for n in self.ns:
             p = row / col[n-1]
             terms = numpy.log(p) * data
             log_like = terms.sum()
@@ -307,6 +309,8 @@ class Species2(object):
         log_likes -= numpy.max(log_likes)
         likes = numpy.exp(log_likes)
 
+        coefs = [thinkbayes.BinomialCoef(n, m) for n in self.ns]
+        likes *= coefs
         return likes
 
     def DistOfN(self):
@@ -348,11 +352,56 @@ class Species3(Species2):
         log_likes -= numpy.max(log_likes)
         likes = numpy.exp(log_likes)
 
+        coefs = [thinkbayes.BinomialCoef(n, m) for n in self.ns]
+        likes *= coefs
+
         return likes
 
 
+class OversampledDirichlet(thinkbayes.Dirichlet):
+    """Provides oversampled random selection from a Dirichlet distribution.
+
+    By peeking at the posterior distribution, we can see where the
+    non-negligible mass will be, then restrict the uniform prior to
+    just this range.
+
+    This version doesn't provide Update, because it only handles the
+    special case when the prior distribution is still uniform.
+
+    """
+
+    def Update(self, data):
+        """Do nothing."""
+        print 'Warning: this version of Dirichlet does not support Update.'
+
+    def Peek(self, data):
+        """Figures out the bounds in the posterior distribution that
+        contain non-negligible mass.
+        """
+        m = len(data)
+        post_params = numpy.copy(self.params)
+        post_params[:m] += data
+
+        post_betas = self.MakeBetas(post_params)
+        cdfs = [beta.MakeCdf() for beta in post_betas]
+        lows = [cdf.Percentile(2) for cdf in cdfs]
+        highs = [cdf.Percentile(98) for cdf in cdfs]
+        self.bounds = zip(lows, highs)
+
+    def Random(self):
+
+        # TODO(last one is a special case)
+        fraction = 1.0
+        for low, high in self.bounds:
+            p = fraction * random.uniform(low, high)
+            ps.append(p)
+            fraction *= 1-p
+
+        return ps
+
+
 def MakePosterior(constructor):
-    ns = range(3, 10)
+    ns = range(3, 20)
     suite = constructor(ns)
 
     data = [3, 2, 1]
@@ -402,7 +451,7 @@ def SimpleDirichletExample():
 
 
 def HierarchicalExample():
-    ns = range(3, 10)
+    ns = range(3, 20)
     suite = Species(ns)
 
     data = [3, 2, 1]
@@ -418,16 +467,39 @@ def HierarchicalExample():
 
 
 def main(script, flag=1, *args):
-    ReadData()
+    pmf = MakePosterior(Species)
+    pmf.name = constructor.__name__
+    myplot.Pmf(pmf)
+    myplot.Show()
     return
 
     PlotPosteriors()
     return
 
-    SimpleDirichletExample()
+    HierarchicalExample()
     return
 
-    HierarchicalExample()
+    subjects = ReadData()
+    subject = subjects[5]
+    counts = subject.GetCounts()
+    print counts
+
+    n = len(counts)
+    ns = range(n, n+5)
+    suite = Species3(ns)
+
+    suite.Update(counts)
+
+    pmf = suite.DistOfN()
+    myplot.Pmf(pmf)
+    myplot.Show()
+    return
+    myplot.Save(root='species4',
+                xlabel='Number of species',
+                ylabel='Prob')
+    return
+
+    SimpleDirichletExample()
     return
 
 
