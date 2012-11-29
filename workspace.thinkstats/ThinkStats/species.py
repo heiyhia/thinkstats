@@ -18,11 +18,18 @@ import sys
 
 
 class Subject(object):
+    """Represents a subject from the belly button study."""
+
     def __init__(self, code):
         self.code = code
         self.species = []
 
     def Add(self, species, count):
+        """Add a species-count pair.
+
+        species: string species/genus name
+        count: int number of individuals
+        """
         self.species.append((count, species))
         
     def GetCounts(self):
@@ -31,6 +38,11 @@ class Subject(object):
 
 
 def ReadData(filename='journal.pone.0047712.s001.csv'):
+    """Reads a data file and returns a list of Subjects.
+
+    Data from http://www.plosone.org/article/
+    info%3Adoi%2F10.1371%2Fjournal.pone.0047712#s4
+    """
     fp = open(filename)
     reader = csv.reader(fp)
     header = reader.next()
@@ -222,8 +234,7 @@ class Species(thinkbayes.Suite):
     """Represents hypotheses about the number of species."""
     
     def __init__(self, ns):
-        #hypos = [thinkbayes.Dirichlet(n) for n in ns]
-        hypos = [OversampledDirichlet(n) for n in ns]
+        hypos = [thinkbayes.Dirichlet(n) for n in ns]
         thinkbayes.Suite.__init__(self, hypos)
 
     def Update(self, data):
@@ -231,7 +242,9 @@ class Species(thinkbayes.Suite):
 
         data: list of observed frequencies
         """
+        # call Update in the parent class, which calls Likelihood
         thinkbayes.Suite.Update(self, data)
+
         for hypo in self.Values():
             hypo.Update(data)
 
@@ -244,6 +257,7 @@ class Species(thinkbayes.Suite):
         dirichlet = hypo
         like = 0
         for i in range(1000):
+            # print 'like', dirichlet.Likelihood(data)
             like += dirichlet.Likelihood(data)
 
         m = len(data)
@@ -258,7 +272,29 @@ class Species(thinkbayes.Suite):
         return pmf
         
 
-class Species2(object):
+class Species2(Species):
+    """Represents hypotheses about the number of species."""
+    
+    def __init__(self, ns):
+        hypos = [OversampledDirichlet(n) for n in ns]
+        thinkbayes.Suite.__init__(self, hypos)
+
+    def Update(self, data):
+        """Updates the suite based on the data.
+
+        data: list of observed frequencies
+        """
+        for hypo in self.Values():
+            hypo.Peek(data)
+
+        # call Update in the parent class, which calls Likelihood
+        thinkbayes.Suite.Update(self, data)
+
+        for hypo in self.Values():
+            hypo.Update(data)
+
+
+class Species3(object):
     """Represents hypotheses about the number of species."""
     
     def __init__(self, ns):
@@ -319,7 +355,7 @@ class Species2(object):
         return pmf
 
 
-class Species3(Species2):
+class Species4(Species3):
     """Represents hypotheses about the number of species."""
     
     def SampleLikelihood(self, data):
@@ -369,34 +405,79 @@ class OversampledDirichlet(thinkbayes.Dirichlet):
     special case when the prior distribution is still uniform.
 
     """
-
-    def Update(self, data):
-        """Do nothing."""
-        print 'Warning: this version of Dirichlet does not support Update.'
+    
+    def Likelihood(self, data):
+        like = thinkbayes.Dirichlet.Likelihood(self, data)
+        return like * self.weight
 
     def Peek(self, data):
         """Figures out the bounds in the posterior distribution that
         contain non-negligible mass.
         """
         m = len(data)
-        post_params = numpy.copy(self.params)
-        post_params[:m] += data
+        priors = self.MakeConditionals(self.params)
+        pmfs = [prior.MakePmf() for prior in priors]
+        self.conditionals = pmfs
 
-        post_betas = self.MakeBetas(post_params)
-        cdfs = [beta.MakeCdf() for beta in post_betas]
+        self.TrimMarginals(data)
+
+    def TrimMarginals(self, data):
+        m = len(data)
+        params = numpy.copy(self.params)
+        params[:m] += data
+
+        posteriors = self.MakeMarginals(params)
+        cdfs = [beta.MakeCdf() for beta in posteriors]
+
         lows = [cdf.Percentile(2) for cdf in cdfs]
         highs = [cdf.Percentile(98) for cdf in cdfs]
-        self.bounds = zip(lows, highs)
+        
+        p_hit = 1
+        pmfs = self.conditionals
+        for pmf, low, high in zip(pmfs, lows, highs):
+            mass = self.TrimMarginal(pmf, low, high)
+            print self.n, low, high, mass
+            p_hit *= mass
+
+        self.weight = p_hit
+        print self.n, self.weight
+        conditionals = [thinkbayes.MakeCdfFromPmf(pmf) for pmf in pmfs]
+        self.conditionals = conditionals
+
+    def TrimMarginal(self, pmf, low, high):
+        for val in pmf.Values():
+            if val < low or val > high:
+                pmf.Remove(val)
+        return pmf.Normalize()
+
+    def MakeMarginals(self, params):
+        total = sum(params)
+        betas = [thinkbayes.Beta(x, total-x) for x in params]
+        return betas
+
+    def MakeConditionals(self, params):
+        total = sum(params)
+        betas = []
+        for x in params[:-1]:
+            total -= x
+            beta = thinkbayes.Beta(x, total)
+            betas.append(beta)
+        return betas
 
     def Random(self):
+        """Generates a random variate from this distribution.
 
-        # TODO(last one is a special case)
+        Returns: normalized array of probabilities
+        """
         fraction = 1.0
-        for low, high in self.bounds:
-            p = fraction * random.uniform(low, high)
-            ps.append(p)
+        ps = numpy.zeros(self.n)
+
+        for i, cond in enumerate(self.conditionals):
+            p = cond.Random()
+            ps[i] = p * fraction
             fraction *= 1-p
 
+        ps[-1] = fraction
         return ps
 
 
@@ -413,7 +494,7 @@ def MakePosterior(constructor):
 
 
 def PlotPosteriors():
-    for constructor in [Species, Species2, Species3]:
+    for constructor in [Species, Species2]:
         pmf = MakePosterior(constructor)
         pmf.name = constructor.__name__
         myplot.Pmf(pmf)
@@ -464,16 +545,20 @@ def HierarchicalExample():
                 ylabel='Prob')
 
 
+def TestOversampledDirichlet():
+    dirichlet = OversampledDirichlet(3)
+    dirichlet.Peek([3, 2, 1])
+    sample = dirichlet.Random()
+    print sample
 
 
 def main(script, flag=1, *args):
-    pmf = MakePosterior(Species)
-    pmf.name = constructor.__name__
-    myplot.Pmf(pmf)
-    myplot.Show()
+    PlotPosteriors()
     return
 
-    PlotPosteriors()
+    pmf = MakePosterior(Species)
+    myplot.Pmf(pmf)
+    myplot.Show()
     return
 
     HierarchicalExample()
