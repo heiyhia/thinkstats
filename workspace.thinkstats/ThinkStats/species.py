@@ -256,8 +256,7 @@ class Species(thinkbayes.Suite):
         """
         dirichlet = hypo
         like = 0
-        for i in range(10000):
-            # print 'like', dirichlet.Likelihood(data)
+        for i in range(1000):
             like += dirichlet.Likelihood(data)
 
         m = len(data)
@@ -280,7 +279,6 @@ class Species2(Species):
         for i in range(m):
             one = numpy.zeros(i+1)
             one[i] = data[i]
-            print one
             Species.Update(self, one)
 
     def Likelihood(self, hypo, data):
@@ -291,37 +289,13 @@ class Species2(Species):
         """
         dirichlet = hypo
         like = 0
-        for i in range(10000):
-            # print 'like', dirichlet.Likelihood(data)
+        for i in range(1000):
             like += dirichlet.Likelihood(data)
 
         m = len(data)
-        num_unseen = dirichlet.n - m +1
+        num_unseen = dirichlet.n - m + 1
         like *= num_unseen
         return like
-
-
-
-class Species5(Species):
-    """Represents hypotheses about the number of species."""
-    
-    def __init__(self, ns):
-        hypos = [OversampledDirichlet(n) for n in ns]
-        thinkbayes.Suite.__init__(self, hypos)
-
-    def Update(self, data):
-        """Updates the suite based on the data.
-
-        data: list of observed frequencies
-        """
-        for hypo in self.Values():
-            hypo.Peek(data)
-
-        # call Update in the parent class, which calls Likelihood
-        thinkbayes.Suite.Update(self, data)
-
-        for hypo in self.Values():
-            hypo.Update(data)
 
 
 class Species3(object):
@@ -334,6 +308,62 @@ class Species3(object):
         self.low, self.high = ns[0], ns[-1]
         self.params = numpy.ones(self.high, dtype=numpy.int)
 
+    def Update(self, data):
+        m = len(data)
+        for i in range(m):
+            self.UpdateOne(i+1, data[i])
+            self.params[i] += data[i]
+
+    def UpdateOne(self, m, count):
+        """Updates the suite based on the data.
+
+        m: which species was observed
+        count: how many were observed
+        """
+        like = numpy.zeros(len(self.ns), dtype=numpy.double)
+        for i in range(1000):
+            like += self.SampleLikelihood(m, count)
+
+        # multiply the priors by the likelihoods and renormalize
+        self.probs *= like
+        self.probs /= self.probs.sum()
+
+    def SampleLikelihood(self, m, count):
+        """Computes the likelihood of the data under all hypotheses.
+
+        m: which species was observed
+        count: how many were observed
+        """
+        # get a random sample of p
+        gammas = numpy.random.gamma(self.params)
+
+        # col is the cumulative sum of p
+        sums = numpy.cumsum(gammas)
+
+        # get p for the mth species, for each value of n
+        ps = [gammas[m-1] / sums[n-1] for n in self.ns]
+        log_likes = numpy.log(ps) * count
+
+        # before exponentiating, scale into a reasonable range
+        log_likes -= numpy.max(log_likes)
+        likes = numpy.exp(log_likes)
+
+        # for each value of n, the number of ways to see the
+        # new species is the number of unseen species
+        coefs = [n-m+1 for n in self.ns]
+        likes *= coefs
+
+        return likes
+
+    def DistOfN(self):
+        """Computes the distribution of n."""
+        pmf = thinkbayes.MakePmfFromDict(dict(zip(self.ns, self.probs)))
+        return pmf
+
+
+class Species4(Species3):
+    """Represents hypotheses about the number of species."""
+    
     def Update(self, data):
         """Updates the suite based on the data.
 
@@ -349,45 +379,6 @@ class Species3(object):
         m = len(data)
         self.params[:m] += data
 
-    def SampleLikelihood(self, data):
-        """Computes the likelihood of the data under all hypotheses.
-
-        data: list of observations
-        """
-        # get a random sample of p
-        gammas = numpy.random.gamma(self.params)
-
-        # row is just the first m elements of p
-        m = len(data)
-        row = gammas[:m]
-
-        # col is the cumulative sum of p
-        col = numpy.cumsum(gammas)
-
-        log_likes = []
-
-        for n in self.ns:
-            p = row / col[n-1]
-            terms = numpy.log(p) * data
-            log_like = terms.sum()
-            log_likes.append(log_like)
-
-        log_likes -= numpy.max(log_likes)
-        likes = numpy.exp(log_likes)
-
-        coefs = [thinkbayes.BinomialCoef(n, m) for n in self.ns]
-        likes *= coefs
-        return likes
-
-    def DistOfN(self):
-        """Computes the distribution of n."""
-        pmf = thinkbayes.MakePmfFromDict(dict(zip(self.ns, self.probs)))
-        return pmf
-
-
-class Species4(Species3):
-    """Represents hypotheses about the number of species."""
-    
     def SampleLikelihood(self, data):
         """Computes the likelihood of the data under all hypotheses.
 
@@ -422,6 +413,28 @@ class Species4(Species3):
         likes *= coefs
 
         return likes
+
+
+class Species5(Species):
+    """Represents hypotheses about the number of species."""
+    
+    def __init__(self, ns):
+        hypos = [OversampledDirichlet(n) for n in ns]
+        thinkbayes.Suite.__init__(self, hypos)
+
+    def Update(self, data):
+        """Updates the suite based on the data.
+
+        data: list of observed frequencies
+        """
+        for hypo in self.Values():
+            hypo.Peek(data)
+
+        # call Update in the parent class, which calls Likelihood
+        thinkbayes.Suite.Update(self, data)
+
+        for hypo in self.Values():
+            hypo.Update(data)
 
 
 class OversampledDirichlet(thinkbayes.Dirichlet):
@@ -524,9 +537,10 @@ def MakePosterior(constructor):
 
 
 def PlotPosteriors():
-    for constructor in [Species, Species2]:
+    for constructor in [Species3, Species4]:
         pmf = MakePosterior(constructor)
         pmf.name = constructor.__name__
+        pmf.Print()
         myplot.Pmf(pmf)
 
     myplot.Show()
@@ -583,6 +597,7 @@ def TestOversampledDirichlet():
 
 
 def main(script, *args):
+    random.seed(17)
     PlotPosteriors()
     return
 
