@@ -5382,9 +5382,9 @@ we see more species than we though existed, the likelihood is 0.
 
 Otherwise we select a random set of prevalences, {\tt p}, and
 compute the multinomial PDF, which is
-
+%
 \[ c(x) \prod_i p_i^{x_i}\]
-
+%
 where $p_i$ is the prevalence of the $i$th species, and $x_i$ is the
 observed number.  The first term, $c(x)$, is the multinomial
 coefficient; I left it out of the computation because it is
@@ -5487,7 +5487,7 @@ Again, the multinomial PDF is
 \[ c(x) \prod_i p_i^{x_i}\]
 %
 So the log-likelihood is
-
+%
 \[ log(c(x)) + \sum_i \log(p_i) * x_i \]
 %
 which is fast and easy to compute.
@@ -5502,8 +5502,6 @@ class Species2(object):
     def __init__(self, ns):
         self.ns = ns
         self.probs = numpy.ones(len(ns), dtype=numpy.double)
-
-        self.low, self.high = ns[0], ns[-1]
         self.params = numpy.ones(self.high, dtype=numpy.int)
 \end{verbatim}
 
@@ -5531,10 +5529,9 @@ then the Dirichlet parameters:
 
 {\tt SampleLikelihood} returns an array of likelihoods, one for
 each value of {\tt n}.  {\tt like} accumulates the total likelihood
-for 1000 samples from the Dirichlet distribution.  {\tt self.probs}
+for 1000 samples.  {\tt self.probs}
 is multiplied by the total likelihood, then normalized.
-
-Updating the parameters is identical to what we saw in {\tt
+Finally, updating the parameters is identical to what we saw in {\tt
   Dirichlet.Update}.
 
 Now let's see what {\tt SampleLikelihood} looks like:
@@ -5545,18 +5542,20 @@ Now let's see what {\tt SampleLikelihood} looks like:
 
         m = len(data)
         row = gammas[:m]
-
         col = numpy.cumsum(gammas)
 
         log_likes = []
-        for n in range(self.low, self.high+1):
-            p = row / col[n-1]
-            terms = numpy.log(p) * data
+        for n in self.ns:
+            ps = row / col[n-1]
+            terms = numpy.log(ps) * data
             log_like = terms.sum()
             log_likes.append(log_like)
 
         log_likes -= numpy.max(log_likes)
         likes = numpy.exp(log_likes)
+
+        coefs = [thinkbayes.BinomialCoef(n, m) for n in self.ns]
+        likes *= coefs
 
         return likes
 \end{verbatim}
@@ -5569,13 +5568,11 @@ the data, they are the only ones we need.
 But for each value of {\tt n} we need to divide {\tt row} by the
 total of the first {\tt n} values from {\tt gamma}.  {\tt cumsum}
 computes these cumulative sums and stores them in {\tt col}.
-In the next section you will see why I called these variables
-{\tt row} and {\tt col}.
 
 The loop iterates through the values of {\tt n} and accumulates
 a list of log-likelihoods.
 
-Inside the loop, {\tt p} contains the row of probabilities, normalized
+Inside the loop, {\tt ps} contains the row of probabilities, normalized
 with the appropriate cumulative sum.  {\tt terms} contains the
 terms of the summation, $\log(p_i) x_i$, and \verb"log_like" contains
 their sum.
@@ -5583,7 +5580,13 @@ their sum.
 After the loop, we want to convert the log-likelihoods to linear
 likelihoods, but first it's a good idea to shift them so the largest
 log-likelihood is 0; that way the linear likelihoods are not too
-small. 
+small.
+
+Finally, before we return the likelihood, we have to apply a correction
+factor, which is the number of ways we could have observed these {\tt m}
+species, if the total number of species is {\tt m}.  The binomial
+coefficient is the fancy name for ``n choose m'', which is written
+$\choose{n}{m}$. 
 
 As often happens, the optimized version is less readable and more
 error-prone than the original.  But that's one reason I think it is
