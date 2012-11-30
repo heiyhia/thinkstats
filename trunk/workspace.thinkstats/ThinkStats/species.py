@@ -256,7 +256,7 @@ class Species(thinkbayes.Suite):
         """
         dirichlet = hypo
         like = 0
-        for i in range(1000):
+        for i in range(10000):
             # print 'like', dirichlet.Likelihood(data)
             like += dirichlet.Likelihood(data)
 
@@ -275,26 +275,15 @@ class Species(thinkbayes.Suite):
 class Species2(Species):
     """Represents hypotheses about the number of species."""
     
-    def Likelihood(self, hypo, data):
-        """Computes the likelihood of the data under this hypothesis.
-
-        hypo: Dirichlet object
-        data: list of observed frequencies
-        """
-        #return Species.Likelihood(self, hypo, data)
-
+    def Update(self, data):
         m = len(data)
-
-        like = 1
         for i in range(m):
-            one = numpy.zeros(m)
+            one = numpy.zeros(i+1)
             one[i] = data[i]
-            like *= self.LikelihoodOne(hypo, one)
+            print one
+            Species.Update(self, one)
 
-        #like = self.LikelihoodOne(hypo, data)
-        return like
-
-    def LikelihoodOne(self, hypo, data):
+    def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under this hypothesis.
 
         hypo: Dirichlet object
@@ -302,14 +291,15 @@ class Species2(Species):
         """
         dirichlet = hypo
         like = 0
-        for i in range(1000):
+        for i in range(10000):
             # print 'like', dirichlet.Likelihood(data)
             like += dirichlet.Likelihood(data)
 
         m = len(data)
-        #like *= thinkbayes.BinomialCoef(dirichlet.n, m)
-        like *= dirichlet.n
+        num_unseen = dirichlet.n - m +1
+        like *= num_unseen
         return like
+
 
 
 class Species5(Species):
@@ -525,7 +515,7 @@ def MakePosterior(constructor):
     ns = range(3, 20)
     suite = constructor(ns)
 
-    data = [3, 2, 1]
+    data = [1, 2, 3]
     suite.Update(data)
 
     pmf = suite.DistOfN()
@@ -592,7 +582,7 @@ def TestOversampledDirichlet():
     print sample
 
 
-def main(script, flag=1, *args):
+def main(script, *args):
     PlotPosteriors()
     return
 

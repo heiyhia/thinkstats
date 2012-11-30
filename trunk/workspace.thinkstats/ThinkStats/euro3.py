@@ -67,6 +67,7 @@ def SuiteLikelihood(suite, data):
 
 def Main():
     data = 140, 110
+    data = 8, 12
 
     suite = Euro()
     likelihoodF = suite.Likelihood(50, data)

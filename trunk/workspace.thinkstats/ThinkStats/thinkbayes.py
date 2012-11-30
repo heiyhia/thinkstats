@@ -1297,7 +1297,7 @@ class Dirichlet(object):
         self.name = name
 
     def Update(self, data):
-        """Updates a Beta distribution.
+        """Updates a Dirichlet distribution.
 
         data: sequence of observations, in order corresponding to params
         """
