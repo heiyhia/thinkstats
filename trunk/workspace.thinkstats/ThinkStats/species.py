@@ -275,6 +275,46 @@ class Species(thinkbayes.Suite):
 class Species2(Species):
     """Represents hypotheses about the number of species."""
     
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of the data under this hypothesis.
+
+        hypo: Dirichlet object
+        data: list of observed frequencies
+        """
+        #return Species.Likelihood(self, hypo, data)
+
+        m = len(data)
+
+        like = 1
+        for i in range(m):
+            one = numpy.zeros(m)
+            one[i] = data[i]
+            like *= self.LikelihoodOne(hypo, one)
+
+        #like = self.LikelihoodOne(hypo, data)
+        return like
+
+    def LikelihoodOne(self, hypo, data):
+        """Computes the likelihood of the data under this hypothesis.
+
+        hypo: Dirichlet object
+        data: list of observed frequencies
+        """
+        dirichlet = hypo
+        like = 0
+        for i in range(1000):
+            # print 'like', dirichlet.Likelihood(data)
+            like += dirichlet.Likelihood(data)
+
+        m = len(data)
+        #like *= thinkbayes.BinomialCoef(dirichlet.n, m)
+        like *= dirichlet.n
+        return like
+
+
+class Species5(Species):
+    """Represents hypotheses about the number of species."""
+    
     def __init__(self, ns):
         hypos = [OversampledDirichlet(n) for n in ns]
         thinkbayes.Suite.__init__(self, hypos)
