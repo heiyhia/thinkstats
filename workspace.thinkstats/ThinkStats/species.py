@@ -15,7 +15,7 @@ import csv
 import math
 import random
 import sys
-
+import time
 
 class Subject(object):
     """Represents a subject from the belly button study."""
@@ -233,9 +233,10 @@ def MakeFigures(root, sample, meta, m=15, iters=100):
 class Species(thinkbayes.Suite):
     """Represents hypotheses about the number of species."""
     
-    def __init__(self, ns):
+    def __init__(self, ns, iterations=1000):
         hypos = [thinkbayes.Dirichlet(n) for n in ns]
         thinkbayes.Suite.__init__(self, hypos)
+        self.iterations = iterations
 
     def Update(self, data):
         """Updates the suite based on the data.
@@ -245,6 +246,7 @@ class Species(thinkbayes.Suite):
         # call Update in the parent class, which calls Likelihood
         thinkbayes.Suite.Update(self, data)
 
+        # update the next level of the hierarchy
         for hypo in self.Values():
             hypo.Update(data)
 
@@ -255,12 +257,18 @@ class Species(thinkbayes.Suite):
         data: list of observed frequencies
         """
         dirichlet = hypo
+
+        # draw sample Likelihoods from the hypothetical Dirichlet dist
+        # and add them up
         like = 0
-        for i in range(1000):
+        for i in range(self.iterations):
             like += dirichlet.Likelihood(data)
 
+        # correct for the number of ways the observed species
+        # might as been chosen from all species
         m = len(data)
         like *= thinkbayes.BinomialCoef(dirichlet.n, m)
+
         return like
 
     def DistOfN(self):
@@ -271,86 +279,51 @@ class Species(thinkbayes.Suite):
         return pmf
         
 
-class Species2(Species):
-    """Represents hypotheses about the number of species."""
+class Species2(object):
+    """Represents hypotheses about the number of species.
+
+    Combines two layers of the hierarchy into one object.
+
+    ns and probs represent the distribution of N
+
+    params represents the parameters of the Dirichlet distributions
+    """
     
-    def Update(self, data):
-        m = len(data)
-        for i in range(m):
-            one = numpy.zeros(i+1)
-            one[i] = data[i]
-            Species.Update(self, one)
-
-    def Likelihood(self, hypo, data):
-        """Computes the likelihood of the data under this hypothesis.
-
-        hypo: Dirichlet object
-        data: list of observed frequencies
-        """
-        dirichlet = hypo
-        like = 0
-        for i in range(1000):
-            like += dirichlet.Likelihood(data)
-
-        m = len(data)
-        num_unseen = dirichlet.n - m + 1
-        like *= num_unseen
-        return like
-
-
-class Species3(object):
-    """Represents hypotheses about the number of species."""
-    
-    def __init__(self, ns):
+    def __init__(self, ns, iterations=1000):
         self.ns = ns
         self.probs = numpy.ones(len(ns), dtype=numpy.double)
-
-        self.low, self.high = ns[0], ns[-1]
-        self.params = numpy.ones(self.high, dtype=numpy.int)
+        self.params = numpy.ones(self.ns[-1], dtype=numpy.int)
+        self.iterations = iterations
 
     def Update(self, data):
-        m = len(data)
-        for i in range(m):
-            self.UpdateOne(i+1, data[i])
-            self.params[i] += data[i]
-
-    def UpdateOne(self, m, count):
-        """Updates the suite based on the data.
-
-        m: which species was observed
-        count: how many were observed
-        """
         like = numpy.zeros(len(self.ns), dtype=numpy.double)
         for i in range(1000):
-            like += self.SampleLikelihood(m, count)
+            like += self.SampleLikelihood(data)
 
-        # multiply the priors by the likelihoods and renormalize
         self.probs *= like
         self.probs /= self.probs.sum()
 
-    def SampleLikelihood(self, m, count):
-        """Computes the likelihood of the data under all hypotheses.
+        m = len(data)
+        self.params[:m] += data
 
-        m: which species was observed
-        count: how many were observed
-        """
-        # get a random sample of p
+    def SampleLikelihood(self, data):
         gammas = numpy.random.gamma(self.params)
 
-        # col is the cumulative sum of p
-        sums = numpy.cumsum(gammas)
+        m = len(data)
+        row = gammas[:m]
+        col = numpy.cumsum(gammas)
 
-        # get p for the mth species, for each value of n
-        ps = [gammas[m-1] / sums[n-1] for n in self.ns]
-        log_likes = numpy.log(ps) * count
+        log_likes = []
+        for n in self.ns:
+            ps = row / col[n-1]
+            terms = numpy.log(ps) * data
+            log_like = terms.sum()
+            log_likes.append(log_like)
 
-        # before exponentiating, scale into a reasonable range
         log_likes -= numpy.max(log_likes)
         likes = numpy.exp(log_likes)
 
-        # for each value of n, the number of ways to see the
-        # new species is the number of unseen species
-        coefs = [n-m+1 for n in self.ns]
+        coefs = [thinkbayes.BinomialCoef(n, m) for n in self.ns]
         likes *= coefs
 
         return likes
@@ -361,7 +334,7 @@ class Species3(object):
         return pmf
 
 
-class Species4(Species3):
+class Species3(Species2):
     """Represents hypotheses about the number of species."""
     
     def Update(self, data):
@@ -369,8 +342,9 @@ class Species4(Species3):
 
         data: list of observations
         """
+        # sample the likelihoods and add them up
         like = numpy.zeros(len(self.ns), dtype=numpy.double)
-        for i in range(1000):
+        for i in range(self.iterations):
             like += self.SampleLikelihood(data)
 
         self.probs *= like
@@ -392,7 +366,7 @@ class Species4(Species3):
         row = gammas[:m]
 
         # col is the cumulative sum of gammas
-        col = numpy.cumsum(gammas)[self.low-1:]
+        col = numpy.cumsum(gammas)[self.ns[0]-1:]
 
         # each row of the array is a set of ps, normalized
         # for each hypothetical value of n
@@ -409,13 +383,121 @@ class Species4(Species3):
         log_likes -= numpy.max(log_likes)
         likes = numpy.exp(log_likes)
 
+        # correct for the number of ways we could see m species
+        # out of a possible n
         coefs = [thinkbayes.BinomialCoef(n, m) for n in self.ns]
         likes *= coefs
 
         return likes
 
 
-class Species5(Species):
+class Species4(Species):
+    """Represents hypotheses about the number of species."""
+    
+    def Update(self, data):
+        """Updates the suite based on the data.
+
+        data: list of observed frequencies
+        """
+        m = len(data)
+
+        # loop through the species and update one at a time
+        for i in range(m):
+            one = numpy.zeros(i+1)
+            one[i] = data[i]
+            
+            # call the parent class
+            Species.Update(self, one)
+
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of the data under this hypothesis.
+
+        Note: this only works correctly if we update one species at a time.
+
+        hypo: Dirichlet object
+        data: list of observed frequencies
+        """
+        dirichlet = hypo
+        like = 0
+        for i in range(self.iterations):
+            like += dirichlet.Likelihood(data)
+
+        # correct for the number of unseen species the new one
+        # could have been
+        m = len(data)
+        num_unseen = dirichlet.n - m + 1
+        like *= num_unseen
+
+        return like
+
+
+class Species5(Species2):
+    """Represents hypotheses about the number of species.
+
+    Combines two laters of the hierarchy into one object.
+
+    ns and probs represent the distribution of N
+
+    params represents the parameters of the Dirichlet distributions
+    """
+    
+    def Update(self, data):
+        """Updates the suite based on the data.
+
+        data: list of observed frequencies
+        """
+        # loop through the species and update one at a time
+        m = len(data)
+        for i in range(m):
+            self.UpdateOne(i+1, data[i])
+            self.params[i] += data[i]
+
+    def UpdateOne(self, m, count):
+        """Updates the suite based on the data.
+
+        Evaluates the likelihood for all values of n.
+
+        m: which species was observed
+        count: how many were observed
+        """
+        # sample the likelihoods and add them up
+        likes = numpy.zeros(len(self.ns), dtype=numpy.double)
+        for i in range(self.iterations):
+            likes += self.SampleLikelihood(m, count)
+
+        # correct for the number of unseen species the new one
+        # could have been
+        coefs = [n-m+1 for n in self.ns]
+        likes *= coefs
+
+        # multiply the priors by the likelihoods and renormalize
+        self.probs *= likes
+        self.probs /= self.probs.sum()
+
+    def SampleLikelihood(self, m, count):
+        """Computes the likelihood of the data under all hypotheses.
+
+        m: which species was observed
+        count: how many were observed
+        """
+        # get a random sample of p
+        gammas = numpy.random.gamma(self.params)
+
+        # sums is the cumulative sum of p, for each value of n
+        sums = numpy.cumsum(gammas)[self.ns[0]-1:]
+
+        # get p for the mth species, for each value of n
+        ps = gammas[m-1] / sums
+        log_likes = numpy.log(ps) * count
+
+        # before exponentiating, scale into a reasonable range
+        log_likes -= numpy.max(log_likes)
+        likes = numpy.exp(log_likes)
+
+        return likes
+
+
+class Species6(Species):
     """Represents hypotheses about the number of species."""
     
     def __init__(self, ns):
@@ -524,23 +606,38 @@ class OversampledDirichlet(thinkbayes.Dirichlet):
         return ps
 
 
-def MakePosterior(constructor):
-    ns = range(3, 20)
-    suite = constructor(ns)
+def MakePosterior(constructor, data, ns, iterations=1000):
+    """Makes a suite, updates it and returns the PMF of N.
 
-    data = [1, 2, 3]
+    Prints the elapsed time.
+
+    data: observed species and their counts
+    ns: sequence of hypothetical ns
+    iterations: how many samples to draw
+    """
+    suite = constructor(ns, iterations)
+
+    print constructor.__name__
+    start = time.time()
     suite.Update(data)
+    end = time.time()
+
+    print end-start
 
     pmf = suite.DistOfN()
-
     return pmf
 
 
-def PlotPosteriors():
-    for constructor in [Species3, Species4]:
-        pmf = MakePosterior(constructor)
-        pmf.name = constructor.__name__
-        pmf.Print()
+def PlotAllVersions():
+    """Makes a graph of posterior distributions of N."""
+    data = [1, 2, 3]
+    m = len(data)
+    n = 20
+    ns = range(m, n)
+
+    for constructor in [Species, Species2, Species3, Species4, Species5]:
+        pmf = MakePosterior(constructor, data, ns)
+        pmf.name = '%s' % (constructor.__name__)
         myplot.Pmf(pmf)
 
     myplot.Show()
@@ -549,6 +646,39 @@ def PlotPosteriors():
     myplot.Save(root='species3',
                 xlabel='Number of species',
                 ylabel='Prob')
+
+
+def PlotMedium():
+    """Makes a graph of posterior distributions of N."""
+    data = [1, 1, 1, 1, 2, 3, 5, 9]
+    m = len(data)
+    n = 20
+    ns = range(m, n)
+
+    for constructor in [Species, Species2, Species3, Species4, Species5]:
+        pmf = MakePosterior(constructor, data, ns)
+        pmf.name = '%s' % (constructor.__name__)
+        myplot.Pmf(pmf)
+
+    myplot.Show()
+
+
+def PlotLarge():
+    """Makes a graph of posterior distributions of N."""
+    data = range(20)
+    m = len(data)
+    n = int(m * 1.5)
+    ns = range(m, n)
+
+    constructors = [Species2, Species3, Species5]
+    iterations = [1000, 4000, 200]
+
+    for constructor, iterations in zip(constructors, iterations):
+        pmf = MakePosterior(constructor, data, ns, iterations)
+        pmf.name = '%s' % (constructor.__name__)
+        myplot.Pmf(pmf)
+
+    myplot.Show()
 
 
 def SimpleDirichletExample():
@@ -597,8 +727,14 @@ def TestOversampledDirichlet():
 
 
 def main(script, *args):
+    PlotLarge()
+    return
+
+    PlotMedium()
+    return
+
     random.seed(17)
-    PlotPosteriors()
+    PlotAllVersions()
     return
 
     pmf = MakePosterior(Species)
@@ -645,7 +781,7 @@ def main(script, *args):
 
 
     xs = []
-    for i in range(10000):
+    for i in range(ITERATIONS):
         x = dirichlet.Random()
         xs.append(x)
 
