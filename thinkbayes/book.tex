@@ -5283,8 +5283,16 @@ the observed data, and plots the marginal distributions.
         print pmf.MaximumLikelihood()
 \end{verbatim}
 
-Figure~\ref{} shows the results.  As expected, the maximum
-likelihood estimates are 50\%, 33\% and 17\%.
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species1.pdf}}
+\caption{Distribution of prevalences for three species.}
+\label{fig.species1}
+\end{figure}
+
+Figure~\ref{fig.species1} shows the results.  The maximum
+likelihood estimate for each species is the observed rate:
+50\%, 33\% and 17\%.
 
 
 \section{A hierarchical model}
@@ -5316,13 +5324,14 @@ makes a list of Dirichlet objects.
 Here's the code that creates the top-level suite:
 
 \begin{verbatim}
-    ns = range(3, 10)
+    ns = range(3, 30)
     suite = Species(ns)
 \end{verbatim}
 
-In this example, we have seen 3 species, so there have to be at
-least that many.  I chose an upper bound that seemed reasonable, but
-we can come back an confirm that the probability of exceeding this
+{\tt ns} is the list of possible values for {\tt n}.
+Since we have seen 3 species, so there have to be at least
+that many.  I chose an upper bound that seemed reasonable, but we will
+have to check later that the probability of exceeding this
 bound is low.
 
 To update a hierarchical model, you have to update all levels.
@@ -5331,14 +5340,19 @@ level first and work up.  But in this case it doesn't matter, so
 I update the top level first:
 
 \begin{verbatim}
+#class Species
+
     def Update(self, data):
         thinkbayes.Suite.Update(self, data)
         for hypo in self.Values():
             hypo.Update(data)
 \end{verbatim}
 
+{\tt Species.Update} invokes {\tt Update} in the parent class,
+then loops through the sub-hypotheses and updates them.
+
 Now all we need is a likelihood function.  As usual,
-{\tt Likelihood} get a hypothesis and a dataset as arguments:
+{\tt Likelihood} gets a hypothesis and a dataset as arguments:
 
 \begin{verbatim}
 # class Species
@@ -5355,11 +5369,12 @@ Now all we need is a likelihood function.  As usual,
 {\tt hypo} is a Dirichlet object; {\tt data} is a sequence of
 observed frequencies.  {\tt Species.Likelihood} calls
 {\tt Dirichlet.Likelihood} 1000 times and returns the total.
-Why do we have to call it 1000 times?  Because {\tt Dirichlet.Likelihood}
-doesn't actually compute the likelihood of the data under the
-Dirichlet distribution.  Rather, it draws one sample from the
-hypothetical distribution and compute the likelihood of the
-data under the sampled set of prevalences.  
+
+Why do we have to call it 1000 times?  Because {\tt
+  Dirichlet.Likelihood} doesn't actually compute the likelihood of the
+data under the whole Dirichlet distribution.  Rather, it draws one
+sample from the hypothetical distribution and computes the likelihood
+of the data under the sampled set of prevalences.
 
 Here's what it looks like:
 
@@ -5378,14 +5393,14 @@ Here's what it looks like:
 \end{verbatim}
 
 The length of {\tt data} is the number of species observed.  If
-we see more species than we though existed, the likelihood is 0.
+we see more species than we thought existed, the likelihood is 0.
 
 Otherwise we select a random set of prevalences, {\tt p}, and
 compute the multinomial PDF, which is
 %
 \[ c(x) \prod_i p_i^{x_i}\]
 %
-where $p_i$ is the prevalence of the $i$th species, and $x_i$ is the
+$p_i$ is the prevalence of the $i$th species, and $x_i$ is the
 observed number.  The first term, $c(x)$, is the multinomial
 coefficient; I left it out of the computation because it is
 a multiplicative factor that depends only
@@ -5428,8 +5443,8 @@ updates the top-level suite and extracts the posterior PMF of {\tt n}:
     pmf = suite.DistOfN()
 \end{verbatim}
 
-To get the distribution of {\tt n}, {\tt DistOfN} iterates through the
-top-level hypotheses:
+To get the posterior distribution of {\tt n}, {\tt DistOfN} iterates
+through the top-level hypotheses:
 
 \begin{verbatim}
     def DistOfN(self):
@@ -5439,15 +5454,23 @@ top-level hypotheses:
         return pmf
 \end{verbatim}
 
-Figure~\ref{} shows the result.  The most likely estimate is that
-there are 3 three species, but after only 6 observations there is
-non-negligible probability that there are several unseen species.
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species2.pdf}}
+\caption{Distribution of prevalences for three species.}
+\label{fig.species2}
+\end{figure}
 
-The probability that there are 9 species in total is quite small,
-so the upper bound we chose seems reasonable.  But remember that
-we started with a uniform prior for {\tt n}.  If we have background
-information about the number of species in the environment, we might
-choose a different prior.
+Figure~\ref{fig.species2} shows the result.  The most likely value is 4.
+Values from 3 to 8 are all likely; after that the probabilities
+drop off quickly.  The probability that there are 29 species is
+low enough to be negligible, if we chose a higher upper bound, it
+would have a small effect on the results.
+
+But remember that we started with a uniform prior for {\tt n}.  If we
+have background information about the number of species in the
+environment, we might choose a different prior.
+
 
 \section{Optimization}
 
@@ -5565,7 +5588,7 @@ hypothetical value of {\tt n}.  {\tt row} is just the first {\tt m}
 elements of {\tt gammas}; since these are the only elements that depend on
 the data, they are the only ones we need.
 
-But for each value of {\tt n} we need to divide {\tt row} by the
+For each value of {\tt n} we need to divide {\tt row} by the
 total of the first {\tt n} values from {\tt gamma}.  {\tt cumsum}
 computes these cumulative sums and stores them in {\tt col}.
 
@@ -5584,7 +5607,7 @@ small.
 
 Finally, before we return the likelihood, we have to apply a correction
 factor, which is the number of ways we could have observed these {\tt m}
-species, if the total number of species is {\tt m}.  The binomial
+species, if the total number of species is {\tt n}.  The binomial
 coefficient is the fancy name for ``n choose m'', which is written
 $\choose{n}{m}$. 
 

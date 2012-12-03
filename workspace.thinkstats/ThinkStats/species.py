@@ -17,6 +17,8 @@ import random
 import sys
 import time
 
+formats = ['pdf', 'eps']
+
 class Subject(object):
     """Represents a subject from the belly button study."""
 
@@ -74,6 +76,7 @@ def PlotMixture(pmfs, show=False):
     myplot.Save(show=show, clf=False,
                 xlabel='prevalence',
                 ylabel='prob',
+                formats=formats,
                 legend=False)
 
 
@@ -129,6 +132,7 @@ def PlotCurves(curves, root=None, clf=False):
                 clf=clf,
                 xlabel='# samples',
                 ylabel='# taxa',
+                formats=formats,
                 legend=False)
 
 
@@ -204,7 +208,9 @@ def MakeSubplots(root, sample, meta, m=15, iters=100):
     ms, ps = ProbCurve(curves, n=len(sample), m=m)
     pyplot.plot(ms, ps)
     myplot.Save(xlabel='# samples', 
-                ylabel='prob of more taxa')
+                ylabel='prob of more taxa',
+                formats=formats,
+                )
 
     #pyplot.show()
 
@@ -682,8 +688,12 @@ def PlotLarge():
 
 
 def SimpleDirichletExample():
+    """Makes a plot showing posterior distributions for three species.
+
+    This is the case where we know there are exactly three species.
+    """
     beta = thinkbayes.Beta()
-    beta.Update((3, 3))
+    beta.Update((1, 6))
     print beta.Mean()
 
     data = [3, 2, 1]
@@ -694,20 +704,24 @@ def SimpleDirichletExample():
 
     for i in range(3):
         beta = dirichlet.MarginalBeta(i)
-        print names[i], beta.Mean()
+        print 'mean', names[i], beta.Mean()
 
         pmf = beta.MakePmf(name=names[i])
-        print names[i], pmf.MaximumLikelihood()
+        print 'mle', names[i], pmf.MaximumLikelihood()
         myplot.Pmf(pmf)
 
     myplot.Save(root='species1',
                 xlabel='Prevalence',
-                ylabel='Prob')
+                ylabel='Prob',
+                formats=formats,
+                )
 
 
 def HierarchicalExample():
-    ns = range(3, 20)
-    suite = Species(ns)
+    """Shows the posterior distribution of n for lions, tigers and bears.
+    """
+    ns = range(3, 30)
+    suite = Species(ns, iterations=8000)
 
     data = [3, 2, 1]
     suite.Update(data)
@@ -716,7 +730,9 @@ def HierarchicalExample():
     myplot.Pmf(pmf)
     myplot.Save(root='species2',
                 xlabel='Number of species',
-                ylabel='Prob')
+                ylabel='Prob',
+                formats=formats,
+                )
 
 
 def TestOversampledDirichlet():
@@ -727,6 +743,12 @@ def TestOversampledDirichlet():
 
 
 def main(script, *args):
+    HierarchicalExample()
+    return
+
+    SimpleDirichletExample()
+    return
+
     PlotLarge()
     return
 
@@ -740,9 +762,6 @@ def main(script, *args):
     pmf = MakePosterior(Species)
     myplot.Pmf(pmf)
     myplot.Show()
-    return
-
-    HierarchicalExample()
     return
 
     subjects = ReadData()
@@ -762,10 +781,9 @@ def main(script, *args):
     return
     myplot.Save(root='species4',
                 xlabel='Number of species',
-                ylabel='Prob')
-    return
-
-    SimpleDirichletExample()
+                ylabel='Prob',
+                formats=formats,
+                )
     return
 
 
