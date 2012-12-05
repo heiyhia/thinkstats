@@ -473,8 +473,8 @@ class Species5(Species2):
 
         # correct for the number of unseen species the new one
         # could have been
-        coefs = [n-m+1 for n in self.ns]
-        likes *= coefs
+        unseen_species = [n-m+1 for n in self.ns]
+        likes *= unseen_species
 
         # multiply the priors by the likelihoods and renormalize
         self.probs *= likes
@@ -669,15 +669,15 @@ def PlotMedium():
     myplot.Show()
 
 
-def PlotLarge():
+def CompareHierarchicalExample():
     """Makes a graph of posterior distributions of N."""
-    data = range(20)
+    data = [3, 2, 1]
     m = len(data)
-    n = int(m * 1.5)
+    n = 30
     ns = range(m, n)
 
-    constructors = [Species2, Species3, Species5]
-    iterations = [1000, 4000, 200]
+    constructors = [Species, Species5]
+    iterations = [1000, 100]
 
     for constructor, iterations in zip(constructors, iterations):
         pmf = MakePosterior(constructor, data, ns, iterations)
@@ -743,13 +743,13 @@ def TestOversampledDirichlet():
 
 
 def main(script, *args):
+    CompareHierarchicalExample()
+    return
+
     HierarchicalExample()
     return
 
     SimpleDirichletExample()
-    return
-
-    PlotLarge()
     return
 
     PlotMedium()

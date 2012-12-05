@@ -328,6 +328,10 @@ Thanks!
   Mahajan, especially in Fall 2012, when I audited his class on
   Bayesian Inference at Olin College.
 
+\item I wrote parts of this book during project nights with the
+Boston Python Users' Group, so I would like to thank them for their
+company, and pizza.
+
 \item Jonathan Edwards sent in the first typo.
 
 \item George Purkins found a markup error.
@@ -5538,6 +5542,8 @@ the hierarchy: first the probability for each value of {\tt n},
 then the Dirichlet parameters:
 
 \begin{verbatim}
+# class Species2
+
     def Update(self, data):
         like = numpy.zeros(len(self.ns), dtype=numpy.double)
         for i in range(1000):
@@ -5560,6 +5566,8 @@ Finally, updating the parameters is identical to what we saw in {\tt
 Now let's see what {\tt SampleLikelihood} looks like:
 
 \begin{verbatim}
+# class Species2
+
     def SampleLikelihood(self, data):
         gammas = numpy.random.gamma(self.params)
 
@@ -5618,23 +5626,174 @@ regression testing.  I plotted results from both versions and confirmed
 that they are approximately equal, and that they converge as the
 sample size increases.
 
-But wait, there's more!  Now that we've made the computation nicely
-rectangular, we can re-write the loop as an array operation.
+\section{One more problem}
+
+There's more we could do to optimize this version, but there's a 
+problem we need to work on first.  As the number of observed
+species increases, this version gets noisier and takes more
+iterations to converge on a good answer.
+
+The problem is that if the probabilities we choose from the Dirichlet
+distribution, the {\tt ps}, are not at least approximately right,
+the likelihood of the observed data is close to zero and almost
+equally bad for all values of {\tt n}.  So most iterations don't
+provide any useful contribution to the total likelihood.  And as the
+number of observed species, {\tt m}, gets large, the probability of
+choosing {\tt ps} with non-legigible likelihood gets small.  Really
+small.
+
+Fortunately, there is a solution.  Remember that if you observe
+a set of data, you can update the prior distribution with the
+entire dataset, or you can break it up into a series of updates
+with subsets of the data, and the result is the same either way.
+
+For this example, the key is to perform the updates one species at
+a time.  That way when we generate a random set of {\tt ps}, only
+one of them affects the computed likelihood, so the chance of choosing
+a good one is much better.
+
+Here's a new version that updates one species at a time:
 
 \begin{verbatim}
-    def SampleLikelihood(self, data):
+class Species4(Species):
+
+    
+    def Update(self, data):
+        m = len(data)
+
+        for i in range(m):
+            one = numpy.zeros(i+1)
+            one[i] = data[i]            
+            Species.Update(self, one)
+\end{verbatim}
+
+This version inherits \verb"__init__" from {\tt Species}, so it
+represents the hypotheses as a list of Dirichlet objects (unlike
+{\tt Species2}.
+
+{\tt Update} loops through the observed species and makes an
+array, {\tt one}, with all zeros and one species count.  Then
+is calls {\tt Update} in the parent class, which actually computes
+the likelihoods and updates the sub-hypotheses.
+
+So in the running example, we do three updates.  The first
+is something like ``I have seen three lions.''  The second is
+``I have see two tigers and no additional lions.''  And the third
+is ``I have seen one bear and no more lions and tigers.''
+
+So here's the new version of {\tt Likelihood}:
+
+\begin{verbatim}
+# class Species4
+
+    def Likelihood(self, hypo, data):
+        dirichlet = hypo
+        like = 0
+        for i in range(self.iterations):
+            like += dirichlet.Likelihood(data)
+
+        # correct for the number of unseen species the new one
+        # could have been
+        m = len(data)
+        num_unseen = dirichlet.n - m + 1
+        like *= num_unseen
+
+        return like
+\end{verbatim}
+
+This is almost the same as {\tt Species.Likelihood}.  The difference
+is the factor, \verb"num_unseen".  This correction is necessary
+because each time we see a species for the first time, we have to
+consider that there were some number of other unseen species that
+we might have seen.  For larger values of {\tt n} there are more
+unseen species that we could have seen, which increases the likelihood
+of the data.
+
+This is a subtle point and I have to admit that I did not get it right
+the first time.  But again I was able to validate this version
+by comparing it to the previous versions.
+
+\section{We're not done yet}
+
+Performing the updates one species at a time solves one problem, but
+it creates another.  XXX analysis of order of growth here XXX
+
+But we can speed things up using the same trick we used in Section~\ref{}:
+we'll get rid of the Dirichlet objects and collapse the two levels
+of the hierarchy into a single object.  So here's yet another version
+of {\tt Species}:
+
+\begin{verbatim}
+class Species5(Species2):
+    
+    def Update(self, data):
+        """Updates the suite based on the data.
+
+        data: list of observed frequencies
+        """
+        # loop through the species and update one at a time
+        m = len(data)
+        for i in range(m):
+            self.UpdateOne(i+1, data[i])
+            self.params[i] += data[i]
+\end{verbatim}
+
+This version inherits \verb"__init__" from {\tt Species2}, so
+it uses {\tt ns} and {\tt probs} to represent the distribution
+of {\tt n}, and {\tt params} to represent the parameters of
+the Dirichlet distribution.
+
+{\tt Update} is similar to what we saw in the previous section.
+It loops through the observed species and calls {\tt UpdateOne}.
+One difference is that {\tt UpdateOne} doesn't get the whole list
+of species counts; it just gets the index (which species was
+observed) and the count (how many of them there were).
+
+Now here's {\tt UpdateOne}:
+
+\begin{verbatim}
+# class Species5
+
+    def UpdateOne(self, m, count):
+        likes = numpy.zeros(len(self.ns), dtype=numpy.double)
+        for i in range(self.iterations):
+            likes += self.SampleLikelihood(m, count)
+
+        unseen_species = [n-m+1 for n in self.ns]
+        likes *= unseen_species
+
+        self.probs *= likes
+        self.probs /= self.probs.sum()
+\end{verbatim}
+
+This function is similar to {\tt Species2.Update}, with two changes:
+
+\begin{itemize}
+
+\item The interface is different.  Instead of the whole dataset,
+we get {\tt m}, the number
+of species we have seen, and {\tt count}, how many of that
+species we've seen.
+
+\item We have to apply a correction factor for the number
+of unseen species, as in {\tt Species4.Likelihood}.  The difference
+here is that we update all of the likelihoods at once with
+array multiplication.
+
+\end{itemize}
+
+Finally, here's {\tt SampleLikelihood}:
+
+\begin{verbatim}
+# class Species5
+
+    def SampleLikelihood(self, m, count):
         gammas = numpy.random.gamma(self.params)
 
-        m = len(data)
-        row = gammas[:m]
+        sums = numpy.cumsum(gammas)[self.ns[0]-1:]
 
-        col = numpy.cumsum(gammas)[self.low-1:]
-
-        array = row / col[:, numpy.newaxis]
-
-        terms = numpy.log(array) * data
-        log_likes = terms.sum(axis=1)
-
+        ps = gammas[m-1] / sums
+        log_likes = numpy.log(ps) * count
 
         log_likes -= numpy.max(log_likes)
         likes = numpy.exp(log_likes)
@@ -5642,34 +5801,14 @@ rectangular, we can re-write the loop as an array operation.
         return likes
 \end{verbatim}
 
-{\tt gammas}, {\tt row} and {\tt col} are unchanged, except that
-we've selected just the elements of {\tt col} we need.
+This is similar to {\tt Species2.SampleLikelihood}; the
+difference is that each update only includes a single species,
+so we don't need a loop: \verb"log_likes" only has a single term.
 
-{\tt numpy.axis} makes a ``slice'' of {\tt col} that is two
-dimensional, with the length of the new dimension being 1.
-As a result, when we divide {\tt row} by {\tt col}, {\tt row}
-gets ``broadcast,'' which means making a copy of {\tt row}
-for each element in {\tt col}, and then dividing through.
-
-The result is an array with one row of {\tt p} for each value
-of {\tt n} in {\tt col}.  This operation is similar to a linear
-algebra ``outer product,'' except in this case it's an outer
-quotient.
-
-{\tt terms} is an array of multinomial terms; when we add them
-up, {\tt axis=1} says we want to add up the rows, so the result
-is a 1-D array of the total log-likelihood for each value of n.
-
-Finally, we shift the log-likelihoods into a comfortable range
-before transform to linear likelihoods.
-
-This version performs the same computation as the previous one,
-but I expect it to run faster because it does less of the work
-in Python, and more inside {\tt numpy}, which is written in C.
-
-The price of all this optimization is that this version is even less
-readable; nevertheless I confimed that this version yields the
-same results as the other two.
+So the runtime of this function is linear in {\tt n}, but does not
+depend on {\tt m}.  {\tt Update} is linear in {\tt m}, so the
+whole update process is $\BigO(n m)$.  And the number of iterations
+we need to get an accurate result is usually small.
 
 
 \section{The belly button data}
