@@ -35,7 +35,7 @@ class Subject(object):
         self.species.append((count, species))
         
     def GetCounts(self):
-        self.species.sort(reverse=True)
+        self.species.sort()
         return [count for (count, _) in self.species]
 
 
@@ -742,7 +742,64 @@ def TestOversampledDirichlet():
     print sample
 
 
+def ProcessSubject(counts):
+
+    m = len(counts)
+    n = int(1.5 * m)
+    ns = range(m, n)
+    suite = Species5(ns, iterations=100)
+
+    start = time.time()    
+    suite.Update(counts)
+    end = time.time()
+    print 'time', end-start
+
+    pmf = suite.DistOfN()
+    return suite, pmf
+
+
+def ProcessSubjects(indices):
+    subjects = ReadData()
+    for index in indices:
+        subject = subjects[index]
+        counts = subject.GetCounts()
+        print len(counts)
+
+        suite, pmf = ProcessSubject(counts)
+        pmf.name = '%d' % index
+        # myplot.Pmf(pmf)
+
+        cdf = thinkbayes.MakeCdfFromPmf(pmf)
+        myplot.Cdf(cdf)
+        
+        #counts.reverse()
+        #suite, pmf = ProcessSubject(counts)
+        #pmf.name = '%dr' % index
+        #myplot.Pmf(pmf)
+
+    myplot.Save(root='species4',
+                xlabel='Number of species',
+                ylabel='Prob',
+                formats=formats,
+                )
+
+
+def SummarizeData():
+    subjects = ReadData()
+
+    for subject in subjects:
+        counts = subject.GetCounts()
+        print subject.code, len(counts)
+
 def main(script, *args):
+    SummarizeData()
+    return
+
+
+    i = 60
+    ProcessSubjects(range(i, i+10))
+    return
+
     CompareHierarchicalExample()
     return
 
@@ -762,28 +819,6 @@ def main(script, *args):
     pmf = MakePosterior(Species)
     myplot.Pmf(pmf)
     myplot.Show()
-    return
-
-    subjects = ReadData()
-    subject = subjects[5]
-    counts = subject.GetCounts()
-    print counts
-
-    n = len(counts)
-    ns = range(n, n+5)
-    suite = Species3(ns)
-
-    suite.Update(counts)
-
-    pmf = suite.DistOfN()
-    myplot.Pmf(pmf)
-    myplot.Show()
-    return
-    myplot.Save(root='species4',
-                xlabel='Number of species',
-                ylabel='Prob',
-                formats=formats,
-                )
     return
 
 
