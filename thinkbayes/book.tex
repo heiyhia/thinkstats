@@ -1296,7 +1296,7 @@ The code in this section is available from
 \url{http://thinkbayes.com/m_and_m.py}.
 
 
-\chapter{Tanks and Trains}
+\chapter{Estimation}
 
 \section{Which die was it?}
 
@@ -1719,7 +1719,7 @@ calculations.
 The examples in this section are in \url{http://thinkbayes.com/train.py}.
 
 
-\chapter{Urns and Coins}
+\chapter{More estimation}
 
 \section{Four Urns}
 
@@ -2560,7 +2560,7 @@ a character with at least one attribute of 18 is about 3\%.
 [[[Include the figure.]]]
 
 
-\chapter{Hockey}
+\chapter{Prediction}
 
 \section{The Boston Bruins problem}
 
@@ -3032,7 +3032,9 @@ The code and data for this chapter are available from
 \url{http://thinkbayes.com/hockey_data.csv}.
 
 
-\chapter{The variability hypothesis}
+\chapter{Approximate Bayesian Computation}
+
+\section{The Variability Hypothesis}
 
 I have a soft spot for crank science.  Recently I visited Norumbega
 Tower, which is an enduring monument to the crackpot theories of Eben
@@ -3814,7 +3816,7 @@ You can download the code I used in this chapter from
 \url{http://thinkbayes.com/euro3.py}.
 
 
-\chapter{The SAT problem}
+\chapter{Evidence}
 
 \section{Interpreting SAT scores}
 
@@ -5033,7 +5035,8 @@ the joint distribution, as demonstrated in {\tt ConditionalCdf}.
 
 So we side-stepped Bayes, but he was with us in spirit.
 
-\chapter{Hierarchical models}
+
+\chapter{A hierarchical model}
 
 \section{The Beta distribution}
 \label{beta}
@@ -5160,11 +5163,14 @@ object:
 \section{The unseen species problem}
 
 
+\section{Belly button bacteria}
 
-\section{}
+Intro
+
+\section{Lions and tigers and bears}
 
 I'll start with a simplified version of the problem where we know
-that there are exactly three species.  Let's call them lions and tigers
+that there are exactly three species.  Let's call them lions, tigers
 and bears.
 
 Suppose we visit a wild animal preserve and see 3 lions, 2 tigers and
@@ -5486,42 +5492,58 @@ The only problem is that it is slow.  It's good enough for the example
 with only 3 observed species, but not good enough for the belly button
 data, with more than 100 species in some samples.
 
-Fortunately, there are a number of opportunities for optimization:
+The next few sections present a series of optimizations we need to
+make this solution scale.  Before we get into the details, here's
+a road map.
 
 \begin{itemize}
 
-\item As I noted above, when the hypothetical number of species, {\tt n},
-exceeds the observed number, {\tt m}, we only need the first {\tt m}
-terms of the multinomial PDF; the rest are 1.
+\item The first step is to recognize that if we update the Dirichlet
+  distributions with the same data, the first {\tt m} parameters are
+  the same for all of them.  The only difference is the number of
+  hypothetical unseen species.  So we don't really need {\tt n}
+  Dirichlet objects; we can store the parameters in the top level of
+  the hierarchy.  {\tt Species2} implements this optimization.
 
-\item Since all of the bottom-level Dirichlet distributions are updated
-with the same data, the first {\tt m} parameters are the same for
-all of them.
+\item {\tt Species2} also uses the same set of random values for all
+  of the hypotheses.  This saves time generating random values, but it
+  has a second benefit that turns out to be more important: by giving
+  all hypothesis the same selection from the sample space, we make
+  the comparison between the hypotheses more fair, so it takes
+  fewer iterations to converge.
 
-\item Each time we draw a random sample from a Dirichlet distribution,
-we generate values from {\tt n} gamma distributions.  Generating
-random numbers is moderately expensive, so we can save some time by
-using the same random numbers for each bottom-level distribution.
+\item But there is still a major performance problem.  As the
+  number of observed species increases, the number of random
+  values increases, and the chance of choosing one that is
+  approximately right becomes small.  So the vast majority
+  of iterations yield very small likelihoods that don't contribute
+  much to the total, and don't discriminate between hypotheses.
 
-\item If the number of species is large, the likelihood of the data
-might be too small for floating-point.  So it is safer to compute
-log-likelihoods.  For the multinomial PDF, it is also faster.
+\item The solution is to do the updates one species at a time.  {\tt
+  Species4} is a simple implementation of this strategy using
+  Dirichlet objects to represent the sub-hypotheses.
+
+\item Finally, {\tt Species5} combines the sub-hypothesis into the top
+  level and uses {\tt numpy} array operations to speed things up.
 
 \end{itemize}
 
-Again, the multinomial PDF is
-%
-\[ c(x) \prod_i p_i^{x_i}\]
-%
-So the log-likelihood is
-%
-\[ log(c(x)) + \sum_i \log(p_i) * x_i \]
-%
-which is fast and easy to compute.
+If you are not interested in the details, feel free to skip to
+Section~\ref{} where we look at some results from the belly button
+data.
+
+
+\section{Collapsing the hierarchy}
+\label{collapsing}
+
+As noted above,
+all of the bottom-level Dirichlet distributions are updated
+with the same data, so the first {\tt m} parameters are the same for
+all of them.
 
 Since the bottom-level Dirichlet distributions all contain the same
 information, we can eliminate them and merge the parameters into
-the top-level suite.  Here's the optimized version of {\tt Species}:
+the top-level suite.  {\tt Species2} implements this optimization:
 
 \begin{verbatim}
 class Species2(object):
@@ -5563,7 +5585,30 @@ is multiplied by the total likelihood, then normalized.
 Finally, updating the parameters is identical to what we saw in {\tt
   Dirichlet.Update}.
 
-Now let's see what {\tt SampleLikelihood} looks like:
+Now let's look at {\tt SampleLikelihood}.  There are two
+opportunities for optimization here:
+
+\begin{itemize}
+
+\item When the hypothetical number of species, {\tt n},
+exceeds the observed number, {\tt m}, we only need the first {\tt m}
+terms of the multinomial PDF; the rest are 1.
+
+\item If the number of species is large, the likelihood of the data
+might be too small for floating-point.  So it is safer to compute
+log-likelihoods.  For the multinomial PDF, it is also faster.
+
+\end{itemize}
+
+Again, the multinomial PDF is
+%
+\[ c(x) \prod_i p_i^{x_i}\]
+%
+So the log-likelihood is
+%
+\[ log(c(x)) + \sum_i \log(p_i) * x_i \]
+%
+which is fast and easy to compute.  Here's the code:
 
 \begin{verbatim}
 # class Species2
@@ -5626,6 +5671,7 @@ regression testing.  I plotted results from both versions and confirmed
 that they are approximately equal, and that they converge as the
 sample size increases.
 
+
 \section{One more problem}
 
 There's more we could do to optimize this version, but there's a 
@@ -5657,7 +5703,6 @@ Here's a new version that updates one species at a time:
 \begin{verbatim}
 class Species4(Species):
 
-    
     def Update(self, data):
         m = len(data)
 
@@ -5713,15 +5758,19 @@ This is a subtle point and I have to admit that I did not get it right
 the first time.  But again I was able to validate this version
 by comparing it to the previous versions.
 
+
 \section{We're not done yet}
 
-Performing the updates one species at a time solves one problem, but
-it creates another.  XXX analysis of order of growth here XXX
+\newcommand{\BigO}[1]{\mathcal{O}(#1)}
 
-But we can speed things up using the same trick we used in Section~\ref{}:
-we'll get rid of the Dirichlet objects and collapse the two levels
-of the hierarchy into a single object.  So here's yet another version
-of {\tt Species}:
+Performing the updates one species at a time solves one problem, but
+it creates another.  Each update takes time proportional to $n m$,
+so if we do $m$ updates, the algorithm is $\BigO{n m^2}$. 
+
+But we can speed things up using the same trick we used in
+Section~\ref{collapsing}: we'll get rid of the Dirichlet objects and
+collapse the two levels of the hierarchy into a single object.  So
+here's yet another version of {\tt Species}:
 
 \begin{verbatim}
 class Species5(Species2):
