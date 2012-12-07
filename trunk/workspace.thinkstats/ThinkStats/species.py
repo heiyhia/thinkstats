@@ -692,22 +692,20 @@ def SimpleDirichletExample():
 
     This is the case where we know there are exactly three species.
     """
-    beta = thinkbayes.Beta()
-    beta.Update((1, 6))
-    print beta.Mean()
-
-    data = [3, 2, 1]
-    dirichlet = thinkbayes.Dirichlet(3)
-    dirichlet.Update(data)
-
     names = ['lions',  'tigers', 'bears']
+    data = [3, 2, 1]
 
+    dirichlet = thinkbayes.Dirichlet(3)
+    for i in range(3):
+        beta = dirichlet.MarginalBeta(i)
+        print 'mean', names[i], beta.Mean()
+
+    dirichlet.Update(data)
     for i in range(3):
         beta = dirichlet.MarginalBeta(i)
         print 'mean', names[i], beta.Mean()
 
         pmf = beta.MakePmf(name=names[i])
-        print 'mle', names[i], pmf.MaximumLikelihood()
         myplot.Pmf(pmf)
 
     myplot.Save(root='species1',
@@ -747,7 +745,7 @@ def ProcessSubject(counts):
     m = len(counts)
     n = int(1.5 * m)
     ns = range(m, n)
-    suite = Species5(ns, iterations=100)
+    suite = Species5(ns, iterations=300)
 
     start = time.time()    
     suite.Update(counts)
@@ -760,22 +758,21 @@ def ProcessSubject(counts):
 
 def ProcessSubjects(indices):
     subjects = ReadData()
+    pmfs = []
     for index in indices:
         subject = subjects[index]
         counts = subject.GetCounts()
-        print len(counts)
+        print subject.code, len(counts)
+        print counts
 
         suite, pmf = ProcessSubject(counts)
-        pmf.name = '%d' % index
-        # myplot.Pmf(pmf)
+        pmf.name = subject.code
+        myplot.Pmf(pmf)
 
-        cdf = thinkbayes.MakeCdfFromPmf(pmf)
-        myplot.Cdf(cdf)
-        
-        #counts.reverse()
-        #suite, pmf = ProcessSubject(counts)
-        #pmf.name = '%dr' % index
-        #myplot.Pmf(pmf)
+        pmfs.append(pmf)
+
+    print 'ProbGreater', thinkbayes.PmfProbGreater(pmfs[0], pmfs[1])
+    print 'ProbLess', thinkbayes.PmfProbLess(pmfs[0], pmfs[1])
 
     myplot.Save(root='species4',
                 xlabel='Number of species',
@@ -792,21 +789,19 @@ def SummarizeData():
         print subject.code, len(counts)
 
 def main(script, *args):
-    SummarizeData()
+    ProcessSubjects([4, 5])
     return
 
+    SimpleDirichletExample()
+    return
 
-    i = 60
-    ProcessSubjects(range(i, i+10))
+    SummarizeData()
     return
 
     CompareHierarchicalExample()
     return
 
     HierarchicalExample()
-    return
-
-    SimpleDirichletExample()
     return
 
     PlotMedium()
