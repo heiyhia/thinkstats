@@ -1353,10 +1353,9 @@ class Dirichlet(object):
 
         Returns: Beta object
         """
-        observations = self.params - 1
-        yes = observations[i]
-        no = observations.sum() - yes
-        return Beta(yes+1, no+1)
+        alpha0 = self.params.sum()
+        alpha = self.params[i]
+        return Beta(alpha, alpha0-alpha)
 
 
 def BinomialCoef(n, k, d={}):

@@ -25,6 +25,7 @@
 \usepackage{hevea}                           
 \usepackage{upquote}
 \usepackage{fancyhdr}
+\usepackage[bookmarks]{hyperref}
 
 \title{Think Bayes}
 \author{Allen B. Downey}
@@ -5046,7 +5047,7 @@ Belgian Euro problem.  At last the time has come.
 
 Remember that in the Euro problem we try to estimate {\tt x}, the
 probability that a coin spun on edge lands heads up.
-For data we have the results of 250 spins: 140 heads and 110 tails.
+For data we have the result of 250 spins: 140 heads and 110 tails.
 
 The goal is to compute the distribution of {\tt x}; that is, for any
 value, {\tt y}, we would like to know the
@@ -5069,20 +5070,19 @@ prior.''  That means that if the prior distribution for {\tt x} is a
 beta distribution, the posterior is also a beta distribution.  But
 wait, it gets even better.
 
-The shape of the beta distribution depends on two parameters,
-written $\alpha$ and $\beta$, or
-{\tt alpha} and {\tt beta}.  And it turns out that if
-the prior is a beta distribution with parameters {\tt alpha} and {\tt beta},
-and we see data with {\tt h} heads and {\tt t} tails, the posterior is a beta
-distribution with parameters {\tt alpha+h} and {\tt beta+t}.  In other
-words, we can do an update with two additions.
+The shape of the beta distribution depends on two parameters, written
+$\alpha$ and $\beta$, or {\tt alpha} and {\tt beta}.  And it turns out
+that if the prior is a beta distribution with parameters {\tt alpha}
+and {\tt beta}, and we see data with {\tt h} heads and {\tt t} tails,
+the posterior is a beta distribution with parameters {\tt alpha+h} and
+{\tt beta+t}.  In other words, we can do an update with two additions.
 
-So that's great, but it only works if the prior is beta.
-If beta distributions were unrealistic priors, they would not be
-very useful.  But for many realistic priors there is a beta
-distribution that is at least close, and for a uniform prior
-there is a perfect match.  The beta distribution with
-{\tt alpha=1} and {\tt beta=1} is uniform from 0 to 1.
+So that's great, but it only works if the prior is beta.  If beta
+distributions were unrealistic priors, they would not be very useful.
+But for many realistic priors there is a beta distribution that is at
+least close, and for a uniform prior there is a perfect match.  The
+beta distribution with {\tt alpha=1} and {\tt beta=1} is uniform from
+0 to 1.
 
 Let's see how we can take advantage of all this.  Here's
 a class that represents a beta distribution:
@@ -5106,15 +5106,14 @@ By default \verb"__init__" makes a uniform distribution.
 \end{verbatim}
 
 {\tt data} is a pair of integers representing the number of
-heads and tails, or in the language of Bernoulli trials, successes
+heads and tails, or in the language of Bernoulli trials: successes
 and failures.
 
-The mean of a beta distribution is a simple function of
-{\tt alpha} and {\tt beta}:
+The mean of a beta distribution is a simple function of {\tt alpha}
+and {\tt beta}:
 
 \begin{verbatim}
     def Mean(self):
-        """Computes the mean of this distribution."""
         return float(self.alpha) / (self.alpha + self.beta)
 \end{verbatim}
 
@@ -5135,7 +5134,8 @@ distribution:
         return x**(self.alpha-1) * (1-x)**(self.beta-1)
 \end{verbatim}
 
-This expression might look familiar.  Here's {\tt thinkbayes.EvalBinomialPmf}
+This expression might look familiar.  Here's {\tt
+  thinkbayes.EvalBinomialPmf}
 
 \begin{verbatim}
 def EvalBinomialPmf(x, yes, no): 
@@ -5143,54 +5143,82 @@ def EvalBinomialPmf(x, yes, no):
 \end{verbatim}
 
 It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
-random variable and {\tt alpha} and {\tt beta} as parameters; in 
-{\tt EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and
-{\tt no} are random variables.
+random variable and {\tt alpha} and {\tt beta} as parameters; in {\tt
+  EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and {\tt
+  no} are random variables.  Distributions like these that share the
+same PDF are called ``conjugate distributions.''
 
-There are efficient ways to generate random values from a beta
-distribution, and the random module knows about them.  The
-following method returns a random variate from a {\tt Beta}
-object:
+%There are efficient ways to generate random values from a beta
+%distribution, and the random module knows about them.  The
+%following method returns a random variate from a {\tt Beta}
+%object:
 
-\begin{verbatim}
-    def Random(self):
-        return random.betavariate(self.alpha, self.beta)
-\end{verbatim}
+%\begin{verbatim}
+%    def Random(self):
+%        return random.betavariate(self.alpha, self.beta)
+%\end{verbatim}
 
 {\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
 
 
-\section{The unseen species problem}
-
-
 \section{Belly button bacteria}
 
-Intro
+The Belly Button Biodiversity (BBB) project is a nation-wide citizen
+science project with the goal of identifying bacterial species that
+can be found in human navels (\url{http://bbdata.yourwildlife.org}).
+The project might seem whimsical, but it is part of an increasing
+interest in the human microbiome, the set of microorganisms that live
+on human skin and other surfaces that contact the environment.
+
+In their pilot study, BBB researchers collected swabs from the navels
+of 60 volunteers, used multiplex pyrosequencing to extract and sequence
+fragments of 16S rDNA, then identified the species or genus the
+fragments came from.  Each identified fragment is called a ``read.''
+
+If we think of each read as a random sample from the microbial population,
+we can use these data to answer several related questions:
+
+\begin{itemize}
+
+\item Based on the number of species we have observed, can
+we estimate the total number of species in the environment?
+
+\item Can we estimate the prevalence of each species; that is,
+fraction of the total population belonging to each species?
+
+\item If we collect additional samples, can we predict how many
+new species we are likely to discover?
+
+\item How many additional reads would be necessary to increase
+the fraction of observed species to a given threshold?
+
+\end{itemize}
+
+These questions make up what is called the ``unseen species problem.''
+
 
 \section{Lions and tigers and bears}
 
-I'll start with a simplified version of the problem where we know
-that there are exactly three species.  Let's call them lions, tigers
-and bears.
-
-Suppose we visit a wild animal preserve and see 3 lions, 2 tigers and
-one bear.  We would like to estimate the prevalence of each species, which
-is the fraction of the total animal population that belongs to each
-species.
+I'll start with a simplified version of the problem where we know that
+there are exactly three species.  Let's call them lions, tigers and
+bears.  Suppose we visit a wild animal preserve and see 3 lions, 2
+tigers and one bear.
 
 If we assume that we have an equal chance of observing any animal
 in the preserve, then the number of each species we see is governed
 by the multinomial distribution.  If the prevalence of lions and tigers
 and bears is \verb"p_lion" and \verb"p_tiger" and \verb"p_bear",
-the likelihood of seeing  3 lions, 2 tigers and one bear is
+the likelihood of seeing 3 lions, 2 tigers and one bear is
 
 \begin{verbatim}
 p_lion**3 * p_tiger**2 * p_bear**1
 \end{verbatim}
 
-To estimate the prevalence of one species, we can use a beta
-distribution.  For example, we saw 3 lions and 3 non-lions, so the
-posterior distribution of \verb"p_lion" is:
+An approach that is tempting, but not correct, is to use beta
+distributions to describe the prevalence of each species
+separately.  For example, we saw 3 lions and 3 non-lions; if
+we think of that as 3 ``heads'' and 3 ``tails,'' then
+the posterior distribution of \verb"p_lion" is:
 
 \begin{verbatim}
     beta = thinkbayes.Beta()
@@ -5202,19 +5230,27 @@ The maximum likelihood estimate for \verb"p_lion" is the observed
 rate, 50\%.  Similarly the MLEs for  \verb"p_tiger" and \verb"p_bear"
 are 33\% and 17\%.
 
-Each of these marginal distributions is correct, but they are
-not independent, because they have to add up to 1.  So if you wanted
-to generate a random sample from the posterior distribution, it would
-not be correct to sample independently from the three marginal
-distributions.  You would have to do something to make them add
-up.
+But there are two problems:
 
-That's where the Dirichlet distribution comes in (see
-\url{http://en.wikipedia.org/wiki/Dirichlet_distribution}).  In the
-same way we use the beta distribution to describe the distribution of
-{\tt x}, we can use a Dirichlet distribution to describe the joint
-posterior distribution of \verb"p_lion" and \verb"p_tiger" and
-\verb"p_bear".
+\begin{itemize}
+
+\item We have implicitly used
+a prior for each species that is uniform from 0 to 1, but since
+we know that there are three species, that prior is not correct.
+The right prior should have a mean of 1/3, and there should be
+zero likelihood that any species has a prevalence of 100\%.
+
+\item The distributions for each species are not independent,
+because the prevalences have to add up to 1.  To capture this
+dependence, we need a joint distribution for the three prevalences.
+
+\end{itemize}
+
+We can use a Dirichlet distribution to solve both of these problems
+(see \url{http://en.wikipedia.org/wiki/Dirichlet_distribution}).  In
+the same way we use the beta distribution to describe the distribution
+of {\tt x}, we can use a Dirichlet distribution to describe the joint
+distribution of \verb"p_lion" and \verb"p_tiger" and \verb"p_bear".
 
 The Dirichlet distribution is the multi-dimensional generalization
 of the beta distribution.  Instead of two possible outcomes, like
@@ -5235,10 +5271,37 @@ class Dirichlet(object):
         self.params = numpy.ones(n, dtype=numpy.int)
 \end{verbatim}
 
-{\tt n} is the number of dimensions.  Initially the parameters
-are all 1, which makes the marginal prior distributions uniform
-from 0 to 1.  I use a {\tt numpy} array to store the parameters
+{\tt n} is the number of dimensions; initially the parameters
+are all 1.  I use a {\tt numpy} array to store the parameters
 so I can take advantage of array operations.
+
+Given a Dirichlet distribution, the marginal distribution
+for each prevalence is a beta distribution, which we can
+compute like this:
+
+\begin{verbatim}
+    def MarginalBeta(self, i):
+        alpha0 = self.params.sum()
+        alpha = self.params[i]
+        return Beta(alpha, alpha0-alpha)
+\end{verbatim}
+
+{\tt i} is the index of the marginal distribution we want.
+{\tt alpha0} is the sum of the parameters; {\tt alpha} is the
+parameter for the given species.
+
+In the example, the prior marginal distribution for each species
+is {\tt Beta(1, 2)}.  We can compute the prior means like
+this:
+
+\begin{verbatim}
+    dirichlet = thinkbayes.Dirichlet(3)
+    for i in range(3):
+        beta = dirichlet.MarginalBeta(i)
+        print beta.Mean()
+\end{verbatim}
+
+As expected, the mean prior for each species is 1/3.
 
 To update the Dirichlet distribution, we add the number of
 observations to each parameter, like this:
@@ -5257,34 +5320,11 @@ But the {\tt data} can be shorter than {\tt params}; in that
 case there are some hypothetical species that have not been
 observed.
 
-Given the posterior Dirichlet distribution, we can compute
-any of the marginal distributions like this:
-
-\begin{verbatim}
-    def MarginalBeta(self, i):
-        observations = self.params - 1
-        yes = observations[i]
-        no = sum(observations) - yes
-        return Beta(yes+1, no+1)
-\end{verbatim}
-
-{\tt i} is the index of the marginal distribution we want.
-{\tt MarginalBata} converts from {\tt params} to
-{\tt observations}, counts the number of successes and
-failures for the given species, and returns a Beta object with
-the corresponding parameters.
-
-In the example, {\tt params = [4, 3, 2]}, so {\tt observations = [3, 2, 1]}.
-To get the marginal distribution of \verb"p_lion", we set {\tt i=0},
-so {\tt yes} is 3 and {\tt no} is 3, and the beta
-distribution has {\tt alpha = beta = 4}.
-
-Here's code that makes a Dirichlet object, updates it with
-the observed data, and plots the marginal distributions.
+Here's code that updates the Dirichlet with the observed data, and
+plots the posterior marginal distributions.
 
 \begin{verbatim}
     data = [3, 2, 1]
-    dirichlet = thinkbayes.Dirichlet(3)
     dirichlet.Update(data)
 
     for i in range(3):
@@ -5300,9 +5340,8 @@ the observed data, and plots the marginal distributions.
 \label{fig.species1}
 \end{figure}
 
-Figure~\ref{fig.species1} shows the results.  The maximum
-likelihood estimate for each species is the observed rate:
-50\%, 33\% and 17\%.
+Figure~\ref{fig.species1} shows the results.  The posterior
+mean prevalences are 44\%, 33\% and 22\%.
 
 
 \section{A hierarchical model}
@@ -5338,15 +5377,15 @@ Here's the code that creates the top-level suite:
     suite = Species(ns)
 \end{verbatim}
 
-{\tt ns} is the list of possible values for {\tt n}.
-Since we have seen 3 species, so there have to be at least
-that many.  I chose an upper bound that seemed reasonable, but we will
-have to check later that the probability of exceeding this
-bound is low.
+{\tt ns} is the list of possible values for {\tt n}.  We have seen 3
+species, so there have to be at least that many.  I chose an upper
+bound that seemed reasonable, but we will have to check later that the
+probability of exceeding this bound is low.  And at least initially
+we assume that any value in this range is equally likely.
 
 To update a hierarchical model, you have to update all levels.
-Sometimes it is necessary, or more efficient, to update the bottom
-level first and work up.  But in this case it doesn't matter, so
+Sometimes it is necessary or more efficient to update the bottom
+level first and work up.  In this case it doesn't matter, so
 I update the top level first:
 
 \begin{verbatim}
@@ -5377,12 +5416,12 @@ Now all we need is a likelihood function.  As usual,
 \end{verbatim}
 
 {\tt hypo} is a Dirichlet object; {\tt data} is a sequence of
-observed frequencies.  {\tt Species.Likelihood} calls
+observed counts.  {\tt Species.Likelihood} calls
 {\tt Dirichlet.Likelihood} 1000 times and returns the total.
 
 Why do we have to call it 1000 times?  Because {\tt
   Dirichlet.Likelihood} doesn't actually compute the likelihood of the
-data under the whole Dirichlet distribution.  Rather, it draws one
+data under the whole Dirichlet distribution.  Instead, it draws one
 sample from the hypothetical distribution and computes the likelihood
 of the data under the sampled set of prevalences.
 
@@ -5425,16 +5464,14 @@ $p_i^{x_i}$ is 1, so we can leave them out of the product.
 \section{Random sampling}
 
 There are two ways to generate a random sample from a Dirichlet
-distribution.  One is to use the marginal beta distributions,
-but in that case you have to select one at a time and scale the rest
-so they add up to 1.
+distribution.  One is to use the marginal beta distributions, but in
+that case you have to select one at a time and scale the rest so they
+add up to 1 (see
+\url{http://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation}).
 
 A less obvious, but faster, way is to select values from {\tt n} gamma
-distributions with shape parameter {\tt params[i]} and scale parameter
-1, then normalize by dividing through by the total. (see
-\url{http://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation})
-
-Which is easier to write in Python than English:
+distributions, then normalize by dividing through by the total. 
+Here's the code:
 
 \begin{verbatim}
 # class Dirichlet
@@ -5474,8 +5511,8 @@ through the top-level hypotheses:
 Figure~\ref{fig.species2} shows the result.  The most likely value is 4.
 Values from 3 to 8 are all likely; after that the probabilities
 drop off quickly.  The probability that there are 29 species is
-low enough to be negligible, if we chose a higher upper bound, it
-would have a small effect on the results.
+low enough to be negligible; if we chose a higher bound, 
+we would get the same result.
 
 But remember that we started with a uniform prior for {\tt n}.  If we
 have background information about the number of species in the
@@ -5513,13 +5550,13 @@ a road map.
   fewer iterations to converge.
 
 \item But there is still a major performance problem.  As the
-  number of observed species increases, the number of random
-  values increases, and the chance of choosing one that is
+  number of observed species increases, the array of random
+  prevalences gets bigger, and the chance of choosing one that is
   approximately right becomes small.  So the vast majority
-  of iterations yield very small likelihoods that don't contribute
+  of iterations yield small likelihoods that don't contribute
   much to the total, and don't discriminate between hypotheses.
 
-\item The solution is to do the updates one species at a time.  {\tt
+  The solution is to do the updates one species at a time.  {\tt
   Species4} is a simple implementation of this strategy using
   Dirichlet objects to represent the sub-hypotheses.
 
@@ -5529,15 +5566,14 @@ a road map.
 \end{itemize}
 
 If you are not interested in the details, feel free to skip to
-Section~\ref{} where we look at some results from the belly button
-data.
+Section~\ref{belly} where we look at some results from the belly
+button data.
 
 
 \section{Collapsing the hierarchy}
 \label{collapsing}
 
-As noted above,
-all of the bottom-level Dirichlet distributions are updated
+As I said, all of the bottom-level Dirichlet distributions are updated
 with the same data, so the first {\tt m} parameters are the same for
 all of them.
 
@@ -5776,11 +5812,6 @@ here's yet another version of {\tt Species}:
 class Species5(Species2):
     
     def Update(self, data):
-        """Updates the suite based on the data.
-
-        data: list of observed frequencies
-        """
-        # loop through the species and update one at a time
         m = len(data)
         for i in range(m):
             self.UpdateOne(i+1, data[i])
@@ -5861,12 +5892,28 @@ we need to get an accurate result is usually small.
 
 
 \section{The belly button data}
+\label{belly}
 
-Well, that's enough about the lions and tigers and bears.
-Let's get back to the belly buttons.
+That's enough about the lions and tigers and bears.
+Let's get back to belly buttons.  To get a sense of what the
+data look like, let's consider subject B1242,
+whose sample yielded 61 species with the following
+counts:
 
 \begin{verbatim}
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
+ 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 7, 7, 8, 10, 12, 14, 15, 38,
+ 47, 53, 92]
 \end{verbatim}
+
+So there we a number of species that only yielded a single read,
+and a few species with much large reads.
+
+Now, to get from reads to prevalences, we have to make some
+assumptions.  In reality, some species are more likely to be
+observed than others.  For example, some species might be more
+likely to be collected 
 
 \begin{verbatim}
 \end{verbatim}
