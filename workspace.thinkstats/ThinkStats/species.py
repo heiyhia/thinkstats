@@ -34,11 +34,28 @@ class Subject(object):
         """
         self.species.append((count, species))
 
-    def Sort(self):
-        self.species.sort()        
+    def GetM(self):
+        """Gets number of observed species."""
+        return len(self.species)
         
+    def Sort(self):
+        """Sorts the count-species pairs in increasing order.
+        """
+        self.species.sort()        
+
     def GetCounts(self):
+        """Gets the list of species counts
+
+        Should be in increasing order, if Sort() has been invoked.
+        """
         return [count for (count, _) in self.species]
+
+    def GetSpecies(self, index):
+        """Gets the count and name of the indicated species.
+
+        Returns: count-species pair
+        """
+        return self.species[index]
 
 
 def ReadData(filename='journal.pone.0047712.s001.csv'):
@@ -66,22 +83,6 @@ def ReadData(filename='journal.pone.0047712.s001.csv'):
         subject.Add(species, count)
 
     return subjects
-
-
-def PlotMixture(pmfs, show=False):
-    for dist in pmfs.Values():
-        xs, ys = dist.Render()
-        pyplot.plot(xs, ys, color='blue', alpha=0.2)
-
-    mix = Pmf.MakeMixture(pmfs)
-    xs, ys = mix.Render()
-    pyplot.plot(xs, ys, color='blue', alpha=0.9, linewidth=2)
-
-    myplot.Save(show=show, clf=False,
-                xlabel='prevalence',
-                ylabel='prob',
-                formats=formats,
-                legend=False)
 
 
 def JitterCurve(curve, dx=0.2, dy=0.3):
@@ -246,7 +247,8 @@ class Species2(object):
             pmf = beta.MakePmf()
             pmfs.Set(pmf, prob)
 
-        return thinkbayes.MakeMixture(pmfs)
+        mix = thinkbayes.MakeMixture(pmfs)
+        return pmfs, mix
         
 
 class Species3(Species2):
@@ -642,27 +644,24 @@ def HierarchicalExample():
                 )
 
 
-def TestOversampledDirichlet():
-    dirichlet = OversampledDirichlet(3)
-    dirichlet.Peek([3, 2, 1])
-    sample = dirichlet.Random()
-    print sample
+def ProcessSubject(subject, factor=1.5, iterations=300):
+    """Looks up counts for the given subject and computes the posterior.
 
-
-def ProcessSubject(counts):
-
+    Returns: Suite, posterior distribution of n and prevalences
+    """
+    counts = subject.GetCounts()
     m = len(counts)
-    n = int(1.5 * m)
+
+    n = int(factor * m)
     ns = range(m, n)
-    suite = Species5(ns, iterations=300)
+    suite = Species5(ns, iterations=iterations)
 
     start = time.time()    
     suite.Update(counts)
     end = time.time()
     print 'time', end-start
 
-    pmf = suite.DistOfN()
-    return suite, pmf
+    return suite
 
 
 def ProcessSubjects(indices):
@@ -670,11 +669,9 @@ def ProcessSubjects(indices):
     pmfs = []
     for index in indices:
         subject = subjects[index]
-        counts = subject.GetCounts()
-        print subject.code, len(counts)
-        print counts
 
-        suite, pmf = ProcessSubject(counts)
+        suite = ProcessSubject(subject)
+        pmf = suite.DistOfN()
         pmf.name = subject.code
         myplot.Pmf(pmf)
 
@@ -691,11 +688,8 @@ def ProcessSubjects(indices):
 
 
 def MakeFigures(subject):
-    counts = subject.GetCounts()
-    m = len(counts)
-    print counts
-
-    suite, pmf = ProcessSubject(counts)
+    suite = ProcessSubject(subject)
+    pmf = suite.DistOfN()
     pmf.name = subject.code
 
     myplot.Clf()
@@ -707,24 +701,61 @@ def MakeFigures(subject):
                 formats=formats,
                 )
 
+    PlotPrevalences(subject, suite)
+    #PlotMixture(subject, suite, 0)
+
+
+def PlotPrevalences(subject, suite):
     myplot.Clf()
-    for index in range(m-1, m-6, -1):
-        PlotPrevalence(subject, suite, index, counts[index])
+    myplot.PrePlot(6)
+
+    for index in range(6):
+        PlotPrevalence(subject, suite, index)
 
     root = 'species.prev.%s' % subject.code
     myplot.Save(root=root,
                 xlabel='Prevalence',
                 ylabel='Prob',
                 formats=formats,
-                axis=[0, 0.3, 0, 1]
+                axis=[0, 0.3, 0, 1],
                 )
 
-def PlotPrevalence(subject, suite, index, count):
-    pmf = suite.DistOfPrevalence(index)
-    pmf.name = str(count)
-    cdf = thinkbayes.MakeCdfFromPmf(pmf)
+
+def PlotPrevalence(subject, suite, index):
+    # convert index to the reverse order the species appear
+    m = subject.GetM()
+    index = m - 1 - index
+
+    pmfs, mix = suite.DistOfPrevalence(index)
+    count, species = subject.GetSpecies(index)
+    mix.name = '(%d) %s' % (count, species)
+    cdf = thinkbayes.MakeCdfFromPmf(mix)
     #myplot.Pmf(pmf)
-    myplot.Cdf(cdf)
+    myplot.Cdf(cdf, alpha=0.5)
+
+
+def PlotMixture(subject, suite, index, root='species5'):
+
+    # convert index to the reverse order the species appear
+    m = subject.GetM()
+    index = m - 1 - index
+
+    print subject.GetSpecies(index)
+    print subject.GetCounts()[index]
+
+    pmfs, mix = suite.DistOfPrevalence(index)
+
+    myplot.Clf()
+    for pmf in pmfs.Values():
+        myplot.Pmf(pmf, color='blue', alpha=0.2, linewidth=0.5)
+
+    myplot.Pmf(mix, color='blue', alpha=0.9, linewidth=2)
+    myplot.Save(root=root,
+                xlabel='Prevalence',
+                ylabel='Prob',
+                formats=formats,
+                axis=[0, 0.3, 0, 0.3],
+                legend=False)
 
 
 def SummarizeData():
@@ -733,6 +764,7 @@ def SummarizeData():
     for subject in subjects:
         counts = subject.GetCounts()
         print subject.code, len(counts)
+
 
 def main(script, *args):
     subjects = ReadData()
