@@ -23,6 +23,33 @@ matplotlib.rc('font', size=14.0)
 #matplotlib.rc('ytick.major', size=6.0)
 #matplotlib.rc('ytick.minor', size=3.0)
 
+# Nine sequential colors from http://colorbrewer2.org/
+
+color_brewer9 = ['#081D58',
+                 '#253494',
+                 '#225EA8',
+                 '#1D91C0',
+                 '#41B6C4',
+                 '#7FCDBB',
+                 '#C7E9B4',
+                 '#EDF8B1',
+                 '#FFFFD9']
+
+which_colors = [[],
+                [1],
+                [1, 3],
+                [0, 2, 4],
+                [0, 2, 4, 6],
+                [0, 2, 3, 5, 6],
+                [0, 2, 3, 4, 5, 6],
+                [0, 1, 2, 3, 4, 5, 6],
+                ]
+
+
+def ColorGenerator(n):
+    for i in which_colors[n]:
+        yield color_brewer9[i]
+
 
 class InfiniteList(list):
     def __init__(self, val):
@@ -49,10 +76,25 @@ def Underride(d, **options):
     return d
 
 
+color_iter = None
+
+def PrePlot(n):
+    """Gives Plot a hint about what's coming.
+
+    n: how many lines will be plotted
+    """
+    global color_iter
+
+    color_iter = ColorGenerator(n)
+
+
 def Clf():
     """Clears the figure."""
-    pyplot.clf()
+    global color_iter
+    color_iter = None
 
+    pyplot.clf()
+    
 
 def Plot(xs, ys, style='', **options):
     """Plots a line.
@@ -63,7 +105,10 @@ def Plot(xs, ys, style='', **options):
       style: style string passed along to pyplot.plot
       options: keyword args passed to pyplot.plot
     """
-    options = Underride(options, linewidth=3, alpha=0.5)
+    if color_iter:
+        options = Underride(options, color=color_iter.next())
+        
+    options = Underride(options, linewidth=3, alpha=0.8)
     pyplot.plot(xs, ys, style, **options)
 
 
@@ -181,7 +226,7 @@ def Cdf(cdf, complement=False, transform=None, **options):
         ps = [-math.log(p) for p in ps]
         scale['yscale'] = 'log'
 
-    line = pyplot.plot(xs, ps, label=cdf.name, **options)
+    line = Plot(xs, ps, label=cdf.name, **options)
     return scale
 
 
