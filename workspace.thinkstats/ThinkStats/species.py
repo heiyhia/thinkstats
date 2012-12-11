@@ -33,9 +33,11 @@ class Subject(object):
         count: int number of individuals
         """
         self.species.append((count, species))
+
+    def Sort(self):
+        self.species.sort()        
         
     def GetCounts(self):
-        self.species.sort()
         return [count for (count, _) in self.species]
 
 
@@ -55,6 +57,7 @@ def ReadData(filename='journal.pone.0047712.s001.csv'):
     for t in reader:
         code = t[0]
         if code != subject.code:
+            subject.Sort()
             subject = Subject(code)
             subjects.append(subject)
 
@@ -63,6 +66,7 @@ def ReadData(filename='journal.pone.0047712.s001.csv'):
         subject.Add(species, count)
 
     return subjects
+
 
 def PlotMixture(pmfs, show=False):
     for dist in pmfs.Values():
@@ -78,16 +82,6 @@ def PlotMixture(pmfs, show=False):
                 ylabel='prob',
                 formats=formats,
                 legend=False)
-
-
-def MakeCurve(sample):
-    """Makes a rarefaction curve for the given sample."""
-    s = set()
-    curve = []
-    for i, taxon in enumerate(sample):
-        s.add(taxon)
-        curve.append((i+1, len(s)))
-    return curve
 
 
 def JitterCurve(curve, dx=0.2, dy=0.3):
@@ -134,106 +128,6 @@ def PlotCurves(curves, root=None, clf=False):
                 ylabel='# taxa',
                 formats=formats,
                 legend=False)
-
-
-def ProbCurve(curves, n, m):
-    """Computes the probability of finding more taxons.
-
-    n is the number you've already seen
-    m is the number of additional samples
-
-    returns a list of ms and a list of probabilities
-    """
-    ms = range(1, m+1)
-    ps = []
-    for m in ms:
-        p = MoreTaxons(curves, n, m)
-        ps.append(p)
-
-        print m, p
-    return ms, ps
-
-
-def MoreTaxons(curves, start, m):
-    """Estimates probability of finding at >=1 new taxon after m tries."""
-    count = 0
-    for curve in curves:
-        _, already_found = curve[start-1]
-        _, finally_found = curve[start+m-1]
-        if finally_found > already_found:
-            count += 1
-    return float(count) / len(curves)
-
-
-def MakeSample(freqs):
-    """Make a sequence of letters that with the given frequencies.
-
-    In descending order.
-    """
-    t = []
-    freqs.sort(reverse=True)
-    for taxon, freq in zip(lowercase, freqs):
-        t.extend([taxon] * freq)
-    return ''.join(t)
-
-
-def MakeMeta(sample, n=31):
-    prior = Pmf.MakePmfFromList(range(2, n), name='prior')
-    meta = MetaHypo(prior)
-    for taxon in sample:
-        meta.Update(taxon)
-
-    return meta
-
-
-def MakeSubplots(root, sample, meta, m=15, iters=100):
-    pyplot.figure(1, figsize=(12, 8))
-
-    # plot posterior on # taxa
-    pyplot.subplot(2, 2, 1)
-    meta.PlotPosterior()
-
-    # plot prevalence of 'a'
-    pyplot.subplot(2, 2, 2)
-    meta.PlotPrevalence()
-
-    # generate curves
-    pyplot.subplot(2, 2, 3)
-    curves = meta.GenerateCurves(sample, m=m, iters=iters)
-    PlotCurves(curves)
-
-    # plot prob of finding more taxa
-    pyplot.subplot(2, 2, 4)
-
-    ms, ps = ProbCurve(curves, n=len(sample), m=m)
-    pyplot.plot(ms, ps)
-    myplot.Save(xlabel='# samples', 
-                ylabel='prob of more taxa',
-                formats=formats,
-                )
-
-    #pyplot.show()
-
-    myplot.Save(root=root)
-
-
-def MakeFigures(root, sample, meta, m=15, iters=100):
-    # plot posterior on # taxa
-    meta.PlotPosteriorPmf(root + '.1')
-    return
-    # plot prevalence of 'a'
-    meta.PlotPrevalence(root + '.2')
-
-    # generate curves
-    curves = meta.GenerateCurves(sample, m=m, iters=iters)
-    PlotCurves(curves, root + '.3')
-
-    # plot prob of finding more taxa
-    ms, ps = ProbCurve(curves, n=len(sample), m=m)
-    myplot.Plot(ms, ps,
-                root=root + '.4',
-                xlabel='# samples', 
-                ylabel='prob of more taxa')
 
 
 class Species(thinkbayes.Suite):
@@ -339,6 +233,21 @@ class Species2(object):
         pmf = thinkbayes.MakePmfFromDict(dict(zip(self.ns, self.probs)))
         return pmf
 
+    def MarginalBeta(self, n, index):
+        alpha0 = self.params[:n].sum()
+        alpha = self.params[index]
+        return thinkbayes.Beta(alpha, alpha0-alpha)
+
+    def DistOfPrevalence(self, index):
+        pmfs = thinkbayes.Pmf()
+
+        for n, prob in zip(self.ns, self.probs):
+            beta = self.MarginalBeta(n, index)
+            pmf = beta.MakePmf()
+            pmfs.Set(pmf, prob)
+
+        return thinkbayes.MakeMixture(pmfs)
+        
 
 class Species3(Species2):
     """Represents hypotheses about the number of species."""
@@ -781,6 +690,43 @@ def ProcessSubjects(indices):
                 )
 
 
+def MakeFigures(subject):
+    counts = subject.GetCounts()
+    m = len(counts)
+    print counts
+
+    suite, pmf = ProcessSubject(counts)
+    pmf.name = subject.code
+
+    myplot.Clf()
+    myplot.Pmf(pmf)
+    root = 'species.ndist.%s' % subject.code
+    myplot.Save(root=root,
+                xlabel='Number of species',
+                ylabel='Prob',
+                formats=formats,
+                )
+
+    myplot.Clf()
+    for index in range(m-1, m-6, -1):
+        PlotPrevalence(subject, suite, index, counts[index])
+
+    root = 'species.prev.%s' % subject.code
+    myplot.Save(root=root,
+                xlabel='Prevalence',
+                ylabel='Prob',
+                formats=formats,
+                axis=[0, 0.3, 0, 1]
+                )
+
+def PlotPrevalence(subject, suite, index, count):
+    pmf = suite.DistOfPrevalence(index)
+    pmf.name = str(count)
+    cdf = thinkbayes.MakeCdfFromPmf(pmf)
+    #myplot.Pmf(pmf)
+    myplot.Cdf(cdf)
+
+
 def SummarizeData():
     subjects = ReadData()
 
@@ -789,7 +735,11 @@ def SummarizeData():
         print subject.code, len(counts)
 
 def main(script, *args):
-    ProcessSubjects([4, 5])
+    subjects = ReadData()
+    MakeFigures(subjects[4])
+    return
+
+    ProcessSubjects([4])
     return
 
     SimpleDirichletExample()
