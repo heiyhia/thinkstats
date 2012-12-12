@@ -17,7 +17,7 @@ import random
 import sys
 import time
 
-formats = ['pdf', 'eps']
+formats = ['pdf', 'eps', 'png']
 
 class Subject(object):
     """Represents a subject from the belly button study."""
@@ -164,11 +164,14 @@ class Subject(object):
                     axis=[0, 0.3, 0, 0.3],
                     legend=False)
 
-    def RunSimulation(self, num_samples):
+    def RunSimulation(self, num_samples, frac_flag=False, delta=0.01):
         """Simulates additional observations and returns a rarefaction curve.
 
         k is the number of additional observations
         num_new is the number of new species seen
+
+        num_samples: how many new samples to simulate
+        frac_flag: whether to convert to fraction of species seen
 
         Returns: list of (k, num_new) pairs
         """
@@ -193,17 +196,25 @@ class Subject(object):
         curve = []
         for k, obs in enumerate(observations):
             seen.add(obs)
-            num_new = len(seen) - m
-            curve.append((k+1, num_new))
+
+            if frac_flag:
+                frac_seen = len(seen) / float(n)
+                frac_seen += random.uniform(-delta, delta)
+                curve.append((k+1, frac_seen))
+            else:
+                num_new = len(seen) - m
+                curve.append((k+1, num_new))
 
         return curve
 
-    def RunSimulations(self, iterations, num_samples):
-        curves = [self.RunSimulation(num_samples) 
+    def RunSimulations(self, iterations, num_samples, frac_flag=False):
+        curves = [self.RunSimulation(num_samples, frac_flag) 
                   for i in range(iterations)]
         return curves
 
     def MakeJointPredictive(self, curves):
+        """
+        """
         joint = thinkbayes.Joint()
         for curve in curves:
             for k, num in curve:
@@ -211,6 +222,18 @@ class Subject(object):
         joint.Normalize()
         return joint
 
+    def MakeFracCdfs(self, curves):
+        d = {}
+        for curve in curves:
+            for k, frac in curve:
+                d.setdefault(k, []).append(frac)
+
+        cdfs = {}
+        for k, fracs in d.iteritems():
+            cdf = thinkbayes.MakeCdfFromList(fracs)
+            cdfs[k] = cdf
+
+        return cdfs
 
 def SpeciesGenerator(names, num):
     """Generates a series of names, starting with the given names.
@@ -282,22 +305,54 @@ def OffsetCurve(curve, i, n, dx=0.3, dy=0.3):
     return curve
 
 
-def PlotCurves(curves, root='species5'):
+def PlotCurves(curves, root='species.rare'):
     """Plots a set of curves.
 
     curves is a list of curves; each curve is a list of (x, y) pairs.
     """
     myplot.Clf()
+    color = '#1D91C0'
 
     n = len(curves)
     for i, curve in enumerate(curves):
         curve = OffsetCurve(curve, i, n)
         xs, ys = zip(*curve)
-        myplot.Plot(xs, ys, color='blue', alpha=0.2, linewidth=0.5)
+        myplot.Plot(xs, ys, color=color, alpha=0.3, linewidth=0.5)
 
     myplot.Save(root=root,
                 xlabel='# samples',
                 ylabel='# species',
+                formats=formats,
+                legend=False)
+
+
+def PlotFracCdfs(cdfs, root='species.frac'):
+    """Plots CDFs of the fraction of species seen.
+
+    cdfs: map from k to CDF of fraction of species seen after k samples
+    """
+    myplot.Clf()
+    color = '#1D91C0'
+
+    for k, cdf in cdfs.iteritems():
+        if k not in [10, 50] and k % 100:
+            continue
+
+        print k
+        xs, ys = cdf.Render()
+        ys = [1-y for y in ys]
+        myplot.Plot(xs, ys, color=color, linewidth=1)
+
+        x = 0.9
+        y = 1 - cdf.Prob(x)
+        pyplot.text(x, y, str(k), fontsize=9, color=color,
+                    horizontalalignment='center',
+                    verticalalignment='center',
+                    bbox=dict(facecolor='white', edgecolor='none'))
+
+    myplot.Save(root=root,
+                xlabel='Fraction of species seen',
+                ylabel='Probability',
                 formats=formats,
                 legend=False)
 
@@ -842,6 +897,9 @@ def HierarchicalExample():
     data = [3, 2, 1]
     suite.Update(data)
 
+    myplot.Clf()
+    myplot.PrePlot(num=1)
+
     pmf = suite.DistOfN()
     myplot.Pmf(pmf)
     myplot.Save(root='species2',
@@ -883,9 +941,20 @@ def SummarizeData():
 
 
 def main(script, *args):
+    random.seed(17)
+
+    HierarchicalExample()
+
     subjects = ReadData()
     subject = subjects[4]
     subject.Process()
+    subject.MakeFigures()
+    return
+
+    curves = subject.RunSimulations(500, 800, frac_flag=True)
+    cdfs = subject.MakeFracCdfs(curves)
+    PlotFracCdfs(cdfs)
+    return
 
     curves = subject.RunSimulations(100, 400)
     PlotCurves(curves)
@@ -899,7 +968,6 @@ def main(script, *args):
     myplot.Pmf(conditional)
     myplot.Show()
 
-    #subject.MakeFigures()
     return
 
     ProcessSubjects([4])
@@ -912,9 +980,6 @@ def main(script, *args):
     return
 
     CompareHierarchicalExample()
-    return
-
-    HierarchicalExample()
     return
 
     PlotMedium()
