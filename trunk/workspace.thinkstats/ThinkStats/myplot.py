@@ -78,18 +78,25 @@ def Underride(d, **options):
 
 color_iter = None
 
-def PrePlot(n):
-    """Gives Plot a hint about what's coming.
 
-    n: how many lines will be plotted
+def PrePlot(num=None):
+    """Takes hints about what's coming.
+
+    num: number of lines that will be plotted
     """
     global color_iter
 
-    color_iter = ColorGenerator(n)
-
+    if num is None:
+        color_iter = None
+    else:
+        color_iter = ColorGenerator(num)
+    
+    pyplot.clf()
+    
 
 def Clf():
-    """Clears the figure."""
+    """Clears the figure and the hints about what's coming.
+    """
     global color_iter
     color_iter = None
 
