@@ -1637,7 +1637,7 @@ behaves better in practice.
 You can download the examples in this section from
 \url{http://thinkbayes.com/train3.py}.
 
-\section{Confidence intervals}
+\section{Credible intervals}
 
 Once you have computed a posterior distribution, it is often useful
 to summarize the results with a single point estimate or an interval.
@@ -1647,12 +1647,9 @@ value with maximum likelihood.
 For intervals we usually report two values computed
 so that there is a 90\% chance that the unknown value falls
 between them, or 95\%, or some other value.
+These values define a ``credible interval.''
 
-These values define a ``confidence interval'' or ``credible interval.''
-There is a technical difference between these terms, but I will
-use them interchangeably here.
-
-A simple way to compute a confidence interval is to add up the
+A simple way to compute a credible interval is to add up the
 probabilities in the posterior distribution and record the values
 that correspond to probabilities 5\% and 95\%.  In other words,
 the 5th and 95th percentiles.
@@ -1677,7 +1674,7 @@ And here's the code that uses it:
 \end{verbatim}
 
 For the previous example---the locomotive problem with a power law prior
-and three trains---the 90\% confidence interval is $(91, 243)$.  The
+and three trains---the 90\% credible interval is $(91, 243)$.  The
 width of this range suggests, correctly, that we are still quite
 uncertain about how many locomotives there are.
 
@@ -1953,17 +1950,17 @@ and median:
 \end{verbatim}
 
 The mean is 55.95; the median is 56.  Finally, we can compute a
-confidence interval: 
+credible interval: 
 
 \begin{verbatim}
-    print 'CI', thinkbayes.ConfidenceInterval(suite, 90)
+    print 'CI', thinkbayes.CredibleInterval(suite, 90)
 \end{verbatim}
 
 The result is $(51, 61)$.
 
 Now, getting back to the original question,
 we would like to know whether the coin is fair.  We observe
-that the posterior confidence interval does not include 50\%,
+that the posterior credible interval does not include 50\%,
 which suggests that the coin is not fair.
 
 But that is not exactly the question we started with.  MacKay asked,
@@ -2031,7 +2028,7 @@ in Figure~\ref{fig.euro3}.
 
 The point of this example is that even with substantially different
 priors, the posterior distributions are very similar.  The medians
-and the confidence intervals are identical; the means differ by
+and the credible intervals are identical; the means differ by
 less than 0.5\%.
 
 This is an example of ``swamping the priors:'' with enough
@@ -3260,7 +3257,7 @@ $(179, 8.7)$ cm, and for women $(163, 6.2)$ cm.
 These values are identical to the classical estimators, so if that's
 all we care about, we haven't accomplished much.  The advantage of the
 Bayesian approach is that with the posterior distribution (not just a
-point estimate or confidence interval), we can compute the
+point estimate or credible interval), we can compute the
 distribution of CV for men and women, and the probability that one
 exceeds the other.
 

@@ -631,7 +631,7 @@ def FitLine(xs, ys, fxs):
     return fys
 
 
-def PlotConfidenceIntervals(xscale='linear'):
+def PlotCredibleIntervals(xscale='linear'):
     """Plots the confidence interval for each bucket."""
     xs = []
     ts = []
@@ -686,7 +686,7 @@ def PlotConfidenceIntervals(xscale='linear'):
     # make the figure
     myplot.Save(root='kidney7',
                 formats=FORMATS,
-                title='Confidence interval for age vs diameter',
+                title='Credible interval for age vs diameter',
                 xlabel='diameter (cm, log scale)',
                 ylabel='tumor age (years)',
                 xscale=xscale,
@@ -782,7 +782,7 @@ def main(script):
 
     PlotConditionalCdfs()
 
-    PlotConfidenceIntervals(xscale='log')
+    PlotCredibleIntervals(xscale='log')
 
     PlotJointDist()
 

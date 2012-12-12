@@ -57,6 +57,179 @@ class Subject(object):
         """
         return self.species[index]
 
+    def Process(self, factor=1.5, iterations=300):
+        """Computes the posterior distribution of n and the prevalences.
+
+        Sets: self.suite
+        """
+        counts = self.GetCounts()
+        m = len(counts)
+
+        n = int(factor * m)
+        ns = range(m, n)
+        self.suite = Species5(ns, iterations=iterations)
+
+        start = time.time()    
+        self.suite.Update(counts)
+        end = time.time()
+        print 'time', end-start
+
+    def MakeFigures(self):
+        """Makes figures showing distribution of n and the prevalences.
+        """
+        self.PlotDistOfN()
+        self.PlotPrevalences()
+        # self.PlotMixture(1)
+
+    def PlotDistOfN(self):
+        """Plots distribution of N.
+        """
+        pmf = self.suite.DistOfN()
+        print '90% CI for N:', pmf.CredibleInterval(90)
+        pmf.name = self.code
+
+        myplot.Clf()
+        myplot.PrePlot(num=1)
+
+        myplot.Pmf(pmf)
+
+        root = 'species.ndist.%s' % self.code
+        myplot.Save(root=root,
+                    xlabel='Number of species',
+                    ylabel='Prob',
+                    formats=formats,
+                    )
+
+    def PlotPrevalences(self, num=5):
+        """Plots dist of prevalence for several species.
+
+        num: how many species (starting with the highest prevalence)
+        """
+        myplot.Clf()
+        myplot.PrePlot(num=5)
+
+        for rank in range(1, num+1):
+            self.PlotPrevalence(rank)
+
+        root = 'species.prev.%s' % self.code
+        myplot.Save(root=root,
+                    xlabel='Prevalence',
+                    ylabel='Prob',
+                    formats=formats,
+                    axis=[0, 0.3, 0, 1],
+                    )
+
+    def PlotPrevalence(self, rank=1, cdf_flag=True):
+        """Plots dist of prevalence one species.
+
+        rank: rank order of the species to plot.
+        cdf_flag: whether to plot the CDF
+        """
+        # convert rank to index
+        index = self.GetM() - rank
+
+        pmfs, mix = self.suite.DistOfPrevalence(index)
+        count, species = self.GetSpecies(index)
+        mix.name = '(%d) %s' % (count, species)
+        if cdf_flag:
+            cdf = thinkbayes.MakeCdfFromPmf(mix)
+            myplot.Cdf(cdf)
+        else:
+            myplot.Pmf(pmf)
+
+    def PlotMixture(self, rank=1):
+        """Plots dist of prevalence for all n, and the mix.
+
+        rank: rank order of the species to plot
+        """
+        # convert rank to index
+        index = self.GetM() - rank
+
+        print self.GetSpecies(index)
+        print self.GetCounts()[index]
+
+        pmfs, mix = self.suite.DistOfPrevalence(index)
+
+        myplot.Clf()
+        for pmf in pmfs.Values():
+            myplot.Pmf(pmf, color='blue', alpha=0.2, linewidth=0.5)
+
+        myplot.Pmf(mix, color='blue', alpha=0.9, linewidth=2)
+
+        root = 'species.mix.%s' % self.code
+        myplot.Save(root=root,
+                    xlabel='Prevalence',
+                    ylabel='Prob',
+                    formats=formats,
+                    axis=[0, 0.3, 0, 0.3],
+                    legend=False)
+
+    def RunSimulation(self, num_samples):
+        """Simulates additional observations and returns a rarefaction curve.
+
+        k is the number of additional observations
+        num_new is the number of new species seen
+
+        Returns: list of (k, num_new) pairs
+        """
+        # make the set of seen species names
+        names = [name for count, name in self.species]
+        m = len(names)
+        seen = set(SpeciesGenerator(names, m))
+
+        # choose random n and prevalences
+        pmf = self.suite.DistOfN()
+        n = pmf.Random()
+        prevalences = self.suite.SampleConditional(n)
+
+        # make a CDF of species (seen and unseen)
+        name_iter = SpeciesGenerator(names, n)
+        d = dict(zip(name_iter, prevalences))
+        cdf = thinkbayes.MakeCdfFromDict(d)
+
+        # loop through simulated observations and count the
+        # number of new species
+        observations = cdf.Sample(num_samples)
+        curve = []
+        for k, obs in enumerate(observations):
+            seen.add(obs)
+            num_new = len(seen) - m
+            curve.append((k+1, num_new))
+
+        return curve
+
+    def RunSimulations(self, iterations, num_samples):
+        curves = [self.RunSimulation(num_samples) 
+                  for i in range(iterations)]
+        return curves
+
+    def MakeJointPredictive(self, curves):
+        joint = thinkbayes.Joint()
+        for curve in curves:
+            for k, num in curve:
+                joint.Incr((k, num))
+        joint.Normalize()
+        return joint
+
+
+def SpeciesGenerator(names, num):
+    """Generates a series of names, starting with the given names.
+
+    Additional names are 'unseen' plus a serial number.
+
+    names: list of strings
+
+    Returns: string iterator
+    """
+    i = 0
+    for name in names:
+        yield '%s-%d' % (name, i)
+        i += 1
+
+    while i < num:
+        yield 'unseen-%d' % i
+        i += 1
+            
 
 def ReadData(filename='journal.pone.0047712.s001.csv'):
     """Reads a data file and returns a list of Subjects.
@@ -109,24 +282,22 @@ def OffsetCurve(curve, i, n, dx=0.3, dy=0.3):
     return curve
 
 
-def PlotCurves(curves, root=None, clf=False):
+def PlotCurves(curves, root='species5'):
     """Plots a set of curves.
 
     curves is a list of curves; each curve is a list of (x, y) pairs.
     """
-    if root: 
-        pyplot.clf()
+    myplot.Clf()
 
     n = len(curves)
     for i, curve in enumerate(curves):
         curve = OffsetCurve(curve, i, n)
         xs, ys = zip(*curve)
-        pyplot.plot(xs, ys, color='blue', alpha=0.2)
+        myplot.Plot(xs, ys, color='blue', alpha=0.2, linewidth=0.5)
 
     myplot.Save(root=root,
-                clf=clf,
                 xlabel='# samples',
-                ylabel='# taxa',
+                ylabel='# species',
                 formats=formats,
                 legend=False)
 
@@ -208,6 +379,14 @@ class Species2(object):
         self.params[:m] += data
 
     def SampleLikelihood(self, data):
+        """Computes the likelihood of the data for all values of n.
+
+        Draws one sample from the distribution of prevalences.
+
+        data: sequence of observed counts
+
+        Returns: numpy array of m likelihoods
+        """
         gammas = numpy.random.gamma(self.params)
 
         m = len(data)
@@ -230,16 +409,32 @@ class Species2(object):
         return likes
 
     def DistOfN(self):
-        """Computes the distribution of n."""
+        """Computes the distribution of n.
+
+        Returns: new Pmf object
+        """
         pmf = thinkbayes.MakePmfFromDict(dict(zip(self.ns, self.probs)))
         return pmf
 
     def MarginalBeta(self, n, index):
+        """Computes the conditional distribution of the indicated species.
+        
+        n: conditional number of species
+        index: which species
+
+        Returns: Beta object representing a distribution of prevalence.
+        """
         alpha0 = self.params[:n].sum()
         alpha = self.params[index]
         return thinkbayes.Beta(alpha, alpha0-alpha)
 
     def DistOfPrevalence(self, index):
+        """Computes the distribution of prevalence for the indicated species.
+
+        index: which species
+
+        Returns: (pmfs, mix) where pmfs is a MetaPmf and mix is a Pmf
+        """
         pmfs = thinkbayes.Pmf()
 
         for n, prob in zip(self.ns, self.probs):
@@ -249,6 +444,18 @@ class Species2(object):
 
         mix = thinkbayes.MakeMixture(pmfs)
         return pmfs, mix
+        
+    def SampleConditional(self, n):
+        """Draws a sample of prevalences given n.
+
+        n: the number of species assumed in the conditional
+
+        Returns: numpy array of n prevalences
+        """
+        params = self.params[:n]
+        gammas = numpy.random.gamma(params)
+        gammas /= gammas.sum()
+        return gammas
         
 
 class Species3(Species2):
@@ -644,33 +851,13 @@ def HierarchicalExample():
                 )
 
 
-def ProcessSubject(subject, factor=1.5, iterations=300):
-    """Looks up counts for the given subject and computes the posterior.
-
-    Returns: Suite, posterior distribution of n and prevalences
-    """
-    counts = subject.GetCounts()
-    m = len(counts)
-
-    n = int(factor * m)
-    ns = range(m, n)
-    suite = Species5(ns, iterations=iterations)
-
-    start = time.time()    
-    suite.Update(counts)
-    end = time.time()
-    print 'time', end-start
-
-    return suite
-
-
 def ProcessSubjects(indices):
     subjects = ReadData()
     pmfs = []
     for index in indices:
         subject = subjects[index]
 
-        suite = ProcessSubject(subject)
+        suite = Process(subject)
         pmf = suite.DistOfN()
         pmf.name = subject.code
         myplot.Pmf(pmf)
@@ -687,77 +874,6 @@ def ProcessSubjects(indices):
                 )
 
 
-def MakeFigures(subject):
-    suite = ProcessSubject(subject)
-    pmf = suite.DistOfN()
-    pmf.name = subject.code
-
-    myplot.Clf()
-    myplot.Pmf(pmf)
-    root = 'species.ndist.%s' % subject.code
-    myplot.Save(root=root,
-                xlabel='Number of species',
-                ylabel='Prob',
-                formats=formats,
-                )
-
-    PlotPrevalences(subject, suite)
-    #PlotMixture(subject, suite, 0)
-
-
-def PlotPrevalences(subject, suite):
-    myplot.Clf()
-    myplot.PrePlot(6)
-
-    for index in range(6):
-        PlotPrevalence(subject, suite, index)
-
-    root = 'species.prev.%s' % subject.code
-    myplot.Save(root=root,
-                xlabel='Prevalence',
-                ylabel='Prob',
-                formats=formats,
-                axis=[0, 0.3, 0, 1],
-                )
-
-
-def PlotPrevalence(subject, suite, index):
-    # convert index to the reverse order the species appear
-    m = subject.GetM()
-    index = m - 1 - index
-
-    pmfs, mix = suite.DistOfPrevalence(index)
-    count, species = subject.GetSpecies(index)
-    mix.name = '(%d) %s' % (count, species)
-    cdf = thinkbayes.MakeCdfFromPmf(mix)
-    #myplot.Pmf(pmf)
-    myplot.Cdf(cdf, alpha=0.5)
-
-
-def PlotMixture(subject, suite, index, root='species5'):
-
-    # convert index to the reverse order the species appear
-    m = subject.GetM()
-    index = m - 1 - index
-
-    print subject.GetSpecies(index)
-    print subject.GetCounts()[index]
-
-    pmfs, mix = suite.DistOfPrevalence(index)
-
-    myplot.Clf()
-    for pmf in pmfs.Values():
-        myplot.Pmf(pmf, color='blue', alpha=0.2, linewidth=0.5)
-
-    myplot.Pmf(mix, color='blue', alpha=0.9, linewidth=2)
-    myplot.Save(root=root,
-                xlabel='Prevalence',
-                ylabel='Prob',
-                formats=formats,
-                axis=[0, 0.3, 0, 0.3],
-                legend=False)
-
-
 def SummarizeData():
     subjects = ReadData()
 
@@ -768,7 +884,22 @@ def SummarizeData():
 
 def main(script, *args):
     subjects = ReadData()
-    MakeFigures(subjects[4])
+    subject = subjects[4]
+    subject.Process()
+
+    curves = subject.RunSimulations(100, 400)
+    PlotCurves(curves)
+
+    joint = subject.MakeJointPredictive(curves)
+    marginal = joint.Marginal(1)
+    conditional = joint.Conditional(1, 0, 400)
+
+    myplot.Clf()
+    myplot.Pmf(marginal)
+    myplot.Pmf(conditional)
+    myplot.Show()
+
+    #subject.MakeFigures()
     return
 
     ProcessSubjects([4])
@@ -860,8 +991,6 @@ def main(script, *args):
 
 
 if __name__ == '__main__':
-    random.seed(17)
-
     profile = False
     if profile:
         import cProfile

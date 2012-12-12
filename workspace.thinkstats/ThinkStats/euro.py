@@ -97,7 +97,7 @@ def Summarize(suite):
     print '5th %ile', thinkbayes.Percentile(suite, 5) 
     print '95th %ile', thinkbayes.Percentile(suite, 95) 
 
-    print 'CI', thinkbayes.ConfidenceInterval(suite, 90)
+    print 'CI', thinkbayes.CredibleInterval(suite, 90)
 
 
 def Plot(suite1, suite2, root):

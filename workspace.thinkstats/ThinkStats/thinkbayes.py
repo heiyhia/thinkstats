@@ -346,6 +346,19 @@ class Pmf(_DictWrapper):
         prob, val = max((prob, val) for val, prob in self.Items())
         return val
 
+    def CredibleInterval(self, percentage=90):
+        """Computes the central credible interval.
+
+        If percentage=90, computes the 90% CI.
+
+        Args:
+            percentage: float between 0 and 100
+
+        Returns:
+            sequence of two floats, low and high
+        """
+        cdf = MakeCdfFromPmf(self)
+        return cdf.CredibleInterval(percentage)
 
     def Log(self):
         """Log transforms the probabilities.
@@ -408,6 +421,43 @@ class Pmf(_DictWrapper):
         return cdf
 
 
+class Joint(Pmf):
+    """Represents a joint distribution.
+
+    The values are sequences (usually tuples)
+    """
+    def Marginal(self, i):
+        """Gets the marginal distribution of the indicated variable.
+
+        i: index of the variable we want
+
+        Returns: Pmf
+        """
+        pmf = Pmf()
+        for vs, prob in self.Items():
+            pmf.Incr(vs[i], prob)
+        return pmf
+
+    def Conditional(self, i, j, val):
+        """Gets the conditional distribution of the indicated variable.
+
+        Distribution of vs[i], conditioned on vs[j] = val.
+
+        i: index of the variable we want
+        j: which variable is conditioned on
+        val: the value the jth variable has to have
+
+        Returns: Pmf
+        """
+        pmf = Pmf()
+        for vs, prob in self.Items():
+            if vs[j] != val: continue
+            pmf.Incr(vs[i], prob)
+
+        pmf.Normalize()
+        return pmf
+
+        
 def MakeHistFromList(t, name=''):
     """Makes a histogram from an unsorted sequence of values.
 
@@ -642,6 +692,21 @@ class Cdf(object):
             total += p * x
             old_p = new_p
         return total
+
+    def CredibleInterval(self, percentage=90):
+        """Computes the central credible interval.
+
+        If percentage=90, computes the 90% CI.
+
+        Args:
+            percentage: float between 0 and 100
+
+        Returns:
+            sequence of two floats, low and high
+        """
+        prob = (1 - percentage/100.0) / 2
+        interval = self.Value(prob), self.Value(1-prob)
+        return interval
 
     def _Round(self, multiplier=1000.0):
         """
@@ -969,8 +1034,8 @@ def Percentile(pmf, percentage):
             return val    
 
 
-def ConfidenceInterval(pmf, percentage):
-    """Computes a confidence interval for a given distribution.
+def CredibleInterval(pmf, percentage=90):
+    """Computes a credible interval for a given distribution.
 
     If percentage=90, computes the 90% CI.
 
