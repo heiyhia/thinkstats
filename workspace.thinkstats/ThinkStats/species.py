@@ -361,17 +361,18 @@ def PlotCurves(curves, root='species.rare'):
                 legend=False)
 
 
-def PlotConditional(joint, k, root='species.cond'):
+def PlotConditional(joint, ks, root='species.cond'):
     """Plots distribution of num_new conditioned on k.
 
     joint: joint distribution of (k, num_new)
-    k: number of additional samples
+    ks: list of k (num_samples) to plot
     """
     myplot.Clf()
-    color = '#225EA8'
+    myplot.PrePlot(num=len(ks))
 
-    conditional = joint.Conditional(1, 0, 400)
-    myplot.Pmf(conditional)
+    for k in ks:
+        conditional = joint.Conditional(1, 0, k)
+        myplot.Pmf(conditional)
 
     myplot.Save(root=root,
                 xlabel='# new species',
@@ -1019,10 +1020,10 @@ def main(script, *args):
     root = 'species.rare.%s' % subject.code
     PlotCurves(curves, root=root)
 
-    curves += subject.RunSimulations(1900, num_samples)
+    curves += subject.RunSimulations(900, num_samples)
     joint = subject.MakeJointPredictive(curves)
     root = 'species.cond.%s' % subject.code
-    PlotConditional(joint, num_samples, root=root)
+    PlotConditional(joint, [100, 200, 300, 400], root=root)
 
     return
     curves = subject.RunSimulations(500, 800, frac_flag=True)
