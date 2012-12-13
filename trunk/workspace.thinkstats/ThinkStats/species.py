@@ -19,6 +19,7 @@ import time
 
 formats = ['pdf', 'eps', 'png']
 
+
 class Subject(object):
     """Represents a subject from the belly button study."""
 
@@ -39,8 +40,7 @@ class Subject(object):
         return len(self.species)
         
     def Sort(self):
-        """Sorts the count-species pairs in increasing order.
-        """
+        """Sorts the count-species pairs in increasing order."""
         self.species.sort()        
 
     def GetCounts(self):
@@ -48,7 +48,16 @@ class Subject(object):
 
         Should be in increasing order, if Sort() has been invoked.
         """
-        return [count for (count, _) in self.species]
+        return [count for count, _ in self.species]
+
+    def GetNames(self):
+        """Gets the names of the seen species."""
+        return [name for _, name in self.species]
+
+    def PrintCounts(self):
+        """Prints the counts and species names."""
+        for count, name in reversed(self.species):
+            print count, name
 
     def GetSpecies(self, index):
         """Gets the count and name of the indicated species.
@@ -62,6 +71,8 @@ class Subject(object):
 
         Sets: self.suite
         """
+        self.PrintCounts()
+
         counts = self.GetCounts()
         m = len(counts)
 
@@ -75,15 +86,12 @@ class Subject(object):
         print 'time', end-start
 
     def MakeFigures(self):
-        """Makes figures showing distribution of n and the prevalences.
-        """
+        """Makes figures showing distribution of n and the prevalences."""
         self.PlotDistOfN()
         self.PlotPrevalences()
-        # self.PlotMixture(1)
 
     def PlotDistOfN(self):
-        """Plots distribution of N.
-        """
+        """Plots distribution of N."""
         pmf = self.suite.DistOfN()
         print '90% CI for N:', pmf.CredibleInterval(90)
         pmf.name = self.code
@@ -130,7 +138,7 @@ class Subject(object):
 
         pmfs, mix = self.suite.DistOfPrevalence(index)
         count, species = self.GetSpecies(index)
-        mix.name = '(%d) %s' % (count, species)
+        mix.name = '%d (%d)' % (rank, count)
         if cdf_flag:
             cdf = thinkbayes.MakeCdfFromPmf(mix)
             myplot.Cdf(cdf)
@@ -164,6 +172,29 @@ class Subject(object):
                     axis=[0, 0.3, 0, 0.3],
                     legend=False)
 
+    def GetSeenSpecies(self):
+        """Makes a set of the names of seen species."""
+        names = self.GetNames()
+        m = len(names)
+        seen = set(SpeciesGenerator(names, m))
+        return seen
+
+    def GenerateObservations(self, num_samples):
+        """Generates a series of random observations.
+
+        Returns: sequence of string species names
+        """
+        n, prevalences = self.suite.Sample()
+
+        names = self.GetNames()
+        name_iter = SpeciesGenerator(names, n)
+
+        d = dict(zip(name_iter, prevalences))
+        cdf = thinkbayes.MakeCdfFromDict(d)
+        observations = cdf.Sample(num_samples)
+
+        return observations
+
     def RunSimulation(self, num_samples, frac_flag=False, delta=0.01):
         """Simulates additional observations and returns a rarefaction curve.
 
@@ -175,24 +206,10 @@ class Subject(object):
 
         Returns: list of (k, num_new) pairs
         """
-        # make the set of seen species names
-        names = [name for count, name in self.species]
-        m = len(names)
-        seen = set(SpeciesGenerator(names, m))
+        seen = self.GetSeenSpecies()
+        m = len(seen)
+        observations = self.GenerateObservations(num_samples)
 
-        # choose random n and prevalences
-        pmf = self.suite.DistOfN()
-        n = pmf.Random()
-        prevalences = self.suite.SampleConditional(n)
-
-        # make a CDF of species (seen and unseen)
-        name_iter = SpeciesGenerator(names, n)
-        d = dict(zip(name_iter, prevalences))
-        cdf = thinkbayes.MakeCdfFromDict(d)
-
-        # loop through simulated observations and count the
-        # number of new species
-        observations = cdf.Sample(num_samples)
         curve = []
         for k, obs in enumerate(observations):
             seen.add(obs)
@@ -207,22 +224,39 @@ class Subject(object):
 
         return curve
 
-    def RunSimulations(self, iterations, num_samples, frac_flag=False):
+    def RunSimulations(self, num_sims, num_samples, frac_flag=False):
+        """Runs simulations and returns a list of curves.
+
+        Each curve is a sequence of (k, num_new) pairs.
+
+        num_sims: how many simulations to run
+        num_samples: how many samples to generate in each simulation
+        frac_flag: whether to convert num_new to fraction of total
+        """
         curves = [self.RunSimulation(num_samples, frac_flag) 
-                  for i in range(iterations)]
+                  for i in range(num_sims)]
         return curves
 
     def MakeJointPredictive(self, curves):
-        """
+        """Makes a joint distribution of k and num_new.
+
+        curves: list of (k, num_new) curves 
+
+        Returns: joint Pmf of (k, num_new)
         """
         joint = thinkbayes.Joint()
         for curve in curves:
-            for k, num in curve:
-                joint.Incr((k, num))
+            for k, num_new in curve:
+                joint.Incr((k, num_new))
         joint.Normalize()
         return joint
 
     def MakeFracCdfs(self, curves):
+        """Makes Cdfs of the fraction of species seen.
+        curves: list of (k, num_new) curves 
+
+        Returns: list of Cdfs
+        """
         d = {}
         for curve in curves:
             for k, frac in curve:
@@ -234,6 +268,7 @@ class Subject(object):
             cdfs[k] = cdf
 
         return cdfs
+
 
 def SpeciesGenerator(names, num):
     """Generates a series of names, starting with the given names.
@@ -311,7 +346,7 @@ def PlotCurves(curves, root='species.rare'):
     curves is a list of curves; each curve is a list of (x, y) pairs.
     """
     myplot.Clf()
-    color = '#1D91C0'
+    color = '#225EA8'
 
     n = len(curves)
     for i, curve in enumerate(curves):
@@ -326,13 +361,32 @@ def PlotCurves(curves, root='species.rare'):
                 legend=False)
 
 
+def PlotConditional(joint, k, root='species.cond'):
+    """Plots distribution of num_new conditioned on k.
+
+    joint: joint distribution of (k, num_new)
+    k: number of additional samples
+    """
+    myplot.Clf()
+    color = '#225EA8'
+
+    conditional = joint.Conditional(1, 0, 400)
+    myplot.Pmf(conditional)
+
+    myplot.Save(root=root,
+                xlabel='# new species',
+                ylabel='Prob',
+                formats=formats,
+                legend=False)
+
+
 def PlotFracCdfs(cdfs, root='species.frac'):
     """Plots CDFs of the fraction of species seen.
 
     cdfs: map from k to CDF of fraction of species seen after k samples
     """
     myplot.Clf()
-    color = '#1D91C0'
+    color = '#225EA8'
 
     for k, cdf in cdfs.iteritems():
         if k not in [10, 50] and k % 100:
@@ -500,6 +554,16 @@ class Species2(object):
         mix = thinkbayes.MakeMixture(pmfs)
         return pmfs, mix
         
+    def Sample(self):
+        """Draws random n and prevalences.
+
+        Returns: (n, prevalences)
+        """
+        pmf = self.DistOfN()
+        n = pmf.Random()
+        prevalences = self.SampleConditional(n)
+        return n, prevalences
+
     def SampleConditional(self, n):
         """Draws a sample of prevalences given n.
 
@@ -915,8 +979,8 @@ def ProcessSubjects(indices):
     for index in indices:
         subject = subjects[index]
 
-        suite = Process(subject)
-        pmf = suite.DistOfN()
+        subject.Process()
+        pmf = subject.suite.DistOfN()
         pmf.name = subject.code
         myplot.Pmf(pmf)
 
@@ -943,34 +1007,30 @@ def SummarizeData():
 def main(script, *args):
     random.seed(17)
 
-    HierarchicalExample()
+    # HierarchicalExample()
 
     subjects = ReadData()
     subject = subjects[4]
     subject.Process()
-    subject.MakeFigures()
-    return
+    # subject.MakeFigures()
 
+    num_samples = 400
+    curves = subject.RunSimulations(100, num_samples)
+    root = 'species.rare.%s' % subject.code
+    PlotCurves(curves, root=root)
+
+    curves += subject.RunSimulations(1900, num_samples)
+    joint = subject.MakeJointPredictive(curves)
+    root = 'species.cond.%s' % subject.code
+    PlotConditional(joint, num_samples, root=root)
+
+    return
     curves = subject.RunSimulations(500, 800, frac_flag=True)
     cdfs = subject.MakeFracCdfs(curves)
-    PlotFracCdfs(cdfs)
-    return
 
-    curves = subject.RunSimulations(100, 400)
-    PlotCurves(curves)
+    root = 'species.frac.%s' % subject.code
+    PlotFracCdfs(cdfs, root=root)
 
-    joint = subject.MakeJointPredictive(curves)
-    marginal = joint.Marginal(1)
-    conditional = joint.Conditional(1, 0, 400)
-
-    myplot.Clf()
-    myplot.Pmf(marginal)
-    myplot.Pmf(conditional)
-    myplot.Show()
-
-    return
-
-    ProcessSubjects([4])
     return
 
     SimpleDirichletExample()
