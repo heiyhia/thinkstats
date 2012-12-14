@@ -101,7 +101,7 @@ class Subject(object):
 
         myplot.Pmf(pmf)
 
-        root = 'species.ndist.%s' % self.code
+        root = 'species-ndist-%s' % self.code
         myplot.Save(root=root,
                     xlabel='Number of species',
                     ylabel='Prob',
@@ -119,7 +119,7 @@ class Subject(object):
         for rank in range(1, num+1):
             self.PlotPrevalence(rank)
 
-        root = 'species.prev.%s' % self.code
+        root = 'species-prev-%s' % self.code
         myplot.Save(root=root,
                     xlabel='Prevalence',
                     ylabel='Prob',
@@ -164,7 +164,7 @@ class Subject(object):
 
         myplot.Pmf(mix, color='blue', alpha=0.9, linewidth=2)
 
-        root = 'species.mix.%s' % self.code
+        root = 'species-mix-%s' % self.code
         myplot.Save(root=root,
                     xlabel='Prevalence',
                     ylabel='Prob',
@@ -173,16 +173,19 @@ class Subject(object):
                     legend=False)
 
     def GetSeenSpecies(self):
-        """Makes a set of the names of seen species."""
+        """Makes a set of the names of seen species.
+
+        Returns: number of species, set of string species names
+        """
         names = self.GetNames()
         m = len(names)
         seen = set(SpeciesGenerator(names, m))
-        return seen
+        return m, seen
 
     def GenerateObservations(self, num_samples):
         """Generates a series of random observations.
 
-        Returns: sequence of string species names
+        Returns: number of species, sequence of string species names
         """
         n, prevalences = self.suite.Sample()
 
@@ -193,7 +196,7 @@ class Subject(object):
         cdf = thinkbayes.MakeCdfFromDict(d)
         observations = cdf.Sample(num_samples)
 
-        return observations
+        return n, observations
 
     def RunSimulation(self, num_samples, frac_flag=False, delta=0.01):
         """Simulates additional observations and returns a rarefaction curve.
@@ -206,9 +209,8 @@ class Subject(object):
 
         Returns: list of (k, num_new) pairs
         """
-        seen = self.GetSeenSpecies()
-        m = len(seen)
-        observations = self.GenerateObservations(num_samples)
+        m, seen = self.GetSeenSpecies()
+        n, observations = self.GenerateObservations(num_samples)
 
         curve = []
         for k, obs in enumerate(observations):
@@ -253,6 +255,7 @@ class Subject(object):
 
     def MakeFracCdfs(self, curves):
         """Makes Cdfs of the fraction of species seen.
+
         curves: list of (k, num_new) curves 
 
         Returns: list of Cdfs
@@ -266,6 +269,25 @@ class Subject(object):
         for k, fracs in d.iteritems():
             cdf = thinkbayes.MakeCdfFromList(fracs)
             cdfs[k] = cdf
+
+        return cdfs
+
+    def MakeConditionals(self, curves, ks):
+        """Makes Cdfs of the distribution of num_new conditioned on k.
+
+        curves: list of (k, num_new) curves 
+        ks: list of values of k
+
+        Returns: list of Cdfs
+        """
+        joint = self.MakeJointPredictive(curves)
+
+        cdfs = []
+        for k in ks:
+            pmf = joint.Conditional(1, 0, k)
+            pmf.name = 'k=%d' % k
+            cdf = thinkbayes.MakeCdfFromPmf(pmf)
+            cdfs.append(cdf)
 
         return cdfs
 
@@ -340,7 +362,7 @@ def OffsetCurve(curve, i, n, dx=0.3, dy=0.3):
     return curve
 
 
-def PlotCurves(curves, root='species.rare'):
+def PlotCurves(curves, root='species-rare'):
     """Plots a set of curves.
 
     curves is a list of curves; each curve is a list of (x, y) pairs.
@@ -361,24 +383,21 @@ def PlotCurves(curves, root='species.rare'):
                 legend=False)
 
 
-def PlotConditional(joint, ks, root='species.cond'):
-    """Plots distribution of num_new conditioned on k.
+def PlotConditionals(cdfs, root='species.cond'):
+    """Plots cdfs of num_new conditioned on k.
 
-    joint: joint distribution of (k, num_new)
-    ks: list of k (num_samples) to plot
+    cdfs: list of Cdf
+    root: string filename root
     """
     myplot.Clf()
-    myplot.PrePlot(num=len(ks))
+    myplot.PrePlot(num=len(cdfs))
 
-    for k in ks:
-        conditional = joint.Conditional(1, 0, k)
-        myplot.Pmf(conditional)
+    myplot.Cdfs(cdfs)
 
     myplot.Save(root=root,
                 xlabel='# new species',
                 ylabel='Prob',
-                formats=formats,
-                legend=False)
+                formats=formats)
 
 
 def PlotFracCdfs(cdfs, root='species.frac'):
@@ -1013,23 +1032,25 @@ def main(script, *args):
     subjects = ReadData()
     subject = subjects[4]
     subject.Process()
-    # subject.MakeFigures()
+    subject.MakeFigures()
 
     num_samples = 400
     curves = subject.RunSimulations(100, num_samples)
-    root = 'species.rare.%s' % subject.code
+    root = 'species-rare-%s' % subject.code
     PlotCurves(curves, root=root)
 
-    curves += subject.RunSimulations(900, num_samples)
-    joint = subject.MakeJointPredictive(curves)
-    root = 'species.cond.%s' % subject.code
-    PlotConditional(joint, [100, 200, 300, 400], root=root)
+    num_samples = 800
+    curves = subject.RunSimulations(500, num_samples)
+    ks = [100, 200, 400, 800]
+    cdfs = subject.MakeConditionals(curves, ks)
+    root = 'species-cond-%s' % subject.code
+    PlotConditionals(cdfs, root=root)
 
     return
-    curves = subject.RunSimulations(500, 800, frac_flag=True)
+    curves = subject.RunSimulations(500, num_samples, frac_flag=True)
     cdfs = subject.MakeFracCdfs(curves)
 
-    root = 'species.frac.%s' % subject.code
+    root = 'species-frac-%s' % subject.code
     PlotFracCdfs(cdfs, root=root)
 
     return
