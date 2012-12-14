@@ -5160,34 +5160,33 @@ same PDF are called ``conjugate distributions.''
 
 \section{Belly button bacteria}
 
-The Belly Button Biodiversity (BBB) project is a nation-wide citizen
+Belly Button Biodiversity 2.0 (BBB2) is a nation-wide citizen
 science project with the goal of identifying bacterial species that
 can be found in human navels (\url{http://bbdata.yourwildlife.org}).
 The project might seem whimsical, but it is part of an increasing
 interest in the human microbiome, the set of microorganisms that live
 on human skin and other surfaces that contact the environment.
 
-In their pilot study, BBB researchers collected swabs from the navels
+In their pilot study, BBB2 researchers collected swabs from the navels
 of 60 volunteers, used multiplex pyrosequencing to extract and sequence
 fragments of 16S rDNA, then identified the species or genus the
 fragments came from.  Each identified fragment is called a ``read.''
 
-If we think of each read as a random sample from the microbial population,
-we can use these data to answer several related questions:
+We can use these data to answer several related questions:
 
 \begin{itemize}
 
-\item Based on the number of species we have observed, can
-we estimate the total number of species in the environment?
+\item Based on the number of species we have observed, can we estimate
+  the total number of species in the environment?
 
-\item Can we estimate the prevalence of each species; that is,
-fraction of the total population belonging to each species?
+\item Can we estimate the prevalence of each species; that is, the
+  fraction of the total population belonging to each species?
 
-\item If we collect additional samples, can we predict how many
-new species we are likely to discover?
+\item If we are planning to collect additional samples, can we predict
+  how many new species we are likely to discover?
 
-\item How many additional reads would be necessary to increase
-the fraction of observed species to a given threshold?
+\item How many additional reads would be necessary to increase the
+  fraction of observed species to a given threshold?
 
 \end{itemize}
 
@@ -5201,8 +5200,8 @@ there are exactly three species.  Let's call them lions, tigers and
 bears.  Suppose we visit a wild animal preserve and see 3 lions, 2
 tigers and one bear.
 
-If we assume that we have an equal chance of observing any animal
-in the preserve, then the number of each species we see is governed
+If we have an equal chance of observing any animal
+in the preserve then the number of each species we see is governed
 by the multinomial distribution.  If the prevalence of lions and tigers
 and bears is \verb"p_lion" and \verb"p_tiger" and \verb"p_bear",
 the likelihood of seeing 3 lions, 2 tigers and one bear is
@@ -5891,26 +5890,179 @@ we need to get an accurate result is usually small.
 \section{The belly button data}
 \label{belly}
 
-That's enough about the lions and tigers and bears.
+That's enough about lions and tigers and bears.
 Let's get back to belly buttons.  To get a sense of what the
-data look like, let's consider subject B1242,
-whose sample yielded 61 species with the following
+data look like, consider subject B1242,
+whose sample of 400 reads yielded 61 species with the following
 counts:
 
 \begin{verbatim}
-[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
- 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3,
- 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 7, 7, 8, 10, 12, 14, 15, 38,
- 47, 53, 92]
+[92, 53, 47, 38, 15, 14, 12, 10, 8, 7, 7, 5, 5, 
+4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 \end{verbatim}
 
-So there we a number of species that only yielded a single read,
-and a few species with much large reads.
+There are a few dominant species that make up a substantial
+fraction of the whole, but many species that yielded only
+a single read.  The number of these ``singletons'' suggests
+that there are likely to be at least a few unseen species.
 
-Now, to get from reads to prevalences, we have to make some
-assumptions.  In reality, some species are more likely to be
-observed than others.  For example, some species might be more
-likely to be collected 
+In the example with lions and tigers, we assume that each
+animal in the preserve is equally likely to be observed.
+Similarly, for the belly button data, we assume that each
+bacterium is equally likely to yield a read.
+
+In reality, it is possible that each step in the data-collection
+process might introduce consistent biases.  Some species might
+be more likely to be picked up by a swab, or to yield identifiable
+amplicons.  So when we talk about the prevalence of each species,
+we should remember this source of error.
+
+I should also acknowledge that I am using the term ``species''
+loosely.  First, bacterial species are not well-defined.  Second,
+some reads identify a particular species, others only identify
+a genus.  To be more precise, I should say ``operational
+taxonomic unit, or OTU.
+
+Now let's process some of the belly button data.  I defined
+a class called {\tt Subject} to represent information about
+each subject in the study:
+
+\begin{verbatim}
+class Subject(object):
+
+    def __init__(self, code):
+        self.code = code
+        self.species = []
+\end{verbatim}
+
+Each subject has a string code, like ``B1242'', and a list of
+(count, species name) pairs, sorted in increasing order by count.
+{\tt Subject} provides several methods to make it
+easy to these counts and species names.  You can see the details
+in \url{http://thinkbayes.com/species.py}.
+
+In addition, {\tt Subject.Process} creates a suite, specifically
+a suite of type {\tt Species5}, which represents the distribution
+of {\tt n} and the prevalences after processing the data.
+
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-ndist-B1242.pdf}}
+\caption{Distribution of {\tt n} for subject B1242.}
+\label{species-ndist}
+\end{figure}
+
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-prev-B1242.pdf}}
+\caption{Distribution of prevalences for subject B1242.}
+\label{species-prev}
+\end{figure}
+
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-rare-B1242.pdf}}
+\caption{Distribution of prevalences for subject B1242.}
+\label{species-rare}
+\end{figure}
+
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-cond-B1242.pdf}}
+\caption{Distribution of prevalences for subject B1242.}
+\label{species-cond}
+\end{figure}
+
+It also provides {\tt PlotDistOfN}, which plots the posterior
+distribution of {\tt n}.  Figure~\ref{species-ndist} shows this
+distribution for subject B1242.
+
+Next we can compute the posterior distribution of prevalence for
+each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
+
+\begin{verbatim}
+# class Species2
+
+    def DistOfPrevalence(self, index):
+        pmfs = thinkbayes.Pmf()
+
+        for n, prob in zip(self.ns, self.probs):
+            beta = self.MarginalBeta(n, index)
+            pmf = beta.MakePmf()
+            pmfs.Set(pmf, prob)
+
+        mix = thinkbayes.MakeMixture(pmfs)
+        return pmfs, mix
+\end{verbatim}
+
+{\tt index} indicates which species we want.  For each
+value of {\tt n}, we have a different posterior distribution
+of prevalence.
+
+So the loop iterates through the possible values of {\tt n}
+and their probabilities.  For each value of {\tt n} it gets
+a Beta object representing the marginal distribution for the
+indicated species.  Remember that Beta objects contain the
+parameters {\tt alpha} and {\tt beta}; they don't have
+values and probabilities like a Pmf, but they provide {\tt MakePmf}
+which generates a discrete approximation to the continuous
+beta distribution.
+
+{\tt pmfs} is a MetaPmf that contains the distributions
+of prevalence, conditioned on {\tt n}.  {\tt MakeMixture}
+combines the MetaPmf into {\tt mix}, which combines the
+conditional distributions into the answer, a single distribution
+of prevalence.
+
+Figure~\ref{species-prev} shows these distributions for the five
+species with the most reads.  The most prevalent species accounts for
+23\% of the 400 reads, and as expected the most likely value in the
+distribution is near 23\%.  The credible interval for the prevalence
+of this species is (xx\%, xx\%).
+
+
+The return value
+is a MetaPmf that maps from 
+
+For each value of {\tt n} it computes the marginal distribution
+of the prevalence
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
 
 \begin{verbatim}
 \end{verbatim}
