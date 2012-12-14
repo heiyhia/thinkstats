@@ -5978,8 +5978,13 @@ of {\tt n} and the prevalences after processing the data.
 It also provides {\tt PlotDistOfN}, which plots the posterior
 distribution of {\tt n}.  Figure~\ref{species-ndist} shows this
 distribution for subject B1242.
+The probability that there are exactly 61
+species, and no unseen
+species, is nearly zero.  The most likely value is 72,
+with 90\% credible interval 66 to 79.  At the high end, it is
+unlikely that there are as many as 87 species.
 
-Next we can compute the posterior distribution of prevalence for
+Next we compute the posterior distribution of prevalence for
 each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
 
 \begin{verbatim}
@@ -5999,7 +6004,7 @@ each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
 
 {\tt index} indicates which species we want.  For each
 value of {\tt n}, we have a different posterior distribution
-of prevalence.
+of prevalence.  
 
 So the loop iterates through the possible values of {\tt n}
 and their probabilities.  For each value of {\tt n} it gets
@@ -6018,9 +6023,9 @@ of prevalence.
 
 Figure~\ref{species-prev} shows these distributions for the five
 species with the most reads.  The most prevalent species accounts for
-23\% of the 400 reads, and as expected the most likely value in the
-distribution is near 23\%.  The credible interval for the prevalence
-of this species is (xx\%, xx\%).
+23\% of the 400 reads, but since there are likely to be unseen
+species, the most likely estimate for its prevalence is 20\%,
+with 90\% credible interval between 17\% and 23\%.
 
 
 The return value

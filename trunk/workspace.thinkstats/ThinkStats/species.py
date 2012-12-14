@@ -139,6 +139,10 @@ class Subject(object):
         pmfs, mix = self.suite.DistOfPrevalence(index)
         count, species = self.GetSpecies(index)
         mix.name = '%d (%d)' % (rank, count)
+
+        print '90%% CI for prevalence of species %d:' % rank, 
+        print mix.CredibleInterval(90)
+
         if cdf_flag:
             cdf = thinkbayes.MakeCdfFromPmf(mix)
             myplot.Cdf(cdf)
