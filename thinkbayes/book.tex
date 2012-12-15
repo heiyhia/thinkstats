@@ -5185,7 +5185,7 @@ We can use these data to answer several related questions:
 \item If we are planning to collect additional samples, can we predict
   how many new species we are likely to discover?
 
-\item How many additional reads would be necessary to increase the
+\item How many additional reads are needed to increase the
   fraction of observed species to a given threshold?
 
 \end{itemize}
@@ -5964,7 +5964,7 @@ of {\tt n} and the prevalences after processing the data.
 \begin{figure}
 % species.py
 \centerline{\includegraphics[height=2.5in]{figs/species-rare-B1242.pdf}}
-\caption{Distribution of prevalences for subject B1242.}
+\caption{Simulated rarefaction curves for subject B1242.}
 \label{species-rare}
 \end{figure}
 
@@ -6023,49 +6023,272 @@ of prevalence.
 
 Figure~\ref{species-prev} shows these distributions for the five
 species with the most reads.  The most prevalent species accounts for
-23\% of the 400 reads, but since there are likely to be unseen
+23\% of the 400 reads, but since there are almost certainly unseen
 species, the most likely estimate for its prevalence is 20\%,
 with 90\% credible interval between 17\% and 23\%.
 
+\section{Predictive distributions}
 
-The return value
-is a MetaPmf that maps from 
+I introduced the hidden species problem in the form of four related
+questions.  We have answered the first two by computing the posterior
+distribution for {\tt n} and the prevalence of each species.
 
-For each value of {\tt n} it computes the marginal distribution
-of the prevalence
+The other two questions are:
+
+\begin{itemize}
+
+\item If we are planning to collect additional samples, can we predict
+  how many new species we are likely to discover?
+
+\item How many additional reads are needed to increase the
+  fraction of observed species to a given threshold?
+
+\end{itemize}
+
+To answer predictive questions like this we can use the posterior
+distributions to simulate possible future events and compute
+predictive distributions for the number of species, and fraction of
+the total, we are likely to see.
+
+The kernel of these simulations looks like this:
+
+\begin{enumerate}
+
+\item Choose {\tt n} from its posterior distribution.
+
+\item Choose a prevalence for each species, including possible unseen
+  species, using the Dirichlet distribution.
+
+\item Generate a random sequence of future observations.
+
+\item Compute the number of new species, \verb"num_new", as a function
+  of the number of additional samples, {\tt k}.
+
+\item Repeat the previous steps and accumulate the joint distribution
+  of \verb"num_new" and {\tt k}.
+
+\end{enumerate}
+
+And here's the code.  {\tt RunSimulation} runs a single simulation:
 
 \begin{verbatim}
+# class Subject
+
+    def RunSimulation(self, num_samples):
+        m, seen = self.GetSeenSpecies()
+        n, observations = self.GenerateObservations(num_samples)
+
+        curve = []
+        for k, obs in enumerate(observations):
+            seen.add(obs)
+
+            num_new = len(seen) - m
+            curve.append((k+1, num_new))
+
+        return curve
 \end{verbatim}
 
+\verb"num_samples" is the number of additional samples to simulate.
+{\tt m} is the number of seen species, and {\tt seen} is a set of
+strings with a unique name for each species.
+{\tt n} is a random value from the posterior distribution, and
+{\tt observations} is a random sequence of species names.
+
+The result of {\tt RunSimulation} is a ``rarefaction curve'',
+represented as a list of pairs with the number of samples and
+the number of new species seen.
+
+Before we see the results, let's look at {\tt GetSeenSpecies} and
+{\tt GenerateObservations}.
+
 \begin{verbatim}
+#class Subject
+
+    def GetSeenSpecies(self):
+        names = self.GetNames()
+        m = len(names)
+        seen = set(SpeciesGenerator(names, m))
+        return m, seen
 \end{verbatim}
 
+{\tt GetNames} returns the list of species names that appear in
+the data files, but for many subjects these names are not unique.
+So I use {\tt SpeciesGenerator} to extend each name with a serial
+number:
 
 \begin{verbatim}
+def SpeciesGenerator(names, num):
+    i = 0
+    for name in names:
+        yield '%s-%d' % (name, i)
+        i += 1
+
+    while i < num:
+        yield 'unseen-%d' % i
+        i += 1
 \end{verbatim}
 
+Given a name like {\tt Corynebacterium}, {\tt SpeciesGenerator} yields
+{\tt Corynebacterium-1}.  When the list of names is exhausted, it
+yields names like {\tt unseen-62}.
+
+Here is {\tt GenerateObservations}:
+
 \begin{verbatim}
+# class Subject
+
+    def GenerateObservations(self, num_samples):
+        n, prevalences = self.suite.Sample()
+
+        names = self.GetNames()
+        name_iter = SpeciesGenerator(names, n)
+
+        d = dict(zip(name_iter, prevalences))
+        cdf = thinkbayes.MakeCdfFromDict(d)
+        observations = cdf.Sample(num_samples)
+
+        return n, observations
 \end{verbatim}
 
+Again, \verb"num_samples" is the number of additional samples
+to generate.  {\tt n} and {\tt prevalances} are samples from
+the posterior distribution.
+
+{\tt cdf} is a Cdf object that maps species names, including the
+unseen, to cumulative probabilities.  Using a Cdf makes it efficient
+to generate a random sequence of species names.
+
+Finally, here is {\tt Species2.Sample}:
 
 \begin{verbatim}
+    def Sample(self):
+        pmf = self.DistOfN()
+        n = pmf.Random()
+        prevalences = self.SampleConditional(n)
+        return n, prevalences
 \end{verbatim}
 
+And {\tt SampleConditional}, which generates a sample of
+prevalances conditioned on {\tt n}:
+
 \begin{verbatim}
+# class Species2
+
+    def SampleConditional(self, n):
+        params = self.params[:n]
+        gammas = numpy.random.gamma(params)
+        gammas /= gammas.sum()
+        return gammas
 \end{verbatim}
 
+We saw this algorithm for generating prevalences previously
+in {\tt Species2.SampleLikelihood}.
+
+Figure~\ref{species-rare} shows 100 simulated rarefaction curves
+for subject B1242.  I shifted each curve by a random offset so they
+would not all overlap.  By inspection we can estimate that after
+400 more samples we are likely to find $2--6$ new species.
+
+
+\section{Joint posterior}
+
+To be more precise, we can use the simulations to estimate the
+joint distribution of \verb"num_new" and {\tt k}, and from that
+we can get the distribution of \verb"num_new" conditioned on any
+value of {\tt k}.
 
 \begin{verbatim}
+# class Subject
+
+    def MakeJointPredictive(self, curves):
+        joint = thinkbayes.Joint()
+        for curve in curves:
+            for k, num_new in curve:
+                joint.Incr((k, num_new))
+        joint.Normalize()
+        return joint
 \end{verbatim}
 
+{\tt MakeJointPredictive} makes a Joint object, which is a
+{\tt Pmf} whose values are tuples.
+
+{\tt curves} is a list of rarefaction curves created by
+{\tt RunSimulation}.  Each curve contains a list of pairs of
+{\tt k} and \verb"num_new".
+
+The resulting joint distribution is a map from each pair to
+its probability of occuring.  Given the joint distribution, we
+can get the distribution of \verb"num_new" conditioned on {\tt k}:
+
 \begin{verbatim}
+# class Joint
+
+    def Conditional(self, i, j, val):
+        pmf = Pmf()
+        for vs, prob in self.Items():
+            if vs[j] != val: continue
+            pmf.Incr(vs[i], prob)
+
+        pmf.Normalize()
+        return pmf
 \end{verbatim}
 
+{\tt i} is the index of the variable whose distribution we want;
+{\tt j} is the index of the conditional variables, and {\tt val}
+is the value the {\tt j}th variable has to have.
+You can think of this operation as taking vertical slices out
+of Figure~\ref{species.rare}.
+
+{\tt Subject.MakeConditionals} takes a list of {\tt ks}
+and computes the conditional distribution of \verb"num_new"
+for each {\tt k}.  The result is a list of Cdf objects.
 
 \begin{verbatim}
+# class Subject
+
+    def MakeConditionals(self, curves, ks):
+        joint = self.MakeJointPredictive(curves)
+
+        cdfs = []
+        for k in ks:
+            pmf = joint.Conditional(1, 0, k)
+            pmf.name = 'k=%d' % k
+            cdf = thinkbayes.MakeCdfFromPmf(pmf)
+            cdfs.append(cdf)
+
+        return cdfs
 \end{verbatim}
 
+Figure~\ref{species.cond} shows the results.  After 100 samples, the
+median predicted number of new species is 2; the 90\% credible
+interval is 0 to 5.  After 800 samples, we expect to see 3 to 12 new
+species.
+
+\section{Coverage}
+
+The last question we want to answer is, ``How many additional reads
+are needed to increase the fraction of observed species to a given
+threshold?''
+
+To answer this question, we'll need a version of {\tt RunSimulation}
+that computes the fraction of observed species rather than the
+number of new species.
+
 \begin{verbatim}
+# class Subject
+
+    def RunSimulation(self, num_samples):
+        m, seen = self.GetSeenSpecies()
+        n, observations = self.GenerateObservations(num_samples)
+
+        curve = []
+        for k, obs in enumerate(observations):
+            seen.add(obs)
+
+            frac_seen = len(seen) / float(n)
+            curve.append((k+1, frac_seen))
+
+        return curve
 \end{verbatim}
 
 

@@ -292,7 +292,8 @@ class Subject(object):
             pmf.name = 'k=%d' % k
             cdf = thinkbayes.MakeCdfFromPmf(pmf)
             cdfs.append(cdf)
-
+            print '90%% credible interval for %d' % k,
+            print cdf.CredibleInterval(90)
         return cdfs
 
 
