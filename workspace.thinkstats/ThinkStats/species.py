@@ -1021,21 +1021,9 @@ def ProcessSubjects(indices):
                 )
 
 
-def SummarizeData():
+def RunSubject(index):
     subjects = ReadData()
-
-    for subject in subjects:
-        counts = subject.GetCounts()
-        print subject.code, len(counts)
-
-
-def main(script, *args):
-    random.seed(17)
-
-    # HierarchicalExample()
-
-    subjects = ReadData()
-    subject = subjects[4]
+    subject = subjects[index]
     subject.Process()
     subject.MakeFigures()
 
@@ -1051,15 +1039,26 @@ def main(script, *args):
     root = 'species-cond-%s' % subject.code
     PlotConditionals(cdfs, root=root)
 
-    return
     curves = subject.RunSimulations(500, num_samples, frac_flag=True)
     cdfs = subject.MakeFracCdfs(curves)
-
     root = 'species-frac-%s' % subject.code
     PlotFracCdfs(cdfs, root=root)
 
+
+def SummarizeData():
+    subjects = ReadData()
+
+    for subject in subjects:
+        counts = subject.GetCounts()
+        print subject.code, len(counts)
+
+
+def main(script, *args):
+    random.seed(17)
+    RunSubject(4)
     return
 
+    # HierarchicalExample()
     SimpleDirichletExample()
     return
 

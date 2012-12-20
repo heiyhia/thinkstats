@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.14.0}
+\newcommand{\theversion}{0.15.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -2127,11 +2127,109 @@ And then we can call \verb"Update" like this:
 \end{verbatim}
 
 Since we have replaced repeated multiplication with exponentiation,
-this version takes the same time for any number of spins (up
-to a point).
+this version takes the same time for any number of spins.
 
-For this example there is yet another optimization we can apply,
-but we'll come back to that in Section~\ref{beta}.
+
+\section{The beta distribution}
+\label{beta}
+
+There is one more optimization that solves this problem
+even faster.
+
+So far we have used a Pmf object to represent a discrete set of
+possible values for {\tt x}.  Now we will use a continuous
+distribution, specifically the beta distribution (see
+\url{http://en.wikipedia.org/wiki/Beta_distribution}).
+
+The beta distribution is defined on the interval from 0 to 1
+(including both), so it is a natural choice for describing
+proportions and probabilities.  But wait, it gets better.
+
+It turns out that if you do a Bayesian update with a binomial
+likelihood function, as we did in the previous section, the beta
+distribution is a ``conjugate prior.''  That means that if the prior
+distribution for {\tt x} is a beta distribution, the posterior is also
+a beta distribution.  But wait, it gets even better.
+
+The shape of the beta distribution depends on two parameters, written
+$\alpha$ and $\beta$, or {\tt alpha} and {\tt beta}.  If the prior
+is a beta distribution with parameters {\tt alpha} and {\tt beta}, and
+we see data with {\tt h} heads and {\tt t} tails, the posterior is a
+beta distribution with parameters {\tt alpha+h} and {\tt beta+t}.  In
+other words, we can do an update with two additions.
+
+So that's great, but it only works if the prior is beta.  If beta
+distributions were unrealistic priors, they would not be very useful.
+But for many realistic priors there is a beta distribution that is at
+least a good approximation, and for a uniform prior there is a perfect
+match.  The beta distribution with {\tt alpha=1} and {\tt beta=1} is
+uniform from 0 to 1.
+
+Let's see how we can take advantage of all this.  Here's
+a class that represents a beta distribution:
+
+\begin{verbatim}
+class Beta(object):
+
+    def __init__(self, alpha=1, beta=1):
+        self.alpha = alpha
+        self.beta = beta
+\end{verbatim}
+
+By default \verb"__init__" makes a uniform distribution.
+{\tt Update} performs a Bayesian update:
+
+\begin{verbatim}
+    def Update(self, data):
+        heads, tails = data
+        self.alpha += heads
+        self.beta += tails
+\end{verbatim}
+
+{\tt data} is a pair of integers representing the number of
+heads and tails, or in the language of Bernoulli trials: successes
+and failures.
+
+The mean of a beta distribution is a simple function of {\tt alpha}
+and {\tt beta}:
+
+\begin{verbatim}
+    def Mean(self):
+        return float(self.alpha) / (self.alpha + self.beta)
+\end{verbatim}
+
+So we have yet another way to solve the Euro problem:
+
+\begin{verbatim}
+    beta = Beta()
+    beta.Update((140, 110))
+    print beta.Mean()
+\end{verbatim}
+
+The posterior mean is 56\% (again).  To get the probability for
+any value of {\tt x}, we can evaluate the PDF of the beta
+distribution:
+
+\begin{verbatim}
+    def EvalPdf(self, x):
+        return x**(self.alpha-1) * (1-x)**(self.beta-1)
+\end{verbatim}
+
+This expression might look familiar.  Here's {\tt
+  thinkbayes.EvalBinomialPmf}
+
+\begin{verbatim}
+def EvalBinomialPmf(x, yes, no): 
+    return x**yes * (1-x)**no
+\end{verbatim}
+
+It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
+random variable and {\tt alpha} and {\tt beta} as parameters; in {\tt
+  EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and {\tt
+  no} are random variables.  Distributions like these that share the
+same PDF are called ``conjugate distributions.''
+
+{\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
 
 
 \chapter{Odds and addends}
@@ -4837,6 +4935,7 @@ each sequence of percentiles.
 
 
 \section{Serial Correlation}
+\label{serial}
 
 The results so far are based on a number of modeling decisions;
 let's review them and consider which ones are the most
@@ -5035,128 +5134,6 @@ So we side-stepped Bayes, but he was with us in spirit.
 
 
 \chapter{A hierarchical model}
-
-\section{The Beta distribution}
-\label{beta}
-
-In Section~\ref{optimization} I promised yet another way to solve the
-Belgian Euro problem.  At last the time has come.
-
-Remember that in the Euro problem we try to estimate {\tt x}, the
-probability that a coin spun on edge lands heads up.
-For data we have the result of 250 spins: 140 heads and 110 tails.
-
-The goal is to compute the distribution of {\tt x}; that is, for any
-value, {\tt y}, we would like to know the
-probability that the true value of {\tt x} is {\tt y}.
-
-In Chapter~\ref{euro} we solved this problem using a Pmf object to
-represent a discrete set of possible values for {\tt x}.  In this
-chapter we use a continuous distribution, specifically the beta
-distribution (see
-\url{http://en.wikipedia.org/wiki/Beta_distribution}).
-
-The beta distribution is defined on the interval from 0 to 1
-(including both), so it is a natural choice for describing
-proportions and probabilities.  But wait, it gets better.
-
-It turns out that if you do a Bayesian update with a binomial
-likelihood function, which is what we did in
-Section~\ref{optimization}, the beta distribution is a ``conjugate
-prior.''  That means that if the prior distribution for {\tt x} is a
-beta distribution, the posterior is also a beta distribution.  But
-wait, it gets even better.
-
-The shape of the beta distribution depends on two parameters, written
-$\alpha$ and $\beta$, or {\tt alpha} and {\tt beta}.  And it turns out
-that if the prior is a beta distribution with parameters {\tt alpha}
-and {\tt beta}, and we see data with {\tt h} heads and {\tt t} tails,
-the posterior is a beta distribution with parameters {\tt alpha+h} and
-{\tt beta+t}.  In other words, we can do an update with two additions.
-
-So that's great, but it only works if the prior is beta.  If beta
-distributions were unrealistic priors, they would not be very useful.
-But for many realistic priors there is a beta distribution that is at
-least close, and for a uniform prior there is a perfect match.  The
-beta distribution with {\tt alpha=1} and {\tt beta=1} is uniform from
-0 to 1.
-
-Let's see how we can take advantage of all this.  Here's
-a class that represents a beta distribution:
-
-\begin{verbatim}
-class Beta(object):
-
-    def __init__(self, alpha=1, beta=1):
-        self.alpha = alpha
-        self.beta = beta
-\end{verbatim}
-
-By default \verb"__init__" makes a uniform distribution.
-{\tt Update} performs a Bayesian update:
-
-\begin{verbatim}
-    def Update(self, data):
-        heads, tails = data
-        self.alpha += heads
-        self.beta += tails
-\end{verbatim}
-
-{\tt data} is a pair of integers representing the number of
-heads and tails, or in the language of Bernoulli trials: successes
-and failures.
-
-The mean of a beta distribution is a simple function of {\tt alpha}
-and {\tt beta}:
-
-\begin{verbatim}
-    def Mean(self):
-        return float(self.alpha) / (self.alpha + self.beta)
-\end{verbatim}
-
-Now we have yet another way to solve the Euro problem:
-
-\begin{verbatim}
-    beta = Beta()
-    beta.Update((140, 110))
-    print beta.Mean()
-\end{verbatim}
-
-The posterior mean is 56\% (again).  To get the probability for
-any value of {\tt x}, we can evaluate the PDF of the beta
-distribution:
-
-\begin{verbatim}
-    def EvalPdf(self, x):
-        return x**(self.alpha-1) * (1-x)**(self.beta-1)
-\end{verbatim}
-
-This expression might look familiar.  Here's {\tt
-  thinkbayes.EvalBinomialPmf}
-
-\begin{verbatim}
-def EvalBinomialPmf(x, yes, no): 
-    return x**yes * (1-x)**no
-\end{verbatim}
-
-It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
-random variable and {\tt alpha} and {\tt beta} as parameters; in {\tt
-  EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and {\tt
-  no} are random variables.  Distributions like these that share the
-same PDF are called ``conjugate distributions.''
-
-%There are efficient ways to generate random values from a beta
-%distribution, and the random module knows about them.  The
-%following method returns a random variate from a {\tt Beta}
-%object:
-
-%\begin{verbatim}
-%    def Random(self):
-%        return random.betavariate(self.alpha, self.beta)
-%\end{verbatim}
-
-{\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
-
 
 \section{Belly button bacteria}
 
@@ -5897,10 +5874,10 @@ whose sample of 400 reads yielded 61 species with the following
 counts:
 
 \begin{verbatim}
-[92, 53, 47, 38, 15, 14, 12, 10, 8, 7, 7, 5, 5, 
+92, 53, 47, 38, 15, 14, 12, 10, 8, 7, 7, 5, 5, 
 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2,
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 \end{verbatim}
 
 There are a few dominant species that make up a substantial
@@ -5943,10 +5920,6 @@ Each subject has a string code, like ``B1242'', and a list of
 easy to these counts and species names.  You can see the details
 in \url{http://thinkbayes.com/species.py}.
 
-In addition, {\tt Subject.Process} creates a suite, specifically
-a suite of type {\tt Species5}, which represents the distribution
-of {\tt n} and the prevalences after processing the data.
-
 \begin{figure}
 % species.py
 \centerline{\includegraphics[height=2.5in]{figs/species-ndist-B1242.pdf}}
@@ -5954,26 +5927,9 @@ of {\tt n} and the prevalences after processing the data.
 \label{species-ndist}
 \end{figure}
 
-\begin{figure}
-% species.py
-\centerline{\includegraphics[height=2.5in]{figs/species-prev-B1242.pdf}}
-\caption{Distribution of prevalences for subject B1242.}
-\label{species-prev}
-\end{figure}
-
-\begin{figure}
-% species.py
-\centerline{\includegraphics[height=2.5in]{figs/species-rare-B1242.pdf}}
-\caption{Simulated rarefaction curves for subject B1242.}
-\label{species-rare}
-\end{figure}
-
-\begin{figure}
-% species.py
-\centerline{\includegraphics[height=2.5in]{figs/species-cond-B1242.pdf}}
-\caption{Distribution of prevalences for subject B1242.}
-\label{species-cond}
-\end{figure}
+In addition, {\tt Subject.Process} creates a suite, specifically
+a suite of type {\tt Species5}, which represents the distribution
+of {\tt n} and the prevalences after processing the data.
 
 It also provides {\tt PlotDistOfN}, which plots the posterior
 distribution of {\tt n}.  Figure~\ref{species-ndist} shows this
@@ -6006,6 +5962,13 @@ each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
 value of {\tt n}, we have a different posterior distribution
 of prevalence.  
 
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-prev-B1242.pdf}}
+\caption{Distribution of prevalences for subject B1242.}
+\label{species-prev}
+\end{figure}
+
 So the loop iterates through the possible values of {\tt n}
 and their probabilities.  For each value of {\tt n} it gets
 a Beta object representing the marginal distribution for the
@@ -6028,6 +5991,13 @@ species, the most likely estimate for its prevalence is 20\%,
 with 90\% credible interval between 17\% and 23\%.
 
 \section{Predictive distributions}
+
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-rare-B1242.pdf}}
+\caption{Simulated rarefaction curves for subject B1242.}
+\label{species-rare}
+\end{figure}
 
 I introduced the hidden species problem in the form of four related
 questions.  We have answered the first two by computing the posterior
@@ -6192,6 +6162,14 @@ would not all overlap.  By inspection we can estimate that after
 
 \section{Joint posterior}
 
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-cond-B1242.pdf}}
+\caption{Distributions of the number of new species conditioned on
+the number of additional samples.}
+\label{species-cond}
+\end{figure}
+
 To be more precise, we can use the simulations to estimate the
 joint distribution of \verb"num_new" and {\tt k}, and from that
 we can get the distribution of \verb"num_new" conditioned on any
@@ -6237,7 +6215,7 @@ can get the distribution of \verb"num_new" conditioned on {\tt k}:
 {\tt j} is the index of the conditional variables, and {\tt val}
 is the value the {\tt j}th variable has to have.
 You can think of this operation as taking vertical slices out
-of Figure~\ref{species.rare}.
+of Figure~\ref{species-rare}.
 
 {\tt Subject.MakeConditionals} takes a list of {\tt ks}
 and computes the conditional distribution of \verb"num_new"
@@ -6259,12 +6237,19 @@ for each {\tt k}.  The result is a list of Cdf objects.
         return cdfs
 \end{verbatim}
 
-Figure~\ref{species.cond} shows the results.  After 100 samples, the
+Figure~\ref{species-cond} shows the results.  After 100 samples, the
 median predicted number of new species is 2; the 90\% credible
 interval is 0 to 5.  After 800 samples, we expect to see 3 to 12 new
 species.
 
 \section{Coverage}
+
+\begin{figure}
+% species.py
+\centerline{\includegraphics[height=2.5in]{figs/species-frac-B1242.pdf}}
+\caption{Complementary CDF of coverage for a range of additional samples.}
+\label{species-frac}
+\end{figure}
 
 The last question we want to answer is, ``How many additional reads
 are needed to increase the fraction of observed species to a given
@@ -6291,13 +6276,48 @@ number of new species.
         return curve
 \end{verbatim}
 
+Next we loop through each curve and make a dictionary, {\tt d},
+that maps from the number of additional samples, {\tt k}, to
+a list of {\tt fracs}; that is, a list of values for the
+coverage achieved after {\tt k} samples.
 
 \begin{verbatim}
+    def MakeFracCdfs(self, curves):
+        d = {}
+        for curve in curves:
+            for k, frac in curve:
+                d.setdefault(k, []).append(frac)
+
+        cdfs = {}
+        for k, fracs in d.iteritems():
+            cdf = thinkbayes.MakeCdfFromList(fracs)
+            cdfs[k] = cdf
+
+        return cdfs
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+Then for each value of {\tt k} we make a Cdf of {\tt fracs};
+this Cdf represents the distribution of coverage after
+{\tt k} samples.
 
+Remember that the CDF tells you the probability of falling
+below a given threshold, so the {\em complementary} CDF tells
+you the probability of exceeding it.  Figure~\ref{species-frac}
+shows complementary CDFs for a range of values of {\tt k}.
+
+To read this figure, select the level of coverage you want
+to achieve along the $x$-axis.  As an example, choose 90\%.
+
+Now you can read up the chart to find the probability of
+achieving 90\% coverage after {\tt k} samples.  For example,
+with 300 samples, you have about a 60\% of getting 90\%
+coverage.  With 700 samples, you have a 90\% chance of
+getting 90\% coverage.
+
+With that, we have answered the four questions that
+make up the unseen species problem.  This has been a longer
+chapter than most, but I think there is a lot to it.  So if
+you made it this far, congratulations!
 
 
 
