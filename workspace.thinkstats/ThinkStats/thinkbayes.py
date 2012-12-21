@@ -360,26 +360,32 @@ class Pmf(_DictWrapper):
         cdf = MakeCdfFromPmf(self)
         return cdf.CredibleInterval(percentage)
 
-    def Log(self):
+    def Log(self, m=None):
         """Log transforms the probabilities.
         
         Removes values with probability 0.
 
         Normalizes so that the largest logprob is 0.
         """
-        m = self.MaxLike()
+        if m is None:
+            m = self.MaxLike()
+
         for x, p in self.d.iteritems():
             if p:
                 self.Set(x, math.log(p/m))
             else:
                 self.Remove(x)
 
-    def Exp(self):
+    def Exp(self, m=None):
         """Exponentiates the probabilities.
 
-        Normalizes so that the largest prob is 1.
+        m: how much to shift the ps before exponentiating
+
+        If m is None, normalizes so that the largest prob is 1.
         """
-        m = self.MaxLike()
+        if m is None:
+            m = self.MaxLike()
+
         for x, p in self.d.iteritems():
             self.Set(x, math.exp(p-m))
 
@@ -849,7 +855,7 @@ class Suite(Pmf):
         for hypo in hypos:
             self.Set(hypo, 1)
 
-        if hypos:
+        if len(hypos) > 0:
             self.Normalize()
 
     def Update(self, data):
