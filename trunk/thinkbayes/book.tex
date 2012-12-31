@@ -3139,21 +3139,6 @@ The code and data for this chapter are available from
 \label{fig.paintball}
 \end{figure}
 
-\begin{figure}
-% paintball.py
-\centerline{\includegraphics[height=2.5in]{figs/paintball1.pdf}}
-\caption{PMF of location given {\tt alpha} for several values of {\tt beta}.}
-\label{fig.paintball1}
-\end{figure}
-
-\begin{figure}
-% paintball.py
-\centerline{\includegraphics[height=2.5in]{figs/paintball2.pdf}}
-\caption{Posterior CDFs for {\tt alpha} and {\tt beta}, given the data.}
-\label{fig.paintball2}
-\end{figure}
-
-
 Paintball is a sport in which competing teams try to shoot each
 other with guns that fire paint-filled pellets that break on
 impact, leaving a colorfull mark on the target.  It is usually
@@ -3175,13 +3160,27 @@ Figure~\ref{fig.paintball} shows a diagram of the arena.  Using the
 lower-left corner of the room as the origin, I denote the unknown
 location of the shooter with coordinates $\alpha$ and $\beta$, or
 {\tt alpha} and {\tt beta}.  The location of a paint spatter is
-labeled {\tt x}.
+labeled {\tt x}.  The angle the opponent shoots at is
+$\theta$ or {\tt theta}.  
 
-At least initially, let's assume that the opponent is equally
-likely to shoot at any angle, $\theta$ or {\tt theta}.  If
-that's the case, he is most likely to hit the wall at location
-{\tt alpha}, and less likely to hit the wall far away from
-{\tt alpha}.
+The paintball problem in this chapter is a slightly modified version
+of the lighthouse problem, a common example of Bayesian analysis.  My
+notation follows the presentation of the problem in Sivia, {\it Data
+  Analysis: a Bayesian Tutorial, Second Edition}.
+
+\section{Trigonometry}
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball1.pdf}}
+\caption{PMF of location given {\tt alpha} for several values of {\tt beta}.}
+\label{fig.paintball1}
+\end{figure}
+
+At least initially, let's assume that the opponent is equally likely
+to shoot at any angle.  If that's the case, he is most likely to hit
+the wall at location {\tt alpha}, and less likely to hit the wall far
+away from {\tt alpha}.
 
 With a little trigonometry, we can compute the probability of hitting
 any spot along the wall.  Imagine that the shooter fires a shot at
@@ -3243,13 +3242,20 @@ For each location, the probability is inversely related
 to the strafing speed.  The result is a Pmf of locations
 and their probabilities.
 
-Figure~\ref{fig.paintball2} shows the Pmf of location with
+Figure~\ref{fig.paintball1} shows the Pmf of location with
 {\tt alpha = 10} and a range of values for {\tt beta}.  As
 expected, the most likely impact location is {\tt x = 10},
 and as {\tt beta} increases, so does the spread of the Pmf.
 
 
 \section{The suite}
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball2.pdf}}
+\caption{Posterior CDFs for {\tt alpha} and {\tt beta}, given the data.}
+\label{fig.paintball2}
+\end{figure}
 
 Next we define a suite of hypotheses for the coordinates of the
 shooter.  Each value in the suite is a pair of coordinates:
