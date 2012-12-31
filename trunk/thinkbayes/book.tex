@@ -3128,6 +3128,212 @@ The code and data for this chapter are available from
 \url{http://thinkbayes.com/hockey_data.csv}.
 
 
+\chapter{Two dimensions}
+
+\section{Paintball}
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball.pdf}}
+\caption{Diagram of the layout for the paintball problem.}
+\label{fig.paintball}
+\end{figure}
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball1.pdf}}
+\caption{PMF of location given {\tt alpha} for several values of {\tt beta}.}
+\label{fig.paintball1}
+\end{figure}
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball2.pdf}}
+\caption{Posterior CDFs for {\tt alpha} and {\tt beta}, given the data.}
+\label{fig.paintball2}
+\end{figure}
+
+
+Paintball is a sport in which competing teams try to shoot each
+other with guns that fire paint-filled pellets that break on
+impact, leaving a colorfull mark on the target.  It is usually
+played in a demarcated area that is decorated
+with barriers and other objects that can be used as cover.
+
+Suppose you are playing paintball indoors in a room that
+is 30 feet wide and 60 feet long.
+You are standing near one of the 30 foot walls, and you
+suspect that one of your opponents has taken cover nearby.
+Along the wall, you see several paint spatters, all the same
+color, that you think your opponent fired recently.
+
+The spatters are at 15, 16, 18 and 21 feet, measured from the
+lower-left corner of the room.  Based on these data, where do you
+think your opponent is hiding?
+
+Figure~\ref{fig.paintball} shows a diagram of the arena.  Using the
+lower-left corner of the room as the origin, I denote the unknown
+location of the shooter with coordinates $\alpha$ and $\beta$, or
+{\tt alpha} and {\tt beta}.  The location of a paint spatter is
+labeled {\tt x}.
+
+At least initially, let's assume that the opponent is equally
+likely to shoot at any angle, $\theta$ or {\tt theta}.  If
+that's the case, he is most likely to hit the wall at location
+{\tt alpha}, and less likely to hit the wall far away from
+{\tt alpha}.
+
+With a little trigonometry, we can compute the probability of hitting
+any spot along the wall.  Imagine that the shooter fires a shot at
+angle $\theta$ then turns slightly and fires again at angle $\theta +
+\Delta\theta$.
+
+The first pellet would hit the wall at location $x$, where
+
+\[ x - \alpha = \beta \tan \theta \]
+
+The second pellet would hit the wall at location $x'$, where
+
+\[ x' = x + \frac{dx}{d\theta} \Delta\theta \]
+
+The derivative $dx/d\theta$ is what I'll call the
+``strafing speed'', which is the speed of the target location
+along the wall as $\theta$ increases.  The probability of hitting
+a given point on the wall is inversely related to strafing
+speed.
+
+Taking the derivative of the first equation yields
+
+\[ \frac{dx}{d\theta} = \beta / \cos^2 \theta \]
+
+And solving the same equation for $\theta$ yields
+
+\[ \theta = tan^{-1} \left[ \frac{x - \alpha}{\beta} \right] \]
+
+So if we know the coordinates of the shooter and a location 
+along the wall, we can compute strafing speed:
+
+\begin{verbatim}
+def StrafingSpeed(alpha, beta, x):
+    theta = math.atan2(x - alpha, beta)
+    speed = beta / math.cos(theta)**2
+    return speed
+\end{verbatim}
+
+{\tt alpha} and {\tt beta} are the coordinates of the shooter;
+{\tt x} is the location of a paint spatter.  The result is
+the derivative of {\tt x} with respect to {\tt theta}.
+
+Now we can compute the probability of hitting any spot along
+the wall.  {\tt MakeLocationPmf} takes the coordinates of
+the shooter, {\tt alpha} and {\tt beta}, and a list of possible
+values of {\tt x}, locations.
+
+\begin{verbatim}
+def MakeLocationPmf(alpha, beta, locations):
+    pmf = thinkbayes.Pmf()
+    for x in locations:
+        prob = 1.0 / StrafingSpeed(alpha, beta, x)
+        pmf.Set(x, prob)
+    pmf.Normalize()
+    return pmf
+\end{verbatim}
+
+For each location, the probability is inversely related
+to the strafing speed.  The result is a Pmf of locations
+and their probabilities.
+
+Figure~\ref{fig.paintball2} shows the Pmf of location with
+{\tt alpha = 10} and a range of values for {\tt beta}.  As
+expected, the most likely impact location is {\tt x = 10},
+and as {\tt beta} increases, so does the spread of the Pmf.
+
+
+\section{The suite}
+
+Next we define a suite of hypotheses for the coordinates of the
+shooter.  Each value in the suite is a pair of coordinates:
+{\tt (alpha, beta)}.
+
+Here is the function that initializes the suite:
+
+\begin{verbatim}
+class Paintball(thinkbayes.Suite, thinkbayes.Joint):
+
+    def __init__(self, alphas, betas, locations):
+        self.locations = locations
+        pairs = [(alpha, beta) 
+                 for alpha in alphas 
+                 for beta in betas]
+        thinkbayes.Suite.__init__(self, pairs)
+\end{verbatim}
+
+{\tt Paintball} inherits from {\tt Suite}, which we
+have seen before, and {\tt Joint}, which I explain in the
+next section.
+
+{\tt alphas} is the list of possible values for {\tt alpha};
+{\tt betas} is the list of values for {\tt beta}.  {\tt pairs}
+is a list of all {\tt (alpha, beta)} pairs. 
+
+{\tt locations} is a list of possible impact locations along
+the wall; it is stored for use in {\tt Likelihood}.
+
+The room is 30 feet wide and 60 feet long, so
+here's the code that creates the suite:
+
+\begin{verbatim}
+    alphas = range(0, 31)
+    betas = range(1, 61)
+    locations = range(0, 31)
+
+    suite = Paintball(alphas, betas, locations)
+\end{verbatim}
+
+The prior distribution we are using
+assumes that all locations in the room are
+equally likely.  Given a map of the room, we might choose a
+more detailed prior, but we'll start simple.
+
+
+\section{Likelihood}
+
+All we need now is a likelihood function:
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        alpha, beta = hypo
+        x = data
+        pmf = MakeLocationPmf(alpha, beta, self.locations)
+        like = pmf.Prob(x)
+        return like
+\end{verbatim}
+
+{\tt hypo} contains the hypothetical coordinates of the
+shooter.  {\tt data} contains an impact location along the
+wall.
+
+{\tt pmf} contains the probability of each location, given
+the coordinates of the shooter.  The result is the likelihood
+of the particular location that was observed.
+
+And we're done.  To update the suite, we can use {\tt UpdateSet},
+which we inherit from {\tt Suite}.
+
+\begin{verbatim}
+suite.UpdateSet([15, 16, 18, 21])
+\end{verbatim}
+
+The result is a distribution that maps each {\tt (alpha, beta)} pair
+to a posterior probability.  Since each value in the posterior
+distribution is a pair of variables, this distribution is called a
+``joint distribution'' of the two variables.
+
+
+\section{Joint distributions}
+
+
+
 \chapter{Approximate Bayesian Computation}
 
 \section{The Variability Hypothesis}

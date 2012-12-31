@@ -22,6 +22,20 @@ from math import log
 formats = ['pdf', 'eps', 'png']
 
 
+def StrafingSpeed(alpha, beta, x):
+    """Computes strafing speed, given location of shooter and impact.
+
+    alpha: x location of shooter
+    beta: y location of shooter
+    x: location of impact
+
+    Returns: derivative of x with respect to theta
+    """
+    theta = math.atan2(x - alpha, beta)
+    speed = beta / math.cos(theta)**2
+    return speed
+
+
 def MakeLocationPmf(alpha, beta, locations):
     """Computes the Pmf of the locations, given alpha and beta. 
 
@@ -37,9 +51,8 @@ def MakeLocationPmf(alpha, beta, locations):
     """
     pmf = thinkbayes.Pmf()
     for x in locations:
-        theta = math.atan2(x - alpha, beta)
-        strafe = beta / math.cos(theta)**2
-        pmf.Set(x, 1.0/strafe)
+        prob = 1.0 / StrafingSpeed(alpha, beta, x)
+        pmf.Set(x, prob)
     pmf.Normalize()
     return pmf
 
@@ -91,13 +104,11 @@ def MakePmfPlot(alpha = 10):
 
     myplot.Save('paintball1',
                 xlabel='Distance',
-                ylabel='Prob')
+                ylabel='Prob',
+                formats=formats)
 
 
-def main(script):
-    MakePmfPlot()
-    return
-
+def MakePosteriorPlot():
     alphas = range(0, 31)
     betas = range(1, 61)
     locations = range(0, 31)
@@ -124,7 +135,13 @@ def main(script):
     myplot.Save('paintball2',
                 xlabel='Distance',
                 ylabel='Prob',
-                loc=4)
+                loc=4,
+                formats=formats)
+
+
+def main(script):
+    MakePmfPlot()
+    MakePosteriorPlot()
 
 
 if __name__ == '__main__':
