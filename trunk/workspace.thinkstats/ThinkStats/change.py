@@ -161,7 +161,7 @@ class Split2(Split):
         likes1 = self.HalfLike(ns, s1s)
         likes2 = self.HalfLike(ms, s2s)
         
-        likes = ShiftExp(numpy.log(likes1) + numpy.log(likes2))
+        scale, likes = ShiftExp(numpy.log(likes1) + numpy.log(likes2))
         #likes = likes1 * likes2
 
         for hypo, like in zip(self.Values(), likes):
@@ -178,14 +178,78 @@ class Split2(Split):
         """
         loglams = numpy.log(self.lams)
         logarray = numpy.outer(ns, loglams) - numpy.outer(ss, self.lams)
-        array = ShiftExp(logarray)
+        scale, array = ShiftExp(logarray)
         likes = array.sum(axis=1)
         return likes
 
 
+def OuterSum(a, b):
+    """Computes the outer sum of two vectors.
+
+    a, b: numpy vectors
+
+    Returns: matrix with the height of a, width of b.
+    """
+    return a[:, numpy.newaxis] + b
+
+
+class Split3(Split):
+    """Suite of hypotheses about the location of a changepoint."""
+
+    def Update(self, data):
+        """Updates the suite based on the data.
+
+        data: Series object
+        """
+        series = data
+        splits = [series.Split(n) for n in self.Values()]
+        ns, s1s, ms, s2s = zip(*splits)
+
+        logs1 = self.HalfLike(ns, s1s)
+        logs2 = self.HalfLike(ms, s2s)
+
+        num = len(ns)
+        scales = numpy.zeros(num)
+        likes = numpy.zeros(num)
+        
+        for i in range(num):
+            terms = OuterSum(logs1[i], logs2[i])
+            scales[i], array = ShiftExp(terms)
+            likes[i] = array.sum()
+
+        _, scales = ShiftExp(scales)
+        likes /= scales
+
+        for hypo, like in zip(self.Values(), likes):
+            self.Mult(hypo, like)
+
+        return self.Normalize()
+
+    def HalfLike(self, ns, ss):
+        """Computes a vector of likelihoods for half of a split.
+
+        ns: vector of number of elements
+        ss: vector of sums of elements
+
+        Returns: numpy vector of likelihoods, one for each value of n
+        """
+        loglams = numpy.log(self.lams)
+        logarray = numpy.outer(ns, loglams) - numpy.outer(ss, self.lams)
+        return logarray
+
+
 def ShiftExp(array):
-    array -= array.max()
-    return numpy.exp(array)
+    """Scales an array of logs and then exponentiates.
+
+    Returns the log of the scale factor.
+
+    array: numpy matrix
+
+    Returns: scale, result matrix
+    """
+    scale = -array.max()
+    array += scale
+    return scale, numpy.exp(array)
 
 
 def MakeSeries(n, lam1, m, lam2):
@@ -200,17 +264,20 @@ def main(script, *args):
     #random.seed(22)
 
     lam1 = 1
-    lam2 = 2
-    n, m = 30, 60
-    t = MakeSeries(n, lam1, m, lam2)
+    lam2 = 1.5
+    
+    n = 300
+    t = MakeSeries(n, lam1, n, lam2)
     series = Series(t)
 
     low, high = 0.01, 5.01
 
-    for cons in [Split, Split2]:
+    for cons in [Split2, Split3]:
+        print cons.__name__
         split = cons(series.n, low, high)
         split.Update(series)
         cdf = thinkbayes.MakeCdfFromPmf(split)
+        cdf.name = cons.__name__
         myplot.Cdf(cdf)
 
     myplot.Show()
