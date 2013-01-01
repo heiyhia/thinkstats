@@ -108,13 +108,7 @@ def MakePmfPlot(alpha = 10):
                 formats=formats)
 
 
-def MakePosteriorPlot():
-    alphas = range(0, 31)
-    betas = range(1, 61)
-    locations = range(0, 31)
-
-    suite = Paintball(alphas, betas, locations)
-    suite.UpdateSet([15, 16, 18, 21])
+def MakePosteriorPlot(suite):
 
     marginal_alpha = suite.Marginal(0)
     marginal_alpha.name = 'alpha'
@@ -139,10 +133,73 @@ def MakePosteriorPlot():
                 formats=formats)
 
 
-def main(script):
-    MakePmfPlot()
-    MakePosteriorPlot()
+def MakeConditionalPlot(suite):
 
+    betas = [10, 20, 40]
+    myplot.PrePlot(num=len(betas))
+
+    for beta in betas:
+        cond = suite.Conditional(0, 1, beta)
+        cond.name = 'beta = %d' % beta
+        myplot.Pmf(cond)
+
+    myplot.Save('paintball3',
+                xlabel='Distance',
+                ylabel='Prob',
+                formats=formats)
+
+
+def MakeContourPlot(suite):
+
+    myplot.Contour(suite.GetDict(), contour=False, pcolor=True)
+
+    myplot.Save('paintball4',
+                xlabel='alpha',
+                ylabel='beta',
+                axis=[0, 30, 0, 20],
+                formats=formats)
+
+
+def MakeCrediblePlot(suite):
+    """Makes a plot showing several two-dimensional credible intervals.
+
+    suite: Suite
+    """
+    d = dict((pair, 0) for pair in suite.Values())
+
+    percentages = [75, 50, 25]
+    for p in percentages:
+        interval = suite.MaxLikeInterval(p)
+        for pair in interval:
+            d[pair] += 1
+
+    myplot.Contour(d, contour=False, pcolor=True)
+
+    myplot.Save('paintball5',
+                xlabel='alpha',
+                ylabel='beta',
+                formats=formats)
+
+
+def main(script):
+
+    alphas = range(0, 31)
+    betas = range(1, 61)
+    locations = range(0, 31)
+
+    suite = Paintball(alphas, betas, locations)
+    suite.UpdateSet([15, 16, 18, 21])
+
+    MakeCrediblePlot(suite)
+    return
+
+    MakeContourPlot(suite)
+
+    MakePosteriorPlot(suite)
+
+    MakeConditionalPlot(suite)
+
+    MakePmfPlot()
 
 if __name__ == '__main__':
     main(*sys.argv)

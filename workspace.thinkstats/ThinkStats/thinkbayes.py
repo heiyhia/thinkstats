@@ -463,6 +463,31 @@ class Joint(Pmf):
         pmf.Normalize()
         return pmf
 
+    def MaxLikeInterval(self, percentage=90):
+        """Returns the maximum-likelihood credible interval.
+
+        If percentage=90, computes a 90% CI containing the values
+        with the highest likelihoods.
+
+        percentage: float between 0 and 100
+
+        Returns: list of values from the suite
+        """
+        interval = []
+        total = 0
+
+        t = [(prob, pair) for pair, prob in self.Items()]
+        t.sort(reverse=True)
+
+        for prob, pair in t:
+            interval.append(pair)
+            total += prob
+            if total > percentage/100.0:
+                break
+
+        return interval
+
+
         
 def MakeHistFromList(t, name=''):
     """Makes a histogram from an unsorted sequence of values.
