@@ -3139,17 +3139,16 @@ The code and data for this chapter are available from
 \label{fig.paintball}
 \end{figure}
 
-Paintball is a sport in which competing teams try to shoot each
-other with guns that fire paint-filled pellets that break on
-impact, leaving a colorfull mark on the target.  It is usually
-played in a demarcated area that is decorated
-with barriers and other objects that can be used as cover.
+Paintball is a sport in which competing teams try to shoot each other
+with guns that fire paint-filled pellets that break on impact, leaving
+a colorfull mark on the target.  It is usually played in a demarcated
+area that is decorated with barriers and other objects that can be
+used as cover.
 
-Suppose you are playing paintball indoors in a room that
-is 30 feet wide and 60 feet long.
-You are standing near one of the 30 foot walls, and you
-suspect that one of your opponents has taken cover nearby.
-Along the wall, you see several paint spatters, all the same
+Suppose you are playing paintball in an indoor arena 30 feet
+wide and 60 feet long.  You are standing near one of the 30 foot
+walls, and you suspect that one of your opponents has taken cover
+nearby.  Along the wall, you see several paint spatters, all the same
 color, that you think your opponent fired recently.
 
 The spatters are at 15, 16, 18 and 21 feet, measured from the
@@ -3158,10 +3157,9 @@ think your opponent is hiding?
 
 Figure~\ref{fig.paintball} shows a diagram of the arena.  Using the
 lower-left corner of the room as the origin, I denote the unknown
-location of the shooter with coordinates $\alpha$ and $\beta$, or
-{\tt alpha} and {\tt beta}.  The location of a paint spatter is
-labeled {\tt x}.  The angle the opponent shoots at is
-$\theta$ or {\tt theta}.  
+location of the shooter with coordinates $\alpha$ and $\beta$, or {\tt
+  alpha} and {\tt beta}.  The location of a paint spatter is labeled
+{\tt x}.  The angle the opponent shoots at is $\theta$ or {\tt theta}.
 
 The paintball problem in this chapter is a slightly modified version
 of the lighthouse problem, a common example of Bayesian analysis.  My
@@ -3195,11 +3193,10 @@ The second pellet would hit the wall at location $x'$, where
 
 \[ x' = x + \frac{dx}{d\theta} \Delta\theta \]
 
-The derivative $dx/d\theta$ is what I'll call the
-``strafing speed'', which is the speed of the target location
-along the wall as $\theta$ increases.  The probability of hitting
-a given point on the wall is inversely related to strafing
-speed.
+The derivative $dx/d\theta$ is what I'll call the ``strafing speed'',
+which is the speed of the target location along the wall as $\theta$
+increases.  The probability of hitting a given point on the wall is
+inversely related to strafing speed.
 
 Taking the derivative of the first equation yields
 
@@ -3226,7 +3223,7 @@ the derivative of {\tt x} with respect to {\tt theta}.
 Now we can compute the probability of hitting any spot along
 the wall.  {\tt MakeLocationPmf} takes the coordinates of
 the shooter, {\tt alpha} and {\tt beta}, and a list of possible
-values of {\tt x}, locations.
+values of {\tt x}, {\tt locations}.
 
 \begin{verbatim}
 def MakeLocationPmf(alpha, beta, locations):
@@ -3238,9 +3235,9 @@ def MakeLocationPmf(alpha, beta, locations):
     return pmf
 \end{verbatim}
 
-For each location, the probability is inversely related
-to the strafing speed.  The result is a Pmf of locations
-and their probabilities.
+For each location, the probability is inversely related to
+strafing speed.  The result is a Pmf of locations and their
+probabilities.
 
 Figure~\ref{fig.paintball1} shows the Pmf of location with
 {\tt alpha = 10} and a range of values for {\tt beta}.  As
@@ -3258,8 +3255,8 @@ and as {\tt beta} increases, so does the spread of the Pmf.
 \end{figure}
 
 Next we define a suite of hypotheses for the coordinates of the
-shooter.  Each value in the suite is a pair of coordinates:
-{\tt (alpha, beta)}.
+shooter.  Each value in the suite is a pair of coordinates: {\tt
+  (alpha, beta)}.
 
 Here is the function that initializes the suite:
 
@@ -3274,19 +3271,18 @@ class Paintball(thinkbayes.Suite, thinkbayes.Joint):
         thinkbayes.Suite.__init__(self, pairs)
 \end{verbatim}
 
-{\tt Paintball} inherits from {\tt Suite}, which we
-have seen before, and {\tt Joint}, which I explain in the
-next section.
+{\tt Paintball} inherits from {\tt Suite}, which we have seen before,
+and {\tt Joint}, which I will explain soon.
 
-{\tt alphas} is the list of possible values for {\tt alpha};
-{\tt betas} is the list of values for {\tt beta}.  {\tt pairs}
-is a list of all {\tt (alpha, beta)} pairs. 
+{\tt alphas} is the list of possible values for {\tt alpha}; {\tt
+  betas} is the list of values for {\tt beta}.  {\tt pairs} is a list
+of all {\tt (alpha, beta)} pairs.
 
 {\tt locations} is a list of possible impact locations along
 the wall; it is stored for use in {\tt Likelihood}.
 
-The room is 30 feet wide and 60 feet long, so
-here's the code that creates the suite:
+The room is 30 feet wide and 60 feet long, so here's the code that
+creates the suite:
 
 \begin{verbatim}
     alphas = range(0, 31)
@@ -3296,10 +3292,9 @@ here's the code that creates the suite:
     suite = Paintball(alphas, betas, locations)
 \end{verbatim}
 
-The prior distribution we are using
-assumes that all locations in the room are
-equally likely.  Given a map of the room, we might choose a
-more detailed prior, but we'll start simple.
+This prior distribution assumes that all locations in the room are
+equally likely.  Given a map of the room, we might choose a more
+detailed prior, but we'll start simple.
 
 
 \section{Likelihood}
@@ -3315,16 +3310,15 @@ All we need now is a likelihood function:
         return like
 \end{verbatim}
 
-{\tt hypo} contains the hypothetical coordinates of the
-shooter.  {\tt data} contains an impact location along the
-wall.
+{\tt hypo} contains the hypothetical coordinates of the shooter.
+{\tt data} contains an impact location along the wall.
 
-{\tt pmf} contains the probability of each location, given
-the coordinates of the shooter.  The result is the likelihood
+{\tt pmf} contains the probability of each location, given the
+coordinates of the shooter.  From this Pmf, we select the probability
 of the particular location that was observed.
 
 And we're done.  To update the suite, we can use {\tt UpdateSet},
-which we inherit from {\tt Suite}.
+which is inherited from {\tt Suite}.
 
 \begin{verbatim}
 suite.UpdateSet([15, 16, 18, 21])
@@ -3338,7 +3332,148 @@ distribution is a pair of variables, this distribution is called a
 
 \section{Joint distributions}
 
+Given the joint distribution, we can compute the distributions
+of each variable independently, which are called the ``marginal
+distributions.''
 
+{\tt thinkbayes.Joint} provides a method that computes marginal
+distributions:
+
+\begin{verbatim}
+# class Joint:
+
+    def Marginal(self, i):
+        pmf = Pmf()
+        for vs, prob in self.Items():
+            pmf.Incr(vs[i], prob)
+        return pmf
+\end{verbatim}
+
+{\tt i} is the index of the variable we want; in this example
+{\tt i=0} indicates the distribution of {\tt alpha}, and
+{\tt i=1} indicates the distribution of {\tt beta}.
+
+Here's the code that extracts the marginal distributions:
+
+\begin{verbatim}
+    marginal_alpha = suite.Marginal(0)
+    marginal_beta = suite.Marginal(1)
+\end{verbatim}
+
+Figure~\ref{fig.paintball2} shows the results (converted to CDFs).
+The median value for {\tt alpha} is 18, near the center of mass of
+the observed spatters.  For {\tt beta}, the most likely values are
+close to the wall, but beyond 10 feet the distribution is almost
+uniform, which indicates that the data do not distinguish strongly
+between these possible locations.
+
+Given the posterior marginals, we can compute credible intervals
+for each coordinate independently:
+
+\begin{verbatim}
+    print 'alpha CI', marginal_alpha.CredibleInterval(50)
+    print 'beta CI', marginal_beta.CredibleInterval(50)
+\end{verbatim}
+
+The 50\% credible intervals are {\tt (14, 21)} for {\tt alpha} and
+{\tt (6, 38)} for {\tt beta}.  So the data provide evidence that the
+shooter is in the near side of the room.  But it is not strong
+evidence.  The 90\% credible interval covers most of the room!
+
+
+\section{Conditional distributions}
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball3.pdf}}
+\caption{Distributions for {\tt alpha} conditioned on several values
+of {\tt beta}.}
+\label{fig.paintball3}
+\end{figure}
+
+The marginal distributions contain information about the variables
+independently, but they do not capture the dependence between
+variables, if any.
+
+One way to visualize dependence is by computing conditional
+distributions.  {\tt thinkbayes.Joint} provides a method that
+does just that:
+
+\begin{verbatim}
+    def Conditional(self, i, j, val):
+        pmf = Pmf()
+        for vs, prob in self.Items():
+            if vs[j] != val: continue
+            pmf.Incr(vs[i], prob)
+
+        pmf.Normalize()
+        return pmf
+\end{verbatim}
+
+Again, {\tt i} is the index of the variable we want; {\tt j}
+is the index of the conditioning variable, and {\tt val} is the
+conditional value.
+
+The result is the distribution of the $i$th variable under the
+condition that the $j$th variable is {\tt val}.
+
+For example, the following code computes the conditional distributions
+of {\tt alpha} for a range of values of {\tt beta}:
+
+\begin{verbatim}
+    betas = [10, 20, 40]
+
+    for beta in betas:
+        cond = suite.Conditional(0, 1, beta)
+        myplot.Pmf(cond)
+\end{verbatim}
+
+Figure~\ref{fig.paintball3} shows the results, which we could
+fully describe as ``posterior conditional marginal distributions!''
+
+The shapes of these distributions are different, which indicates
+that the variables are not independent.  If we know somehow that
+{\tt beta = 10}, then we can be fairly confident about {\tt alpha}.
+But as {\tt beta} increases, so does the spread in {\tt alpha}.
+If {\tt beta = 40}, we have almost no information about {\tt alpha}.
+
+
+\section{Credible intervals}
+
+Another way to visualize the posterior joint distribution is to
+compute credible intervals.  Last time we looked at credible intervals,
+I skipped over an important point: for a given distribution, there
+are many intervals with the same level of credibility.  For example,
+if you want a 50\% credible interval, you could choose any set of
+values whose probability adds up to 50\%.
+
+When the values are one-dimensional, it is most common to choose
+the ``central credible interval;'' for example, the central 50\%
+credible interval contains all values between the 25th and 75th
+percentiles.
+
+In multiple dimensions it is less obvious what the right credible
+interval should be.  The best choice might depend on context.  But
+one common choice is the maximum likelihood credible interval, which
+contains the most likely values that add up to 50\% (or some other
+percentage).
+
+{\tt thinkbayes.Joint} provides a method that computes maximum
+likelihood credible intervals. 
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
+
+
+mixin
 
 \chapter{Approximate Bayesian Computation}
 
