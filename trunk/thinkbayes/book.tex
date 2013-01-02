@@ -3462,18 +3462,65 @@ percentage).
 likelihood credible intervals. 
 
 \begin{verbatim}
+# class Joint:
+
+    def MaxLikeInterval(self, percentage=90):
+        interval = []
+        total = 0
+
+        t = [(prob, val) for val, prob in self.Items()]
+        t.sort(reverse=True)
+
+        for prob, val in t:
+            interval.append(val)
+            total += prob
+            if total >= percentage/100.0:
+                break
+
+        return interval
 \end{verbatim}
+
+The first step is to make a list of the values in the suite,
+sorted in descending order by probability.  Next we traverse the
+list, adding each value to the interval, until the total
+probability exceeds {\tt percentage}.  The result is a list
+of values from the suite.
+
+To visualize these intervals, I wrote a function that ``colors''
+each value according to how many intervals it appears in:
+
+\begin{verbatim}
+def MakeCrediblePlot(suite):
+    d = dict((pair, 0) for pair in suite.Values())
+
+    percentages = [75, 50, 25]
+    for p in percentages:
+        interval = suite.MaxLikeInterval(p)
+        for pair in interval:
+            d[pair] += 1
+
+    myplot.Contour(d, contour=False, pcolor=True)
+    myplot.Show()
+\end{verbatim}
+
+{\tt d} is a dictionary that maps from each value in the suite
+to the number of intervals it appear in.  The loop computes intervals
+for several percentages and modifies {\tt d}.  Then I use functions
+from {\tt myplot} to generate a pseudocolor plot.
+
+Figure~\ref{fig.paintball5} shows the result.  The 25\% credible
+interval is the darkest region near the bottom wall.  For higher
+percentages, the credible interval is bigger, of course, and skewed
+toward the right side of the room.
+
+\section{Mixins}
 
 \begin{verbatim}
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
 
 
 
-
-mixin
 
 \chapter{Approximate Bayesian Computation}
 
@@ -6676,5 +6723,8 @@ Change point detection:
 
 Deconvolution: Estimating round trip times
 
+Bayesian search
+
+http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/
 
 \end{document}

@@ -476,13 +476,13 @@ class Joint(Pmf):
         interval = []
         total = 0
 
-        t = [(prob, pair) for pair, prob in self.Items()]
+        t = [(prob, val) for val, prob in self.Items()]
         t.sort(reverse=True)
 
-        for prob, pair in t:
-            interval.append(pair)
+        for prob, val in t:
+            interval.append(val)
             total += prob
-            if total > percentage/100.0:
+            if total >= percentage/100.0:
                 break
 
         return interval
