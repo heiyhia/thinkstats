@@ -1,11 +1,13 @@
 """This file contains code for use with "Think Bayes",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2012 Allen B. Downey
+Copyright 2013 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 """
+This is a modified version of liar.py
+
 This file contains a solution to a problem posed on reddit:
 
 http://www.reddit.com/r/statistics/comments/15rurz/
@@ -64,31 +66,45 @@ import thinkbayes
 import myplot
 
 
-class Liar(thinkbayes.Suite):
-    """Represents a suite of hypotheses about the bias of a coin."""
-
-    def __init__(self, y=0.0):
-        """Initializes the suite and sets y.
-
-        y: probability that a datum is in error
-        """
-        self.y = y
-        xs = range(0, 101)
-        thinkbayes.Suite.__init__(self, xs)
+class Redditor(thinkbayes.Suite):
+    """Represents hypotheses about the trustworthiness of a redditor."""
 
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
 
-        hypo: integer value of x, the probability of heads (0-100)
-        data: string 'H' or 'T'
+        hypo: integer value of x, the prob of a correct vote (0-100)
+        data: (vote, q) pair, where vote is 'up' or 'down' and
+              q is the mean quality of the link
         """
         x = hypo / 100.0
-        y = self.y
+        vote, q = data
 
-        if data == 'H':
-            return x * (1-y) + (1-x) * y
+        if vote == 'up':
+            return x * q + (1-x) * (1-q)
+        elif vote == 'down':
+            return x * (1-q) + (1-x) * q
         else:
-            return (1-x) * (1-y) + x * y
+            return 0
+
+class Item(thinkbayes.Suite):
+    """Represents hypotheses about the trustworthiness of a redditor."""
+
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of the data under the hypothesis.
+
+        hypo: integer value of x, the prob of garnering an upvote
+        data: (vote, t) pair, where vote is 'up' or 'down' and
+              t is the mean trustworthiness of the redditor
+        """
+        x = hypo / 100.0
+        vote, t = data
+
+        if vote == 'up':
+            return x * t + (1-x) * (1-t)
+        elif vote == 'down':
+            return x * (1-t) + (1-x) * t
+        else:
+            return 0
 
 
 def Summarize(suite):
@@ -105,16 +121,31 @@ def Summarize(suite):
 
 
 def Main():
-    suite = Liar(y=0.1)
+    # make a redditor with some trustworthiness (mean_t = 0.67)
+    founder = Redditor(name='redditor')
+    beta = thinkbayes.Beta(2, 1)
+    for val, prob in beta.MakePmf().Items():
+        founder.Set(val*100, prob)
 
-    dataset = 'H'
+    # make a new item with unknown quality (mean_q = 0.5)
+    item = Item(range(0, 101), name='item')
 
-    for data in dataset:
-        suite.Update(data)
+    # compute the means
+    mean_t = founder.Mean() / 100.0
+    mean_q = item.Mean() / 100.0
 
-    Summarize(suite)
+    print mean_t
+    print mean_q
 
-    myplot.Pmf(suite)
+    # perform simultaneous updates
+    founder.Update(('up', mean_q))
+    item.Update(('up', mean_t))
+
+    Summarize(item)
+
+    # display the posterior distributions
+    myplot.Pmf(founder)
+    myplot.Pmf(item)
     myplot.Show()
 
 

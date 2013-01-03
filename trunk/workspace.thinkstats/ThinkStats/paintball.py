@@ -174,6 +174,9 @@ def MakeCrediblePlot(suite):
             d[pair] += 1
 
     myplot.Contour(d, contour=False, pcolor=True)
+    pyplot.text(17, 4, '25', color='white')
+    pyplot.text(17, 15, '50', color='white')
+    pyplot.text(17, 30, '75')
 
     myplot.Save('paintball5',
                 xlabel='alpha',
@@ -184,14 +187,13 @@ def MakeCrediblePlot(suite):
 def main(script):
 
     alphas = range(0, 31)
-    betas = range(1, 61)
+    betas = range(1, 51)
     locations = range(0, 31)
 
     suite = Paintball(alphas, betas, locations)
     suite.UpdateSet([15, 16, 18, 21])
 
     MakeCrediblePlot(suite)
-    return
 
     MakeContourPlot(suite)
 
@@ -200,6 +202,7 @@ def main(script):
     MakeConditionalPlot(suite)
 
     MakePmfPlot()
+
 
 if __name__ == '__main__':
     main(*sys.argv)
