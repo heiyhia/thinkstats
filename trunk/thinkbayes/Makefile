@@ -27,6 +27,10 @@ hevea:
 	rm -rf html
 	mkdir html
 	hevea -O -e latexonly htmlonly thinkbayes
+# the following greps are a kludge to prevent imagen from seeing
+# the definitions in latexonly, and to avoid headers on the images
+	grep -v latexonly thinkbayes.image.tex > a; mv a thinkbayes.image.tex
+	grep -v fancyhdr thinkbayes.image.tex > a; mv a thinkbayes.image.tex
 	imagen -png thinkbayes
 	hacha thinkbayes.html
 	cp up.png next.png back.png html

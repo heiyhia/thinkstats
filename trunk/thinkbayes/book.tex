@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.15.0}
+\newcommand{\theversion}{0.16.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -62,6 +62,20 @@
 \newcommand{\PDF}{\mathrm{PDF}}
 \newcommand{\CDF}{\mathrm{CDF}}
 \newcommand{\ICDF}{\mathrm{ICDF}}
+
+\newtheoremstyle{exercise}% name of the style to be used
+  {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
+  {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
+  {}% name of font to use in the body of the theorem
+  {0pt}% measure of space to indent
+  {\bfseries}% name of head font
+  {}% punctuation between head and body
+  { }% space after theorem head; " " = normal interword space
+  {}% Manually specify head
+
+\theoremstyle{exercise}
+\newtheorem{exercise}{Exercise}[chapter]
+
 
 \ifplastex
     \usepackage{localdef}
@@ -2232,6 +2246,57 @@ same PDF are called ``conjugate distributions.''
 {\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
 
 
+\section{Exercises}
+
+\begin{exercise}
+
+Suppose that instead of observing coin tosses directly, you measure
+the outcome using an instrument that is not always correct.  Specifically,
+suppose there is a probability {\tt y} that an actual heads is reported
+as tails, or actual tails reported as heads.
+
+Write a class that estimates the bias of a coin given a series of
+outcomes and the value of {\tt y}
+
+How does the spread of the posterior distribution depend on
+{\tt y}?
+
+\end{exercise}
+
+
+\begin{exercise}
+
+This exercise is inspired by a question posted by a
+``redditor'' named dominosci on Reddit's statistics ``subreddit'' at
+\url{http://reddit.com/r/statistics}.
+
+Reddit is an online forum with many interest groups called
+subreddits.  Users, called redditors, post links to online
+content and other web pages.  Other redditors vote on the links,
+giving an ``upvote'' to high-quality links and a ``downvote'' to
+links that are bad or irrelevant.
+
+A problem, identified by dominosci, is that some redditors
+are more reliable than others, and Reddit does not currently take
+this into account.
+
+So the challenge is to devise a system so that when a redditor
+casts a vote, the estimated quality of the link is updated
+in accordance with the reliability of the redditor, and the
+estimated reliability of the redditor is updated in accordance
+with the quality of the link.
+
+One approach is to model the quality of the link as the
+probability of garnering an upvote, and to model the reliability
+of the redditor as the probability of correctly giving an upvote
+to a high-quality item.
+
+Write class definitions for redditors and links and an update function
+that updates both objects whenever a redditor casts a vote.
+
+\end{exercise}
+
+
 \chapter{Odds and addends}
 
 \section{Odds}
@@ -3146,7 +3211,7 @@ area that is decorated with barriers and other objects that can be
 used as cover.
 
 Suppose you are playing paintball in an indoor arena 30 feet
-wide and 60 feet long.  You are standing near one of the 30 foot
+wide and 50 feet long.  You are standing near one of the 30 foot
 walls, and you suspect that one of your opponents has taken cover
 nearby.  Along the wall, you see several paint spatters, all the same
 color, that you think your opponent fired recently.
@@ -3165,6 +3230,7 @@ The paintball problem in this chapter is a slightly modified version
 of the lighthouse problem, a common example of Bayesian analysis.  My
 notation follows the presentation of the problem in Sivia, {\it Data
   Analysis: a Bayesian Tutorial, Second Edition}.
+
 
 \section{Trigonometry}
 
@@ -3186,26 +3252,26 @@ angle $\theta$ then turns slightly and fires again at angle $\theta +
 \Delta\theta$.
 
 The first pellet would hit the wall at location $x$, where
-
+%
 \[ x - \alpha = \beta \tan \theta \]
-
+%
 The second pellet would hit the wall at location $x'$, where
-
+%
 \[ x' = x + \frac{dx}{d\theta} \Delta\theta \]
-
+%
 The derivative $dx/d\theta$ is what I'll call the ``strafing speed'',
 which is the speed of the target location along the wall as $\theta$
 increases.  The probability of hitting a given point on the wall is
 inversely related to strafing speed.
 
 Taking the derivative of the first equation yields
-
+%
 \[ \frac{dx}{d\theta} = \beta / \cos^2 \theta \]
-
+%
 And solving the same equation for $\theta$ yields
-
+%
 \[ \theta = tan^{-1} \left[ \frac{x - \alpha}{\beta} \right] \]
-
+%
 So if we know the coordinates of the shooter and a location 
 along the wall, we can compute strafing speed:
 
@@ -3281,12 +3347,12 @@ of all {\tt (alpha, beta)} pairs.
 {\tt locations} is a list of possible impact locations along
 the wall; it is stored for use in {\tt Likelihood}.
 
-The room is 30 feet wide and 60 feet long, so here's the code that
+The room is 30 feet wide and 50 feet long, so here's the code that
 creates the suite:
 
 \begin{verbatim}
     alphas = range(0, 31)
-    betas = range(1, 61)
+    betas = range(1, 51)
     locations = range(0, 31)
 
     suite = Paintball(alphas, betas, locations)
@@ -3376,7 +3442,7 @@ for each coordinate independently:
 \end{verbatim}
 
 The 50\% credible intervals are {\tt (14, 21)} for {\tt alpha} and
-{\tt (6, 38)} for {\tt beta}.  So the data provide evidence that the
+{\tt (5, 31)} for {\tt beta}.  So the data provide evidence that the
 shooter is in the near side of the room.  But it is not strong
 evidence.  The 90\% credible interval covers most of the room!
 
@@ -3439,6 +3505,13 @@ If {\tt beta = 40}, we have almost no information about {\tt alpha}.
 
 
 \section{Credible intervals}
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball5.pdf}}
+\caption{Credible intervals for the coordinates of the opponent.}
+\label{fig.paintball5}
+\end{figure}
 
 Another way to visualize the posterior joint distribution is to
 compute credible intervals.  Last time we looked at credible intervals,
@@ -3513,11 +3586,6 @@ interval is the darkest region near the bottom wall.  For higher
 percentages, the credible interval is bigger, of course, and skewed
 toward the right side of the room.
 
-\section{Mixins}
-
-\begin{verbatim}
-\end{verbatim}
-
 
 
 
@@ -3547,7 +3615,7 @@ From \url{http://en.wikipedia.org/wiki/Variability_hypothesis}.
 I particularly like that last part, because I suspect that if it turns
 out that women are actually more variable, Meckel would take that as a
 sign of inferiority, too.  Anyway, you will not be surprised to hear
-that evidence for the Variability Hypothesis is mixed at best.
+that evidence for the Variability Hypothesis is not strong.
 
 Nevertheless, it came up in my class recently when we looked at data
 from the CDC's Behavioral Risk Factor Surveillance System (BRFSS),
@@ -5547,7 +5615,7 @@ We can use these data to answer several related questions:
 
 \begin{itemize}
 
-\item Based on the number of species we have observed, can we estimate
+\item Based on the number of species observed, can we estimate
   the total number of species in the environment?
 
 \item Can we estimate the prevalence of each species; that is, the
@@ -5571,21 +5639,21 @@ there are exactly three species.  Let's call them lions, tigers and
 bears.  Suppose we visit a wild animal preserve and see 3 lions, 2
 tigers and one bear.
 
-If we have an equal chance of observing any animal
-in the preserve then the number of each species we see is governed
-by the multinomial distribution.  If the prevalence of lions and tigers
-and bears is \verb"p_lion" and \verb"p_tiger" and \verb"p_bear",
-the likelihood of seeing 3 lions, 2 tigers and one bear is
+If we have an equal chance of observing any animal in the preserve
+then the number of each species we see is governed by the multinomial
+distribution.  If the prevalence of lions and tigers and bears is
+\verb"p_lion" and \verb"p_tiger" and \verb"p_bear", the likelihood of
+seeing 3 lions, 2 tigers and one bear is
 
 \begin{verbatim}
 p_lion**3 * p_tiger**2 * p_bear**1
 \end{verbatim}
 
 An approach that is tempting, but not correct, is to use beta
-distributions to describe the prevalence of each species
-separately.  For example, we saw 3 lions and 3 non-lions; if
-we think of that as 3 ``heads'' and 3 ``tails,'' then
-the posterior distribution of \verb"p_lion" is:
+distributions, as in Section~\ref{beta}, to describe the prevalence of
+each species separately.  For example, we saw 3 lions and 3 non-lions;
+if we think of that as 3 ``heads'' and 3 ``tails,'' then the posterior
+distribution of \verb"p_lion" is:
 
 \begin{verbatim}
     beta = thinkbayes.Beta()
@@ -5594,30 +5662,31 @@ the posterior distribution of \verb"p_lion" is:
 \end{verbatim}
 
 The maximum likelihood estimate for \verb"p_lion" is the observed
-rate, 50\%.  Similarly the MLEs for  \verb"p_tiger" and \verb"p_bear"
+rate, 50\%.  Similarly the MLEs for \verb"p_tiger" and \verb"p_bear"
 are 33\% and 17\%.
 
 But there are two problems:
 
 \begin{itemize}
 
-\item We have implicitly used
-a prior for each species that is uniform from 0 to 1, but since
-we know that there are three species, that prior is not correct.
-The right prior should have a mean of 1/3, and there should be
-zero likelihood that any species has a prevalence of 100\%.
+\item We have implicitly used a prior for each species that is uniform
+  from 0 to 1, but since we know that there are three species, that
+  prior is not correct.  The right prior should have a mean of 1/3,
+  and there should be zero likelihood that any species has a
+  prevalence of 100\%.
 
-\item The distributions for each species are not independent,
-because the prevalences have to add up to 1.  To capture this
-dependence, we need a joint distribution for the three prevalences.
+\item The distributions for each species are not independent, because
+  the prevalences have to add up to 1.  To capture this dependence, we
+  need a joint distribution for the three prevalences.
 
 \end{itemize}
 
 We can use a Dirichlet distribution to solve both of these problems
 (see \url{http://en.wikipedia.org/wiki/Dirichlet_distribution}).  In
-the same way we use the beta distribution to describe the distribution
-of {\tt x}, we can use a Dirichlet distribution to describe the joint
-distribution of \verb"p_lion" and \verb"p_tiger" and \verb"p_bear".
+the same way we used the beta distribution to describe the
+distribution of bias for a coin, we can use a Dirichlet
+distribution to describe the joint distribution of \verb"p_lion",
+\verb"p_tiger" and \verb"p_bear".
 
 The Dirichlet distribution is the multi-dimensional generalization
 of the beta distribution.  Instead of two possible outcomes, like
@@ -5668,7 +5737,7 @@ this:
         print beta.Mean()
 \end{verbatim}
 
-As expected, the mean prior for each species is 1/3.
+As expected, the prior mean prevalence for each species is 1/3.
 
 To update the Dirichlet distribution, we add the number of
 observations to each parameter, like this:
@@ -5679,16 +5748,16 @@ observations to each parameter, like this:
         self.params[:m] += data
 \end{verbatim}
 
-Here {\tt data} is a sequence of counts in the same order
-as {\tt params}, so in this example, it
-should be the number of lions and tigers and bears.
+Here {\tt data} is a sequence of counts in the same order as {\tt
+  params}, so in this example, it should be the number of lions,
+tigers and bears.
 
-But the {\tt data} can be shorter than {\tt params}; in that
+But {\tt data} can be shorter than {\tt params}; in that
 case there are some hypothetical species that have not been
 observed.
 
-Here's code that updates the Dirichlet with the observed data, and
-plots the posterior marginal distributions.
+Here's code that updates {\tt dirichlet} with the observed data and
+computes the posterior marginal distributions.
 
 \begin{verbatim}
     data = [3, 2, 1]
@@ -5697,7 +5766,7 @@ plots the posterior marginal distributions.
     for i in range(3):
         beta = dirichlet.MarginalBeta(i)
         pmf = beta.MakePmf()
-        print pmf.MaximumLikelihood()
+        print i, pmf.Mean()
 \end{verbatim}
 
 \begin{figure}
@@ -6065,7 +6134,7 @@ Finally, before we return the likelihood, we have to apply a correction
 factor, which is the number of ways we could have observed these {\tt m}
 species, if the total number of species is {\tt n}.  The binomial
 coefficient is the fancy name for ``n choose m'', which is written
-$\choose{n}{m}$. 
+$\binom{n}{m}$. 
 
 As often happens, the optimized version is less readable and more
 error-prone than the original.  But that's one reason I think it is
@@ -6725,6 +6794,6 @@ Deconvolution: Estimating round trip times
 
 Bayesian search
 
-http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/
+\url{http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/}
 
 \end{document}
