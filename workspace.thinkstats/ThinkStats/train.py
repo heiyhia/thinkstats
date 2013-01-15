@@ -21,6 +21,7 @@ def main():
     suite.Update(60)
     print suite.Mean()
 
+    myplot.PrePlot(1)
     myplot.Pmf(suite)
     myplot.Save(root='train1',
                 xlabel='Number of trains',

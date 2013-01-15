@@ -954,6 +954,9 @@ def SimpleDirichletExample():
 
     This is the case where we know there are exactly three species.
     """
+    myplot.Clf()
+    myplot.PrePlot(3)
+
     names = ['lions',  'tigers', 'bears']
     data = [3, 2, 1]
 
@@ -999,6 +1002,9 @@ def HierarchicalExample():
 
 
 def ProcessSubjects(indices):
+    myplot.Clf()
+    myplot.PrePlot(len(indices))
+
     subjects = ReadData()
     pmfs = []
     for index in indices:
@@ -1055,11 +1061,12 @@ def SummarizeData():
 
 def main(script, *args):
     random.seed(17)
-    RunSubject(4)
+
+    SimpleDirichletExample()
+    HierarchicalExample()
     return
 
-    # HierarchicalExample()
-    SimpleDirichletExample()
+    RunSubject(4)
     return
 
     SummarizeData()

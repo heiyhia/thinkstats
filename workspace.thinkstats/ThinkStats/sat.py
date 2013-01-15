@@ -149,6 +149,7 @@ class Exam(object):
     def CalibrateDifficulty(self):
         """Make a plot showing the model distribution of raw scores."""
         myplot.Clf()
+        myplot.PrePlot(num=2)
 
         cdf = thinkbayes.MakeCdfFromPmf(self.raw, name='data')
         myplot.Cdf(cdf)
@@ -227,10 +228,12 @@ class Sat(thinkbayes.Suite):
 
         self, other: Sat objects.
         """
+        myplot.Clf()
+        myplot.PrePlot(num=2)
+
         cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
         cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
 
-        myplot.Clf()
         myplot.Cdfs([cdf1, cdf2])
         myplot.Save(xlabel='p_correct', 
                     ylabel='CDF', 
@@ -275,10 +278,12 @@ class Sat2(thinkbayes.Suite):
 
         self, other: Sat objects.
         """
+        myplot.Clf()
+        myplot.PrePlot(num=2)
+
         cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
         cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
 
-        myplot.Clf()
         myplot.Cdfs([cdf1, cdf2])
         myplot.Save(xlabel='efficacy', 
                     ylabel='CDF', 
@@ -299,12 +304,13 @@ def PlotJointDist(pmf1, pmf2, thresh=0.8):
         t = [pmf.Remove(val) for val in vals]
 
     myplot.Clf()
+    myplot.PrePlot(num=2)
     Clean(pmf1)
     Clean(pmf2)
     pmf = thinkbayes.JointPmf(pmf1, pmf2)
 
-    myplot.Contour(pmf.GetDict(), contour=False, imshow=True,
-                   aspect='equal', cmap=matplotlib.cm.Blues)
+    myplot.Contour(pmf.GetDict(), contour=False, pcolor=True,
+                   cmap=matplotlib.cm.Blues)
 
     myplot.Plot([thresh, 1.0], [thresh, 1.0],
                 color='gray', alpha=0.2, linewidth=4)
@@ -345,6 +351,8 @@ def PlotPriorDist(pmf):
     pmf: prior
     """
     myplot.Clf()
+    myplot.PrePlot(num=1)
+
     cdf1 = thinkbayes.MakeCdfFromPmf(pmf, 'prior')
     myplot.Cdf(cdf1)
     myplot.Save(root='sat_prior',

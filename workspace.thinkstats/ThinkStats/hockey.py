@@ -153,6 +153,7 @@ def main():
     suite2 = Hockey('canucks')
 
     myplot.Clf()
+    myplot.PrePlot(num=2)
     myplot.Pmf(suite1)
     myplot.Pmf(suite2)
     myplot.Save(root='hockey0',
@@ -164,6 +165,7 @@ def main():
     suite2.UpdateSet([1, 3, 1, 0])
 
     myplot.Clf()
+    myplot.PrePlot(num=2)
     myplot.Pmf(suite1)
     myplot.Pmf(suite2)
     myplot.Save(root='hockey1',
@@ -176,6 +178,7 @@ def main():
     goal_dist2 = MakeGoalPmf(suite2)
 
     myplot.Clf()
+    myplot.PrePlot(num=2)
     myplot.Pmf(goal_dist1)
     myplot.Pmf(goal_dist2)
     myplot.Save(root='hockey2',
@@ -190,6 +193,7 @@ def main():
     print 'MLE canucks', suite2.MaximumLikelihood()
    
     myplot.Clf()
+    myplot.PrePlot(num=2)
     myplot.Pmf(time_dist1)
     myplot.Pmf(time_dist2)    
     myplot.Save(root='hockey3',

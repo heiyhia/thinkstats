@@ -100,14 +100,15 @@ def Summarize(suite):
     print 'CI', thinkbayes.CredibleInterval(suite, 90)
 
 
-def Plot(suite1, suite2, root):
+def PlotSuites(suites, root):
     """Plots two suites.
 
     suite1, suite2: Suite objects
     root: string filename to write
     """
     myplot.Clf()
-    myplot.Pmfs([suite1, suite2])
+    myplot.PrePlot(len(suites))
+    myplot.Pmfs(suites)
 
     myplot.Save(root=root,
                 xlabel='x',
@@ -124,7 +125,7 @@ def Main():
     suite2.name = 'triangle'
 
     # plot the priors
-    Plot(suite1, suite2, 'euro2')
+    PlotSuites([suite1, suite2], 'euro2')
 
     # update
     RunUpdate(suite1)
@@ -134,7 +135,8 @@ def Main():
     Summarize(suite2)
 
     # plot the posteriors
-    Plot(suite1, suite2, 'euro3')
+    PlotSuites([suite1], 'euro1')
+    PlotSuites([suite1, suite2], 'euro3')
 
 
 if __name__ == '__main__':
