@@ -45,8 +45,9 @@ def main():
     three_exact.name = 'exact'
     three_exact.Print()
 
+    myplot.PrePlot(num=2)
     myplot.Pmf(three)
-    myplot.Pmf(three_exact)
+    myplot.Pmf(three_exact, linestyle='dashed')
     myplot.Save(root='dungeons1',
                 xlabel='Sum of three d6',
                 ylabel='Probability',
@@ -54,20 +55,26 @@ def main():
                formats=['pdf', 'eps'])
 
     myplot.Clf()
-
+    myplot.PrePlot(num=1)
+    
     # compute the distribution of the best attribute the hard way
     best_attr2 = PmfMax(three_exact, three_exact)
     best_attr4 = PmfMax(best_attr2, best_attr2)
     best_attr6 = PmfMax(best_attr4, best_attr2)
-    myplot.Pmf(best_attr6)
+    # myplot.Pmf(best_attr6)
 
     # and the easy way
     best_attr_cdf = three_exact.Max(6)
+    best_attr_cdf.name = ''
     best_attr_pmf = thinkbayes.MakePmfFromCdf(best_attr_cdf)
     best_attr_pmf.Print()
 
     myplot.Pmf(best_attr_pmf)
-    myplot.Show()
+    myplot.Save(root='dungeons2',
+                xlabel='Sum of three d6',
+                ylabel='Probability',
+                axis=[2, 19, 0, 0.23],
+                formats=['pdf', 'eps'])
     
 
 if __name__ == '__main__':

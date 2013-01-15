@@ -117,13 +117,20 @@ clean:
 
 BAYES_PY = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
 monty.py cookie2.py cookie.py train3.py dungeons.py hockey.py hockey_data.csv \
-sat.py euro*.py kidney.py species.py paintball.py
+sat.py euro*.py kidney.py species.py paintball.py myplot.py columns.py \
+thinkstats.py sat_ranks.csv sat_scale.csv correlation.py \
+journal.pone.0047712.s001.csv
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
-BAYES_FIGS = train1.* train2.* euro[123].pdf euro[123].eps dungeons1.* \
-hockey[123].pdf hockey[123].eps sat*.eps sat*.pdf kidney*.eps kidney*.pdf \
-species*.pdf species*.eps paintball*.pdf paintball*.eps
+BAYES_FIGS = train1.* train2.* \
+euro*.pdf euro*.eps \
+dungeons*.pdf dungeons*.pdf \
+hockey*.pdf hockey*.eps \
+sat*.eps sat*.pdf \
+kidney*.eps kidney*.pdf \
+species*.pdf species*.eps \
+paintball*.pdf paintball*.eps
 
 BAYES_TABLES = kidney_table*.tex
 

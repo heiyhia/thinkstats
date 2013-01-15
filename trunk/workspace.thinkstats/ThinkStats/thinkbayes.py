@@ -1250,6 +1250,11 @@ def EvalExponentialPdf(lam, x):
     return lam * math.exp(-lam * x)
 
 
+def EvalExponentialCdf(x, lam):
+    """Evaluates CDF of the exponential distribution with parameter lam."""
+    return 1 - math.exp(-lam * x)
+
+
 def MakeExponentialPmf(lam, high, n=200):
     """Makes a PMF discrete approx to an exponential distribution.
 

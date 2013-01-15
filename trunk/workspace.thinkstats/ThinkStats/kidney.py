@@ -10,9 +10,7 @@ import numpy
 import random
 import sys
 
-import continuous
 import correlation
-import erf
 import myplot
 import matplotlib.pyplot as pyplot
 import thinkbayes
@@ -110,8 +108,9 @@ def PlotCdf(cdf, fit):
     # CDF, model and data
 
     myplot.Clf()
+    myplot.PrePlot(num=2)
     mxs, mys = ModelCdf()
-    myplot.Plot(mxs, mys, 'b-', label='model') 
+    myplot.Plot(mxs, mys, label='model', linestyle='dashed') 
 
     myplot.Plot(xs, ps, 'gs', label='data')
     myplot.Save(root='kidney2',
@@ -261,10 +260,11 @@ def ModelCdf(pc=0.35, lam1=0.79, lam2=5.0):
 
     Returns: list of xs, list of ys
     """
+    cdf = thinkbayes.EvalExponentialCdf
     x1 = numpy.arange(-2, 0, 0.1)
-    y1 = [pc * (1 - continuous.ExpoCdf(-x, lam2)) for x in x1]
+    y1 = [pc * (1 - cdf(-x, lam2)) for x in x1]
     x2 = numpy.arange(0, 7, 0.1)
-    y2 = [pc + (1-pc) * continuous.ExpoCdf(x, lam1) for x in x2]
+    y2 = [pc + (1-pc) * cdf(x, lam1) for x in x2]
     return list(x1) + list(x2), y1+y2
 
 
@@ -568,6 +568,7 @@ def PlotConditionalCdfs():
         cdfs.append(cdf)
 
     myplot.Clf()
+    myplot.PrePlot(num=len(cdfs))
     myplot.Cdfs(cdfs)
     myplot.Save(root='kidney6',
                 title='Distribution of age for several diameters',
@@ -679,7 +680,7 @@ def PlotCredibleIntervals(xscale='linear'):
 
         # put a label at the end of each line
         x, y = fxs[-1], fys[-1]
-        pyplot.text(x*1.05, y, label, 
+        pyplot.Text(x*1.05, y, label, 
                     horizontalalignment='left',
                     verticalalignment='center')
 
