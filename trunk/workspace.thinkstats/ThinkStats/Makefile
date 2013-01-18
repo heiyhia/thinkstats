@@ -115,11 +115,11 @@ gss-table:
 clean:
 	rm gss.regress.*.db
 
-BAYES_PY = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
+BAYES_CODE = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
 monty.py cookie2.py cookie.py train3.py dungeons.py hockey.py hockey_data.csv \
 sat.py euro*.py kidney.py species.py paintball.py myplot.py columns.py \
 thinkstats.py sat_ranks.csv sat_scale.csv correlation.py \
-journal.pone.0047712.s001.csv
+journal.pone.0047712.s001.csv variability.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
@@ -130,14 +130,21 @@ hockey*.pdf hockey*.eps \
 sat*.eps sat*.pdf \
 kidney*.eps kidney*.pdf \
 species*.pdf species*.eps \
-paintball*.pdf paintball*.eps
+paintball*.pdf paintball*.eps \
+variability*.pdf variability*.eps 
+
 
 BAYES_TABLES = kidney_table*.tex
 
 bayes_code:
+	rm -rf thinkbayes_code
+	mkdir thinkbayes_code
+	cp $(BAYES_CODE) thinkbayes_code
+	zip -r thinkbayes_code.zip thinkbayes_code
+	rsync -a thinkbayes_code.zip $(BAYES_DEST)
 	pydoc -w thinkbayes
 	rsync -a thinkbayes.html $(BAYES_DEST)
-	rsync -a $(BAYES_PY) $(BAYES_DEST)
+	rsync -a $(BAYES_CODE) $(BAYES_DEST)
 	chmod -R o+r $(BAYES_DEST)/*
 	cd /home/downey/public_html/greent; sh back
 

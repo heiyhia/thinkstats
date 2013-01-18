@@ -95,8 +95,7 @@ def PrePlot(num=None):
     
 
 def Clf():
-    """Clears the figure and the hints about what's coming.
-    """
+    """Clears the figure and any hints that have been set."""
     global color_iter
     color_iter = None
 
@@ -127,7 +126,8 @@ def Pmf(pmf, **options):
       options: keyword args passed to pyplot.plot
     """
     xs, ps = pmf.Render()
-    options = Underride(options, label=pmf.name)
+    if pmf.name:
+        options = Underride(options, label=pmf.name)
     Plot(xs, ps, **options)
 
 
@@ -156,8 +156,10 @@ def Hist(hist, **options):
     xs, fs = hist.Render()
     width = min(Diff(xs))
 
+    if hist.name:
+        options = Underride(options, label=hist.name)
+
     options = Underride(options, 
-                        label=hist.name,
                         align='center',
                         edgecolor='blue',
                         width=width)
@@ -233,7 +235,10 @@ def Cdf(cdf, complement=False, transform=None, **options):
         ps = [-math.log(p) for p in ps]
         scale['yscale'] = 'log'
 
-    line = Plot(xs, ps, label=cdf.name, **options)
+    if cdf.name:
+        options = Underride(options, label=cdf.name)
+
+    line = Plot(xs, ps, **options)
     return scale
 
 
@@ -258,7 +263,7 @@ def Contour(d, pcolor=False, contour=True, imshow=False, **options):
     contour: boolean, whether to make a contour plot
     options: keyword args passed to pyplot.pcolor and/or pyplot.contour
     """
-    Underride(options, cmap=matplotlib.cm.Blues)
+    Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
     xs, ys = zip(*d.iterkeys())
     xs = sorted(set(xs))
@@ -271,6 +276,10 @@ def Contour(d, pcolor=False, contour=True, imshow=False, **options):
     func = lambda x, y: d.get((x, y), 0)
     func = np.vectorize(func)
     Z = func(X, Y)
+
+    x_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+    axes = pyplot.gca()
+    axes.xaxis.set_major_formatter(x_formatter)
 
     if pcolor:
         pyplot.pcolormesh(X, Y, Z, **options)
@@ -345,7 +354,7 @@ def Save(root=None, formats=None, **options):
     Config(**options)
 
     if formats is None:
-        formats = ['pdf', 'png']
+        formats = ['pdf', 'eps']
 
     if root:
         for format in formats:
