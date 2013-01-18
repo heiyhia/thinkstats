@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.16.0}
+\newcommand{\theversion}{0.17.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -226,7 +226,7 @@ Most books on Bayesian statistics use mathematical notation and
 present ideas in terms of mathematical concepts like calculus.
 This book uses Python code instead of math, and discrete approximations
 instead of continuous mathematics.  As a result, what would
-be an integral in a math book becomes a simple summation, and
+be an integral in a math book becomes a summation, and
 most operations on distributions are simple loops.
 
 This presentation is easier to understand, at least for people with
@@ -282,6 +282,34 @@ you can use for regression testing (that is, checking that the
 optimized code yields the same answer, at least approximately).
 
 
+\subsection*{Where to get the code}
+
+Many of the code example in this book use classes and functions
+defined in {\tt thinkbayes.com}.  You can download this module
+from \url{http://thinkbayes.com/thinkbayes.py}.  In addition,
+most chapters contain references to code you can download from
+\url{http://thinkbayes.com}.  And some of those files have
+dependencies you will also have to download.  I suggest you
+keep all of these files in the same directory so they can import
+each other without dealing with the Python path.
+
+You can download these files one at a time when you need them, or you
+can download them all at once in a zip file,
+\url{http://thinkbayes.com/thinkbayes_code.zip}.  This file also
+contains the data files use by some of the programs.  When you
+unzip it, it will create a directory named \verb"thinkbayes_code"
+that contains all the code used in this book.
+
+One of the modules you will find in that directory is {\tt myplot.py},
+which provides wrappers for some of the functions in {\tt pyplot},
+which is part of {\tt matplotlib}.  You can download {\tt matplotlib}
+from \url{http://matplotlib.org}, if you don't already have it
+installed.
+
+In addition, some programs in this book use NumPy and SciPy, which are
+available from \url{http://numpy.org} and \url{http://scipy.org}.
+
+
 \subsection*{Code style}
 
 Experienced Python programmers will notice that the code in this
@@ -294,13 +322,50 @@ the accompanying code, function and method names begin with
 a capital letter and use camel case, \verb"LikeThis".
 
 The reason I broke this rule is that I developed some of the
-code while I was a Visiting Scientist at Google, Inc. in 2009-10.
+code while I was a Visiting Scientist at Google in 2009-10.
 So I followed the Google style guide for Python, which deviates
 from PEP 8 in a few places.
-
 Also, once I got used to function names with capital letters, I
 found that I liked it.  Finally, at this point, it would be too
 much trouble to change.
+
+Also on the topic of style, I chose to write ``Bayes's Theorem''
+with an {\it s} after the apostrophe, which is preferred in some
+style guides and deprecated in others.  I don't have a strong
+preference.  I had to choose one, and I chose this one.
+
+
+\subsection*{Prerequisites}
+
+There are several excellent modules for doing Bayesian statistics in
+Python, including {\tt pymc} and OpenBUGS.  I chose not to use them
+for this book because you need a fair amount of background knowledge
+to get started with these modules, and I want to keep the
+prerequisites minimal.  If you know Python and a little bit about
+probability, you are ready to start this book.
+
+Chapter 1 is about probability and Bayes's Theorem; it has no code.
+Chapter 2 introduces {\tt Pmf} a thinly-disguised Python dictionary
+I use to represent a probability mass function (PMF).  Then
+Chapter 3 introduces {\tt Suite}, a kind of {\tt Pmf} that provides
+a framework for doing Bayesian updates.  And that's just about
+all there is to it.
+
+Well, almost.  In some of the later chapters, I use some common
+analytic distributions, including the Gaussian (normal) distribution,
+the exponential and Poisson distributions, and the beta distribution.
+In Chapter~\ref{species} I break out the less-common Dirichlet
+distribution, but I explain it as I go along.  If you are not familiar
+with these distributions, you can read about them on Wikipedia.  You
+could also read the companion to this book, {\it Think Stats}, or an
+introductory statistics book (although I'm afraid most of them take
+a mathematical approach that is not particularly helpful for practical
+purposes).
+
+
+\subsection*{Case studies}
+
+Coming soon: Information about the case studies.
 
 
 Allen B. Downey \\*
@@ -343,9 +408,9 @@ Thanks!
   Mahajan, especially in Fall 2012, when I audited his class on
   Bayesian Inference at Olin College.
 
-\item I wrote parts of this book during project nights with the
-Boston Python Users' Group, so I would like to thank them for their
-company, and pizza.
+\item I wrote parts of this book during project nights with the Boston
+  Python Users' Group, so I would like to thank them for their
+  company, and pizza.
 
 \item Jonathan Edwards sent in the first typo.
 
@@ -354,6 +419,10 @@ company, and pizza.
 \item Olivier Yiptong send several helpful suggestions.
 
 \item Yuriy Pasichnyk found several errors.
+
+\item Kristopher Overholt sent a long list of corrections and suggestions.
+
+\item Robert Marcus found a misplaced {\it i}.
 
 % ENDCONTRIB
 
@@ -1812,11 +1881,11 @@ Jacob can compute $B_{next}$ using the law of total probability, which
 says that the probability that the next ball is blue is the sum
 of the probabilities for each way it can happen; in this case
 %
-\[ B_{next} = \sum \frac{1}{3} \p{H_i | D} \]
+\[ B_{next} = \sum_i \frac{1}{3} \p{H_i | D} \]
 %
 Pulling out the factor of $1/3$, we have
 %
-\[ B_{next} = \frac{1}{3} \sum i \p{H_i | D} \]
+\[ B_{next} = \frac{1}{3} \sum_i \p{H_i | D} \]
 %
 which we recognize as the mean of the posterior distribution, over 3.
 
@@ -2445,7 +2514,7 @@ Or dividing through by \o{H}:
 %
 The term on the left is the ratio of the posterior and prior odds.
 The term on the right is the likelihood ratio, also called the ``Bayes
-factor.
+factor''.
 
 If the Bayes factor value is greater than $1$, that means that the
 data were more likely under $H$ than under $\bar{H}$.  And since the
@@ -2603,6 +2672,13 @@ The code from this section is available from
 
 \section{Maxima}
 
+\begin{figure}
+% dungeons.py
+\centerline{\includegraphics[height=2.5in]{figs/dungeons2.pdf}}
+\caption{Distribution of the maximum of six rolls of three dice.}
+\label{fig.dungeons2}
+\end{figure}
+
 Having generated a Dungeons and Dragons character, I would be
 particularly interested in the character's best attributes, so
 I might wonder what is the chance of getting an 18 in one or
@@ -2717,8 +2793,7 @@ your character's best attribute:
 Where \verb"three_exact" is defined in the previous section.
 If we print the results, we see that the chance of generating
 a character with at least one attribute of 18 is about 3\%.
-
-[[[Include the figure.]]]
+Figure~\ref{fig.dungeons2} shows the distribution.
 
 
 \chapter{Prediction}
@@ -2785,6 +2860,12 @@ Gaussian distribution.  \verb"num_sigmas" is the number of standard
 deviations above and below the mean that the Pmf will span, and {\tt
   n} is the number of values in the Pmf.
 
+This is our first use of {\tt numpy}.  {\tt linspace} stands for
+``linear space.''  It takes a range, {\tt low} and {\tt high}, and
+the number of points, {\tt n}, and returns a new {\tt numpy}
+array with {\tt n} elements equally spaced between {\tt low} and
+{\tt high}, including both.
+
 \verb"EvalGaussianPdf" does what it says; it evaluates the
 Gaussian probability density function (PDF).
 
@@ -2843,7 +2924,7 @@ or less likely at different times during a game.
 
 But all models are based on simplifications, and in this case modeling
 a hockey game with a Poisson process is a reasonable choice.  Heuer
-et al analyze scoring in a German soccer league and come to the same
+et al.~analyze scoring in a German soccer league and come to the same
 conclusion; see
 \url{http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf}.
 
@@ -2872,6 +2953,14 @@ Both of these functions are in \verb"thinkbayes.py".
 
 
 \section{The posteriors}
+
+\begin{figure}
+% hockey.py
+\centerline{\includegraphics[height=2.5in]{figs/hockey1.pdf}}
+\caption{Posterior distribution of the number of
+goals per game.}
+\label{fig.hockey1}
+\end{figure}
 
 Now we can compute the likelihood of seeing a team with a hypothetical
 value of {\tt lam} score {\tt k} goals in a game:
@@ -2904,13 +2993,9 @@ Figure~\ref{fig.hockey1} shows the resulting posterior distributions
 for {\tt lam}.  Based on the first four games, the most likely
 values for {\tt lam} are 2.6 for the Canucks and 2.9 for the Bruins.
 
-\begin{figure}
-% hockey.py
-\centerline{\includegraphics[height=2.5in]{figs/hockey1.pdf}}
-\caption{Posterior distribution of the number of
-goals per game.}
-\label{fig.hockey1}
-\end{figure}
+
+\section{The Meta-Pmf}
+\label{meta-pmf}
 
 \begin{figure}
 % hockey.py
@@ -2918,17 +3003,6 @@ goals per game.}
 \caption{Distribution of goals in a single game.}
 \label{fig.hockey2}
 \end{figure}
-
-\begin{figure}
-% hockey.py
-\centerline{\includegraphics[height=2.5in]{figs/hockey3.pdf}}
-\caption{Distribution of time between goals.}
-\label{fig.hockey3}
-\end{figure}
-
-
-\section{The Meta-Pmf}
-\label{meta-pmf}
 
 To compute the probability that each team wins the next game,
 we need to compute the distribution of goals for each team.
@@ -3016,7 +3090,15 @@ the Bruins and Canucks.  As expected, the Bruins are less likely to
 score 3 goals or fewer in the next game, and more likely to score 4 or
 more.
 
+
 \section{The probability of winning}
+
+\begin{figure}
+% hockey.py
+\centerline{\includegraphics[height=2.5in]{figs/hockey3.pdf}}
+\caption{Distribution of time between goals.}
+\label{fig.hockey3}
+\end{figure}
 
 To get the probability of winning, we can convolve the distributions
 from the previous section to get the distribution of the goal
@@ -3194,6 +3276,7 @@ The code and data for this chapter are available from
 
 
 \chapter{Two dimensions}
+\label{paintball}
 
 \section{Paintball}
 
@@ -3206,8 +3289,8 @@ The code and data for this chapter are available from
 
 Paintball is a sport in which competing teams try to shoot each other
 with guns that fire paint-filled pellets that break on impact, leaving
-a colorfull mark on the target.  It is usually played in a demarcated
-area that is decorated with barriers and other objects that can be
+a colorful mark on the target.  It is usually played in a demarcated
+area decorated with barriers and other objects that can be
 used as cover.
 
 Suppose you are playing paintball in an indoor arena 30 feet
@@ -3632,53 +3715,51 @@ Here's what we found:
 \item For men the standard deviation is 7.7 cm; for women is it 7.3
   cm.  So in absolute terms, men's heights are more variable.
 
-\item But to compare
-variability between groups, it is more meaningful to use the
-coefficient of variation (CV), which is the standard deviation divided
-by the mean.  It is a dimensionless measure of variability relative to
-scale.  For men CV is 0.0433; for women it is 0.0444.
+\item But to compare variability between groups, it is more meaningful
+  to use the coefficient of variation (CV), which is the standard
+  deviation divided by the mean.  It is a dimensionless measure of
+  variability relative to scale.  For men CV is 0.0433; for women it
+  is 0.0444.
 
 \end{itemize}
 
-That's very close, so we could conclude that this dataset provides little
-support for the Variability Hypothesis.  But at the risk of overthinking
-the question, I want to use this problem to demonstrate Bayesian
-estimation in 2 dimensions.
+That's very close, so we could conclude that this dataset provides
+little support for the Variability Hypothesis.  But we can use
+Bayesian methods to make that conclusion more precise.  And answering
+this question gives me a chance to demonstrate some techniques
+for working with large datasets.
 
-So far we have worked with random processes that can be characterized
-by a single parameter: in the Euro problem it is the probability
-that the coin lands face up; in the Boston Bruin problem it is the
-goal scoring rate.
-
-The techniques we used generalize easily to systems with more than one
-parameter.  However, because the dataset is so big, we will run into
-some performance problems.  I will proceed in a few steps:
+I will proceed in a few steps:
 
 \begin{enumerate}
 
-\item We'll start with the simplest implementation, but it only
-works for datasets smaller than 1000 values.
+\item We'll start with the simplest implementation, but it only works
+  for datasets smaller than 1000 values.
 
-\item By computing probabilities under a log transform, we can
-scale up to xxx of values, but the computation gets slow.
+\item By computing probabilities under a log transform, we can scale
+  up to the full size of the dataset, but the computation gets slow.
 
-\item Finally, we speed things up with Approximate Bayesian Computation,
-also known as ABC.
+\item Finally, we speed things up substantially with Approximate
+  Bayesian Computation, also known as ABC.
 
 \end{enumerate}
 
+You can download the code in this chapter from
+\url{http://thinkbayes.com/variability.py}.
 
-\section{Estimation in 2-D}
 
-Basic estimation in multiple dimensions is easy: we just represent
-each hypothesis with a tuple of parameters.  For the normal
-distribution, the obvious tuple is {\tt mu, sigma}.
+\section{Mean and standard deviation}
 
-For this problem, I defined a Suite called {\tt Height} that represents
-a map from each {\tt mu, sigma} pair to its probability:
+In Chapter~\ref{paintball} we estimated two parameters simultaneously
+using a joint distribution.  In this chapter we use the same
+method to estimate the parameters of a normal distribution:
+the mean, {\tt mu}, and the standard deviation, {\tt sigma}.
+
+For this problem, I defined a Suite called {\tt Height} that
+represents a map from each {\tt mu, sigma} pair to its probability:
 
 \begin{verbatim}
-class Height(thinkbayes.Suite):
+class Height(thinkbayes.Suite, thinkbayes.Joint):
 
     def __init__(self, mus, sigmas):
         thinkbayes.Suite.__init__(self)
@@ -3686,9 +3767,11 @@ class Height(thinkbayes.Suite):
         self.mus = mus
         self.sigmas = sigmas
 
-        for mu in self.mus:
-            for sigma in self.sigmas:
-                self.Set((mu, sigma), 1)
+        pairs = [(mu, sigma) 
+                 for mu in mus
+                 for sigma in sigmas]
+
+        thinkbayes.Suite.__init__(self, pairs, name=name)
 \end{verbatim}
 
 {\tt mus} is a sequence of possible values for {\tt mu}; {\tt sigmas}
@@ -3702,6 +3785,7 @@ does, so all we have to do is use it:
 
 \begin{verbatim}
 # class Height
+
     def Likelihood(self, hypo, data):
         x = data
         mu, sigma = hypo
@@ -3727,25 +3811,26 @@ wrong answer.  If the range is too big, we get the right answer,
 but waste computational power.
 
 So this is an opportunity to use classical estimation techniques to
-make Bayesian techniques more efficient.  Specifically, we can use the
-sample to choose central values for {\tt mu} and {\tt sigma}, and use
-the standard errors of those estimates to choose the range.
+make Bayesian techniques more efficient.  Specifically, we can use
+classical estimators to find a likely location for {\tt mu} and {\tt
+  sigma}, and use the standard errors of those estimates to choose a
+likely spread.
 
 If the true parameters of the distribution are $\mu$ and
-$\sigma$, and we take a sample of $n$ values, the classical estimator
+$\sigma$, and we take a sample of $n$ values, an estimator for
 of $\mu$ is
 %
-\[ \hat{\mu} = \bar{x} = \frac{1}{n} \sum_i x_i \]
+\[ \bar{x} = \frac{1}{n} \sum_i x_i \]
 %
-and the estimator of $\sigma^2$ is
+and an estimator of $\sigma^2$ is
 %
-\[ \hat{\sigma}^2 = S^2 = \frac{1}{n-1} \sum_i (x_i - \bar{x})^2 \]
+\[ S^2 = \frac{1}{n-1} \sum_i (x_i - \bar{x})^2 \]
 %
-The standard error of $\hat{\mu}$ is
+The standard error of the estimated $\mu$ is
 %
 \[ S / \sqrt{n} \]
 %
-and the standard error of $\hat{\sigma}$ is
+and the standard error the estimated $\sigma$ is
 %
 \[ S / \sqrt{2 (n-1)}\]
 %
@@ -3754,24 +3839,17 @@ Here's the code to compute all that:
 \begin{verbatim}
 def FindPriorRanges(xs, num_points, num_stderrs=3.0):
 
-    def MakeRange(estimate, stderr):
-        spread = stderr * num_stderrs
-        array = numpy.linspace(estimate-spread, estimate+spread, num_points)
-        return array
-
-    # estimate mean and stddev of xs
+    # compute xbar and S
     n = len(xs)
     xbar, S2 = thinkstats.MeanVar(xs)
-    sighat = math.sqrt(S2)
+    S = math.sqrt(S2)
 
-    print 'classical estimators', xbar, sighat
-
-    # compute ranges for xbar and sighat
-    stderr_xbar = sighat / math.sqrt(n)
+    # compute ranges for xbar and S
+    stderr_xbar = S / math.sqrt(n)
     mus = MakeRange(xbar, stderr_xbar)
 
-    stderr_sighat = sighat / math.sqrt(2 * (n-1))
-    sigmas = MakeRange(sighat, stderr_sighat)
+    stderr_S = S / math.sqrt(2 * (n-1))
+    sigmas = MakeRange(S, stderr_S)
 
     return mus, sigmas
 \end{verbatim}
@@ -3781,45 +3859,54 @@ values in the range.  \verb"num_stderrs" is the width of the range on
 each side of the estimate, in number of standard errors.  The return
 value is a pair of sequences, {\tt mus} and {\tt sigmas}.
 
-And here's the code to make and update the suite:
+Here's {\tt MakeRange}:
+
+\begin{verbatim}
+    def MakeRange(estimate, stderr):
+        spread = stderr * num_stderrs
+        array = numpy.linspace(estimate-spread,
+                               estimate+spread,
+                               num_points)
+        return array
+\end{verbatim}
+
+Again, we're using {\tt numpy.linspace} to make an array with
+\verb"num_points" elements equally spaced between
+{\tt estimate-spread} and {\tt estimate+spread}, including
+both.
+
+
+\section{Update}
+
+Finally here's the code to make and update the suite:
 
 \begin{verbatim}
     mus, sigmas = FindPriorRanges(xs, num_points)
     suite = Height(mus, sigmas, name)
     suite.UpdateSet(xs)
-    print thinkbayes.MaximumLikelihood(suite)    
+    print suite.MaximumLikelihood()    
 \end{verbatim}
 
-This process might seem bogus, because we 
-use the data to choose the range of the prior distribution, and then
-use the data again to do the update.  In general, using the same
-data twice is, in fact, bogus.
+This process might seem bogus, because we use the data to choose the
+range of the prior distribution, and then use the data again to do the
+update.  In general, using the same data twice is, in fact, bogus.
 
-But in this case it is ok.  Really.  We use the data to choose
-the range for the prior, but only to avoid computing
-a lot of probabilities that would have been very small anyway.
-I chose a value for \verb"num_stderrs" big enough to
-cover all values with non-negligible likelihood.  After that, making
-it bigger has no effect on the results.
+But in this case it is ok.  Really.  We use the data to choose the
+range for the prior, but only to avoid computing a lot of
+probabilities that would have been very small anyway.  I chose a value
+for \verb"num_stderrs" big enough to cover all values with
+non-negligible likelihood.  After that, making it bigger has no effect
+on the results.
 
 In effect, we are approximating a prior that is uniform over all values 
 of {\tt mu} and {\tt sigma}, but for computational efficiency
 we ignore all the values that don't matter.
 
-Let's look at some results.  Using the first 100 values from the BRFSS
-dataset---which includes 27 men, 71 women, and two people who did not
-report their heights--- the maximum likelihood estimates for men are
-$(179, 8.7)$ cm, and for women $(163, 6.2)$ cm.
-
-
 \section{The posterior distribution of CV}
 
-These values are identical to the classical estimators, so if that's
-all we care about, we haven't accomplished much.  The advantage of the
-Bayesian approach is that with the posterior distribution (not just a
-point estimate or credible interval), we can compute the
-distribution of CV for men and women, and the probability that one
-exceeds the other.
+Once we have the posterior joint distribution of {\tt mu} and {\tt
+  sigma}, we can compute the distribution of CV for men and women, and
+then the probability that one exceeds the other.
 
 To compute the distribution of CV, we enumerate pairs of
 {\tt mu} and {\tt sigma}:
@@ -3832,54 +3919,57 @@ def ComputeCoefVariation(suite):
     return pmf
 \end{verbatim}
 
-Given the distribution of
-CV for men and women, we can use \verb"PmfProbGreater" to
-compute the probability that
-men are more variable.
+Then we can use \verb"thinkbayes.PmfProbGreater" to compute the
+probability that men are more variable.
 
-Using the first 100 values from the BRFSS dataset, we would conclude
-that the probability is 96\%, but there are two problems with
-this conclusion:
+But there are a few problems we have to solve first:
 
 \begin{enumerate}
+
+\item As the size of the dataset increases, we run into a series of
+  computational problems, including the dreaded ``underflow''.
+
+\item The dataset contains a number of extreme values that are almost
+  certainly errors.  We will need to make the estimation process
+  robust in the presence of these outliers.
 
 \item When we collapse the distributions to a single probability, we
   lose information about uncertainty.  For example, if we report ``The
   probability that men are more variable is 96\%,'' that report would
-  not capture the likelihood of the Variability Hypothesis before we
-  saw the data or the weight of the evidence.  We can address these
-  limitations using Bayesian hypothesis testing, which is the topic of
-  the next chapter.
-
-\item The first 100 values are not a representative sample from the
-  dataset.  Of course, we should use the entire dataset.  But that
-  will turn out to be a little tricky.
+  not take into account the likelihood of the Variability Hypothesis
+  before we saw the data.
 
 \end{enumerate}
 
+We'll deal with the first two problems in this chapter and come
+back to the third in the next chapter, which is about
+Bayesian hypothesis testing.
 
 
 \section{Big data, small likelihood}
 
-If we select the first 1000 values from the dataset and run
-the program again, we get an error in \verb"Pmf.Normalize":
+If we select the first 100 values from the BRFSS dataset and run the
+analysis I just described, it runs without errors and we get posterior
+distributions that look reasonable.
+
+If we select the first 1000 values and run the program again, we get
+an error in \verb"Pmf.Normalize":
 
 \begin{verbatim}
 ValueError: total probability is zero.
 \end{verbatim}
 
-The problem is that the likelihood function computes
-probability densities, and densities from continuous
-distributions tend to be small.
-
-If you take a large number of small values and multiply them together,
-the result is very small.  In this case it is so small it can't be
-represented by a floating-point number, so it gets rounded down to
-zero, which is called ``underflow.''  And if all of the probabilities
-in the distribution are 0, it's not a distribution any more.
+The problem is that we are using probability densities to compute
+likelihoods, and densities from continuous distributions tend to be
+small.  And if you take 1000 small values and multiply
+them together, the result is very small.  In this case it is so small
+it can't be represented by a floating-point number, so it gets rounded
+down to zero, which is called ``underflow.''  And if all
+probabilities in the distribution are 0, it's not a distribution any
+more.
 
 A possible solution is to renormalize the Pmf after each update,
-or after each batch of 100.  But that would be slow.
+or after each batch of 100.  That would work, but it would be slow.
 
 A better alternative is to compute likelihoods under a log
 transform.  That way, instead of multiplying small values, we can add
@@ -3902,6 +3992,7 @@ Here's the implementation of {\tt Log}:
 
 \begin{verbatim}
 # class Pmf
+
     def Log(self):
         m = self.MaxLike()
         for x, p in self.d.iteritems():
@@ -3915,13 +4006,13 @@ Here's the implementation of {\tt Log}:
 divide all probabilities by {\tt m}, the highest probability gets
 normalized to 1, which yields a log of 0.
 
-If there are any values in
-the Pmf with probability 0, they are removed.
+If there are any values in the Pmf with probability 0, they are removed.
 
 {\tt LogUpdateSet} calls {\tt LogUpdate}:
 
 \begin{verbatim}
 # class Suite
+
     def LogUpdateSet(self, dataset):
         for data in dataset:
             self.LogUpdate(data)
@@ -3933,6 +4024,7 @@ instead of {\tt Mult}:
 
 \begin{verbatim}
 # class Suite
+
     def LogUpdate(self, data):
         for hypo in self.Values():
             like = self.LogLikelihood(hypo, data)
@@ -3951,27 +4043,29 @@ and translate into Python:
 
 \begin{verbatim}
 # class Height
+
     def LogLikelihood(self, hypo, data):
         x = data
         mu, sigma = hypo
-        loglike = GaussianLogLikelihood(mu, sigma, x)
+        loglike = EvalGaussianLogPdf(mu, sigma, x)
         return loglike
 
 
-def GaussianLogLikelihood(mu, sigma, x):
+def EvalGaussianLogPdf(mu, sigma, x):
     z = (x-mu) / sigma
     loglike = -math.log(sigma) - z**2 / 2
     return loglike
 \end{verbatim}
 
-One advantage of this approach is that for many
-continuous distributions, it is easier to
-compute the log-likelihood than the likelihood.
+One advantage of this approach is that for many analytic
+distributions, it is easier to compute the log-likelihood than the
+likelihood.
 
 Finally, here's how {\tt Exp} inverts the transform:
 
 \begin{verbatim}
 # class Pmf
+
     def Exp(self):
         m = self.MaxLike()
         for x, p in self.d.iteritems():
@@ -4006,6 +4100,8 @@ Pulling out the terms that don't depend on $i$, we get
 and translate into Python:
 
 \begin{verbatim}
+# class Height
+
     def LogUpdateSetFast(self, data):
         xs = tuple(data)
         n = len(xs)
@@ -4020,9 +4116,11 @@ and translate into Python:
 By itself, this optimization would be a small improvement, but it
 creates an opportunity for a bigger improvement.  Notice that the
 summation only depends on {\tt mu}, not {\tt sigma}, so we only
-have to evaluate it once for each value of {\tt mu}.  We could hoist
-it out of the loop, but a simpler alternative is to memoize
-{\tt Summation} like this:
+have to evaluate it once for each value of {\tt mu}.
+
+To avoid recomputing, we factor out a function that computes
+the summation, and memoize it so it stores previously-computed
+results in a dictionary (see \url{http://en.wikipedia.org/wiki/Memoization}):
 
 \begin{verbatim}
 def Summation(xs, mu, cache={}):
@@ -4052,10 +4150,10 @@ computer.
 \section{ABC}
 
 But maybe you don't have that kind of time.  In that case, Approximate
-Bayesian Computation (ABC) might be the way to go.  The motivation behind
-ABC is that the likelihood of a particular dataset is:
+Bayesian Computation (ABC) might be the way to go.  The motivation
+behind ABC is that the likelihood of a particular dataset is:
 
-\begin{itemize}
+\begin{enumerate}
 
 \item Very small, especially for large datasets, which is why we had
 to use the log transform,
@@ -4065,7 +4163,7 @@ optimization, and
 
 \item Not really what we want anyway.
 
-\end{itemize}
+\end{enumerate}
 
 We don't really care about the likelihood of seeing the exact dataset
 we saw.  Especially for continuous variables, we care about the
@@ -4094,11 +4192,11 @@ $\mu$ and $sigma$, and compute the sample mean, $\bar{x}$, you can
 think of $\bar{x}$ as a random variable, and its distribution is
 normal with parameters $\mu$ and $\sigma / \sqrt{n}$.
 
-Similarly, the distribution of the sample standard deviation, $S$, is normal
-with parameters $\sigma$ and $\sigma / \sqrt{2 (n-1)}$.
+Similarly, the distribution of the sample standard deviation, $S$, is
+normal with parameters $\sigma$ and $\sigma / \sqrt{2 (n-1)}$.
 
-We can use these sample distributions to compute the likelihood
-of any particular statistics, $\bar{x}$ and $S$, given hypothetical values
+We can use these sample distributions to compute the likelihood of the
+sample statistics, $\bar{x}$ and $S$, given hypothetical values
 for $\mu$ and $sigma$.  Here's a new version of \verb"LogUpdateSet"
 that does it:
 
@@ -4107,9 +4205,9 @@ that does it:
         xs = data
         n = len(xs)
 
-        # compute summary stats
+        # compute sample stats
         xbar, S2 = thinkstats.MeanVar(xs)
-        sighat = math.sqrt(S2)
+        S = math.sqrt(S2)
 
         for hypo in sorted(self.Values()):
             mu, sigma = hypo
@@ -4117,12 +4215,16 @@ that does it:
             # compute log likelihood of xbar, given hypo
             sample_mu = mu
             sample_sigma = sigma / math.sqrt(n)
-            loglike = GaussianLogLikelihood(sample_mu, sample_sigma, xbar)
+            loglike = EvalGaussianLogPdf(sample_mu, 
+                                         sample_sigma,
+                                         xbar)
 
-            #compute log likelihood of sighat, given hypo
+            #compute log likelihood of S, given hypo
             sample_mu = sigma
             sample_sigma = sigma / math.sqrt(2 * (n-1))
-            loglike += GaussianLogLikelihood(sample_mu, sample_sigma, sighat)
+            loglike += EvalGaussianLogPdf(sample_mu, 
+                                          sample_sigma,
+                                          S)
 
             self.Incr(hypo, loglike)
 \end{verbatim}
@@ -4137,18 +4239,201 @@ correct answer to a slightly different, and possibly more appropriate,
 question.
 
 
+\section{Robust estimation}
+
+\begin{figure}
+% variability.py
+\centerline{\includegraphics[height=2.5in]{figs/variability_posterior_male.pdf}}
+\caption{Contour plot of the posterior joint distribution of
+mean and standard deviation of height for men in the U.S.}
+\label{fig.variability1}
+\end{figure}
+
+\begin{figure}
+% variability.py
+\centerline{\includegraphics[height=2.5in]{figs/variability_posterior_female.pdf}}
+\caption{Contour plot of the posterior joint distribution of
+mean and standard deviation of height for women in the U.S.}
+\label{fig.variability2}
+\end{figure}
+
+We are almost ready to look at results, but we have one more
+problem to deal with.  There are a number of outliers in this
+dataset that are almost certainly errors.  For example, there
+are three adults with reported height of 61 cm, which would
+place them among the shortest living adults in the world.
+At the other end, there are four women with reported height
+229 cm, just short of the tallest women in the world.
+
+It is not impossible that these values are correct, but it is
+unlikely, which makes it hard to know how to deal with them.
+But since we are trying to estimate variability, we have to get
+it right, since these extreme values have a disproportionate
+effect on the estimates.
+
+Because ABC is based on summary statistics, rather than the entire
+data set, we can make it more robust by choosing summary statistics
+that are robust in the presence of outliers.  Specifically, rather
+than use the sample mean and standard deviation, we can use the median
+and an inter-percentile range.  For example, the inter-quartile range
+(IQR) is the difference between the 25th and 75th percentiles.
+
+More generally, we can compute an inter-percentile range that
+spans a given fraction of the distribution, {\tt p}:
+
+\begin{verbatim}
+def MedianIPR(xs, p=0.6827):
+    cdf = thinkbayes.MakeCdfFromList(xs)
+    median = cdf.Percentile(50)
+
+    alpha = (1-p) / 2
+    ipr = cdf.Value(1-alpha) - cdf.Value(alpha)
+    return median, ipr
+\end{verbatim}
+
+The result is the median and the inter-percentile range.  We can
+convert from {\tt ipr} to an estimate of {\tt sigma} using the
+Gaussian CDF to compute the fraction of the distribution covered by a
+given number of standard deviations.  For example, it is a well-known
+rule of thumb that 68\% of a Gaussian distribution falls within one
+standard deviation of the mean, which leaves 16\% in each tail.  If
+we compute the range between the 16th and 84th percentiles, we expect
+the result to be {\tt 2 * sigma}.  So we can estimate {\tt sigma}
+by computing the 68\% IPR and dividing by 2.
+
+The following function does the same computation for any number of
+sigmas:
+
+\begin{verbatim}
+def MedianSighat(xs, num_sigmas):
+    half_p = thinkbayes.StandardGaussianCdf(num_sigmas) - 0.5
+
+    median, ipr = MedianIPR(xs, half_p * 2)
+    sighat = ipr / 2 / num_sigmas
+
+    return median, sighat
+\end{verbatim}
+
+The result is an estimate of {\tt sigma}, which I call {\tt sighat}
+because ``hat'' is the conventional symbol that indicates an
+estimate.
+
+Then in {\tt LogUpdateSetABC} we can replace the
+conventional estimators, {\tt xbar} and {\tt S}, with {\tt median}
+and {\tt sighat}.  And that pretty much does it.
+
+It might seem odd that we are using observed percentiles to
+estimate {\tt mu} and {\tt sigma}, but it is an example of the
+flexibility of the Bayesian approach.  In effect we are asking,
+``Given hypothetical values for {\tt mu} and {\tt sigma}, and
+a sampling process that has some chance of introducing errors,
+what is the likelihood of generating a given set of sample
+statistics?''
+
+We are free to choose any sample statistics we like, up to a point:
+{\tt mu} and {\tt sigma} determine the location and spread of
+a distribution, so we need to choose statistics that capture those
+characteristics.  For example, if we chose the 49th and 51st percentiles,
+we would get very little information about spread, so it
+would leave the estimate of {\tt sigma} relatively unconstrained
+by the data.  All values of {\tt sigma} would have nearly the
+same likelihood of producing the observed values, so the posterior
+marginal distribution for {\tt sigma} would look a lot like the
+prior.
+
+
 \section{Who is more variable?}
+
+\begin{figure}
+% variability.py
+\centerline{\includegraphics[height=2.5in]{figs/variability_cv.pdf}}
+\caption{Contour plot of the posterior joint distribution of
+mean and standard deviation of height for women in the U.S.}
+\label{fig.variability3}
+\end{figure}
 
 Finally we are ready to answer the question we started with: is the
 coefficient of variation greater for men than for women?
 
-TO BE CONTINUED.
-\begin{verbatim}
-\end{verbatim}
+Using ABC based on the median and IPR with \verb"num_sigmas=1", I
+computed posterior joint distributions for {\tt mu} and {\tt
+  sigma}.  Figures~\ref{fig.variability1} and ~\ref{fig.variability2}
+show the results as a contour plot with {\tt mu} on the x-axis, {\tt
+  sigma} on the y-axis, and probability on the z-axis.
 
-\begin{verbatim}
-\end{verbatim}
+The most likely values for men are 178 cm and 7.4 cm, so the
+maximum likelihood estimate for {\tt sigma}, based on robust
+sample statistics, is a bit less than the observed
+standard deviation, 7.7 cm.
 
+For women, the most likely values are 163 cm and 7.0 cm.  Again,
+the estimate of {\tt sigma} is less than the observed
+standard deviation, 7.3 cm.
+
+For each joint distribution, we compute the posterior distribution of
+CV.  Figure~\ref{fig.variability3} shows these distributions for men
+and women.  The mean for men is 0.0410; for women it is 0.0429.  And
+since there is no overlap between the distributions, we conclude that
+women are more variable in height than men.
+
+So is that the end of the Variability Hypothesis?  Sadly, no.  This
+result turns out to depend strongly on the choice of the
+inter-percentile range.  With \verb"num_sigmas=1", we conclude that
+women are more variable, but with \verb"num_sigmas=2" we conclude
+with equal confidence that men are more variable.
+
+The reason for the difference is that there are differences in the
+shapes of the distributions for men and women.  Specifically, there
+are more men of short stature, and their distance from the mean is
+greater.
+
+So our evaluation of the Variability Hypothesis depends on the
+interpretation of ``variability.''  With \verb"num_sigmas=1" we are
+measuring differences between people within one standard deviation of
+the mean, people we would call ``normal'' for want of less value-laden
+word.  As we increase \verb"num_sigmas", the measure of variability is
+influenced by an increasing number of people whose stature is affected
+by medical conditions.  How much effect these people should have
+on the result depends on what notion of variability we are trying
+to capture, which depends on theory we are trying to test.
+
+In the case of the Variability Hypothesis, I don't think the theory
+is sufficiently well-defined to test, and even if it were, I don't
+think the results would mean very much.
+
+I hope you agree that this example is interesting, and it helped
+me demonstrate several new ideas, but at this point we have probably
+given the Variability Hypothesis more energy than it deserves, so
+let's stop there.
+
+You can download the code in this chapter from
+\url{http://thinkbayes.com/variability.py}.
+
+
+\section{Exercises}
+
+\begin{exercise}
+
+Cohen's $d$ is a statistic that measures the size of the difference in
+means between two groups (see
+\url{http://en.wikipedia.org/wiki/Effect_size}).  It is defined as
+%
+\[ \frac{\bar{x}_1 - \bar{x}_2}{s} \]
+%
+where $\bar{x}_1$ is the sample mean of the first group, $\bar{x}_2$
+is the sample mean of the second group, and $s$ is the estimated
+pooled standard deviation for the two groups (you can look up the
+formula).
+
+Write a function that takes the posterior distributions for
+the mean and standard deviation of height and computes the
+posterior distribution of Cohen's $d$.
+
+Hint: instead of enumerating all possible values of $\mu$ and
+$\sigma$ for men and women, you might want to draw a random sample
+from the posterior distributions.
+
+\end{exercise}
 
 
 
@@ -4200,8 +4485,8 @@ that does it.
         return like
 \end{verbatim}
 
-All we have to do is create a {\tt Euro} suite and use
-it's {\tt Likelihood} method:
+All we have to do is create a {\tt Euro} suite and use its 
+{\tt Likelihood} method:
 
 \begin{verbatim}
     suite = Euro()
@@ -4426,7 +4711,7 @@ minus a penalty of $1/4$ point for each question answered incorrectly.
 
 The College Board, which administers the SAT, publishes the
 mapping from raw scores to scaled scores.  I have downloaded that
-data and wrapped it in an Interpolater object that provides a forward
+data and wrapped it in an Interpolator object that provides a forward
 lookup (from raw score to scaled) and a reverse lookup (from scaled
 score to raw).
 
@@ -4439,7 +4724,7 @@ You can download the code for this example from
 The College Board also publishes the distribution of scaled scores
 for all test-takers.  If we convert them to raw scores, we can
 compute the fraction of questions each test-taker got right, which
-is an estimate \verb"p_correct".
+is an estimate of \verb"p_correct".
 
 Then we can use the distribution of raw scores to model the
 prior distribution of \verb"p_correct".
@@ -4460,7 +4745,7 @@ class Exam(object):
 \end{verbatim}
 
 {\tt Exam} encapsulates the information we have about the offering
-of an exam.  {\tt self.scale} is the {\tt Interpolater} that converts
+of an exam.  {\tt self.scale} is the {\tt Interpolator} that converts
 from raw to scaled scores and back.  {\tt self.prior} is a {\tt Pmf}
 that maps from each raw score to a fraction of test-takers.
 
@@ -4940,6 +5225,8 @@ the next exam.
 \label{fig.satjoint}
 \end{figure}
 
+% TODO: make this figure equal aspect.
+
 In this chapter we started with the question,
 ``How strong is the evidence that Alice is better prepared
 than Bob?''  On the face of it, that sounds like we want to
@@ -5030,7 +5317,7 @@ the rate of growth for untreated tumors by comparing scans from the
 same patient at different times.  Several papers have reported these
 growth rates.
 
-I collected data from a paper by Zhang et al \footnote{Zhang et al,
+I collected data from a paper by Zhang et al.\footnote{Zhang et al,
   Distribution of Renal Tumor Growth Rates Determined by Using Serial
   Volumetric CT Measurements, January 2009 {\it Radiology}, 250,
   137-144.}.  I contacted the authors to see if I could get raw data,
@@ -5073,7 +5360,7 @@ from the military and his diagnosis was 3291 days (about 9 years).
 So my first calculation was, ``If this tumor grew at the median
 rate, how big would it have been at the date of discharge?''
 
-The median volume doubling time reported by Zhang et al is 811 days.
+The median volume doubling time reported by Zhang et al.~is 811 days.
 Assuming 3-dimensional geometry, the doubling time for a linear
 measure is three times longer.
 
@@ -5093,7 +5380,9 @@ measure is three times longer.
 \end{verbatim}
 
 You can download the code in this chapter from
-\url{http://thinkbayes.com/kidney.py}.
+\url{http://thinkbayes.com/kidney.py}.  It depends on several other
+modules in the same directory.  You can download them separately,
+or check out the whole repository from \url{}.
 
 The result, {\tt d0}, is about 6 cm.  So if this tumor formed after
 the date of discharge, it must have grown substantially faster than
@@ -5272,6 +5561,14 @@ of each interval.
 
 \section{Caching the joint distribution}
 
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney8.pdf}}
+\caption{Joint distribution of age and tumor size.}
+\label{fig.kidney8}
+\end{figure}
+
+
 Here's how the cache works.  
 
 \begin{verbatim}
@@ -5317,13 +5614,11 @@ After running the simulations, we can plot the joint distribution
 as a pseudocolor plot, where each cell represents the number of
 tumors observed at a given size-age pair.
 
-\begin{figure}
-% kidney.py
-\centerline{\includegraphics[height=2.5in]{figs/kidney8.pdf}}
-\caption{Joint distribution of age and tumor size.}
-\label{fig.kidney8}
-\end{figure}
+Figure~\ref{fig.kidney8} shows the joint distribution after 1000
+simulations.  As expected, the size of tumors typically increases
+with age.
 
+\section{Conditional distributions}
 
 \begin{figure}
 % kidney.py
@@ -5332,12 +5627,12 @@ tumors observed at a given size-age pair.
 \label{fig.kidney6}
 \end{figure}
 
-
-Figure~\ref{fig.kidney8} shows the joint distribution after 1000
-simulations.  As expected, the size of tumors typically increases
-with age.
-
-\section{Conditional distributions}
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney7.pdf}}
+\caption{Percentiles of tumor age as a function of size.}
+\label{fig.kidney7}
+\end{figure}
 
 By taking a vertical slice from the joint distribution, we can get the
 distribution of sizes for any given age.  By taking a horizontal
@@ -5362,13 +5657,6 @@ def ConditionalCdf(size_bucket):
 \verb"size_bucket" is the integer bucket number corresponding to a
 particular size.  The return value is the CDF of age, conditioned
 on the given size.
-
-\begin{figure}
-% kidney.py
-\centerline{\includegraphics[height=2.5in]{figs/kidney7.pdf}}
-\caption{Percentiles of tumor age as a function of size.}
-\label{fig.kidney7}
-\end{figure}
 
 Figure~\ref{fig.kidney6} shows several of these CDFs, for
 a range of sizes.  To summarize these distributions, we can
@@ -5426,7 +5714,7 @@ likely sources of error:
   the tumor.  This assumption is not realistic for very
   small and very large tumors, whose growth is limited by blood supply.
 
-  But tumors observed by Zhang et al ranged from 1 to 12 cm, and they
+  But tumors observed by Zhang et al.~ranged from 1 to 12 cm, and they
   found no statistically significant relationship between
   size and growth rate.  So if there is a relationship, it is
   likely to be weak, at least in this size range.
@@ -5596,6 +5884,7 @@ So we side-stepped Bayes, but he was with us in spirit.
 
 
 \chapter{A hierarchical model}
+\label{species}
 
 \section{Belly button bacteria}
 
@@ -6157,7 +6446,7 @@ the likelihood of the observed data is close to zero and almost
 equally bad for all values of {\tt n}.  So most iterations don't
 provide any useful contribution to the total likelihood.  And as the
 number of observed species, {\tt m}, gets large, the probability of
-choosing {\tt ps} with non-legigible likelihood gets small.  Really
+choosing {\tt ps} with non-negligible likelihood gets small.  Really
 small.
 
 Fortunately, there is a solution.  Remember that if you observe
@@ -6186,7 +6475,7 @@ class Species4(Species):
 
 This version inherits \verb"__init__" from {\tt Species}, so it
 represents the hypotheses as a list of Dirichlet objects (unlike
-{\tt Species2}.
+{\tt Species2}).
 
 {\tt Update} loops through the observed species and makes an
 array, {\tt one}, with all zeros and one species count.  Then
@@ -6323,7 +6612,7 @@ so we don't need a loop: \verb"log_likes" only has a single term.
 
 So the runtime of this function is linear in {\tt n}, but does not
 depend on {\tt m}.  {\tt Update} is linear in {\tt m}, so the
-whole update process is $\BigO(n m)$.  And the number of iterations
+whole update process is $\BigO{n m}$.  And the number of iterations
 we need to get an accurate result is usually small.
 
 
@@ -6363,7 +6652,7 @@ I should also acknowledge that I am using the term ``species''
 loosely.  First, bacterial species are not well-defined.  Second,
 some reads identify a particular species, others only identify
 a genus.  To be more precise, I should say ``operational
-taxonomic unit, or OTU.
+taxonomic unit'', or OTU.
 
 Now let's process some of the belly button data.  I defined
 a class called {\tt Subject} to represent information about
@@ -6584,7 +6873,7 @@ Here is {\tt GenerateObservations}:
 \end{verbatim}
 
 Again, \verb"num_samples" is the number of additional samples
-to generate.  {\tt n} and {\tt prevalances} are samples from
+to generate.  {\tt n} and {\tt prevalences} are samples from
 the posterior distribution.
 
 {\tt cdf} is a Cdf object that maps species names, including the
@@ -6602,7 +6891,7 @@ Finally, here is {\tt Species2.Sample}:
 \end{verbatim}
 
 And {\tt SampleConditional}, which generates a sample of
-prevalances conditioned on {\tt n}:
+prevalences conditioned on {\tt n}:
 
 \begin{verbatim}
 # class Species2
@@ -6620,7 +6909,7 @@ in {\tt Species2.SampleLikelihood}.
 Figure~\ref{species-rare} shows 100 simulated rarefaction curves
 for subject B1242.  I shifted each curve by a random offset so they
 would not all overlap.  By inspection we can estimate that after
-400 more samples we are likely to find $2--6$ new species.
+400 more samples we are likely to find 2--6 new species.
 
 
 \section{Joint posterior}
@@ -6658,7 +6947,7 @@ value of {\tt k}.
 {\tt k} and \verb"num_new".
 
 The resulting joint distribution is a map from each pair to
-its probability of occuring.  Given the joint distribution, we
+its probability of occurring.  Given the joint distribution, we
 can get the distribution of \verb"num_new" conditioned on {\tt k}:
 
 \begin{verbatim}
@@ -6787,6 +7076,7 @@ you made it this far, congratulations!
 \chapter{Future chapters}
 
 Bayesian regression (hybrid version with resampling?)
+\url{http://www.reddit.com/r/statistics/comments/1647yj/which_regression_technique/}
 
 Change point detection: 
 
@@ -6794,6 +7084,7 @@ Deconvolution: Estimating round trip times
 
 Bayesian search
 
+Extension of the Euro problem: evaluating reddit items and redditors
 \url{http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/}
 
 \end{document}

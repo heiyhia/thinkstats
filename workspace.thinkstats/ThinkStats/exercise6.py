@@ -97,10 +97,6 @@ def GetWeights(table):
     return values
 
 
-def Jitter(values, jitter=0.5):
-    """Jitters the values by adding a uniform variate in (-jitter, jitter)."""
-    return [x + random.uniform(-jitter, jitter) for x in values]
-
 
 def main():
     # test the distribution of birth weights for normality

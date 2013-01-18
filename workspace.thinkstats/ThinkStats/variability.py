@@ -19,8 +19,9 @@ import thinkstats
 
 import matplotlib.pyplot as pyplot
 
+NUM_SIGMAS = 1
 
-class Height(thinkbayes.Suite):
+class Height(thinkbayes.Suite, thinkbayes.Joint):
 
     def __init__(self, mus, sigmas, name=''):
         """Makes a prior distribution for mu and sigma based on a sample.
@@ -29,15 +30,14 @@ class Height(thinkbayes.Suite):
         sigmas: sequence of possible sigmas
         name: string name for the Suite
         """
-        thinkbayes.Suite.__init__(self, name=name)
-
         self.mus = mus
         self.sigmas = sigmas
 
-        # populate the Suite
-        for mu in self.mus:
-            for sigma in self.sigmas:
-                self.Set((mu, sigma), 1)
+        pairs = [(mu, sigma) 
+                 for mu in mus
+                 for sigma in sigmas]
+
+        thinkbayes.Suite.__init__(self, pairs, name=name)
 
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
@@ -66,7 +66,7 @@ class Height(thinkbayes.Suite):
         """
         x = data
         mu, sigma = hypo
-        loglike = GaussianLogLikelihood(mu, sigma, x)
+        loglike = EvalGaussianLogPdf(mu, sigma, x)
         return loglike
 
     def LogUpdateSetFast(self, data):
@@ -97,11 +97,11 @@ class Height(thinkbayes.Suite):
 
         # compute summary stats
         xbar, S2 = thinkstats.MeanVar(xs)
-        sighat = math.sqrt(S2)
+        S = math.sqrt(S2)
 
-        self.LogUpdateSetABC(n, xbar, sighat)
+        self.LogUpdateSetABC(n, xbar, S)
 
-    def LogUpdateSetMedianIQR(self, data):
+    def LogUpdateSetMedianIPR(self, data):
         """Computes the log likelihood of the data under the hypothesis.
 
         Estimates log likelihood using Approximate Bayesian Computation (ABC).
@@ -113,8 +113,7 @@ class Height(thinkbayes.Suite):
         n = len(xs)
 
         # compute summary stats
-        median, iqr = MedianIQR(xs)
-        sighat = iqr / 1.349
+        median, sighat = MedianSighat(xs, num_sigmas=NUM_SIGMAS)
         print 'median, sighat', median, sighat
 
         self.LogUpdateSetABC(n, median, sighat)
@@ -126,18 +125,18 @@ class Height(thinkbayes.Suite):
             # compute log likelihood of xbar, given hypo
             sample_mu = mu
             sample_sigma = sigma / math.sqrt(n)
-            loglike = GaussianLogLikelihood(sample_mu, sample_sigma, xbar)
+            loglike = EvalGaussianLogPdf(sample_mu, sample_sigma, xbar)
 
             #compute log likelihood of sighat, given hypo
             sample_mu = sigma
             sample_sigma = sigma / math.sqrt(2 * (n-1))
-            loglike += GaussianLogLikelihood(sample_mu, sample_sigma, sighat)
+            loglike += EvalGaussianLogPdf(sample_mu, sample_sigma, sighat)
 
             self.Incr(hypo, loglike)
 
 
-def GaussianLogLikelihood(mu, sigma, x):
-    """Computes the log-likelihood of x given mu and sigma.
+def EvalGaussianLogPdf(mu, sigma, x):
+    """Computes the log PDF of x given mu and sigma.
 
     mu, sigma: paramemters of Gaussian
     x: float values
@@ -145,11 +144,11 @@ def GaussianLogLikelihood(mu, sigma, x):
     returns: float log-likelihood
     """
     z = (x-mu) / sigma
-    loglike = -math.log(sigma) - z**2 / 2
-    return loglike
+    logpdf = -math.log(sigma) - z**2 / 2
+    return logpdf
 
 
-def FindPriorRanges(xs, num_points, num_stderrs=3.0):
+def FindPriorRanges(xs, num_points, num_stderrs=3.0, median_flag=False):
     """Find ranges for mu and sigma with non-negligible likelihood.
 
     xs: sample
@@ -172,17 +171,20 @@ def FindPriorRanges(xs, num_points, num_stderrs=3.0):
 
     # estimate mean and stddev of xs
     n = len(xs)
-    xbar, S2 = thinkstats.MeanVar(xs)
-    sighat = math.sqrt(S2)
+    if median_flag:
+        xbar, S = MedianSighat(xs, num_sigmas=NUM_SIGMAS)
+    else:
+        xbar, S2 = thinkstats.MeanVar(xs)
+        S = math.sqrt(S2)
 
-    print 'classical estimators', xbar, sighat
+    print 'classical estimators', xbar, S
 
-    # compute ranges for xbar and sighat
-    stderr_xbar = sighat / math.sqrt(n)
+    # compute ranges for xbar and S
+    stderr_xbar = S / math.sqrt(n)
     mus = MakeRange(xbar, stderr_xbar)
 
-    stderr_sighat = sighat / math.sqrt(2 * (n-1))
-    sigmas = MakeRange(sighat, stderr_sighat)
+    stderr_S = S / math.sqrt(2 * (n-1))
+    sigmas = MakeRange(S, stderr_S)
 
     return mus, sigmas
 
@@ -205,21 +207,6 @@ def Summation(xs, mu, cache={}):
         return total
 
 
-def ComputeMarginals(suite):
-    """Computes the marginal distributions for mu and sigma.
-
-    suite: Pmf that maps (x, y) to z
-
-    Returns: Pmf objects for mu and sigma
-    """
-    pmf_m = thinkbayes.Pmf()
-    pmf_s = thinkbayes.Pmf()
-    for (m, s), p in suite.Items():
-        pmf_m.Incr(m, p)
-        pmf_s.Incr(s, p)
-    return pmf_m, pmf_s
-
-
 def ComputeCoefVariation(suite):
     """Computes the distribution of CV.
 
@@ -233,23 +220,27 @@ def ComputeCoefVariation(suite):
     return pmf
 
 
+def PlotCdfs(d, labels):
+
+    myplot.Clf()
+    for key, xs in d.iteritems():
+        mu = thinkstats.Mean(xs)
+        xs = thinkstats.Jitter(xs, 1.3)
+        xs = [x-mu for x in xs]
+        cdf = thinkbayes.MakeCdfFromList(xs)
+        myplot.Cdf(cdf, label=labels[key])
+    myplot.Show()
+                  
+
 def PlotPosterior(suite, pcolor=False, contour=True):
     """Makes a contour plot.
     
     suite: Suite that maps (mu, sigma) to probability
     """
-    X, Y = numpy.meshgrid(suite.mus, suite.sigmas)
-    func = lambda x, y: suite.Prob((x, y))
-    prob = numpy.vectorize(func)
-    Z = prob(X, Y)
-
     myplot.Clf()
-    if pcolor:
-        pyplot.pcolor(X, Y, Z)
-    if contour:
-        pyplot.contour(X, Y, Z)
+    myplot.Contour(suite.GetDict(), pcolor=pcolor, contour=contour)
 
-    myplot.Save(root='bayes_height_posterior_%s' % suite.name,
+    myplot.Save(root='variability_posterior_%s' % suite.name,
                 title='Posterior joint distribution',
                 xlabel='Mean height (cm)',
                 ylabel='Stddev (cm)')
@@ -261,16 +252,18 @@ def PlotCoefVariation(suites):
     suites: map from label to Pmf of CVs.
     """
     myplot.Clf()
+    myplot.PrePlot(num=2)
 
     pmfs = {}
     for label, suite in suites.iteritems():
         pmf = ComputeCoefVariation(suite)
+        print 'CV posterior mean', pmf.Mean()
         cdf = thinkbayes.MakeCdfFromPmf(pmf, label)
         myplot.Cdf(cdf)
     
         pmfs[label] = pmf
 
-    myplot.Save(root='bayes_height_cv',
+    myplot.Save(root='variability_cv',
                 xlabel='Coefficient of variation',
                 ylabel='Probability')
 
@@ -280,7 +273,7 @@ def PlotCoefVariation(suites):
                                                    pmfs['female'])
 
 
-def PlotCdfs(samples):
+def PlotOutliers(samples):
     """Make CDFs showing the distribution of outliers."""
     cdfs = []
     for label, sample in samples.iteritems():
@@ -291,10 +284,25 @@ def PlotCdfs(samples):
 
     myplot.Clf()
     myplot.Cdfs(cdfs)
-    myplot.Save(root='bayes_height_cdfs',
+    myplot.Save(root='variability_cdfs',
                 title='CDF of height',
                 xlabel='Reported height (cm)',
                 ylabel='CDF')
+
+def PlotMarginals(suite):
+    myplot.Clf()
+
+    pyplot.subplot(1, 2, 1)
+    pmf_m = suite.Marginal(0)
+    cdf_m = thinkbayes.MakeCdfFromPmf(pmf_m)
+    myplot.Cdf(cdf_m)
+
+    pyplot.subplot(1, 2, 2)
+    pmf_s = suite.Marginal(1)
+    cdf_s = thinkbayes.MakeCdfFromPmf(pmf_s)
+    myplot.Cdf(cdf_s)
+
+    myplot.Show()
 
 
 def DumpHeights(data_dir='.', n=10000):
@@ -305,7 +313,7 @@ def DumpHeights(data_dir='.', n=10000):
     d = {1:[], 2:[]}
     [d[r.sex].append(r.htm3) for r in resp.records if r.htm3 != 'NA']
 
-    fp = open('bayes_height_data.pkl', 'wb')
+    fp = open('variability_data.pkl', 'wb')
     cPickle.dump(d, fp)
     fp.close()
 
@@ -315,7 +323,7 @@ def LoadHeights():
 
     returns: map from sex code to list of heights.
     """
-    fp = open('bayes_height_data.pkl', 'r')
+    fp = open('variability_data.pkl', 'r')
     d = cPickle.load(fp)
     fp.close()
     return d
@@ -374,19 +382,6 @@ def UpdateSuite4(suite, xs):
     suite.Normalize()
 
 
-def MedianIQR(xs):
-    """Computes the median and interquartile range.
-
-    xs: sequence of values
-
-    returns: tuple of float (median, IQR)
-    """
-    cdf = thinkbayes.MakeCdfFromList(xs)
-    median = cdf.Percentile(50)
-    iqr = cdf.Percentile(75) - cdf.Percentile(25)
-    return median, iqr
-
-
 def UpdateSuite5(suite, xs):
     """Computes the posterior distibution of mu and sigma.
 
@@ -396,46 +391,93 @@ def UpdateSuite5(suite, xs):
     t: sequence
     """
     suite.Log()
-    suite.LogUpdateSetMedianIQR(xs)
+    suite.LogUpdateSetMedianIPR(xs)
     suite.Exp()
     suite.Normalize()
 
 
-def RunEstimate(update_func, num_points=31):
+def MedianIPR(xs, p):
+    """Computes the median and interpercentile range.
+
+    xs: sequence of values
+
+    returns: tuple of float (median, IPR)
+    """
+    cdf = thinkbayes.MakeCdfFromList(xs)
+    median = cdf.Percentile(50)
+
+    alpha = (1-p) / 2
+    ipr = cdf.Value(1-alpha) - cdf.Value(alpha)
+    return median, ipr
+
+
+def MedianSighat(xs, num_sigmas):
+    """Computes the median and an estimate of sigma.
+
+    Based on an interpercentile range (IPR).
+
+    factor: number of standard deviations spanned by the IPR
+    """
+    half_p = thinkbayes.StandardGaussianCdf(num_sigmas) - 0.5
+    median, ipr = MedianIPR(xs, half_p * 2)
+    sighat = ipr / 2 / num_sigmas
+
+    return median, sighat
+
+def Summarize(xs):
+    # print outliers
+    xs.sort()
+    print 'smallest', xs[:10]
+    print 'largest', xs[-10:]
+
+    cdf = thinkbayes.MakeCdfFromList(xs)
+    print cdf.Percentile(25), cdf.Percentile(50), cdf.Percentile(75)
+
+
+def RunEstimate(update_func, num_points=31, median_flag=False):
     """Runs the whole analysis.
 
     update_func: which of the update functions to use
     num_points: number of points in the Suite (in each dimension)
     """
-    #DumpHeights(n=1000000)
+    # DumpHeights(n=10000000)
     d = LoadHeights()
-
     labels = {1:'male', 2:'female'}
 
-    samples = {}
-    suites = {}
+    # PlotCdfs(d, labels)
 
+    suites = {}
     for key, xs in d.iteritems():
         name = labels[key]
         print name, len(xs)
+        Summarize(xs)
 
-        mus, sigmas = FindPriorRanges(xs, num_points)
+        xs = thinkstats.Jitter(xs, 1.3)
+
+        mus, sigmas = FindPriorRanges(xs, num_points, median_flag=median_flag)
         suite = Height(mus, sigmas, name)
         suites[name] = suite
         update_func(suite, xs)
+        print 'MLE', suite.MaximumLikelihood()
 
         PlotPosterior(suite)
 
-        pmf_m, pmf_s = ComputeMarginals(suite)
+        pmf_m = suite.Marginal(0)
+        pmf_s = suite.Marginal(1)
         print 'marginal mu', pmf_m.Mean(), pmf_m.Var()
         print 'marginal sigma', pmf_s.Mean(), pmf_s.Var()
+
+        # PlotMarginals(suite)
 
     PlotCoefVariation(suites)
 
 
 def main():
+    random.seed(17)
+
     func = UpdateSuite5
-    RunEstimate(func)
+    median_flag = (func == UpdateSuite5)
+    RunEstimate(func, median_flag=median_flag)
 
 
 if __name__ == '__main__':

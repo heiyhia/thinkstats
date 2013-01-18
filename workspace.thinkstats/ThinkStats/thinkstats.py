@@ -6,6 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import bisect
+import random
 
 def Mean(t):
     """Computes the mean of a sequence of numbers.
@@ -47,6 +48,11 @@ def Trim(t, p=0.01):
     n = int(p * len(t))
     t = t[n:-n]
     return t
+
+
+def Jitter(values, jitter=0.5):
+    """Jitters the values by adding a uniform variate in (-jitter, jitter)."""
+    return [x + random.uniform(-jitter, jitter) for x in values]
 
 
 def TrimmedMean(t, p=0.01):
