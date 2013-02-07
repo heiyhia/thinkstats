@@ -16,6 +16,11 @@ class Train(Dice):
     """The likelihood function for the train problem is the same as
     for the Dice problem."""
 
+
+class Train2(Dice):
+    """The likelihood function for the train problem is the same as
+    for the Dice problem."""
+
     def __init__(self, hypos, alpha=1.0):
         """Initializes the hypotheses with a power law distribution.
 
@@ -27,7 +32,7 @@ class Train(Dice):
         self.Normalize()
 
 
-def MakePosterior(high, dataset):
+def MakePosterior(high, dataset, constructor):
     """Makes and updates a Suite.
 
     high: upper bound on the range of hypotheses
@@ -36,21 +41,44 @@ def MakePosterior(high, dataset):
     Returns: posterior Suite
     """
     hypos = xrange(1, high+1)
-    suite = Train(hypos)
+    suite = constructor(hypos)
     suite.name = str(high)
 
     for data in dataset:
         suite.Update(data)
 
-    myplot.Pmf(suite)
     return suite
 
 
+def ComparePriors():
+    dataset = [60]
+    high = 1000
+
+    myplot.Clf()
+    myplot.PrePlot(num=2)
+
+    constructors = [Train, Train2]
+    labels = ['uniform', 'power law']
+
+    for constructor, label in zip(constructors, labels):
+        suite = MakePosterior(high, dataset, constructor)
+        suite.name = label
+        myplot.Pmf(suite)
+
+    myplot.Save(root='train4',
+                xlabel='Number of trains',
+                ylabel='Probability')
+
 def main():
+    ComparePriors()
+
     dataset = [30, 60, 90]
 
+    myplot.Clf()
+    myplot.PrePlot(num=3)
+
     for high in [500, 1000, 2000]:
-        suite = MakePosterior(high, dataset)
+        suite = MakePosterior(high, dataset, Train2)
         print high, suite.Mean()
 
     myplot.Save(root='train3',

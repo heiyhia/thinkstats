@@ -25,6 +25,7 @@ rather than fair?"
 import thinkbayes
 import myplot
 
+
 class Euro(thinkbayes.Suite):
 
     def Likelihood(self, hypo, data):

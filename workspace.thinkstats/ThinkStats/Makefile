@@ -102,6 +102,17 @@ bayes_tut:
 	zip -r bayes_tutorial.zip bayes_tutorial
 	rsync -a bayes_tutorial.zip $(DEST)
 
+TUT_FILES = dice.py  install_test.py  pmf_exercise.py  sat_ranks.csv  \
+thinkbayes.py euro.py  myplot.py        sat_exercise.py  sat_scale.csv  train.py
+
+bayes_tut13:
+	rm -rf bayes_pycon13
+	mkdir bayes_pycon13
+	cd bayes_tutorial13; cp $(TUT_FILES) ../bayes_pycon13
+	zip -r bayes_pycon13.zip bayes_pycon13
+	rsync -a bayes_pycon13.zip $(DEST)
+	cd /home/downey/public_html/greent; sh back
+
 .PHONY: docs $(DOCPY)
 
 docs: $(DOCPY)
@@ -123,9 +134,9 @@ journal.pone.0047712.s001.csv variability.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
-BAYES_FIGS = train1.* train2.* \
+BAYES_FIGS = train*.pdf train*.eps \
 euro*.pdf euro*.eps \
-dungeons*.pdf dungeons*.pdf \
+dungeons*.pdf dungeons*.eps \
 hockey*.pdf hockey*.eps \
 sat*.eps sat*.pdf \
 kidney*.eps kidney*.pdf \

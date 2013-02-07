@@ -52,7 +52,7 @@ def main():
                 xlabel='Sum of three d6',
                 ylabel='Probability',
                 axis=[2, 19, 0, 0.15],
-               formats=['pdf', 'eps'])
+                formats=['pdf', 'eps'])
 
     myplot.Clf()
     myplot.PrePlot(num=1)

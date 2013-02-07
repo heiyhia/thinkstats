@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.17.0}
+\newcommand{\theversion}{0.18.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -345,7 +345,7 @@ prerequisites minimal.  If you know Python and a little bit about
 probability, you are ready to start this book.
 
 Chapter 1 is about probability and Bayes's Theorem; it has no code.
-Chapter 2 introduces {\tt Pmf} a thinly-disguised Python dictionary
+Chapter 2 introduces {\tt Pmf}, a thinly disguised Python dictionary
 I use to represent a probability mass function (PMF).  Then
 Chapter 3 introduces {\tt Suite}, a kind of {\tt Pmf} that provides
 a framework for doing Bayesian updates.  And that's just about
@@ -424,6 +424,11 @@ Thanks!
 
 \item Robert Marcus found a misplaced {\it i}.
 
+\item Max Hailperin suggests a clarification in Chapter 1.
+
+\item Markus Dobler pointed out that drawing cookies from a bowl
+with replacement is an unrealistic scenario.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -494,7 +499,7 @@ those factors decrease my chances.
 
 Plugging everything into the online calculator at
 \url{http://hp2010.nhlbihin.net/atpiii/calculator.asp}, I find that my
-risk of a heart attack in the next year is about 0.2\%, slightly
+risk of a heart attack in the next year is about 0.2\%,
 less than the national average.
 That value is a conditional probability, because it is based on
 a number of factors that make up my ``condition.''
@@ -557,9 +562,10 @@ Now suppose you choose one of the bowls at random and, without looking,
 select a cookie at random.  The cookie is vanilla.  What is the probability
 that it came from Bowl 1?
 
-This is a conditional probability; we want \p{\T{Bowl 1} | \T{vanilla}},
-but it is not obvious how to compute it.  On the other
-hand, if we flip it around, it's very easy:
+This is a conditional probability; we want \p{\T{Bowl 1} |
+  \T{vanilla}}, but it is not obvious how to compute it.  If I asked a
+different question---the probability of a vanilla cookie given Bowl
+1---it would be easy:
 %
 \p{\T{vanilla} | \T{Bowl 1}} = 3/4
 %
@@ -622,7 +628,10 @@ bowl at random, we can assume \p{B_1} = 1/2.
 from Bowl 1, which is 3/4.
 
 \item \p{V}: This is the probability of drawing a vanilla cookie from
-either bowl.  If we combine the two bowls, we get 50 vanilla and 30
+either bowl.  Since we had an equal chance of choosing either bowl
+and the bowls contain the same number of cookies, we had the same
+chance of choosing any cookie.  Between the two bowls there are
+50 vanilla and 30
 chocolate cookies, so \p{V} = 5/8.
 
 \end{itemize}
@@ -678,8 +687,8 @@ called the {\bf normalizing constant}.
 
 In some cases, we can compute the prior
 based on background information.  For example, the Cookie
-Problem specifies that we choose a bowl at random (and implies
-that they have equal probability).
+Problem specifies that we choose a bowl at random
+with equal probability.
 
 In other cases the prior
 is subjective; that is, reasonable people might disagree,
@@ -743,7 +752,7 @@ Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown).
 
 %\index{M\&M}
 
-A friend of mine has two bags of \MM's, and he tells me
+Suppose a friend of mine has two bags of \MM's, and he tells me
 that one is from 1994 and one from 1996.  He won't tell me which is
 which, but he gives me one \MM~from each bag.  One is yellow and
 one is green.  What is the probability that the yellow one came
@@ -763,7 +772,7 @@ are only two:
 \item A: the yellow \MM~is from 1994, which implies that green is
 from 1996.
 
-\item B: the yellow \MM~is from 1996 and green from 1994.
+\item B: yellow is from 1996 and green from 1994.
 
 \end{itemize}
 
@@ -772,6 +781,7 @@ column for each term in Bayes's Theorem:
 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
+   & Prior & Likelihood &   & Posterior  \\
    & \p{H} & \p{D|H} & \p{H}~\p{D|H}  & \p{H|D}  \\
 \hline
 A  &  1/2  &  (20)(20)  &  200  &  20/27 \\
@@ -803,9 +813,8 @@ cancels out when we divide through by the normalizing factor, so
 it doesn't affect the result.
 
 When the set of hypotheses is mutually exclusive and collectively
-exhaustive, you can multiply the likelihoods by any factor,
-if it is convenient, as long as you apply the same factor to the entire
-column.
+exhaustive, you can multiply the likelihoods by any factor, if it is
+convenient, as long as you apply the same factor to the entire column.
 
 
 \section{The Monty Hall problem}
@@ -871,6 +880,7 @@ Again, let's apply the table method:
 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
+   & Prior & Likelihood &   & Posterior  \\
    & \p{H} & \p{D|H} & \p{H}~\p{D|H}  & \p{H|D}  \\
 \hline
 A  &  1/3  &  1/2  &  1/6  &  1/3 \\
@@ -893,8 +903,8 @@ B or C.  So the probability that he chooses B is 1/2.  And since
 the car is actually behind A, the probability that the car is not
 behind B is 1.
 
-\item If the car is actually behind B, Monty does not open B, so the
-probability of the data we saw is 0.
+\item If the car is actually behind B, Monty has to open door C,
+so the probability that he opens door B is 0.
 
 \item Finally, if the car is behind Door C, Monty opens B with probability
 1 and finds no car there with probability 1.
@@ -915,6 +925,7 @@ that case the revised table is:
 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
+   & Prior & Likelihood &   & Posterior  \\
    & \p{H} & \p{D|H} & \p{H}~\p{D|H}  & \p{H|D}  \\
 \hline
 A  &  1/3  &  1  &  1/3  &  1/2 \\
@@ -949,7 +960,7 @@ with each value is 1/6.
 
 As another example, you might be interested in how many times each
 word appears in common English usage.  You could build a distribution
-that includes each word and how many time it appears.
+that includes each word and how many times it appears.
 
 In Python, you could represent a distribution with a dictionary that
 maps from each value to its probability.  As an alternative, I have
@@ -995,10 +1006,10 @@ I put ``probability'' in quotes because in this example, the
 probabilities are not normalized; that is, they do not add up to 1.
 So they are not true probabilities.
 
-But in this example the word counts are proportional to the probabilities.
-So after we count all the words, we can compute probabilities by
-dividing through by the total number of words.  {\tt Pmf} provides
-a method, \verb"Normalize", that does exactly that:
+But in this example the word counts are proportional to the
+probabilities.  So after we count all the words, we can compute
+probabilities by dividing through by the total number of words.  {\tt
+  Pmf} provides a method, \verb"Normalize", that does exactly that:
 
 \begin{verbatim}
 pmf.Normalize()
@@ -1024,7 +1035,7 @@ floating point numbers (type \verb"float").
 
 In the context of Bayes's Theorem, it is natural to use a Pmf
 to map from each hypothesis to its probability.  In the Cookie
-Problem, the hypotheses are $B_1$ and $B_2$.  In Python, I will
+Problem, the hypotheses are $B_1$ and $B_2$.  In Python, I
 represent them with strings:
 
 \begin{verbatim}
@@ -1047,10 +1058,10 @@ pmf.Mult('Bowl 2', 0.5)
 \end{verbatim}
 
 \verb"Mult" does what you would expect.  It gets the probability
-for the given value and multiplies by the given factor.
+for the given hypothesis and multiplies by the given likelihood.
 
 After this update, the distribution is no longer normalized, but
-because these hypotheses are mutually exclusion and collectively
+because these hypotheses are mutually exclusive and collectively
 exhaustive, we can {\bf renormalize}:
 
 \begin{verbatim}
@@ -1072,6 +1083,7 @@ from \url{http://thinkbayes.com/cookie.py}.
 
 
 \section{The Bayesian framework}
+\label{framework}
 
 Before we go on to other problems, I want to rewrite the code
 from the previous section to make it more general.  First I'll
@@ -1079,6 +1091,7 @@ define a class to encapsulate the code related to this problem:
 
 \begin{verbatim}
 class Cookie(Pmf):
+
     def __init__(self, hypos):
         Pmf.__init__(self)
         for hypo in hypos:
@@ -1149,7 +1162,8 @@ Bowl 2 0.4
 
 which is the same as what we got before.  This code is more complicated
 than what we saw in the previous section.  One advantage is that it
-generalizes easily to the case where we draw more than one cookie:
+generalizes to the case where we draw more than one cookie (with
+replacement):
 
 \begin{verbatim}
     dataset = ['vanilla', 'chocolate', 'vanilla']
@@ -1172,16 +1186,11 @@ To solve the Monty Hall problem, I'll define a new class:
 
 \begin{verbatim}
 class Monty(Pmf):
+
     def __init__(self, hypos):
         Pmf.__init__(self)
         for hypo in hypos:
             self.Set(hypo, 1)
-        self.Normalize()
-
-    def Update(self, data):
-        for hypo in self.Values():
-            like = self.Likelihood(hypo, data)
-            self.Mult(hypo, like)
         self.Normalize()
 \end{verbatim}
 
@@ -1290,8 +1299,10 @@ And here's the code that uses this class:
     suite.Print()
 \end{verbatim}
 
-You can download this example at
-\url{http://thinkbayes.com/monty2.py}.  If you are familiar with
+You can download this example from
+\url{http://thinkbayes.com/monty2.py}.
+
+If you are familiar with
 design patterns, you might recognize this as an example of the
 Template method pattern: the parent class, \verb"Suite", defines an
 algorithm framework; the child class, \verb"Monty" provides the
@@ -1339,7 +1350,7 @@ around.
 Next I map from the name of the hypothesis to the representation:
 
 \begin{verbatim}
-    hypotheses = dict(A=hypoA, B=hypoA)
+    hypotheses = dict(A=hypoA, B=hypoB)
 \end{verbatim}
 
 And finally I can write \verb"Likelihood".  In this case
@@ -1380,12 +1391,33 @@ The code in this section is available from
 \url{http://thinkbayes.com/m_and_m.py}.
 
 
+\section{Exercises}
+
+\begin{exercise}
+
+In Section~\ref{framework} I said that the solution to the cookie
+problem generalizes to the case where we draw multiple cookies
+with replacement.
+
+But in the more likely scenario where we eat the cookies we draw,
+the likelihood of each draw depends on the previous draws.
+
+Modify the solution in this chapter to handle selection without
+replacement.  Hint: add instance variables to {\tt Cookie} to
+represent the hypothetical state of the bowls, and modify
+{\tt Likelihood} accordingly.  You might want to define a 
+{\tt Bowl} object.
+
+\end{exercise}
+
+
 \chapter{Estimation}
 
 \section{Which die was it?}
 
-This problem is based on an example I saw in Sanjoy Mahajan's class
-on Bayesian inference.
+This problem is based on an example I saw in Sanjoy Mahajan's class on
+Bayesian inference.  You can download the code in this section from
+\url{http://thinkbayes.com/dice.py}.
 
 Suppose I have a box of dice that contains a 4-sided die, a 6-sided
 die, an 8-sided die, a 12-sided die and a 20-sided die.  If you
@@ -1414,12 +1446,7 @@ I'll use the integers 4, 6, 8, 12, and 20 to represent hypotheses:
     suite = Dice([4, 6, 8, 12, 20])
 \end{verbatim}
 
-And integers from 1 to 20 for the data:
-
-\begin{verbatim}
-    suite.Update(6)
-\end{verbatim}
-
+And integers from 1 to 20 for the data.
 I chose these representations because they make it easy to
 write the likelihood function:
 
@@ -1440,8 +1467,13 @@ Otherwise the question is, ``Given that there are {\tt hypo}
 sides, what is the chance of rolling {\tt data}?''  The
 answer is \verb"1/hypo", regardless of {\tt data}.
 
-You can download this example from \url{http://thinkbayes.com/dice.py}.
-And here is the result:
+Here is the statement that does the update (if I roll a 6):
+
+\begin{verbatim}
+    suite.Update(6)
+\end{verbatim}
+
+And here is the posterior distribution:
 
 \begin{verbatim}
 4 0.0
@@ -1546,7 +1578,7 @@ And here's the update:
     suite.Update(60)
 \end{verbatim}
 
-Since there are 1000 hypothesis, I didn't print the results.
+Since there are 1000 hypotheses, I didn't print the results.
 Instead I used {\tt myplot.Pmf}:
 
 \begin{verbatim}
@@ -1563,11 +1595,11 @@ happened to see the train with the highest number?
 
 Nevertheless, if you want to maximize the chance of getting
 the answer exactly right, you should guess 60.  But maybe that's
-not the right goal.  An obvious alternative is to compute the
+not the right goal.  One alternative is to compute the
 mean of the posterior distribution:
 
 \begin{verbatim}
-def Mean(suite):
+def Mean(suite): 
     total = 0
     for hypo, prob in suite.Items():
         total += hypo * prob
@@ -1575,6 +1607,9 @@ def Mean(suite):
 
 print Mean(suite)
 \end{verbatim}
+
+In terms of classical estimation, the mean of the posterior is
+the estimator that minimizes mean squared error in the long run.
 
 Or you could use the very similar method provided by {\tt Pmf}:
 
@@ -1585,7 +1620,8 @@ Or you could use the very similar method provided by {\tt Pmf}:
 The mean of this posterior distribution is 276, so that might be a
 good guess if you wanted to minimize error.  If you played this
 guessing game over and over, using the mean of the posterior as your
-estimate would minimize the total squared error over the long run.
+estimate would minimize the total squared error over the long run (see
+\url{http://en.wikipedia.org/wiki/Minimum_mean_square_error}).
 
 You can download this example from \url{http://thinkbayes.com/train.py}.
 
@@ -1647,6 +1683,14 @@ So the difference between the posteriors is smaller.
 
 \section{An alternative prior}
 
+\begin{figure}
+% train.py
+\centerline{\includegraphics[height=2.5in]{figs/train4.pdf}}
+\caption{Posterior distribution based on a power law prior,
+compared to a uniform prior.}
+\label{fig.train4}
+\end{figure}
+
 If more data are not available, another option is to improve the
 priors by gathering more background information.  It is probably
 not reasonable to assume that a railroad company with 1000 locomotives
@@ -1691,10 +1735,18 @@ And here's the code that constructs the prior:
 
 \begin{verbatim}
     hypos = range(1, 1001)
+    suite = Train(hypos)
 \end{verbatim}
 
 Again, the upper bound is arbitrary, but with a power law
 prior, the posterior is less sensitive to this choice.
+
+Figure~\ref{fig.train4} shows the distribution after
+we see train 60, comparing the posterior based on the power
+law prior to the posterior based on a uniform prior, both
+with upper bound 1000.  Using the additional background
+represented in the power law prior, we can all but eliminate
+values of $N$ greater than 700.
 
 If we start with this prior and observe trains 30, 60 and 90,
 the means of the posteriors are
@@ -1874,20 +1926,21 @@ and gives low posterior probabilities to $urn_1$ and $urn_2$.  Based
 on this data, Jacob is 88\% sure that U is $urn_3$.
 
 So what should Jacob believe about $B_{next}$, the chance that the
-next ball from U is blue.  If he $H_3$ right, and U is $urn_3$,
+next ball from U is blue.  If $H_3$ is right, and U is $urn_3$,
 then $B_{next}$ is 100\%.  But Jacob is not sure about $H_3$.
 
 Jacob can compute $B_{next}$ using the law of total probability, which
 says that the probability that the next ball is blue is the sum
 of the probabilities for each way it can happen; in this case
 %
-\[ B_{next} = \sum_i \frac{1}{3} \p{H_i | D} \]
+\[ B_{next} = \sum_i \frac{i}{3}~\p{H_i | D} \]
 %
 Pulling out the factor of $1/3$, we have
 %
-\[ B_{next} = \frac{1}{3} \sum_i \p{H_i | D} \]
+\[ B_{next} = \frac{1}{3} \sum_i i~\p{H_i | D} \]
 %
-which we recognize as the mean of the posterior distribution, over 3.
+which we recognize as the mean of the posterior distribution
+divided by 3.
 
 \begin{verbatim}
 print suite.Mean() / 3.0
@@ -2325,7 +2378,7 @@ suppose there is a probability {\tt y} that an actual heads is reported
 as tails, or actual tails reported as heads.
 
 Write a class that estimates the bias of a coin given a series of
-outcomes and the value of {\tt y}
+outcomes and the value of {\tt y}.
 
 How does the spread of the posterior distribution depend on
 {\tt y}?
@@ -2392,16 +2445,6 @@ When probabilities are low, it is more common to report the
 ``odds against'' rather than the odds in favor.  For
 example, if I think my horse has a 10\% chance of winning,
 I would say that the odds against are $9:1$.
-
-In the context of betting, it can be confusing to talk about
-odds, because the same format is used to report the payoff.
-For example, if I offer you a bet with a payoff of ``two to one,''
-that means I will pay you \$2 for every \$1 you bet (if
-you win).  Of course, I would only offer you that bet if
-I thought the odds against you were more than $2:1$.
-
-But this is not a book about gambling, so I will only talk about odds
-and forget about payoffs.
 
 Probabilities and odds are different representations of the
 same information.  Given a probability, you can compute the
@@ -2579,7 +2622,7 @@ There are two ways you might compute it:
 for a single die, you can draw random samples, add them up,
 and accumulate the distribution of simulated sums.
 
-\item[Convolution:] Given two Pmfs, you can enumerate all possible
+\item[Enumeration:] Given two Pmfs, you can enumerate all possible
 pairs of values and compute the distribution of the sums.
 
 \end{description}
@@ -2693,7 +2736,7 @@ There are three ways to compute the distribution of a maximum:
 for a single selection, you can a random samples, find the maximum,
 and accumulate the distribution of simulated maxima.
 
-\item[Convolution:] Given two Pmfs, you can enumerate all possible
+\item[Enumeration:] Given two Pmfs, you can enumerate all possible
 pairs of values and compute the distribution of the maxima.
 
 \item[Exponentiation:] If we convert a Pmf to a Cdf, there is a simple
@@ -2716,7 +2759,7 @@ def SampleMax(dists, n):
 \end{verbatim}
 
 All I did was replace ``sum'' with ``max''.  And the code
-for convolution is almost identical, too:
+for enumeration is almost identical, too:
 
 \begin{verbatim}
 def PmfMax(pmf1, pmf2):
