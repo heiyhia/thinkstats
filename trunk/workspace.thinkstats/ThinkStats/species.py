@@ -5,17 +5,19 @@ Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import thinkbayes
-
 import matplotlib.pyplot as pyplot
 import myplot
 import numpy
 
 import csv
+import HTML
 import math
 import random
 import sys
 import time
+
+import thinkbayes
+
 
 formats = ['pdf', 'eps', 'png']
 
@@ -71,7 +73,7 @@ class Subject(object):
 
         Sets: self.suite
         """
-        self.PrintCounts()
+        #self.PrintCounts()
 
         counts = self.GetCounts()
         m = len(counts)
@@ -321,6 +323,8 @@ def ReadData(filename='journal.pone.0047712.s001.csv'):
 
     Data from http://www.plosone.org/article/
     info%3Adoi%2F10.1371%2Fjournal.pone.0047712#s4
+
+    Returns: list of Subjects
     """
     fp = open(filename)
     reader = csv.reader(fp)
@@ -340,6 +344,92 @@ def ReadData(filename='journal.pone.0047712.s001.csv'):
         count = int(t[2])
         subject.Add(species, count)
 
+    return subjects
+
+
+def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
+    """Reads a data file and returns a list of Subjects.
+
+    Data from personal correspondence with Rob Dunn, received 2-7-13.
+
+    Converted from xlsx to csv.
+    """
+    fp = open(filename)
+    reader = csv.reader(fp)
+    header = reader.next()
+    header = reader.next()
+
+    subject_codes = header[1:-1]
+    subject_codes = ['B'+code for code in subject_codes]
+
+    # print subject_codes
+
+    subjects = {}
+    for code in subject_codes:
+        subjects[code] = Subject(code)
+    
+    for t in reader:
+        otu_code = t[0]
+        otu_names = t[-1]
+        taxons = otu_names.split(';')
+        species = taxons[-1]
+        counts = [int(x) for x in t[1:-1]]
+
+        # print otu_code, species
+
+        for code, count in zip(subject_codes, counts):
+            if count > 0:
+                subjects[code].Add(species, count)
+
+    ComputeNumReads(subjects)
+    return subjects
+        
+
+def ComputeNumReads(subjects):
+    """Computes the number of reads for each subject.
+
+    Adds an attribute named num_reads.
+
+    subjects: map from subject code to Subject.
+    """
+    num_reads = {}
+    for code, subject in subjects.iteritems():
+        counts = subject.GetCounts()
+
+        subject.num_reads = sum(counts)
+
+
+def JoinSubjects():
+    """Reads both datasets and computers their inner join.
+
+    Finds all subjects that appear in both datasets.
+
+    For subjects in the rarefacted dataset, looks up the total
+    number of reads and stores it as total_reads.  num_reads
+    is normally 400.
+    
+    """
+
+    # read the rarefacted dataset
+    sampled_subjects = ReadData()
+    subjects = {}
+    for subject in sampled_subjects:
+        subjects[subject.code] = subject
+
+    ComputeNumReads(subjects)
+
+    # read the complete dataset
+    all_subjects = ReadCompleteDataset()
+
+    count = 0
+    for code, subject in subjects.iteritems():
+        if code in all_subjects:
+            match = all_subjects[code]
+            #print code, subject.num_reads, match.num_reads
+            subject.total_reads = match.num_reads
+            count += 1
+
+    print len(all_subjects), len(subjects), count
     return subjects
 
 
@@ -1028,6 +1118,10 @@ def ProcessSubjects(indices):
 
 
 def RunSubject(index):
+    """Run the analysis for the subject with the given index.
+
+    index: int offset into the list of subjects in the rarefacted dataset
+    """
     subjects = ReadData()
     subject = subjects[index]
     subject.Process()
@@ -1051,6 +1145,53 @@ def RunSubject(index):
     PlotFracCdfs(cdfs, root=root)
 
 
+def MakePredictions(subjects, num_rows=3):
+    i = 0
+    for subject in subjects.itervalues():
+        MakePrediction(subject)
+        i += 1
+        if i == num_rows:
+            break
+
+
+def MakePrediction(subject, num_sims=100):
+    subject.Process()
+
+    print subject.code, subject.num_reads, subject.total_reads
+    additional = subject.total_reads - subject.num_reads
+    curves = subject.RunSimulations(num_sims, additional)
+    #PlotCurves(curves, root='species.subject')
+    cdfs = subject.MakeConditionals(curves, [additional])
+    cdf = cdfs[0]
+
+    ps = range(10, 100, 10)
+    cis = [cdf.CredibleInterval(p) for p in ps]
+
+    for p, ci in zip(ps, cis):
+        print p, ci
+
+    subject.ps = ps
+    subject.cis = cis
+
+
+def MakePredictionTable(subjects, num_rows=3):
+    def PrintRow(t):
+        print '&',
+        t = [str(x) for x in t]
+        print ' & '.join(t),
+        print r'\\'
+        
+    i = 0
+    for subject in subjects.itervalues():
+        if i == 0:
+            PrintRow(subject.ps)
+        PrintRow(subject.cis)
+
+        i += 1
+        if i == num_rows:
+            break
+
+
 def SummarizeData():
     subjects = ReadData()
 
@@ -1061,6 +1202,12 @@ def SummarizeData():
 
 def main(script, *args):
     random.seed(17)
+
+    subjects = JoinSubjects()
+    num_rows = 2
+    MakePredictions(subjects, num_rows)
+    MakePredictionTable(subjects, num_rows)
+    return
 
     SimpleDirichletExample()
     HierarchicalExample()
