@@ -13,6 +13,7 @@ import csv
 import HTML
 import math
 import random
+import shelve
 import sys
 import time
 
@@ -20,6 +21,20 @@ import thinkbayes
 
 
 formats = ['pdf', 'eps', 'png']
+
+
+class Locker(object):
+    def __init__(self, shelf_file):
+        self.shelf = shelve.open(shelf_file)
+
+    def Close(self):
+        self.shelf.close()
+
+    def Add(self, key, value):
+        self.shelf[key] = value
+
+    def Lookup(self, key):
+        return self.shelf.get(key)
 
 
 class Subject(object):
@@ -1145,16 +1160,43 @@ def RunSubject(index):
     PlotFracCdfs(cdfs, root=root)
 
 
-def MakePredictions(subjects, num_rows=3):
+def MakePredictions(subjects, locker, num=3):
+    """Make predictions for each subject in the list and store in a locker.
+
+    subjects: map from code to Subject
+    locker: Locker object to store results
+    num: how many subjects to process
+    """
     i = 0
-    for subject in subjects.itervalues():
+    for code, subject in subjects.iteritems():
+        print code
+
+        processed = locker.Lookup(code)
+        if processed is not None:
+            print 'In cache'
+            subject.ps = processed.ps
+            subject.cis = processed.cis
+            continue
+
+        print 'Processing'
         MakePrediction(subject)
+        locker.Add(subject.code, subject)
+
         i += 1
-        if i == num_rows:
+        if i == num:
             break
 
 
 def MakePrediction(subject, num_sims=100):
+    """Make predictions for the given subject.
+
+    subject: Subject object
+    num_sims: how many simulations to run for predictions
+
+    Adds attributes
+    ps: list of probabilities
+    cis: list of credible intervals
+    """
     subject.Process()
 
     print subject.code, subject.num_reads, subject.total_reads
@@ -1174,7 +1216,13 @@ def MakePrediction(subject, num_sims=100):
     subject.cis = cis
 
 
-def MakePredictionTable(subjects, num_rows=3):
+def MakePredictionTable(subjects):
+    """Makes a table of predictions in LaTeX format.
+
+    subjects: map from code to Subjects
+
+    Precondition: subject have attributes ps and cis
+    """
     def PrintRow(t):
         print '&',
         t = [str(x) for x in t]
@@ -1185,11 +1233,34 @@ def MakePredictionTable(subjects, num_rows=3):
     for subject in subjects.itervalues():
         if i == 0:
             PrintRow(subject.ps)
-        PrintRow(subject.cis)
+
+        try:
+            PrintRow(subject.cis)
+        except AttributeError:
+            break
 
         i += 1
-        if i == num_rows:
-            break
+
+
+def MakePredictionHTML(subjects):
+    """Makes a table of predictions in LaTeX format.
+
+    subjects: map from code to Subjects
+
+    Precondition: subject have attributes ps and cis
+    """
+    subject = subjects.values()[0]
+    header = ['Code', '# reads', '# species'] + subject.ps
+    t = HTML.Table(header_row=header)
+
+    for code, subject in sorted(subjects.iteritems()):
+        names = subject.GetNames()
+        m = len(names)
+
+        row = [code, subject.total_reads, m] + subject.cis
+        t.rows.append(row)
+
+    return t
 
 
 def SummarizeData():
@@ -1204,9 +1275,15 @@ def main(script, *args):
     random.seed(17)
 
     subjects = JoinSubjects()
-    num_rows = 2
-    MakePredictions(subjects, num_rows)
-    MakePredictionTable(subjects, num_rows)
+    locker = Locker('species_locker.db')
+    MakePredictions(subjects, locker, num=60)
+    #MakePredictionTable(subjects)
+    t = MakePredictionHTML(subjects)
+    print len(subjects)
+
+    fp = open('species_table.html', 'w')
+    fp.write(str(t))
+    fp.close()
     return
 
     SimpleDirichletExample()
