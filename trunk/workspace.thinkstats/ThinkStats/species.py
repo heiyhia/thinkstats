@@ -1187,7 +1187,7 @@ def MakePredictions(subjects, locker, num=3):
             break
 
 
-def MakePrediction(subject, num_sims=100):
+def MakePrediction(subject, num_sims=300):
     """Make predictions for the given subject.
 
     subject: Subject object

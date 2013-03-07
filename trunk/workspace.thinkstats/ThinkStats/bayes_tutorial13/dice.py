@@ -15,6 +15,9 @@ class Dice(Suite):
         hypo: integer number of sides on the die
         data: integer die roll
         """
+        num_sides = hypo
+        outcome = data
+
         # TODO: write this method!
         return 1
 

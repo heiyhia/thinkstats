@@ -95,10 +95,9 @@ class Exam(object):
         self.scale = ReadScale()
 
         scores = ReadRanks()
-        hist = thinkbayes.MakeHistFromDict(dict(scores))
-        score_dist = thinkbayes.MakePmfFromHist(hist)
+        score_pmf = thinkbayes.MakePmfFromDict(dict(scores))
 
-        self.raw = self.ReverseScale(score_dist)
+        self.raw = self.ReverseScale(score_pmf)
         self.max_score = max(self.raw.Values())
         self.prior = DivideValues(self.raw, denom=self.max_score)
         
