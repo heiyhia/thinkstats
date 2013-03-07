@@ -23,6 +23,7 @@ rather than fair?"
 """
 
 import thinkbayes
+import myplot
 
 
 class Euro(thinkbayes.Suite):
@@ -33,53 +34,16 @@ class Euro(thinkbayes.Suite):
         hypo: integer value of x, the probability of heads (0-100)
         data: string 'H' or 'T'
         """
-        x = hypo / 100.0
-        heads, tails = data
-        like = x**heads * (1-x)**tails
-        return like
+        return 1
 
-
-
-def AverageLikelihood(suite, data):
-    """Computes the average likelihood over all hypothesis in suite.
-
-    Args:
-      suite: Suite of hypotheses
-      data: some representation of the observed data
-
-    Returns:
-      float
-    """
-    total = 0
-
-    for hypo, prob in suite.Items():
-        like = suite.Likelihood(hypo, data)
-        total += prob * like
-
-    return total
 
 
 def main():
-    fair = Euro()
-    fair.Set(50, 1)
+    suite = Euro(range(0, 101))
 
-    bias = Euro()
-    for x in range(0, 101):
-        if x != 50:
-            bias.Set(x, 1)
-    bias.Normalize()
-
-    data = 140, 110
-
-    like_bias = AverageLikelihood(bias, data)
-    print 'like_bias', like_bias
-
-    like_fair = AverageLikelihood(fair, data)
-    print 'like_fair', like_fair
-
-    ratio = like_bias / like_fair
-    print 'Bayes factor', ratio
-
+    myplot.Pmf(suite)
+    myplot.Show()
     
+
 if __name__ == '__main__':
     main()

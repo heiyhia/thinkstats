@@ -102,8 +102,9 @@ bayes_tut:
 	zip -r bayes_tutorial.zip bayes_tutorial
 	rsync -a bayes_tutorial.zip $(DEST)
 
-TUT_FILES = dice.py  install_test.py  pmf_exercise.py  sat_ranks.csv  \
-thinkbayes.py euro.py  myplot.py        sat_exercise.py  sat_scale.csv  train.py
+TUT_FILES = dice.py  install_test.py   sat_ranks.csv  \
+thinkbayes.py euro.py  euro2.py myplot.py  sat.py  sat_scale.csv \
+train.py
 
 bayes_tut13:
 	rm -rf bayes_pycon13
