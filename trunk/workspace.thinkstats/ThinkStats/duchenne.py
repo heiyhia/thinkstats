@@ -19,45 +19,83 @@ import thinkbayes
 import myplot
 
 
+def ReadLabels(filename="duchenne/mturklabels.txt"):
+    """Returns a list of (photo, labeler, label) tuples.
+    """
+    labels = []
+    for line in open(filename):
+        #photo, labeler, label = line.split()
+        labels.append(line.split())
+    return labels
+
+
+def MakeObjects(labels):
+    """Make Photo and Labeler objects.
+
+    Return: (photos, labelers), a map from photo code to Photo
+            and a map from labeler code to Labeler
+    """
+    photos = {}
+    labelers = {}
+    for pcode, lcode, label in labels:
+        photos[pcode] = Photo()
+        labelers[lcode] = Labeler()
+
+    return photos, labelers
+
+
 class Labeler(thinkbayes.Suite):
     """Represents hypotheses about the trustworthiness of a labeler."""
+
+    def __init__(self):
+        thinkbayes.Suite.__init__(self)
+        beta = thinkbayes.Beta(2, 1)
+        for val, prob in beta.MakePmf().Items():
+            self.Set(val, prob)
 
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the prob of a correct vote (0-100)
-        data: (vote, q) pair, where vote is 'yes' or 'no' and
+        data: (vote, q) pair, where vote is '1' or '0' and
               q is the mean quality of the link
         """
-        x = hypo / 100.0
+        x = hypo
         vote, q = data
 
-        if vote == 'yes':
+        if vote == '1':
             return x * q + (1-x) * (1-q)
-        elif vote == 'no':
+        elif vote == '0':
             return x * (1-q) + (1-x) * q
         else:
-            return 0
+            raise ValueError
+
 
 class Photo(thinkbayes.Suite):
     """Represents hypotheses about the trustworthiness of a labeler."""
+
+    def __init__(self):
+        thinkbayes.Suite.__init__(self)
+        beta = thinkbayes.Beta(1, 1)
+        for val, prob in beta.MakePmf().Items():
+            self.Set(val, prob)
 
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the prob of garnering an upvote
-        data: (vote, t) pair, where vote is 'yes' or 'no' and
+        data: (vote, t) pair, where vote is '1' or '0' and
               t is the mean trustworthiness of the labeler
         """
-        x = hypo / 100.0
+        x = hypo
         vote, t = data
 
-        if vote == 'yes':
+        if vote == '1':
             return x * t + (1-x) * (1-t)
-        elif vote == 'no':
+        elif vote == '0':
             return x * (1-t) + (1-x) * t
         else:
-            return 0
+            raise ValueError
 
 
 def Summarize(suite):
@@ -73,32 +111,45 @@ def Summarize(suite):
     print 'CI', thinkbayes.CredibleInterval(suite, 90)
 
 
-def Main():
-    # make a labeler with some trustworthiness (mean_t = 0.67)
-    labeler = Labeler(name='labeler')
-    beta = thinkbayes.Beta(2, 1)
-    for val, prob in beta.MakePmf().Items():
-        labeler.Set(val*100, prob)
+def RunUpdates(photos, labelers, labels):
+    for pcode, lcode, label in labels:
+        photo = photos[pcode]
+        labeler = labelers[lcode]
+        print label, pcode, lcode
+        Update(photo, labeler, label)
 
-    # make a new photo with unknown quality (mean_q = 0.5)
-    photo = Photo(range(0, 101), name='photo')
 
-    # compute the means
-    mean_t = labeler.Mean() / 100.0
-    mean_q = photo.Mean() / 100.0
+def Update(photo, labeler, label):
+    mean_t = labeler.Mean()
+    mean_q = photo.Mean()
 
-    print mean_t
-    print mean_q
+    print 'trustworthiness', mean_t
+    print 'quality', mean_q
 
     # perform simultaneous updates
-    labeler.Update(('yes', mean_q))
-    photo.Update(('yes', mean_t))
+    labeler.Update((label, mean_q))
+    photo.Update((label, mean_t))
 
-    Summarize(photo)
 
-    # display the posterior distributions
-    myplot.Pmf(labeler)
-    myplot.Pmf(photo)
+def PlotPosteriorMeans(d, name):
+    means = [item.Mean() for item in d.itervalues()]
+    cdf = thinkbayes.MakeCdfFromList(means, name=name)
+    myplot.Cdf(cdf)
+
+
+def Main():
+    labels = ReadLabels()
+    photos, labelers = MakeObjects(labels)
+    for code, photo in photos.iteritems():
+        print code
+    for code, labeler in labelers.iteritems():
+        print code
+
+    RunUpdates(photos, labelers, labels)
+
+    myplot.Clf()
+    PlotPosteriorMeans(photos, 'photos')
+    PlotPosteriorMeans(labelers, 'labelers')
     myplot.Show()
 
 
