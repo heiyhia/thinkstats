@@ -112,6 +112,12 @@ def Summarize(suite):
 
 
 def RunUpdates(photos, labelers, labels):
+    """Runs the mutual update process.
+
+    photos: map from id to Photo
+    labelers: map from id to Labeler
+    labels: label applied to the Photo by the Labeler
+    """
     for pcode, lcode, label in labels:
         photo = photos[pcode]
         labeler = labelers[lcode]
@@ -120,6 +126,12 @@ def RunUpdates(photos, labelers, labels):
 
 
 def Update(photo, labeler, label):
+    """Updates the photo and labeler.
+
+    photo: Photo
+    labeler: Labeler
+    label: string '1' or '0'
+    """
     mean_t = labeler.Mean()
     mean_q = photo.Mean()
 
@@ -132,6 +144,11 @@ def Update(photo, labeler, label):
 
 
 def PlotPosteriorMeans(d, name):
+    """Plots the CDF of the means of the posteriors.
+
+    d: map from code to posterior Suite
+    name: label for the cdf
+    """
     means = [item.Mean() for item in d.itervalues()]
     cdf = thinkbayes.MakeCdfFromList(means, name=name)
     myplot.Cdf(cdf)
