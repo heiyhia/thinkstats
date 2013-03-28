@@ -429,6 +429,18 @@ Thanks!
 \item Markus Dobler pointed out that drawing cookies from a bowl
 with replacement is an unrealistic scenario.
 
+\item Tom Pollard and Paul A. Giannaros spotted a version problem with
+  some of the numbers in the train example.
+
+\item Ram Limbu found a typo and suggested a clarification.
+
+\item In Spring 2013, students in Computational Bayesian statistics
+made many helpful corrections and suggestions: Kai Austin, Claire
+Barnes, Kari Bender, Rachel Boy, Kat Mendoza, Arjun Iyer, Ben Kroop,
+Nathan Lintz, Kyle McCannaughay, Alec Radford, Brendan Ritter and
+Evan Simpson.
+
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -935,7 +947,7 @@ C  &  1/3  &  1  &   1/3  &  1/2 \\
 \end{tabular}
 
 The only change is \p{D|A}.  If the car is behind $A$, Monty can
-chose to open B or C.  But in this variation he always chooses
+choose to open B or C.  But in this variation he always chooses
 B, so $\p{D|A} = 1$.
 
 As a result, the likelihoods are the same for $A$ and $C$, and the
@@ -1162,8 +1174,8 @@ Bowl 2 0.4
 
 which is the same as what we got before.  This code is more complicated
 than what we saw in the previous section.  One advantage is that it
-generalizes to the case where we draw more than one cookie (with
-replacement):
+generalizes to the case where we draw more than one cookie from the
+same bowl (with replacement):
 
 \begin{verbatim}
     dataset = ['vanilla', 'chocolate', 'vanilla']
@@ -1608,16 +1620,13 @@ def Mean(suite):
 print Mean(suite)
 \end{verbatim}
 
-In terms of classical estimation, the mean of the posterior is
-the estimator that minimizes mean squared error in the long run.
-
 Or you could use the very similar method provided by {\tt Pmf}:
 
 \begin{verbatim}
     print suite.Mean()
 \end{verbatim}
 
-The mean of this posterior distribution is 276, so that might be a
+The mean of this posterior distribution is 333, so that might be a
 good guess if you wanted to minimize error.  If you played this
 guessing game over and over, using the mean of the posterior as your
 estimate would minimize the total squared error over the long run (see
@@ -1641,9 +1650,9 @@ to these assumptions.  With so little data (only one observation)
 it probably is.
 
 Recall that with a uniform prior from 1 to 1000, the mean of
-the posterior is 276.  With an upper bound of 500, we get a
-posterior mean of 166, and with an upper bound of 2000,
-the posterior mean is 467.
+the posterior is 333.  With an upper bound of 500, we get a
+posterior mean of 207, and with an upper bound of 2000,
+the posterior mean is 552.
 
 So that's bad.  There are two ways to proceed:
 
@@ -2120,6 +2129,7 @@ probability for any given hypothesis would be greater or less.
 
 
 \section{Swamping the priors}
+\label{triangle}
 
 \begin{figure}
 % euro.py
@@ -2150,6 +2160,7 @@ As an example, I constructed a triangular prior, shown in
 Figure~\ref{fig.euro2}.  Here's the code that constructs the prior:
 
 \begin{verbatim}
+def TrianglePrior():
     suite = Euro(xrange(0, 101))
     for x in range(0, 51):
         suite.Set(x, x)
@@ -3143,9 +3154,8 @@ more.
 \label{fig.hockey3}
 \end{figure}
 
-To get the probability of winning, we can convolve the distributions
-from the previous section to get the distribution of the goal
-differential:
+To get the probability of winning, first we compute the
+distribution of the goal differential:
 
 \begin{verbatim}
     goal_dist1 = MakeGoalPmf(suite1)
@@ -3153,8 +3163,12 @@ differential:
     diff = goal_dist1 - goal_dist2
 \end{verbatim}  
 
-If this differential is positive, the Bruins win; if negative,
-the Canucks win; if 0, it's a tie:
+The subtraction operator invokes the \verb"__sub__" method
+in {\tt Pmf}, which enumerates pairs of values and computes
+the difference.
+
+If the goal differential is positive, the Bruins win; if negative, the
+Canucks win; if 0, it's a tie:
 
 \begin{verbatim}
     p_win = diff.ProbGreater(0)
@@ -3316,6 +3330,77 @@ usually a good idea to err on the side of a more generous prior.
 The code and data for this chapter are available from
 \url{http://thinkbayes.com/hockey.py} and
 \url{http://thinkbayes.com/hockey_data.csv}.
+
+
+\section{Exercises}
+
+\begin{exercise}
+
+If buses arrive at a bus stop every 20 minutes, and you
+arrive at the bus stop at a random time, your wait time until
+the bus arrives is uniformly distributed from 0 to 20 minutes.
+
+But in reality, there is variability in the time between
+buses.  Suppose you are waiting for a bus, and you know the historical
+distribution of time between buses.  Compute your distribution
+of wait times.
+
+Hint: Suppose that the time between buses is either
+10 or 20 minutes with equal probability.  What is the probability
+that you arrive during one of the 20 minute intervals?
+
+\end{exercise}
+
+
+\begin{exercise}
+
+Suppose that passengers arriving at the bus stop are well-modeled
+by a Poisson process with parameter $\mu$.  If you arrive at the
+stop and find 3 people waiting, what is your posterior distribution
+for the time since the last bus arrived.
+
+\end{exercise}
+
+
+\begin{exercise}
+
+Suppose that you are an ecologist sampling the insect population in
+a new environment.  You deploy 100 traps in a test area and come back
+the next day to check on them.  You find that 37 traps have been
+triggered, trapping an insect inside.  Once a trap triggers, it
+cannot trap another insect until it has been reset.
+
+If you reset the traps and come back in two days, how many traps
+do you expect to find triggered?  Compute a posterior predictive
+distribution for the number of traps.
+
+\end{exercise}
+
+
+\begin{exercise}
+
+Suppose you are the manager of an apartment building with
+100 light bulbs in common areas.  It is your responsibility
+to replace light bulbs when they break.
+
+On January 1, all 100 bulbs are working.  When you inspect
+them on February 1, you find 3 light bulbs out.  If you
+come back on April 1, how many light bulbs do you expect to
+find broken?
+
+In the previous exercise, you could reasonably assume that an event is
+equally likely at any time.  For light bulbs, the likelihood of
+failure depends on the age of the bulb.  Specifically, old bulbs
+have an increasing failure rate due to evaporation of the filament.
+
+This problem is more open-ended than some; you will have to make
+modeling decisions.  You might want to read about the Weibull
+distribution
+(\url{http://en.wikipedia.org/wiki/Weibull_distribution}).
+Or you might want to look around for information about
+light bulb survival curves.
+
+\end{exercise}
 
 
 \chapter{Two dimensions}
@@ -3627,7 +3712,6 @@ The shapes of these distributions are different, which indicates
 that the variables are not independent.  If we know somehow that
 {\tt beta = 10}, then we can be fairly confident about {\tt alpha}.
 But as {\tt beta} increases, so does the spread in {\tt alpha}.
-If {\tt beta = 40}, we have almost no information about {\tt alpha}.
 
 
 \section{Credible intervals}
@@ -3703,7 +3787,7 @@ def MakeCrediblePlot(suite):
 \end{verbatim}
 
 {\tt d} is a dictionary that maps from each value in the suite
-to the number of intervals it appear in.  The loop computes intervals
+to the number of intervals it appears in.  The loop computes intervals
 for several percentages and modifies {\tt d}.  Then I use functions
 from {\tt myplot} to generate a pseudocolor plot.
 
@@ -3814,7 +3898,7 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
                  for mu in mus
                  for sigma in sigmas]
 
-        thinkbayes.Suite.__init__(self, pairs, name=name)
+        thinkbayes.Suite.__init__(self, pairs)
 \end{verbatim}
 
 {\tt mus} is a sequence of possible values for {\tt mu}; {\tt sigmas}
@@ -3860,7 +3944,7 @@ classical estimators to find a likely location for {\tt mu} and {\tt
 likely spread.
 
 If the true parameters of the distribution are $\mu$ and
-$\sigma$, and we take a sample of $n$ values, an estimator for
+$\sigma$, and we take a sample of $n$ values, an estimator
 of $\mu$ is
 %
 \[ \bar{x} = \frac{1}{n} \sum_i x_i \]
@@ -3873,7 +3957,7 @@ The standard error of the estimated $\mu$ is
 %
 \[ S / \sqrt{n} \]
 %
-and the standard error the estimated $\sigma$ is
+and the standard error of the estimated $\sigma$ is
 %
 \[ S / \sqrt{2 (n-1)}\]
 %
@@ -3925,7 +4009,7 @@ Finally here's the code to make and update the suite:
 
 \begin{verbatim}
     mus, sigmas = FindPriorRanges(xs, num_points)
-    suite = Height(mus, sigmas, name)
+    suite = Height(mus, sigmas)
     suite.UpdateSet(xs)
     print suite.MaximumLikelihood()    
 \end{verbatim}
@@ -3970,7 +4054,8 @@ But there are a few problems we have to solve first:
 \begin{enumerate}
 
 \item As the size of the dataset increases, we run into a series of
-  computational problems, including the dreaded ``underflow''.
+  computational problems due to the limitations of floating-point
+  arithmetic.
 
 \item The dataset contains a number of extreme values that are almost
   certainly errors.  We will need to make the estimation process
@@ -4568,7 +4653,8 @@ is exactly 50\%.
 To make a legitimate comparison, we have to define $B$ without looking
 at the data.  So let's try a different definition.  If you inspect
 a Belgian Euro coin, you might notice that the ``heads'' side is more
-prominent than the ``tails'' side.  You might expect that to effect
+prominent than the ``tails'' side.  You might expect the shape to 
+have some effect on
 $x$, but be unsure whether it makes heads more or less
 likely.  So you might say ``I think the coin is biased so that
 $x$ is either 0.6 or 0.4, but I am not sure which.''
@@ -4664,6 +4750,9 @@ like this:
     likelihood = b_triangle.Update(data)
 \end{verbatim}
 
+{\tt TrianglePrior} is defined in Section~\ref{triangle} and
+shown in Figure~\ref{fig.euro2}.
+
 The likelihood ratio for \verb"b_triangle" is 0.84, compared to $F$, so
 again we would say that the data are weak evidence against $B$.
 
@@ -4684,7 +4773,6 @@ $F$              & 5.5   & --   \\
 \hline
 \end{tabular}
 
-
 In summary, we can use Bayesian hypothesis testing to compare the
 likelihood of $F$ and $B$, but we have to do some work to specify
 precisely what $B$ means.  This specification depends on background
@@ -4700,6 +4788,81 @@ David MacKay's discussion, and comes to the same conclusion.
 
 You can download the code I used in this chapter from
 \url{http://thinkbayes.com/euro3.py}.
+
+
+\section{Strength of evidence}
+
+The Bayes factor for \verb"B_uniform" is 0.47, which means
+that the data provide evidence against this hypothesis (compared
+to $F$).  In the previous section I characterized this evidence
+as ``weak,'' but I didn't say why.
+
+Part of the answer is historical.  Harold Jeffreys, an early
+proponent of Bayesian statistics, suggested a scale for
+interpreting Bayes factors:
+
+\begin{tabular}{|l|l|}
+\hline
+Bayes & Strength \\
+Factor & \\
+\hline
+1 -- 3 & Barely worth mentioning \\
+3 -- 10 & Substantial \\
+10 -- 30 & Strong \\
+30 -- 100 & Very strong \\
+$>$ 100 & Decisive \\
+\hline
+\end{tabular}
+
+In the example, the Bayes factor is 0.47 in favor of \verb"B_uniform",
+so it is 2.1 in favor is $F$, which Jeffreys would consider
+``barely worth mentioning.''
+
+Other authors have suggested variations on the wording.  To
+avoid arguing about adjectives, we could think about odds instead.
+
+If your prior odds are 1:1, and you see evidence with Bayes
+factor 2, your posterior odds are 2:1.  In terms of probability,
+the data changed your degree of belief from 50\% to 66\%.  For
+most real world problems, that change would be small relative
+to the uncertainty of the prior.
+
+On the other hand, if you had seen evidence with Bayes
+factor 100, your posterior odds would be 100:1 or more than 99\%.
+Whether or not you agree that such evidence is ``decisive,''
+it is certainly strong.
+
+\begin{exercise}
+Some people believe in the existence of extra-sensory
+perception (ESP); for example, the ability of some people to guess
+the value of an unseen playing card with probability better
+than chance.
+
+What is your prior degree of belief in this kind of ESP?
+Do you think it is as likely to exist as not?  Or are you
+more skeptical about it?  Write down your prior odds.
+
+Now compute the strength of the evidence it would take to
+convince you that ESP is at least 50\% likely to exist.
+What Bayes factor would be needed to make you 90\% sure
+that ESP exists?
+\end{exercise}
+
+
+\begin{exercise}
+Suppose that your answer to the previous question is 1000;
+that is, evidence with Bayes factor 1000 in favor of ESP would
+be sufficient to change your mind.
+
+Now suppose that you read a paper in a respectable peer-reviewed
+scientific journal that presents evidence with Bayes factor 1000 in
+favor of ESP.  Would that change your mind?
+
+If not, how do you resolve the apparent contradiction?
+You might find it helpful to read about David Hume's article, ``Of
+Miracles,'' at \url{http://en.wikipedia.org/wiki/Of_Miracles}.
+\end{exercise}
+
 
 
 \chapter{Evidence}
@@ -4765,12 +4928,12 @@ You can download the code for this example from
 \section{The prior}
 
 The College Board also publishes the distribution of scaled scores
-for all test-takers.  If we convert them to raw scores, we can
-compute the fraction of questions each test-taker got right, which
-is an estimate of \verb"p_correct".
-
-Then we can use the distribution of raw scores to model the
+for all test-takers.  If we convert each scaled score to a raw score,
+and divide by the number of questions, the result is an estimate
+of \verb"p_correct".
+So we can use the distribution of raw scores to model the
 prior distribution of \verb"p_correct".
+
 Here is the code that reads and processes the data:
 
 \begin{verbatim}
@@ -4778,19 +4941,23 @@ class Exam(object):
 
     def __init__(self):
         self.scale = ReadScale()
-
         scores = ReadRanks()
-        hist = Pmf.MakeHistFromDict(dict(scores))
-        score_dist = Pmf.MakePmfFromHist(hist)
-
-        raw = self.ReverseScale(score_dist)
+        score_pmf = thinkbayes.MakePmfFromDict(dict(scores))
+        self.raw = self.ReverseScale(score_pmf)
         self.prior = DivideValues(raw, 54)
 \end{verbatim}
 
 {\tt Exam} encapsulates the information we have about the offering
-of an exam.  {\tt self.scale} is the {\tt Interpolator} that converts
-from raw to scaled scores and back.  {\tt self.prior} is a {\tt Pmf}
-that maps from each raw score to a fraction of test-takers.
+of an exam.
+{\tt ReadScale} and {\tt ReadRanks} read files and return
+object that contain the data:
+{\tt self.scale} is the {\tt Interpolator} that converts
+from raw to scaled scores and back;  {\tt scores} is a list
+of (score, frequency) pairs.
+
+\verb"score_pmf" is the Pmf of
+scaled scores.   {\tt raw} is the Pmf of raw scores, and
+{\tt self.prior} is the Pmf of \verb"p_correct".
 
 \begin{figure}
 % sat.py
@@ -4825,10 +4992,9 @@ class Sat(thinkbayes.Suite):
         self.Update(score)
 \end{verbatim}
 
-\verb"__init__" takes the Exam object that encapsulates data
-about the exam, and a scale score.  It makes a copy of the
-prior distribution and then updates itself based on the exam
-score.
+\verb"__init__" takes an Exam object and a scaled score.  It makes a
+copy of the prior distribution and then updates itself based on the
+exam score.
 
 As usual, we inherit {\tt Update} from {\tt Suite} and provide
 {\tt Likelihood}:
@@ -4967,14 +5133,14 @@ case, the difference between their scores is determined by a small
 number of difficult questions, so it is more likely to be due to
 chance.
 
-But how big is the difference?  If it is small, we would conclude
+But how big is the modeling error?  If it is small, we conclude
 that the first model---based on the simplification that all questions
-are equally difficult---is probably good enough.  If it's large,
+are equally difficult---is good enough.  If it's large,
 we need a better model.
 
 In the next few sections, I develop a better model and we will
-discover (spoiler alert!) that the difference is small.  So if
-you are satisfied with the simpler model, you can skip to the next
+discover (spoiler alert!) that the modeling error is small.  So if
+you are satisfied with the simpler mode, you can skip to the next
 chapter.  If you want to see how the more realistic model works,
 read on...
 
@@ -5453,6 +5619,10 @@ doublings to get to a final size of 15.5 cm:
     rdt = 365 / vdt
 \end{verbatim}
 
+{\tt dt} is linear doubling time, so {\tt vdt} is volumetric
+doubling time, and {\tt rdt} is reciprocal volumetric doubling
+time.
+
 The number of doublings, in linear measure, is 7.3, which implies
 an RDT of 2.4.  In the data from Zhang et al, only 20\% of tumors
 grew this fast during a period of observation.  So again,
@@ -5478,9 +5648,10 @@ Given the size of a tumor at time of diagnosis, it would be most
 useful to know the probability that the tumor formed before
 any given date; in other words, the distribution of ages.
 
-To find it, I will run simulation of tumor growth to get the
-distribution of size, conditioned on age.  Then we can get the
-distribution of age, conditioned on size.
+To find it, I run simulations of tumor growth to get the
+distribution of size conditioned on age.  Then we can use
+a Bayesian approach to get the
+distribution of age conditioned on size.
 
 The simulation starts with a small tumor and runs these steps:
 
@@ -5681,12 +5852,14 @@ By taking a vertical slice from the joint distribution, we can get the
 distribution of sizes for any given age.  By taking a horizontal
 slice, we can get the distribution of ages conditioned on size.
 
+% TODO: Rewrite this using the Joint distribution?
+
 Here's the code that reads the joint distribution and builds
 the conditional distribution for a given size bucket.
 
 \begin{verbatim}
 def ConditionalCdf(size_bucket):
-    pmf = thinkbayes.Pmf(name=name)
+    pmf = thinkbayes.Pmf()
     for val, prob in cache.GetItems():
         age, bucket = val
         if bucket == size_bucket:
@@ -5718,13 +5891,6 @@ size bucket.  The data points are computed from the estimated
 joint distribution.  There is some variability caused by making
 time and size discrete, so I also show a least squares fit for
 each sequence of percentiles.
-
-%We can represent the same data in table form:
-
-%\begin{table}
-%\input{kidney_table}
-%\caption{Percentiles of tumor age conditioned on size.}
-%\end{table}
 
 
 \section{Serial Correlation}
@@ -5774,21 +5940,22 @@ Of these, the first and last seem the most problematic.  I'll
 investigate serial correlation first, then come back to
 spherical geometry.
 
-To simulate correlated growth, I wrote a generator that yields
-a correlated series from a given CDF.
-Here's how the algorithm works:
+To simulate correlated growth, I wrote a generator\footnote{If you are
+  not familiar with Python generators, see
+  \url{http://wiki.python.org/moin/Generators}.} that yields a
+correlated series from a given CDF.  Here's how the algorithm works:
 
 \begin{enumerate}
 
-\item Generate correlated variates from a Gaussian distribution.
+\item Generate correlated values from a Gaussian distribution.
   This is easy to do because we can compute the distribution
   of the next value conditioned on the previous value.
 
 \item Transform each value to its cumulative probability, using
   the Gaussian CDF.
 
-\item Transform each cumulative probability to a random variate
-  by inverting the given CDF.
+\item Transform each cumulative probability to a value
+  using the given CDF.
 
 \end{enumerate}
 
@@ -5813,8 +5980,8 @@ For subsequent values, the mean and standard deviation depend on the
 previous value.  Given the previous $x$, the mean of the next value is
 $\rho x$, and the variance is $1 - \rho^2$.
 
-{\tt Transform} is the function that maps from a Gaussian
-variate to a variate with the given CDF.
+{\tt Transform} is the function that maps from
+a Gaussian value to a value from the given CDF.
 
 \begin{verbatim}
     def Transform(x):
@@ -5833,6 +6000,8 @@ be lost in transformation, so the actual correlation might be
 lower than the target.  For example, when I generate
 10000 values from the distribution of growth rates with
 target correlation 0.4, the actual correlation is 0.37.
+But since we are guessing at the right correlation anyway,
+that's close enough.
 
 Remember that {\tt MakeSequence} takes an iterator as an argument.
 That interface allows it to work with different generators:
@@ -6026,7 +6195,7 @@ heads and tails, the Dirichlet distribution handles any number of
 outcomes: in this example, three species.
 
 If there are {\tt n} outcomes, the Dirichlet distribution is
-described by {\tt n} parameters, written $\alpha_i$.
+described by {\tt n} parameters, written $\alpha_1$ through $\alpha_n$.
 
 Here's the definition, from {\tt thinkbayes.py}, of a class that
 represents a Dirichlet distribution:
@@ -6440,10 +6609,10 @@ which is fast and easy to compute.  Here's the code:
         return likes
 \end{verbatim}
 
-{\tt gammas} is an array of gamma variates; its length is the largest
-hypothetical value of {\tt n}.  {\tt row} is just the first {\tt m}
-elements of {\tt gammas}; since these are the only elements that depend on
-the data, they are the only ones we need.
+{\tt gammas} is an array of values from a gamma distribution; its
+length is the largest hypothetical value of {\tt n}.  {\tt row} is
+just the first {\tt m} elements of {\tt gammas}; since these are the
+only elements that depend on the data, they are the only ones we need.
 
 For each value of {\tt n} we need to divide {\tt row} by the
 total of the first {\tt n} values from {\tt gamma}.  {\tt cumsum}
@@ -7091,28 +7260,26 @@ coverage achieved after {\tt k} samples.
         return cdfs
 \end{verbatim}
 
-Then for each value of {\tt k} we make a Cdf of {\tt fracs};
-this Cdf represents the distribution of coverage after
-{\tt k} samples.
+Then for each value of {\tt k} we make a Cdf of {\tt fracs}; this Cdf
+represents the distribution of coverage after {\tt k} samples.
 
-Remember that the CDF tells you the probability of falling
-below a given threshold, so the {\em complementary} CDF tells
-you the probability of exceeding it.  Figure~\ref{species-frac}
-shows complementary CDFs for a range of values of {\tt k}.
+Remember that the CDF tells you the probability of falling below a
+given threshold, so the {\em complementary} CDF tells you the
+probability of exceeding it.  Figure~\ref{species-frac} shows
+complementary CDFs for a range of values of {\tt k}.
 
-To read this figure, select the level of coverage you want
-to achieve along the $x$-axis.  As an example, choose 90\%.
+To read this figure, select the level of coverage you want to achieve
+along the $x$-axis.  As an example, choose 90\%.
 
-Now you can read up the chart to find the probability of
-achieving 90\% coverage after {\tt k} samples.  For example,
-with 300 samples, you have about a 60\% of getting 90\%
-coverage.  With 700 samples, you have a 90\% chance of
-getting 90\% coverage.
+Now you can read up the chart to find the probability of achieving
+90\% coverage after {\tt k} samples.  For example, with 300 samples,
+you have about a 60\% of getting 90\% coverage.  With 700 samples, you
+have a 90\% chance of getting 90\% coverage.
 
-With that, we have answered the four questions that
-make up the unseen species problem.  This has been a longer
-chapter than most, but I think there is a lot to it.  So if
-you made it this far, congratulations!
+With that, we have answered the four questions that make up the unseen
+species problem.  This has been a longer chapter than most, but I
+think there is a lot to it.  So if you made it this far,
+congratulations!
 
 
 
@@ -7129,5 +7296,12 @@ Bayesian search
 
 Extension of the Euro problem: evaluating reddit items and redditors
 \url{http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/}
+
+Charles Darwin Problem (capture-tag-recapture)
+\url{http://maximum-entropy-blog.blogspot.com/2012/04/capture-recapture-and-charles-darwin.html}
+
+% http://camdp.com/blogs/how-solve-price-rights-showdown
+
+% https://github.com/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers
 
 \end{document}
