@@ -18,6 +18,7 @@ Cdf: represents a discrete cumulative distribution function
 """
 
 import bisect
+import copy
 import logging
 import math
 import numpy
@@ -102,6 +103,20 @@ class _DictWrapper(object):
             d = {}
         self.d = d
         self.name = name
+
+    def Copy(self, name=None):
+        """Returns a copy.
+
+        Make a shallow copy of d.  If you want a deep copy of d,
+        use copy.deepcopy on the whole object.
+
+        Args:
+            name: string name for the new Hist
+        """
+        new = copy.copy(self)
+        new.d = copy.copy(self.d)
+        new.name = name if name is not None else self.name
+        return new
 
     def GetDict(self):
         """Gets the dictionary."""
@@ -190,16 +205,6 @@ class Hist(_DictWrapper):
     Values can be any hashable type; frequencies are integer counters.
     """
 
-    def Copy(self, name=None):
-        """Returns a copy of this Hist.
-
-        Args:
-            name: string name for the new Hist
-        """
-        if name is None:
-            name = self.name
-        return Hist(dict(self.d), name)
-
     def Freq(self, x):
         """Gets the frequency associated with the value x.
 
@@ -235,16 +240,6 @@ class Pmf(_DictWrapper):
     Values can be any hashable type; probabilities are floating-point.
     Pmfs are not necessarily normalized.
     """
-
-    def Copy(self, name=None):
-        """Returns a copy of this Pmf.
-
-        Args:
-            name: string name for the new Pmf
-        """
-        if name is None:
-            name = self.name
-        return Pmf(dict(self.d), name)
 
     def Prob(self, x, default=0):
         """Gets the probability associated with the value x.
@@ -545,6 +540,21 @@ def MakePmfFromDict(d, name=''):
         Pmf object
     """
     pmf = Pmf(d, name)
+    pmf.Normalize()
+    return pmf
+
+
+def MakePmfFromItems(t, name=''):
+    """Makes a PMF from a sequence of value-probability pairs
+
+    Args:
+        t: sequence of value-probability pairs
+        name: string name for this PMF
+
+    Returns:
+        Pmf object
+    """
+    pmf = Pmf(dict(t), name)
     pmf.Normalize()
     return pmf
 
@@ -1490,3 +1500,4 @@ def LogBinomialCoef(n, m):
     approximating-the-logarithm-of-the-binomial-coefficient
     """
     return n * log(n) - m * log(m) - (n-m) * log(n-m)
+

@@ -36,6 +36,12 @@ class Locker(object):
     def Lookup(self, key):
         return self.shelf.get(key)
 
+    def Keys(self):
+        return self.shelf.iterkeys()
+
+    def Read(self):
+        return dict(self.shelf)
+
 
 class Subject(object):
     """Represents a subject from the belly button study."""
@@ -83,7 +89,13 @@ class Subject(object):
         """
         return self.species[index]
 
-    def Process(self, factor=1.5, iterations=300):
+    def GetCdf(self):
+        counts = self.GetCounts()
+        items = enumerate(counts)
+        cdf = thinkbayes.MakeCdfFromItems(items)
+        return cdf
+
+    def Process(self, iterations=300):
         """Computes the posterior distribution of n and the prevalences.
 
         Sets: self.suite
@@ -93,7 +105,7 @@ class Subject(object):
         counts = self.GetCounts()
         m = len(counts)
 
-        n = int(factor * m)
+        n = 400
         ns = range(m, n)
         self.suite = Species5(ns, iterations=iterations)
 
@@ -333,7 +345,7 @@ def SpeciesGenerator(names, num):
         i += 1
             
 
-def ReadData(filename='journal.pone.0047712.s001.csv'):
+def ReadRarefactedData(filename='journal.pone.0047712.s001.csv'):
     """Reads a data file and returns a list of Subjects.
 
     Data from http://www.plosone.org/article/
@@ -346,20 +358,24 @@ def ReadData(filename='journal.pone.0047712.s001.csv'):
     header = reader.next()
     
     subject = Subject('')
-    subjects = []
+    subject_map = {}
 
     for t in reader:
         code = t[0]
         if code != subject.code:
+            # sort the old subject
             subject.Sort()
+
+            # start a new subject
             subject = Subject(code)
-            subjects.append(subject)
+            subject_map[code] = subject
 
         species = t[1]
         count = int(t[2])
         subject.Add(species, count)
 
-    return subjects
+    ComputeNumReads(subject_map)
+    return subject_map
 
 
 def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
@@ -368,6 +384,8 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
     Data from personal correspondence with Rob Dunn, received 2-7-13.
 
     Converted from xlsx to csv.
+
+    Returns: map from code to Subject
     """
     fp = open(filename)
     reader = csv.reader(fp)
@@ -379,12 +397,15 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
 
     # print subject_codes
 
-    subjects = {}
+    subject_map = {}
     for code in subject_codes:
-        subjects[code] = Subject(code)
+        subject_map[code] = Subject(code)
     
     for t in reader:
         otu_code = t[0]
+        if otu_code == '':
+            continue
+
         otu_names = t[-1]
         taxons = otu_names.split(';')
         species = taxons[-1]
@@ -394,23 +415,25 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
 
         for code, count in zip(subject_codes, counts):
             if count > 0:
-                subjects[code].Add(species, count)
+                subject_map[code].Add(species, count)
 
-    ComputeNumReads(subjects)
-    return subjects
+    for code, subject in subject_map.iteritems():
+        subject.Sort()
+
+    ComputeNumReads(subject_map)
+    return subject_map
         
 
-def ComputeNumReads(subjects):
+def ComputeNumReads(subject_map):
     """Computes the number of reads for each subject.
 
-    Adds an attribute named num_reads.
+    Adds attributes named num_species and num_reads.
 
-    subjects: map from subject code to Subject.
+    subject_map: map from subject code to Subject.
     """
-    num_reads = {}
-    for code, subject in subjects.iteritems():
+    for code, subject in subject_map.iteritems():
         counts = subject.GetCounts()
-
+        subject.num_species = len(counts)
         subject.num_reads = sum(counts)
 
 
@@ -426,26 +449,21 @@ def JoinSubjects():
     """
 
     # read the rarefacted dataset
-    sampled_subjects = ReadData()
-    subjects = {}
-    for subject in sampled_subjects:
-        subjects[subject.code] = subject
-
-    ComputeNumReads(subjects)
+    sampled_subjects = ReadRarefactedData()
 
     # read the complete dataset
     all_subjects = ReadCompleteDataset()
 
     count = 0
-    for code, subject in subjects.iteritems():
+    for code, subject in sampled_subjects.iteritems():
         if code in all_subjects:
             match = all_subjects[code]
-            #print code, subject.num_reads, match.num_reads
+
             subject.total_reads = match.num_reads
+            subject.total_species = match.num_species
             count += 1
 
-    print len(all_subjects), len(subjects), count
-    return subjects
+    return sampled_subjects
 
 
 def JitterCurve(curve, dx=0.2, dy=0.3):
@@ -605,6 +623,12 @@ class Species2(object):
         self.probs = numpy.ones(len(ns), dtype=numpy.double)
         self.params = numpy.ones(self.ns[-1], dtype=numpy.int)
         self.iterations = iterations
+
+    def GetPmf(self):
+        """Returns a Pmf of possible number of species."""
+        items = zip(self.ns, self.probs)
+        pmf = thinkbayes.MakePmfFromItems(items)
+        return pmf
 
     def Update(self, data):
         like = numpy.zeros(len(self.ns), dtype=numpy.double)
@@ -1106,14 +1130,18 @@ def HierarchicalExample():
                 )
 
 
-def ProcessSubjects(indices):
-    myplot.Clf()
-    myplot.PrePlot(len(indices))
+def ProcessSubjects(codes):
+    """Process subjects with the given codes and plot their posteriors.
 
-    subjects = ReadData()
+    code: sequence of string codes
+    """
+    myplot.Clf()
+    myplot.PrePlot(len(codes))
+
+    subjects = ReadRarefactedData()
     pmfs = []
-    for index in indices:
-        subject = subjects[index]
+    for code in codes:
+        subject = subjects[code]
 
         subject.Process()
         pmf = subject.suite.DistOfN()
@@ -1132,13 +1160,13 @@ def ProcessSubjects(indices):
                 )
 
 
-def RunSubject(index):
-    """Run the analysis for the subject with the given index.
+def RunSubject(code):
+    """Run the analysis for the subject with the given code.
 
-    index: int offset into the list of subjects in the rarefacted dataset
+    code: string code
     """
-    subjects = ReadData()
-    subject = subjects[index]
+    subjects = ReadRarefactedData()
+    subject = subjects[code]
     subject.Process()
     subject.MakeFigures()
 
@@ -1160,23 +1188,24 @@ def RunSubject(index):
     PlotFracCdfs(cdfs, root=root)
 
 
-def MakePredictions(subjects, locker, num=3):
+def MakePredictions(lockername='species_locker.db', num=3, replace=False):
     """Make predictions for each subject in the list and store in a locker.
 
-    subjects: map from code to Subject
-    locker: Locker object to store results
+    locker: string locker file name
     num: how many subjects to process
     """
-    i = 0
-    for code, subject in subjects.iteritems():
-        print code
+    subject_map = JoinSubjects()
+    locker = Locker(lockername)
 
-        processed = locker.Lookup(code)
-        if processed is not None:
-            print 'In cache'
-            subject.ps = processed.ps
-            subject.cis = processed.cis
-            continue
+    i = 0
+    for code, subject in subject_map.iteritems():
+        print code, '...',
+
+        if not replace:
+            processed = locker.Lookup(code)
+            if processed is not None:
+                print 'In cache'
+                continue
 
         print 'Processing'
         MakePrediction(subject)
@@ -1185,6 +1214,8 @@ def MakePredictions(subjects, locker, num=3):
         i += 1
         if i == num:
             break
+
+    locker.Close()
 
 
 def MakePrediction(subject, num_sims=300):
@@ -1200,10 +1231,11 @@ def MakePrediction(subject, num_sims=300):
     subject.Process()
 
     print subject.code, subject.num_reads, subject.total_reads
-    additional = subject.total_reads - subject.num_reads
-    curves = subject.RunSimulations(num_sims, additional)
+
+    add_reads = subject.total_reads - subject.num_reads
+    curves = subject.RunSimulations(num_sims, add_reads)
     #PlotCurves(curves, root='species.subject')
-    cdfs = subject.MakeConditionals(curves, [additional])
+    cdfs = subject.MakeConditionals(curves, [add_reads])
     cdf = cdfs[0]
 
     ps = range(10, 100, 10)
@@ -1216,10 +1248,10 @@ def MakePrediction(subject, num_sims=300):
     subject.cis = cis
 
 
-def MakePredictionTable(subjects):
+def MakePredictionTable(subject_map):
     """Makes a table of predictions in LaTeX format.
 
-    subjects: map from code to Subjects
+    subject_map: map from code to Subject
 
     Precondition: subject have attributes ps and cis
     """
@@ -1230,7 +1262,7 @@ def MakePredictionTable(subjects):
         print r'\\'
         
     i = 0
-    for subject in subjects.itervalues():
+    for subject in subject_map.itervalues():
         if i == 0:
             PrintRow(subject.ps)
 
@@ -1242,18 +1274,29 @@ def MakePredictionTable(subjects):
         i += 1
 
 
-def MakePredictionHTML(subjects):
+def WritePredictionHTML(subject_map, filename='species_table.html'):
+    """Write the prediction table to a file.
+
+    subject_map: map from code to Subject
+    """
+    t = MakePredictionHTML(subject_map)
+    fp = open(filename, 'w')
+    fp.write(str(t))
+    fp.close()
+
+
+def MakePredictionHTML(subject_map):
     """Makes a table of predictions in LaTeX format.
 
-    subjects: map from code to Subjects
+    subject_map: map from code to Subject
 
     Precondition: subject have attributes ps and cis
     """
-    subject = subjects.values()[0]
+    subject = subject_map.values()[0]
     header = ['Code', '# reads', '# species'] + subject.ps
     t = HTML.Table(header_row=header)
 
-    for code, subject in sorted(subjects.iteritems()):
+    for code, subject in sorted(subject_map.iteritems()):
         names = subject.GetNames()
         m = len(names)
 
@@ -1264,26 +1307,40 @@ def MakePredictionHTML(subjects):
 
 
 def SummarizeData():
-    subjects = ReadData()
+    """Read data and print subject codes and number of species."""
+    subject_map = JoinSubjects()
 
-    for subject in subjects:
-        counts = subject.GetCounts()
-        print subject.code, len(counts)
+    for code, subject in subject_map.iteritems():
+        print subject.code, subject.total_species
+        #print subject.num_reads, subject.num_species
+        #print subject.total_reads, subject.total_species
+
+
+def ValidatePredictions(lockername='species_locker.db'):
+    locker = Locker(lockername)
+    subject_map = locker.Read()
+    locker.Close()
+
+    for code, subject in subject_map.iteritems():
+        print subject.code
+        print subject.num_reads, subject.num_species
+        print subject.total_reads, subject.total_species
+
+        pmf = subject.suite.GetPmf()
+        print pmf.Mean(), pmf.CredibleInterval(90)
+
+        myplot.Pmf(pmf)
+        myplot.Show()
 
 
 def main(script, *args):
     random.seed(17)
 
-    subjects = JoinSubjects()
-    locker = Locker('species_locker.db')
-    MakePredictions(subjects, locker, num=60)
-    #MakePredictionTable(subjects)
-    t = MakePredictionHTML(subjects)
-    print len(subjects)
+    # MakePredictions(num=60, replace=True)
+    ValidatePredictions()
+    return
 
-    fp = open('species_table.html', 'w')
-    fp.write(str(t))
-    fp.close()
+    SummarizeData()
     return
 
     SimpleDirichletExample()
