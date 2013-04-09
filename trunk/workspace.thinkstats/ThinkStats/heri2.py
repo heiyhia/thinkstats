@@ -40,6 +40,13 @@ def ReadData(filename='heri.csv'):
 
 
 def GetColumn(data, index):
+    """Extracts the given column from the dataset.
+
+    data: sequence of rows
+    index: which column
+
+    Returns: map from int year to float datum
+    """
     res = {}
     for row in data:
         try:
@@ -51,10 +58,23 @@ def GetColumn(data, index):
 
 
 def RenderColumn(col):
+    """Returns a sequence of years and a sequence of data.
+
+    col: map from int year to float datum
+
+    Returns: tuples of ts and ys
+    """
     return zip(*sorted(col.items()))
 
 
 def DiffColumns(col1, col2):
+    """Computes the difference between two columns.
+
+    col1: map from int year to float datum
+    col2: map from int year to float datum
+
+    Returns: map from int year to float difference
+    """
     years1 = set(col1)
     years2 = set(col2)
     res = [(year, col1[year] - col2[year])for year in sorted(years1 & years2)]
@@ -121,6 +141,7 @@ def MakeGenderPlot(filename='heri.csv'):
                 xlabel='',
                 ylabel='Percentage points',
                 axis=[1967, 2013, 0, 6])
+
 
 def main(script):
     MakePlot()

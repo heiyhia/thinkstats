@@ -20,11 +20,18 @@ import myplot
 
 
 def ReadLabels(filename="duchenne/mturklabels.txt"):
-    """Returns a list of (photo, labeler, label) tuples.
-    """
+    """Returns a list of (photo, labeler, label) tuples."""
+    return ReadTextFile(filename)
+
+
+def ReadTruth(filename="duchenne/groundtruth.txt"):
+    """Returns a list of (photo, label) tuples."""
+    return ReadTextFile(filename)
+
+
+def ReadTextFile(filename):
     labels = []
     for line in open(filename):
-        #photo, labeler, label = line.split()
         labels.append(line.split())
     return labels
 
@@ -32,16 +39,19 @@ def ReadLabels(filename="duchenne/mturklabels.txt"):
 def MakeObjects(labels):
     """Make Photo and Labeler objects.
 
-    Return: (photos, labelers), a map from photo code to Photo
+    Return: (photo_map, labeler_map), a map from photo code to Photo
             and a map from labeler code to Labeler
     """
-    photos = {}
-    labelers = {}
-    for pcode, lcode, label in labels:
-        photos[pcode] = Photo()
-        labelers[lcode] = Labeler()
+    photo = Photo()
+    labeler = Labeler()
 
-    return photos, labelers
+    photo_map = {}
+    labeler_map = {}
+    for pcode, lcode, label in labels:
+        photo_map[pcode] = photo.Copy()
+        labeler_map[lcode] = labeler.Copy()
+
+    return photo_map, labeler_map
 
 
 class Labeler(thinkbayes.Suite):
@@ -111,17 +121,17 @@ def Summarize(suite):
     print 'CI', thinkbayes.CredibleInterval(suite, 90)
 
 
-def RunUpdates(photos, labelers, labels):
+def RunUpdates(photo_map, labeler_map, labels):
     """Runs the mutual update process.
 
-    photos: map from id to Photo
-    labelers: map from id to Labeler
+    photo_map: map from id to Photo
+    labeler_map: map from id to Labeler
     labels: label applied to the Photo by the Labeler
     """
     for pcode, lcode, label in labels:
-        photo = photos[pcode]
-        labeler = labelers[lcode]
-        print label, pcode, lcode
+        photo = photo_map[pcode]
+        labeler = labeler_map[lcode]
+        # print label, pcode, lcode
         Update(photo, labeler, label)
 
 
@@ -135,8 +145,8 @@ def Update(photo, labeler, label):
     mean_t = labeler.Mean()
     mean_q = photo.Mean()
 
-    print 'trustworthiness', mean_t
-    print 'quality', mean_q
+    #print 'trustworthiness', mean_t
+    #print 'quality', mean_q
 
     # perform simultaneous updates
     labeler.Update((label, mean_q))
@@ -155,18 +165,38 @@ def PlotPosteriorMeans(d, name):
 
 
 def Main():
-    labels = ReadLabels()
-    photos, labelers = MakeObjects(labels)
-    for code, photo in photos.iteritems():
-        print code
-    for code, labeler in labelers.iteritems():
-        print code
+    truth = ReadTruth()
+    truth_map = {}
+    for pcode, label in truth:
+        truth_map[pcode] = label
 
-    RunUpdates(photos, labelers, labels)
+    labels = ReadLabels()
+    photo_map, labeler_map = MakeObjects(labels)
+
+    RunUpdates(photo_map, labeler_map, labels)
+
+    yes = []
+    no = []
+    for pcode, photo in photo_map.iteritems():
+        if pcode in truth_map:
+            mean = photo.Mean()
+
+            if truth_map[pcode] == '1':
+                yes.append(mean)
+            else:
+                no.append(mean)
 
     myplot.Clf()
-    PlotPosteriorMeans(photos, 'photos')
-    PlotPosteriorMeans(labelers, 'labelers')
+    cdf_yes = thinkbayes.MakeCdfFromList(yes, name='yes')
+    cdf_no = thinkbayes.MakeCdfFromList(no, name='no')
+    myplot.Cdfs([cdf_yes, cdf_no])
+    myplot.Show()
+
+    return
+
+    myplot.Clf()
+    PlotPosteriorMeans(photo_map, 'photos')
+    PlotPosteriorMeans(labeler_map, 'labelers')
     myplot.Show()
 
 
