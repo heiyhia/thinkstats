@@ -16,8 +16,12 @@ import math
 import random
 import thinkstats
 
+UPPER = 2014
+FORMATS = ['pdf', 'png']
+FILENAME = 'heri13.csv'
 
-def ReadData(filename='heri.csv'):
+
+def ReadData(filename=FILENAME):
     """Reads a CSV file of data from HERI's CIRP survey.
 
     Args:
@@ -100,13 +104,14 @@ def MakePlot(filename='heri.csv'):
                 label='No religion')
 
     myplot.Save(root='heri2.3',
+                formats=FORMATS,
                 title='',
                 xlabel='',
                 ylabel='Percent',
-                axis=[1966, 2013, 0, 30])
+                axis=[1966, UPPER, 0, 30])
 
 
-def MakeGenderPlot(filename='heri.csv'):
+def MakeGenderPlot(filename='heri13.csv'):
     """Generates a plot with the data, a fitted model, and error bars."""
     pyplot.clf()
 
@@ -121,10 +126,11 @@ def MakeGenderPlot(filename='heri.csv'):
     pyplot.plot(ts, ys, 'g-', linewidth=3, alpha=0.7, label='women')
 
     myplot.Save(root='heri2.1',
+                formats=FORMATS,
                 title='',
                 xlabel='',
                 ylabel='Preferred religion None (%)',
-                axis=[1967, 2013, 0, 28])
+                axis=[1967, UPPER, 0, 28])
 
     del men[1969]
     del women[1969]
@@ -137,10 +143,11 @@ def MakeGenderPlot(filename='heri.csv'):
                 label='Gender gap')
 
     myplot.Save(root='heri2.2',
+                formats=FORMATS,
                 title='',
                 xlabel='',
                 ylabel='Percentage points',
-                axis=[1967, 2013, 0, 6])
+                axis=[1967, UPPER, 0, 6])
 
 
 def main(script):
