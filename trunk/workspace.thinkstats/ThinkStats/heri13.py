@@ -18,6 +18,8 @@ import thinkstats
 import rpy2.robjects as robjects
 r = robjects.r
 
+from heri2 import ReadData, GetColumn, RenderColumn
+
 FORMATS = ['pdf', 'png']
 
 def Regress(model, ys, ts, print_flag=False):
@@ -188,28 +190,6 @@ def AddResidualError(columns, mu, sig):
             for col in columns]
 
 
-def ReadData(filename):
-    """Reads a CSV file of data from HERI scores.
-
-    Args:
-      filename: string filename
-
-    Returns:
-      list of (score, number) pairs
-    """
-    fp = open(filename)
-    res = []
-
-    for line in fp:
-        try:
-            t = [float(x) for x in line.split()]
-            res.append(t)
-        except ValueError:
-            pass
-
-    return zip(*res)
-
-
 def MakePlot(ts, ys, model):
     """Generates a plot with the data, a fitted model, and error bars."""
     pyplot.clf()
@@ -230,7 +210,7 @@ def MakePlot(ts, ys, model):
     fts = [t+shift for t in fts]
 
     pyplot.plot(fts, fys, color='red', linewidth=2, alpha=0.5)
-
+    print 'Prediction:', fts[-1], fys[-1]
 
 def PlotResiduals(ts, ys):
     residuals = Residuals(ts, ys)
@@ -390,50 +370,52 @@ def main(script):
     # colleges
     #PlotReligious2('heri.religious2.csv')
     #return
-    upper = 2014
-
-    ts, ys = ReadData('heri.0')
-    MakePlot(ts, ys, model='ys ~ ts')
-
+    upper = 2015
     options = dict(linewidth=3, markersize=0, alpha=0.7)
-    pyplot.plot(ts, ys, color='purple', label='Change in no religion',
-                **options)
+    data = ReadData('heri13.csv')
 
-    myplot.Save(root='heri12.0',
-                formats=FORMATS,
-                ylabel='Percentage points',
-                loc=2,
-                axis=[1967, upper, -3, 3])
+    # plot nones
 
-    ts, ys = ReadData('heri.1')
+    nones = GetColumn(data, 1)
+    # del nones[1966]
+    ts, ys = RenderColumn(nones)
+
     MakePlot(ts, ys, model='ys ~ ts + t2')
 
     pyplot.plot(ts, ys, 'bs-', label='No religion', **options)
     
-    # add the actual value from 2012
-    myplot.Plot([2012], [23.8], 'bs')
+    # add the actual value from 2013
+    # myplot.Plot([2012], [xx.x], 'bs')
 
-    myplot.Save(root='heri12.1',
+    myplot.Save(root='heri13.1',
                 formats=FORMATS,
                 ylabel='Percent',
                 loc=2,
                 axis=[1967, upper, 0, 30])
 
-    ts, ys = ReadData('heri.2')
+
+    # plot attendance
+
+    attendance = GetColumn(data, 4)
+    del attendance[1966]
+    ts, ys = RenderColumn(attendance)
+    ys = [100-y for y in ys]
+
     MakePlot(ts, ys, model='ys ~ ts + t2')
 
     pyplot.plot(ts, ys, 'go-', label='No attendance', **options)
 
-    # add the actual value from 2012
-    myplot.Plot([2012], [100 - 73.2], 'gs')
+    # add the actual value from 2013
+    # myplot.Plot([2012], [100 - 73.2], 'gs')
 
-    myplot.Save(root='heri12.2',
+    myplot.Save(root='heri13.2',
                 formats=FORMATS,
                 ylabel='Percent',
                 loc=2,
                 axis=[1967, upper, 0, 30])
 
     print (2011 - 1973) * 0.03548 - 0.36036 
+
 
 if __name__ == '__main__':
     import sys
