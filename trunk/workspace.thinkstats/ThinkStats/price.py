@@ -9,19 +9,24 @@ import math
 import myplot
 import thinkbayes
 
+FORMATS = ['png']
+
+
 class Price(thinkbayes.Suite):
 
     def __init__(self, error_sigma):
         """Constructs the suite.
 
-        hypos: sequence of hypotheses
         error_sigma: standard deviation of the distribution of error
         """
         thinkbayes.Suite.__init__(self)
-        pmf = thinkbayes.MakeGaussianPmf(35000, 7500, 4)
+        pmf = thinkbayes.MakeGaussianPmf(35000, 7500, num_sigmas=4)
+
+        # copy items from pmf to self
         for val, prob in pmf.Items():
             self.Set(val, prob)
 
+        # store error_sigma for use in Likelihood
         self.error_sigma = error_sigma
 
     def Likelihood(self, hypo, data):
@@ -33,29 +38,39 @@ class Price(thinkbayes.Suite):
         actual_price = hypo
         my_guess = data
 
-        x = my_guess - actual_price
-        like = thinkbayes.EvalGaussianPdf(mu=0, sigma=self.error_sigma, x=x)
+        error = my_guess - actual_price
+        like = thinkbayes.EvalGaussianPdf(
+            mu=0, 
+            sigma=self.error_sigma,
+            x=error)
 
         return like
 
 
 def main():
-    sig1 = 500
-    sig2 = 3000
-    error_sigma = math.sqrt(sig1**2 + sig2**2)
-    print error_sigma
+    
+    # compute the stddev of the total error
+    error_snowmobile = 500
+    error_trip = 3000
+    error_total = math.sqrt(error_snowmobile**2 + error_trip**2)
+    print error_total
 
     myplot.Clf()
 
-    suite = Price(error_sigma)
+    suite = Price(error_total)
     suite.name = 'prior'
     myplot.Pmf(suite)
 
-    suite.Update(15000)
+    my_guess = 15000
+    suite.Update(my_guess)
     suite.name = 'posterior'
     myplot.Pmf(suite)
 
-    myplot.Show()
+    print 'Posterior mean', suite.Mean()
+
+    myplot.Save(root='price1',
+                xlabel='price',
+                formats=FORMATS)
 
 
 if __name__ == '__main__':
