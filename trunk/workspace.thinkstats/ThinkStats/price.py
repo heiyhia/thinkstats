@@ -9,6 +9,7 @@ import csv
 import math
 import myplot
 import numpy
+import scipy.stats
 import thinkbayes
 
 FORMATS = ['png']
@@ -78,7 +79,7 @@ class Pdf(object):
     def Density(x):
         """Returns the Pdf evaluated at x."""
 
-    def MakePmf(xs):
+    def MakePmf(self, xs):
         pmf = thinkbayes.Pmf()
         for x in xs:
             pmf.Set(x, self.Density(x))
@@ -101,7 +102,8 @@ class EstimatedPdf(Pdf):
 
         seq: sequence of data
         """
-        self.kde = scipy.stats.kde_gaussian(seq)
+        xs = numpy.array(seq, dtype=numpy.double)
+        self.kde = scipy.stats.gaussian_kde(xs)
 
     def Density(self, x):
         return self.kde.evaluate(x)
@@ -186,7 +188,14 @@ def main():
     val1, val2, bid1, bid2, diff1, diff2 = cols
 
     kde_val1 = EstimatedPdf(val1)
-    print kde_val1
+
+    low, high = 0, 75000
+    xs = numpy.linspace(low, high, 51)
+    ys = kde_val1.kde.evaluate(xs)
+
+    pmf = kde_val1.MakePmf(xs)
+    myplot.Pmf(pmf)
+    myplot.Show()
 
     return
 
