@@ -5,6 +5,7 @@ Copyright 2013 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import csv
 import math
 import myplot
 import numpy
@@ -12,6 +13,31 @@ import thinkbayes
 
 FORMATS = ['png']
 
+def ReadData(filename='showcases.2011.csv'):
+    """Reads a CSV file of data.
+
+    Args:
+      filename: string filename
+
+    Returns: sequence of (val1 val2 bid1 bid2 diff1 diff2) tuples
+    """
+    fp = open(filename)
+    reader = csv.reader(fp)
+    res = []
+
+    for t in reader:
+        heading = t[0]
+        data = t[1:]
+        try:
+            data = [int(x) for x in data]
+            print heading, data[0], len(data)
+            res.append(data)
+        except ValueError:
+            pass
+
+    fp.close()
+    return zip(*res)
+    
 
 class Price(thinkbayes.Suite):
 
@@ -46,6 +72,39 @@ class Price(thinkbayes.Suite):
             x=error)
 
         return like
+
+
+class Pdf(object):
+    def Density(x):
+        """Returns the Pdf evaluated at x."""
+
+    def MakePmf(xs):
+        pmf = thinkbayes.Pmf()
+        for x in xs:
+            pmf.Set(x, self.Density(x))
+        pmf.Normalize()
+        return pmf
+
+
+class GaussianPdf(Pdf):
+    def __init__(self, mu, sigma):
+        self.mu = mu
+        self.sigma = sigma
+        
+    def Density(self):
+        return thinkbayes.EvalGaussianPdf(x, self.mu, self.sigma)
+
+
+class EstimatedPdf(Pdf):
+    def __init__(self, seq):
+        """Estimates the density function based on a sample.
+
+        seq: sequence of data
+        """
+        self.kde = scipy.stats.kde_gaussian(seq)
+
+    def Density(self, x):
+        return self.kde.evaluate(x)
 
 
 class ReturnCalculator(object):
@@ -120,6 +179,42 @@ def RemoveNegatives(pmf):
 
 
 def main():
+    data = ReadData(filename='showcases.2011.csv')
+    data += ReadData(filename='showcases.2012.csv')
+
+    cols = zip(*data)
+    val1, val2, bid1, bid2, diff1, diff2 = cols
+
+    kde_val1 = EstimatedPdf(val1)
+    print kde_val1
+
+    return
+
+
+    cdf_val1 = thinkbayes.MakeCdfFromList(val1)
+    cdf_val2 = thinkbayes.MakeCdfFromList(val2)
+
+    print cdf_val1.Mean()
+    print cdf_val2.Mean()
+
+    cdf_diff1 = thinkbayes.MakeCdfFromList(diff1)
+    cdf_diff2 = thinkbayes.MakeCdfFromList(diff2)
+
+    print 'Prob diff1 <= -1', cdf_diff1.Prob(-1)
+    print 'Prob diff2 <= -1', cdf_diff2.Prob(-1)
+
+
+    myplot.Cdf(cdf_diff1)
+    myplot.Cdf(cdf_diff2)
+    myplot.Show()
+
+    return
+
+    for line in data:
+        print line
+    return
+
+
     calc = ReturnCalculator()
 
     # test ProbWin
