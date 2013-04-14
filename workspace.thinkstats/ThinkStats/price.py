@@ -42,20 +42,19 @@ def ReadData(filename='showcases.2011.csv'):
 
 class Price(thinkbayes.Suite):
 
-    def __init__(self, error_sigma):
+    def __init__(self, pmf, player):
         """Constructs the suite.
 
-        error_sigma: standard deviation of the distribution of error
+        pmf: prior distribution of value
+        player: Player object containing the Pdf of underness
         """
         thinkbayes.Suite.__init__(self)
-        pmf = thinkbayes.MakeGaussianPmf(35000, 7500, num_sigmas=4)
 
         # copy items from pmf to self
         for val, prob in pmf.Items():
             self.Set(val, prob)
 
-        # store error_sigma for use in Likelihood
-        self.error_sigma = error_sigma
+        self.player = player
 
     def Likelihood(self, hypo, data):
         """Computes the likelihood of the data under the hypothesis.
@@ -66,11 +65,8 @@ class Price(thinkbayes.Suite):
         actual_price = hypo
         my_guess = data
 
-        error = my_guess - actual_price
-        like = thinkbayes.EvalGaussianPdf(
-            mu=0, 
-            sigma=self.error_sigma,
-            x=error)
+        underness = my_guess - actual_price
+        like = self.player.UndernessDensity(underness)
 
         return like
 
@@ -107,6 +103,11 @@ class EstimatedPdf(Pdf):
 
     def Density(self, x):
         return self.kde.evaluate(x)
+
+    def MakePmf(self, xs):
+        ps = self.kde.evaluate(xs)
+        pmf = thinkbayes.MakePmfFromItems(zip(xs, ps))
+        return pmf
 
 
 class ReturnCalculator(object):
@@ -180,6 +181,72 @@ def RemoveNegatives(pmf):
     pmf.Normalize()
 
 
+class Player(object):
+
+    low, high = 0, 75000
+    xs = numpy.linspace(low, high, 51)
+    diffs = numpy.linspace(-30000, 30000, 51)
+
+    def __init__(self, val, bid, diff):
+        self.val = val
+        self.big = bid
+        self.diff = diff
+
+        self.cdf_val = thinkbayes.MakeCdfFromList(val)
+        self.cdf_diff = thinkbayes.MakeCdfFromList(diff)
+
+        self.kde_val = EstimatedPdf(val)
+        self.kde_diff = EstimatedPdf(diff)
+        # self.pmf_diff = kde_diff.MakePmf(self.xs)
+
+    def UndernessDensity(self, underness):
+        return self.kde_diff.Density(underness)
+
+    def PmfVal(self):
+        return self.kde_val.MakePmf(self.xs)
+
+    def PmfDiff(self):
+        return self.kde_diff.MakePmf(self.diffs)
+
+    def CdfDiff(self):
+        return self.cdf_diff
+
+    def MakePosterior(estimated_value):
+        pmf = thinkbayes.MakePmfFromList(self.val)
+        self.prior = thinkbayes.Price(pmf)
+        self.posterior = self.prior.Copy()
+        self.posterior.Update(estimated_value)
+
+    def OptimalBid(self, opponent):
+        """
+        
+        Precondition: self.posterior has been computed
+        """
+
+def MakePlots(player1, player2):
+    myplot.Clf()
+    myplot.PrePlot(num=2)
+    pmf1 = player1.PmfVal()
+    pmf1.name = 'Player 1 prior'
+    pmf2 = player2.PmfVal()
+    pmf2.name = 'Player 2 prior'
+    myplot.Pmfs([pmf1, pmf2])
+    myplot.Save(root='price1',
+                xlabel='price ($)',
+                formats=FORMATS)
+
+    myplot.Clf()
+    myplot.PrePlot(num=2)
+    cdf1 = player1.CdfDiff()
+    cdf1.name = 'Player 1 undernesss'
+    cdf2 = player2.CdfDiff()
+    cdf2.name = 'Player 2 undernesss'
+    myplot.Cdfs([cdf1, cdf2])
+    myplot.Save(root='price2',
+                xlabel='underness ($)',
+                formats=FORMATS)
+
+
 def main():
     data = ReadData(filename='showcases.2011.csv')
     data += ReadData(filename='showcases.2012.csv')
@@ -187,42 +254,11 @@ def main():
     cols = zip(*data)
     val1, val2, bid1, bid2, diff1, diff2 = cols
 
-    kde_val1 = EstimatedPdf(val1)
+    player1 = Player(val1, bid1, diff1)
+    player2 = Player(val2, bid2, diff2)
 
-    low, high = 0, 75000
-    xs = numpy.linspace(low, high, 51)
-    ys = kde_val1.kde.evaluate(xs)
-
-    pmf = kde_val1.MakePmf(xs)
-    myplot.Pmf(pmf)
-    myplot.Show()
-
+    MakePlots(player1, player2)
     return
-
-
-    cdf_val1 = thinkbayes.MakeCdfFromList(val1)
-    cdf_val2 = thinkbayes.MakeCdfFromList(val2)
-
-    print cdf_val1.Mean()
-    print cdf_val2.Mean()
-
-    cdf_diff1 = thinkbayes.MakeCdfFromList(diff1)
-    cdf_diff2 = thinkbayes.MakeCdfFromList(diff2)
-
-    print 'Prob diff1 <= -1', cdf_diff1.Prob(-1)
-    print 'Prob diff2 <= -1', cdf_diff2.Prob(-1)
-
-
-    myplot.Cdf(cdf_diff1)
-    myplot.Cdf(cdf_diff2)
-    myplot.Show()
-
-    return
-
-    for line in data:
-        print line
-    return
-
 
     calc = ReturnCalculator()
 
