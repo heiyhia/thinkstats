@@ -9,7 +9,6 @@ import csv
 import math
 import myplot
 import numpy
-import scipy.stats
 import thinkbayes
 
 import matplotlib.pyplot as pyplot
@@ -71,75 +70,6 @@ class Price(thinkbayes.Suite):
         like = self.player.ErrorDensity(error)
 
         return like
-
-
-class UnimplementedMethodException(Exception):
-    pass
-
-
-class Pdf(object):
-    """Represents a probability density function (PDF)."""
-
-    def Density(x):
-        """Evaluates this Pdf at x.
-
-        Returns: float probability density
-        """
-        raise UnimplementedMethodException('This method is abstract.')
-
-    def MakePmf(self, xs):
-        """Makes a discrete version of this Pdf, evaluated at xs.
-
-        xs: sequence of values
-
-        Returns: new Pmf
-        """
-        pmf = thinkbayes.Pmf()
-        for x in xs:
-            pmf.Set(x, self.Density(x))
-        pmf.Normalize()
-        return pmf
-
-
-class GaussianPdf(Pdf):
-    def __init__(self, mu, sigma):
-        """Constructs a Gaussian Pdf with given mu and sigma.
-
-        mu: mean
-        sigma: standard deviation
-        """
-        self.mu = mu
-        self.sigma = sigma
-        
-    def Density(self, x):
-        """Evaluates this Pdf at x.
-
-        Returns: float probability density
-        """
-        density = scipy.stats.norm.pdf(x, loc=self.mu, scale=self.sigma)
-        return density
-
-
-class EstimatedPdf(Pdf):
-    def __init__(self, seq):
-        """Estimates the density function based on a sample.
-
-        seq: sequence of data
-        """
-        xs = numpy.array(seq, dtype=numpy.double)
-        self.kde = scipy.stats.gaussian_kde(xs)
-
-    def Density(self, x):
-        """Evaluates this Pdf at x.
-
-        Returns: float probability density
-        """
-        return self.kde.evaluate(x)
-
-    def MakePmf(self, xs):
-        ps = self.kde.evaluate(xs)
-        pmf = thinkbayes.MakePmfFromItems(zip(xs, ps))
-        return pmf
 
 
 class GainCalculator(object):
@@ -232,11 +162,11 @@ class Player(object):
         self.cdf_val = thinkbayes.MakeCdfFromList(val)
         self.cdf_diff = thinkbayes.MakeCdfFromList(diff)
 
-        self.kde_val = EstimatedPdf(val)
+        self.kde_val = thinkbayes.EstimatedPdf(val)
 
         mu = 0
         sigma = numpy.std(self.diff)
-        self.pdf_error = GaussianPdf(mu, sigma)
+        self.pdf_error = thinkbayes.GaussianPdf(mu, sigma)
 
     def ErrorDensity(self, error):
         """Density of the given error in the distribution of error.

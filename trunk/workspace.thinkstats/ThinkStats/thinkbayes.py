@@ -15,6 +15,8 @@ _DictWrapper: private parent class for Hist and Pmf.
 
 Cdf: represents a discrete cumulative distribution function
 
+Pdf: represents a continuous probability density function
+
 """
 
 import bisect
@@ -24,6 +26,7 @@ import math
 import numpy
 import random
 
+import scipy.stats
 from scipy.special import erf, erfinv
 
 
@@ -874,7 +877,7 @@ def MakeCdfFromList(seq, name=''):
     return MakeCdfFromHist(hist, name)
 
 
-class UnimplementedMethod(Exception):
+class UnimplementedMethodException(Exception):
     """Exception if someone calls a method that should be overridden."""
 
 
@@ -958,7 +961,8 @@ class Suite(Pmf):
         hypo: some representation of the hypothesis
         data: some representation of the data
         """
-        raise UnimplementedMethod('Child class must define this method.')
+        raise UnimplementedMethodException(
+            'Child class must define this method.')
 
     def LogLikelihood(self, hypo, data):
         """Computes the log likelihood of the data under the hypothesis.
@@ -966,7 +970,8 @@ class Suite(Pmf):
         hypo: some representation of the hypothesis
         data: some representation of the data
         """
-        raise UnimplementedMethod('Child class must define this method.')
+        raise UnimplementedMethodException(
+            'Child class must define this method.')
 
     def Print(self):
         """Prints the hypotheses and their probabilities."""
@@ -1060,6 +1065,71 @@ def MakeSuiteFromCdf(cdf, name=None):
         prev = prob
 
     return suite
+
+
+class Pdf(object):
+    """Represents a probability density function (PDF)."""
+
+    def Density(x):
+        """Evaluates this Pdf at x.
+
+        Returns: float probability density
+        """
+        raise UnimplementedMethodException('This method is abstract.')
+
+    def MakePmf(self, xs):
+        """Makes a discrete version of this Pdf, evaluated at xs.
+
+        xs: sequence of values
+
+        Returns: new Pmf
+        """
+        pmf = Pmf()
+        for x in xs:
+            pmf.Set(x, self.Density(x))
+        pmf.Normalize()
+        return pmf
+
+
+class GaussianPdf(Pdf):
+    def __init__(self, mu, sigma):
+        """Constructs a Gaussian Pdf with given mu and sigma.
+
+        mu: mean
+        sigma: standard deviation
+        """
+        self.mu = mu
+        self.sigma = sigma
+        
+    def Density(self, x):
+        """Evaluates this Pdf at x.
+
+        Returns: float probability density
+        """
+        density = scipy.stats.norm.pdf(x, loc=self.mu, scale=self.sigma)
+        return density
+
+
+class EstimatedPdf(Pdf):
+    def __init__(self, seq):
+        """Estimates the density function based on a sample.
+
+        seq: sequence of data
+        """
+        xs = numpy.array(seq, dtype=numpy.double)
+        self.kde = scipy.stats.gaussian_kde(xs)
+
+    def Density(self, x):
+        """Evaluates this Pdf at x.
+
+        Returns: float probability density
+        """
+        return self.kde.evaluate(x)
+
+    def MakePmf(self, xs):
+        ps = self.kde.evaluate(xs)
+        pmf = MakePmfFromItems(zip(xs, ps))
+        return pmf
 
 
 def Percentile(pmf, percentage):
