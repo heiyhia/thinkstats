@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.18.0}
+\newcommand{\theversion}{0.19.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -213,12 +213,17 @@ This version of the book is a rough draft.  I am making this draft
 available for comments, but it comes with the warning that it is
 probably full of errors.
 
-If you find some of those errors, please let me know.  But it is
-probably too early to bother with typos.
+If you find some of those errors, please let me know.  If I make
+a change based on your suggestion, I will add you to the
+contributors list (unless you ask me not to).
 
-\subsection*{My theory, which is mine}
 
-The premise of this book is that if you know how to program, you
+\subsection*{My theory, which is mine\footnote{This section title
+is a reference to a Monty Python sketch, which is required for
+all Python-based books.}}
+
+The premise of this book, and the other books in the {\it Think}
+series, is that if you know how to program, you
 can use that skill to help you learn other topics, including
 Bayesian statistics.
 
@@ -230,29 +235,66 @@ be an integral in a math book becomes a summation, and
 most operations on distributions are simple loops.
 
 This presentation is easier to understand, at least for people with
-programming skills.  It is also more general, because when we make
+programming skills.  
+It is also more general, because when we make
 modeling decisions, we can choose the most appropriate model without
-excessive concern about whether the model lends itself to conventional
+worrying too much about whether the model lends itself to conventional
 analysis.
 
-And while it's true that the discrete computations I present here
-yield approximations of the results we would get from continuous
-functions, it is important to remember that both computations are
-based on models of a real system, and that any approximation errors
-(differences between the models) are almost always negligible compared
-to modeling errors (differences between the models and reality).
+Also, it provides a smooth development path from
+simple examples to real-world problems.  Chapter~\ref{estimation} is a
+good example.  It starts with a simple example involving dice, one of
+the staples of basic probability.  From there it proceeds in small
+steps to the Locomotive Problem, which I borrowed from Mosteller's,
+{\it Fifty Challenging Problems in Probability}, and from there to the
+German Tank Problem, a famously-successful application of Bayesian
+methods during World War II.
 
-If, as is often the case, the discrete approach allows us to make
-better modeling decisions, then it would be more fair to say that
-the continuous functions yield an approximation of the
-more reliable computational results.
 
-However, I have to acknowledge that continuous analysis often yields
-substantial performance advantages, for example by replacing a
-linear- or quadratic-time computation with a constant-time
-solution.
+\subsection{Modeling and approximation}
 
-Therefore, I recommend a general process with these steps:
+Most chapters in this book are motivated by a real-world problem,
+so most chapters involve some degree of modeling.   Before we
+can apply Bayesian methods (or any other analysis), we have to
+make decisions about which parts of the real-world system we
+have to include in the model, and which details we can abstract
+away.
+
+For example, in Chapter~\ref{prediction}, the motivating
+problem is to predict the winner of a hockey game.  I chose
+to model goal-scoring as a Poisson process, which implies that
+a goal is equally likely at any point in the game.  That is not
+exactly true, but it is probably a good enough model for
+most purposes.
+
+In Chapter~ref{evidence} the motivating problem is interpreting SAT
+scores (the SAT is a standardized test used for college admissions in
+the U.S.).  I start with a simple model that assumes that all SAT
+questions are equally difficult, but in fact the designers of the SAT
+deliberately include some questions that are relatively easy and some
+that are relatively hard.  I present a second model that includes this
+feature, and conclude that it doesn't have a big effect on the results
+after all.
+
+I think it is important to include modeling as an explicit part
+of problem-solving because it reminds us to think about modeling
+errors; that is, errors due to simplifications and assumptions
+of the model.
+
+Many of the methods in this book are based on discrete distributions,
+which makes some people worry about numerical errors.  But for
+real-world problems, numerical errors are almost always much
+smaller than modeling errors.
+
+Furthermore, the discrete approach often allows better modeling
+decisions; in that case, I would rather have an approximate solution
+to a good model than an exact solution to a bad model.
+
+On the other hand, continuous methods sometimes yield performance
+advantages, for example by replacing a linear- or quadratic-time
+computation with a constant-time solution.
+
+So I recommend a general process with these steps:
 
 \begin{enumerate}
 
@@ -268,39 +310,41 @@ decisions.
 \item If you really feel the need for speed, there are two approaches
 to consider.  You can review your code and look for optimizations; for
 example, caching previously computed results to avoid redundant
-computation.  Or you can look for mathematical short-cuts.  
+computation.  Or you can look for analytic methods that
+yield computational short-cuts.  
 
 \end{enumerate}
 
-One benefit of this process is that Step 1 tends to be fast, so
-you can explore alternative models before investing heavily in
-any of them.
+One benefit of this process is that Step 1 tends to be fast, so you
+can explore several alternative models before investing heavily in any
+of them.
 
 Another benefit is that if you get to Step 3, you will be starting
-with a reference implementation that is likely to be correct, so
-you can use for regression testing (that is, checking that the
+with a reference implementation that is likely to be correct,
+which you can use for regression testing (that is, checking that the
 optimized code yields the same answer, at least approximately).
 
 
-\subsection*{Where to get the code}
+\subsection*{Working with the code}
 
-Many of the code example in this book use classes and functions
-defined in {\tt thinkbayes.com}.  You can download this module
-from \url{http://thinkbayes.com/thinkbayes.py}.  In addition,
-most chapters contain references to code you can download from
-\url{http://thinkbayes.com}.  And some of those files have
+Many of the code examples in this book use classes and functions
+defined in {\tt thinkbayes.py}.  You can download this module
+from \url{http://thinkbayes.com/thinkbayes.py}.
+
+Most chapters contain references to code you can download from
+\url{http://thinkbayes.com}.  Some of those files have
 dependencies you will also have to download.  I suggest you
 keep all of these files in the same directory so they can import
-each other without dealing with the Python path.
+each other without changing the Python path.
 
 You can download these files one at a time when you need them, or you
 can download them all at once in a zip file,
 \url{http://thinkbayes.com/thinkbayes_code.zip}.  This file also
-contains the data files use by some of the programs.  When you
-unzip it, it will create a directory named \verb"thinkbayes_code"
+contains the data files used by some of the programs.  When you
+unzip it, it creates a directory named \verb"thinkbayes_code"
 that contains all the code used in this book.
 
-One of the modules you will find in that directory is {\tt myplot.py},
+One of the modules in that directory is {\tt myplot.py},
 which provides wrappers for some of the functions in {\tt pyplot},
 which is part of {\tt matplotlib}.  You can download {\tt matplotlib}
 from \url{http://matplotlib.org}, if you don't already have it
@@ -316,20 +360,18 @@ Experienced Python programmers will notice that the code in this
 book does not comply with PEP 8, which is the most common
 style guide for Python (\url{http://www.python.org/dev/peps/pep-0008/}).
 
-In particular, PEP 8 calls for lowercase function names with
+Specifially, PEP 8 calls for lowercase function names with
 underscores between words, \verb"like_this".  In this book and
 the accompanying code, function and method names begin with
 a capital letter and use camel case, \verb"LikeThis".
 
-The reason I broke this rule is that I developed some of the
-code while I was a Visiting Scientist at Google in 2009-10.
-So I followed the Google style guide for Python, which deviates
-from PEP 8 in a few places.
-Also, once I got used to function names with capital letters, I
-found that I liked it.  Finally, at this point, it would be too
-much trouble to change.
+The reason I broke this rule is that I developed some of the code
+while I was a Visiting Scientist at Google in 2009-10.  So I followed
+the Google style guide for Python, which deviates from PEP 8 in a few
+places.  Also, once I got used to Google style, I found that I liked
+it.  And at this point, it would be too much trouble to change.
 
-Also on the topic of style, I chose to write ``Bayes's Theorem''
+Also on the topic of style, I choose to write ``Bayes's Theorem''
 with an {\it s} after the apostrophe, which is preferred in some
 style guides and deprecated in others.  I don't have a strong
 preference.  I had to choose one, and I chose this one.
@@ -365,7 +407,20 @@ purposes).
 
 \subsection*{Case studies}
 
-Coming soon: Information about the case studies.
+After you read this book, you should be ready to apply Bayesian
+methods to real-world problems.  I have used this book in a college
+class with students who knew Python and a little bit of
+probability.  After a few weeks, they were able to work on projects
+with real-world applications.  As examples of the kind of work
+you can do with these methods, some of their reports are included
+as case studies at the end of this book.
+
+I am always looking for examples that would lend themselves to
+additional case studies.  If you use methods from this book on
+a real project, let me know.  Maybe we can include a case study
+about your project in a future edition.
+
+
 
 
 Allen B. Downey \\*
@@ -1424,6 +1479,7 @@ represent the hypothetical state of the bowls, and modify
 
 
 \chapter{Estimation}
+\label{estimation}
 
 \section{Which die was it?}
 
@@ -2532,7 +2588,7 @@ $3/5$.
 
 
 \section{Oliver's blood}
-\label{evidence}
+\label{oliver}
 
 Here is another problem from MacKay's {\it Information Theory,
   Inference, and Learning Algorithms}:
@@ -2850,7 +2906,85 @@ a character with at least one attribute of 18 is about 3\%.
 Figure~\ref{fig.dungeons2} shows the distribution.
 
 
+\chapter{Optimization}
+\label{optimization}
+
+\section{The Price is Right problem}
+
+On November 1, 2007, contestants named Letia and Nathaniel appeared
+on The Price is Right, an American game show.  They competed in
+a game called the Showcase, where the objective is to guess the price
+of a showcase of prizes.  The contestant who comes closest to the
+actual price of the showcase, without going over, wins the prizes.
+
+Nathaniel went first.  His showcase included a dishwasher, a wine
+cabinet, a laptop computer, and a car.  He bid \$26,000.
+
+Letia's showcase included a pinball machine, a video arcade game, a
+pool table, and a cruise of the Bahamas.  She bid \$21,500.
+
+The actual price of Nathaniel's showcase was \$25,347.  He went
+over, so he lost.
+
+The actual price of Letia's showcase was \$21,578.  She was only
+off by \$78, so she won her showcase and, because
+her bid was off by less than \$250, she also won Nathaniel's
+showcase.
+
+For a Bayesian thinker, this scenario suggests several questions:
+
+\begin{enumerate}
+
+\item Before seeing the prizes, what prior beliefs should the
+  contestant have about the price of the showcase?
+
+\item After seeing the prizes, how should the contestant update
+  the prior distribution?
+
+\item Based on the posterior distribution, what should the
+  contestant bid?
+
+\end{enumerate}
+
+This problem is inspired by an example in Cameron Davidson-Pilon's
+book, {\it Bayesian Methods for Hackers}.
+
+
+\section{The prior}
+
+To choose a prior distribution of prices, we can take advantage
+of data from previous episodes.  Fortunately, fans of the show
+keep detailed records.  When I corresponded with Cameron Davidson-Pilon
+about his book, he sent me data collected by Steve Gee at
+\url{http://tpirsummaries.8m.com}.  It includes the price of
+each showcase from the 2011 and 2012 seasons, and the bids
+offered by the contestants.
+
+\begin{figure}
+% price.py
+\centerline{\includegraphics[height=2.5in]{figs/price1.pdf}}
+\caption{Distribution of prices for showcases on
+{\it The Price is Right}, 2011-12.}
+\label{fig.price1}
+\end{figure}
+
+Figure~\ref{fig.price1} shows the distribution of prices for these
+showcases.  The most common value for both showcases is around
+\$28,000, but the first showcase has a second mode near \$50,000,
+and the second showcase is occasionally worth more than \$70,000.
+
+As always, we can approach 
+
+have to make some modeling decisions before we can
+get started.
+
+And I use data Cameron sent
+me, which was collected by Steve Gee at
+\url{http://tpirsummaries.8m.com}.
+
+
 \chapter{Prediction}
+\label{prediction}
 
 \section{The Boston Bruins problem}
 
@@ -4592,7 +4726,7 @@ get back to that now.
 
 \section{Bayesian hypothesis testing}
 
-In Section~\ref{evidence} I proposed that data are in favor of
+In Section~\ref{oliver} I proposed that data are in favor of
 a hypothesis if the data are more likely under the hypothesis than
 under the alternative or, equivalently, if the Bayes factor is greater
 than 1.
@@ -4866,6 +5000,7 @@ Miracles,'' at \url{http://en.wikipedia.org/wiki/Of_Miracles}.
 
 
 \chapter{Evidence}
+\label{evidence}
 
 \section{Interpreting SAT scores}
 
@@ -7283,22 +7418,22 @@ congratulations!
 
 
 
-\chapter{Future chapters}
+%\chapter{Future chapters}
 
-Bayesian regression (hybrid version with resampling?)
-\url{http://www.reddit.com/r/statistics/comments/1647yj/which_regression_technique/}
+%Bayesian regression (hybrid version with resampling?)
+%\url{http://www.reddit.com/r/statistics/comments/1647yj/which_regression_technique/}
 
-Change point detection: 
+%Change point detection: 
 
-Deconvolution: Estimating round trip times
+%Deconvolution: Estimating round trip times
 
-Bayesian search
+%Bayesian search
 
-Extension of the Euro problem: evaluating reddit items and redditors
-\url{http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/}
+%Extension of the Euro problem: evaluating reddit items and redditors
+%\url{http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/}
 
-Charles Darwin Problem (capture-tag-recapture)
-\url{http://maximum-entropy-blog.blogspot.com/2012/04/capture-recapture-and-charles-darwin.html}
+%Charles Darwin Problem (capture-tag-recapture)
+%\url{http://maximum-entropy-blog.blogspot.com/2012/04/capture-recapture-and-charles-darwin.html}
 
 % http://camdp.com/blogs/how-solve-price-rights-showdown
 
