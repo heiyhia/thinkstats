@@ -2973,14 +2973,76 @@ showcases.  The most common value for both showcases is around
 \$28,000, but the first showcase has a second mode near \$50,000,
 and the second showcase is occasionally worth more than \$70,000.
 
-As always, we can approach 
+These distributions are based on the collected data, but they
+have been smoothed by Gaussian kernel density estimation, or KDE.
+So before we go on, I want to take a detour to talk about 
+probability density functions.
 
-have to make some modeling decisions before we can
-get started.
 
-And I use data Cameron sent
-me, which was collected by Steve Gee at
-\url{http://tpirsummaries.8m.com}.
+\chapter{PDF}
+
+So far we have been working with probability mass functions,
+or Pmfs.  A Pmf is a map from each possible value to its
+probability.  In my implementation, a Pmf object provides
+a method named {\tt Prob} that takes a value and returns
+a probability.
+
+A probability density function, or Pdf, is the continuous version of a
+Pmf, where the possible values make up a continuous range rather than
+a discrete set.
+
+In mathematical notation, Pdfs are usually written as functions; for
+example, here is the Pdf of a Gaussian distribution with
+mean 0 and standard deviation 1:
+
+\[ f(x) = \exp(-x^2) \]
+
+To represent a Pdf in Python, I am going to define a new class.
+For example, to represent this Gaussian distribution, I might
+define:
+
+\begin{verbatim}
+class StandardGaussianPdf(object):
+
+    def Density(self, x):
+        return math.exp(-x**2)
+\end{verbatim}
+
+
+
+{\tt Density} takes a value, {\tt x}, and returns the probability
+density evaluated at {\tt x}.  A probability density is similar
+to a probability in one way: higher density indicates that a
+value is more likely.
+
+But it is not a probability.  In order to get a probability, you
+have to integrate a density over a range.  But we're not going to
+do that.
+
+
+{\tt thinkbayes.py} provides a class named Pdf that represents
+a probability density function.  Here is the definition:
+
+\begin{verbatim}
+class Pdf(object):
+
+    def Density(self, x):
+        raise UnimplementedMethodException()
+\end{verbatim}
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
 
 
 \chapter{Prediction}
