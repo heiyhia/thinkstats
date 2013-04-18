@@ -13,7 +13,7 @@ import thinkbayes
 
 import matplotlib.pyplot as pyplot
 
-FORMATS = ['png']
+FORMATS = ['png', 'pdf', 'eps']
 
 def ReadData(filename='showcases.2011.csv'):
     """Reads a CSV file of data.
