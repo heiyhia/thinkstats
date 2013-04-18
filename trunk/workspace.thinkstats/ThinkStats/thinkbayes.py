@@ -961,8 +961,7 @@ class Suite(Pmf):
         hypo: some representation of the hypothesis
         data: some representation of the data
         """
-        raise UnimplementedMethodException(
-            'Child class must define this method.')
+        raise UnimplementedMethodException()
 
     def LogLikelihood(self, hypo, data):
         """Computes the log likelihood of the data under the hypothesis.
@@ -970,8 +969,7 @@ class Suite(Pmf):
         hypo: some representation of the hypothesis
         data: some representation of the data
         """
-        raise UnimplementedMethodException(
-            'Child class must define this method.')
+        raise UnimplementedMethodException()
 
     def Print(self):
         """Prints the hypotheses and their probabilities."""
@@ -1070,12 +1068,12 @@ def MakeSuiteFromCdf(cdf, name=None):
 class Pdf(object):
     """Represents a probability density function (PDF)."""
 
-    def Density(x):
+    def Density(self, x):
         """Evaluates this Pdf at x.
 
         Returns: float probability density
         """
-        raise UnimplementedMethodException('This method is abstract.')
+        raise UnimplementedMethodException()
 
     def MakePmf(self, xs):
         """Makes a discrete version of this Pdf, evaluated at xs.
@@ -1570,4 +1568,5 @@ def LogBinomialCoef(n, m):
     approximating-the-logarithm-of-the-binomial-coefficient
     """
     return n * log(n) - m * log(m) - (n-m) * log(n-m)
+
 
