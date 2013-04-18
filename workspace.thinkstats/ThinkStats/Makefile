@@ -10,7 +10,8 @@ brfss_figs.py chi.py correlation.py social.py pareto_world.py \
 khan.py blinky.py continuous.py bayes_height.py
 
 DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat \
-sat_ranks.csv sat_scale.csv populations.csv birthdays.csv
+sat_ranks.csv sat_scale.csv populations.csv birthdays.csv \
+showcases.2011.csv showcases.2012.csv
 
 DOCS = survey.html first.html risk.html Pmf.html thinkstats.html \
 descriptive.html myplot.html brfss.html hypothesis.html cumulative.html \
@@ -131,7 +132,7 @@ BAYES_CODE = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
 monty.py cookie2.py cookie.py train3.py dungeons.py hockey.py hockey_data.csv \
 sat.py euro*.py kidney.py species.py paintball.py myplot.py columns.py \
 thinkstats.py sat_ranks.csv sat_scale.csv correlation.py \
-journal.pone.0047712.s001.csv variability.py
+journal.pone.0047712.s001.csv variability.py price.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
@@ -143,7 +144,8 @@ sat*.eps sat*.pdf \
 kidney*.eps kidney*.pdf \
 species*.pdf species*.eps \
 paintball*.pdf paintball*.eps \
-variability*.pdf variability*.eps 
+variability*.pdf variability*.eps \
+price*.pdf price*.eps
 
 
 BAYES_TABLES = kidney_table*.tex
