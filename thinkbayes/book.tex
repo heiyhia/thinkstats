@@ -3553,11 +3553,28 @@ the optimal bid is less than the best guess.
 \section{Discussion}
 
 One of the most useful features of Bayesian estimation is that the
-result comes in the form of a posterior distribution
+result comes in the form of a posterior distribution.  Classical
+estimation usually generates a single point estimate or a confidence
+interval, which is sufficient if estimation is the last step in
+the process, but if you want to use an estimate as an input to
+a subsequent analysis, point estimates and intervals are not much help.
 
+In this example, the Bayesian analysis yields a posterior distribution
+we can use to compute an optimal bid.  The gain function is asymmetric
+and discontinuous (if you overbid, you lose), so it would be hard to
+solve this problem analytically.  But it is relatively simple to do
+computationally.
 
+Newcomers to Bayesian thinking are often tempted to summarize the
+posterior distribution by computing the mean or the maximum
+likelihood estimate.  These summaries can be useful, but if that's
+all you need, then you probably don't need Bayesian methods in the
+first place.
 
-
+Bayesian methods are most useful when you can carry the posterior
+distribution into the next step of the process to perform some
+kind of optimization, as we did in this chapter, or some kind of
+prediction, as we will see in the next chapter.
 
 
 
