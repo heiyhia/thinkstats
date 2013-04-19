@@ -21,7 +21,7 @@ def ReadData(filename='showcases.2011.csv'):
     Args:
       filename: string filename
 
-    Returns: sequence of (val1 val2 bid1 bid2 diff1 diff2) tuples
+    Returns: sequence of (price1 price2 bid1 bid2 diff1 diff2) tuples
     """
     fp = open(filename)
     reader = csv.reader(fp)
@@ -46,14 +46,14 @@ class Price(thinkbayes.Suite):
     def __init__(self, pmf, player, name=''):
         """Constructs the suite.
 
-        pmf: prior distribution of value
+        pmf: prior distribution of price
         player: Player object
         """
         thinkbayes.Suite.__init__(self, name=name)
 
         # copy items from pmf to self
-        for val, prob in pmf.Items():
-            self.Set(val, prob)
+        for price, prob in pmf.Items():
+            self.Set(price, prob)
 
         self.player = player
 
@@ -61,12 +61,12 @@ class Price(thinkbayes.Suite):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: actual price
-        data: my guess
+        data: the contestant's guess
         """
-        actual_price = hypo
-        my_guess = data
+        price = hypo
+        guess = data
 
-        error = actual_price - my_guess
+        error = price - guess
         like = self.player.ErrorDensity(error)
 
         return like
@@ -133,36 +133,24 @@ class GainCalculator(object):
         return prob
 
 
-def RemoveNegatives(pmf):
-    """Remove negative values from the Pmf."""
-    for val in pmf.Values():
-        if val < 0:
-            pmf.Remove(val)
-    pmf.Normalize()
-
-
 class Player(object):
 
-    low, high = 0, 75000
     n = 101
-    xs = numpy.linspace(low, high, n)
-    diffs = numpy.linspace(-30000, 30000, n)
+    price_xs = numpy.linspace(0, 75000, n)
 
-    def __init__(self, val, bid, diff):
+    def __init__(self, price, bid, diff):
         """Construct the Player.
 
-        val: sequence of values
+        price: sequence of prices
         bid: sequence of bids
         diff: sequence of underness (negative means over)
         """
-        self.val = val
-        self.big = bid
+        self.price = price
+        self.bid = bid
         self.diff = diff
 
-        self.cdf_val = thinkbayes.MakeCdfFromList(val)
+        self.pdf_price = thinkbayes.EstimatedPdf(price)
         self.cdf_diff = thinkbayes.MakeCdfFromList(diff)
-
-        self.kde_val = thinkbayes.EstimatedPdf(val)
 
         mu = 0
         sigma = numpy.std(self.diff)
@@ -175,12 +163,12 @@ class Player(object):
         """
         return self.pdf_error.Density(error)
 
-    def PmfVal(self):
-        """Returns a new Pmf of values.
+    def PmfPrice(self):
+        """Returns a new Pmf of prices.
 
         A discrete version of the estimated Pdf.
         """
-        return self.kde_val.MakePmf(self.xs)
+        return self.pdf_price.MakePmf(self.price_xs)
 
     def CdfDiff(self):
         """Returns a reference to the Cdf of differences (underness).
@@ -199,27 +187,27 @@ class Player(object):
         """
         return 1 - self.cdf_diff.Prob(diff)
 
-    def MakeBeliefs(self, estimate):
-        """Makes a posterior distribution based on estimated value.
+    def MakeBeliefs(self, guess):
+        """Makes a posterior distribution based on estimated price.
 
         Sets attributes prior and posterior.
 
-        estimate: what the player thinks the showcase is worth        
+        guess: what the player thinks the showcase is worth        
         """
-        pmf = self.PmfVal()
+        pmf = self.PmfPrice()
         self.prior = Price(pmf, self, name='prior')
         self.posterior = self.prior.Copy(name='posterior')
-        self.posterior.Update(estimate)
+        self.posterior.Update(guess)
 
-    def OptimalBid(self, estimate, opponent):
+    def OptimalBid(self, guess, opponent):
         """Computes the bid that maximizes expected return.
         
-        estimate: what the player thinks the showcase is worth 
+        guess: what the player thinks the showcase is worth 
         opponent: Player
 
         Returns: (optimal bid, expected gain)
         """
-        self.MakeBeliefs(estimate)
+        self.MakeBeliefs(guess)
         calc = GainCalculator(self, opponent)
         bids, gains = calc.ExpectedGains()
         gain, bid = max(zip(gains, bids))
@@ -245,12 +233,12 @@ def MakePlots(player1, player2):
     price2 shows the distribution of diff for the two players
     """
 
-    # plot the prior distribution of value for both players
+    # plot the prior distribution of price for both players
     myplot.Clf()
     myplot.PrePlot(num=2)
-    pmf1 = player1.PmfVal()
+    pmf1 = player1.PmfPrice()
     pmf1.name = 'showcase 1'
-    pmf2 = player2.PmfVal()
+    pmf2 = player2.PmfPrice()
     pmf2.name = 'showcase 2'
     myplot.Pmfs([pmf1, pmf2])
     myplot.Save(root='price1',
@@ -265,12 +253,15 @@ def MakePlots(player1, player2):
     cdf2 = player2.CdfDiff()
     cdf2.name = 'player 2'
 
+    print 'Player median', cdf1.Percentile(50)
+    print 'Player median', cdf2.Percentile(50)
+
     print 'Player 1 overbids', player1.ProbOverbid()
     print 'Player 2 overbids', player2.ProbOverbid()
 
     myplot.Cdfs([cdf1, cdf2])
     myplot.Save(root='price2',
-                xlabel='underness ($)',
+                xlabel='diff ($)',
                 formats=FORMATS)
 
 
@@ -282,26 +273,31 @@ def MakePlayers():
     data += ReadData(filename='showcases.2012.csv')
 
     cols = zip(*data)
-    val1, val2, bid1, bid2, diff1, diff2 = cols
+    price1, price2, bid1, bid2, diff1, diff2 = cols
 
-    player1 = Player(val1, bid1, diff1)
-    player2 = Player(val2, bid2, diff2)
+    # print list(sorted(price1))
+    # print len(price1)
+
+    player1 = Player(price1, bid1, diff1)
+    player2 = Player(price2, bid2, diff2)
 
     return player1, player2
 
 
-def PlotExpectedGains(estimate1=20000, estimate2=40000):
+def PlotExpectedGains(guess1=20000, guess2=40000):
     """Plots expected gains as a function of bid.
 
-    estimate1: player1's estimate of the value of showcase 1
-    estimate2: player2's estimate of the value of showcase 2
+    guess1: player1's estimate of the price of showcase 1
+    guess2: player2's estimate of the price of showcase 2
     """
     player1, player2 = MakePlayers()
     MakePlots(player1, player2)
 
-    player1.MakeBeliefs(estimate1)
-    player2.MakeBeliefs(estimate2)
+    player1.MakeBeliefs(guess1)
+    player2.MakeBeliefs(guess2)
 
+    print 'Player 1 prior mle', player1.prior.MaximumLikelihood()
+    print 'Player 2 prior mle', player2.prior.MaximumLikelihood()
     print 'Player 1 mean', player1.posterior.Mean()
     print 'Player 2 mean', player2.posterior.Mean()
     print 'Player 1 mle', player1.posterior.MaximumLikelihood()
@@ -330,14 +326,14 @@ def PlotExpectedGains(estimate1=20000, estimate2=40000):
 
 
 def PlotOptimalBid():
-    """Plots optimal bid vs estimated value.
+    """Plots optimal bid vs estimated price.
     """
     player1, player2 = MakePlayers()
-    estimates = numpy.linspace(15000, 60000, 21)
+    guesses = numpy.linspace(15000, 60000, 21)
 
     res = []
-    for estimate in estimates:
-        player1.MakeBeliefs(estimate)
+    for guess in guesses:
+        player1.MakeBeliefs(guess)
 
         mean = player1.posterior.Mean()
         mle = player1.posterior.MaximumLikelihood()
@@ -346,18 +342,18 @@ def PlotOptimalBid():
         bids, gains = calc.ExpectedGains()
         gain, bid = max(zip(gains, bids))
 
-        res.append((estimate, mean, mle, gain, bid))
+        res.append((guess, mean, mle, gain, bid))
 
-    estimates, means, mles, gains, bids = zip(*res)
+    guesses, means, mles, gains, bids = zip(*res)
     
     myplot.PrePlot(num=3)
     pyplot.plot([15000,60000], [15000,60000], color='gray')
-    myplot.Plot(estimates, means, label='mean')
-    #myplot.Plot(estimates, mles, label='MLE')
-    myplot.Plot(estimates, bids, label='bid')
-    myplot.Plot(estimates, gains, label='gain')
+    myplot.Plot(guesses, means, label='mean')
+    #myplot.Plot(guesses, mles, label='MLE')
+    myplot.Plot(guesses, bids, label='bid')
+    myplot.Plot(guesses, gains, label='gain')
     myplot.Save(root='price6',
-                xlabel='estimated price ($)',
+                xlabel='guessed price ($)',
                 formats=FORMATS)
 
 

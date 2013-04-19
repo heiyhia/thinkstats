@@ -2240,7 +2240,6 @@ converge on the same posterior.
 
 
 \section{Optimization}
-\label{optimization}
 
 The code I have shown so far is meant to be easy to read, but it
 is not very efficient.  In general, I like to develop code that
@@ -2912,7 +2911,7 @@ Figure~\ref{fig.dungeons2} shows the distribution.
 \section{The Price is Right problem}
 
 On November 1, 2007, contestants named Letia and Nathaniel appeared
-on The Price is Right, an American game show.  They competed in
+on {\it The Price is Right}, an American game show.  They competed in
 a game called the Showcase, where the objective is to guess the price
 of a showcase of prizes.  The contestant who comes closest to the
 actual price of the showcase, without going over, wins the prizes.
@@ -2923,8 +2922,8 @@ cabinet, a laptop computer, and a car.  He bid \$26,000.
 Letia's showcase included a pinball machine, a video arcade game, a
 pool table, and a cruise of the Bahamas.  She bid \$21,500.
 
-The actual price of Nathaniel's showcase was \$25,347.  He went
-over, so he lost.
+The actual price of Nathaniel's showcase was \$25,347.  His bid
+was too high, so he lost.
 
 The actual price of Letia's showcase was \$21,578.  She was only
 off by \$78, so she won her showcase and, because
@@ -2939,26 +2938,22 @@ For a Bayesian thinker, this scenario suggests several questions:
   contestant have about the price of the showcase?
 
 \item After seeing the prizes, how should the contestant update
-  the prior distribution?
+  those prior beliefs?
 
 \item Based on the posterior distribution, what should the
   contestant bid?
 
 \end{enumerate}
 
+The third question demonstrates a common use of Bayesian analysis:
+optimization.  Given a posterior distribution, we can choose
+the bid that maximizes the contestant's expected return.
+
 This problem is inspired by an example in Cameron Davidson-Pilon's
 book, {\it Bayesian Methods for Hackers}.
 
 
 \section{The prior}
-
-To choose a prior distribution of prices, we can take advantage
-of data from previous episodes.  Fortunately, fans of the show
-keep detailed records.  When I corresponded with Cameron Davidson-Pilon
-about his book, he sent me data collected by Steve Gee at
-\url{http://tpirsummaries.8m.com}.  It includes the price of
-each showcase from the 2011 and 2012 seasons, and the bids
-offered by the contestants.
 
 \begin{figure}
 % price.py
@@ -2968,38 +2963,44 @@ offered by the contestants.
 \label{fig.price1}
 \end{figure}
 
+To choose a prior distribution of prices, we can take advantage
+of data from previous episodes.  Fortunately, fans of the show
+keep detailed records.  When I corresponded with Mr.~Davidson-Pilon
+about his book, he sent me data collected by Steve Gee at
+\url{http://tpirsummaries.8m.com}.  It includes the price of
+each showcase from the 2011 and 2012 seasons, and the bids
+offered by the contestants.
+
 Figure~\ref{fig.price1} shows the distribution of prices for these
 showcases.  The most common value for both showcases is around
 \$28,000, but the first showcase has a second mode near \$50,000,
 and the second showcase is occasionally worth more than \$70,000.
 
-These distributions are based on the collected data, but they
-have been smoothed by Gaussian kernel density estimation, or KDE.
+These distributions are based on actual data, but they
+have been smoothed by Gaussian kernel density estimation (KDE).
 So before we go on, I want to take a detour to talk about 
-probability density functions.
+probability density functions and KDE.
 
 
 \chapter{PDF}
 
-So far we have been working with probability mass functions,
-or Pmfs.  A Pmf is a map from each possible value to its
-probability.  In my implementation, a Pmf object provides
-a method named {\tt Prob} that takes a value and returns
-a probability.
+So far we have been working with probability mass functions, or PMFs.
+A PMF is a mapping from each possible value to its probability.  In my
+implementation, a {\tt Pmf} object provides a method named {\tt Prob} that
+takes a value and returns a probability, also known as a ``probability
+mass.''
 
-A probability density function, or Pdf, is the continuous version of a
-Pmf, where the possible values make up a continuous range rather than
-a discrete set.
+A probability density function, or PDF, is the continuous version of a
+PMF, where the possible values make up a continuous range rather than
+a discrete set.  
 
-In mathematical notation, Pdfs are usually written as functions; for
+In mathematical notation, PDFs are usually written as functions; for
 example, here is the Pdf of a Gaussian distribution with
 mean 0 and standard deviation 1:
 
 \[ f(x) = \exp(-x^2) \]
 
-To represent a Pdf in Python, I am going to define a new class.
-For example, to represent this Gaussian distribution, I might
-define:
+To represent this PDF in Python, I could define a class like this:
 
 \begin{verbatim}
 class StandardGaussianPdf(object):
@@ -3008,40 +3009,555 @@ class StandardGaussianPdf(object):
         return math.exp(-x**2)
 \end{verbatim}
 
-
-
 {\tt Density} takes a value, {\tt x}, and returns the probability
-density evaluated at {\tt x}.  A probability density is similar
+density evaluated at {\tt x}.  
+
+A probability density is similar
 to a probability in one way: higher density indicates that a
 value is more likely.
 
 But it is not a probability.  In order to get a probability, you
-have to integrate a density over a range.  But we're not going to
-do that.
+have to integrate a density over a range.  Although it turns out
+that for the applications in this book we seldom have to do that.
+
+In this book we primarily use probability densities as part
+of a {\tt Likelihood} function.  We will see an example soon.
 
 
-{\tt thinkbayes.py} provides a class named Pdf that represents
-a probability density function.  Here is the definition:
+\section{Representing Pdfs}
+
+Before we get back to {\it The Price is Right}, I want to
+present a more general way to represent PDFs.
+
+{\tt thinkbayes.py} provides a class named {\tt Pdf} that defines
+two functions, {\tt Density} and {\tt MakePmf}:
 
 \begin{verbatim}
 class Pdf(object):
 
     def Density(self, x):
         raise UnimplementedMethodException()
+
+    def MakePmf(self, xs):
+        pmf = Pmf()
+        for x in xs:
+            pmf.Set(x, self.Density(x))
+        pmf.Normalize()
+        return pmf
 \end{verbatim}
 
+{\tt Pdf} is an {\bf abstract type}, which means that it defines
+the interface a Pdf is supposed to have, but does not provide
+a complete implementation.  Specifically, {\tt Pdf} provides
+an implementation of {\tt MakePdf} but not {\tt Density}.
 
+In order to provide {\tt Density} you have to define a child
+class that extends {\tt Pdf}.  For example, {\tt thinkbayes}
+provides {\tt GaussianPdf}:
 
 \begin{verbatim}
+class GaussianPdf(Pdf):
+
+    def __init__(self, mu, sigma):
+        self.mu = mu
+        self.sigma = sigma
+        
+    def Density(self, x):
+        density = scipy.stats.norm.pdf(x, 
+                                       loc=self.mu, 
+                                       scale=self.sigma)
+        return density
 \end{verbatim}
 
+\verb"__init__" takes {\tt mu} and {\tt sigma}, which are
+the mean and standard deviation of the distribution.
+
+{\tt Density} uses a function from {\tt scipy} to evaluate the
+Gaussian PDF.
+
+The Gaussian PDF is defined by a simple mathematical function,
+so it is easy to evaluate.  And it is useful because many
+quantities in the real world have distributions that are
+approximately Gaussian.
+
+But with real data, there is no guarantee that the PDF
+is Gaussian, or any other simple mathematical function.  In
+that case we can use a data sample to estimate the PDF of
+the whole population.
+
+For example, in {\it The Price Is Right} data, we have
+313 prices for the first showcase.  We can think of these
+values as a sample from the population of all possible showcase
+prices.
+
+Near the middle of the distribution, we the following values:
+
+\[ 28800, 28868, 28941, 28957, 28958 \]
+
+In the sample, no values appear between 28801 and 28867, but
+there is no reason to think that these values are impossible.
+Based on our background information, we would expect all
+values in this range to be equally likely.  In other words,
+we expect the PDF to be reasonably smooth.
+
+Kernel density estimation (KDE) is an algorithm that takes
+a sample of values and finds an appropriately-smooth PDF that fits 
+the data.  You can read about the details at
+\url{http://en.wikipedia.org/wiki/Kernel_density_estimation}.
+
+{\tt scipy} provides an implementation of KDE.  {\tt thinkbayes}
+provides a class called {\tt EstimatedPdf} that extends {\tt Pdf}
+and uses KDE:
 
 \begin{verbatim}
+class EstimatedPdf(Pdf):
+
+    def __init__(self, sample):
+        xs = numpy.array(sample, dtype=numpy.double)
+        self.kde = scipy.stats.gaussian_kde(xs)
+
+    def Density(self, x):
+        return self.kde.evaluate(x)
 \end{verbatim}
 
+\verb"__init__" takes a sample, converts it to a NumPy array,
+and computes a kernel density estimate.  The result is a
+\verb"gaussian_kde" object that provides an {\tt evaluate}
+method.
+
+{\tt Density} takes a value, calls \verb"gaussian_kde.evaluate",
+and returns the resulting density.
+
+Finally, here's an outline of the code I used to generate
+Figure~\ref{fig.price1}:
 
 \begin{verbatim}
+    prices = ReadData()
+    kde = thinkbayes.EstimatedPdf(prices)
+
+    low, high = 0, 75000
+    n = 101
+    xs = numpy.linspace(low, high, n) 
+    pmf = kde.MakePmf(xs)
+
+    myplot.Pmf(pmf)
 \end{verbatim}
+
+And now back to {\it The Price is Right}.
+
+
+\section{Modeling the contestants}
+
+\begin{figure}
+% price.py
+\centerline{\includegraphics[height=2.5in]{figs/price2.pdf}}
+\caption{Cumulative distribution (CDF) of the difference between the
+  contestant's bid and the actual price.}
+\label{fig.price2}
+\end{figure}
+
+The PDFs in Figure~\ref{fig.price1} estimate the
+distribution of possible prices for each showcase.  These
+distributions represent the prior beliefs of the contestants
+before they see the prizes (or, at least, they are a reasonable
+choice).
+
+In order to update these priors, we have to answer these questions:
+
+\begin{enumerate}
+
+\item What data should we consider and how should we quantify it?
+
+\item Can we compute a {\tt Likelihood} function; that is,
+  for each hypothetical value of {\tt price}, can we compute
+  the conditional likelihood of the data?
+
+\end{enumerate}
+
+To answer these questions, I am going to model the contestant
+as a price-guessing instrument with known error characteristics.
+In other words, when the contestant sees the prizes, he or she
+guesses the price of each prize---ideally without taking into
+consideration the fact that the prize is part of a showcase---and
+adds up the prices.  Let's call this total {\tt guess}.
+
+Under this model, the question we have to answer is, ``If the
+actual price is {\tt price}, what is the likelihood that the
+contestant's total estimate would be {\tt guess}?''
+
+Or if we define
+%
+\begin{verbatim}
+    error = price - guess
+\end{verbatim}
+%
+then we could ask, ``What is the likelihood
+that the contestant's estimate is off by {\tt error}?''
+
+To answer this question, we can use the historical data again.
+Figure~\ref{fig.price2} shows the cumulative distribution of {\tt diff},
+the difference between the contestant's bid and the actual price
+of the showcase.
+
+The definition of diff is
+%
+\begin{verbatim}
+    diff = price - bid
+\end{verbatim}
+%
+When {\tt diff} is negative, the bid is too high.  As an
+aside, we can use this CDF to compute the probability that the
+contestants overbid: the first contestant overbids 25\% of the
+time; the second contestant overbids 29\% of the time.
+
+We can also use this distribution to estimate the reliability of
+the contestants' guesses.  This step is a little tricky because
+we don't actually know the contestant's guesses; we only know
+what they bid.
+
+In Figure~\ref{fig.price2} we can see that the bids are biased;
+that is, they are more likely to be too low than too high.  And
+that makes sense, given the rules of the game.
+
+So we'll have to make some assumptions.  Specifically, I assume
+that the distribution of {\tt error} is Gaussian with mean 0
+and the same variance as {\tt diff}.
+
+The {\tt Player} class implements this model:
+
+\begin{verbatim}
+class Player(object):
+
+    def __init__(self, price, bid, diff):
+        self.price = price
+        self.bid = bid
+        self.diff = diff
+
+        self.pdf_price = thinkbayes.EstimatedPdf(price)
+        self.cdf_diff = thinkbayes.MakeCdfFromList(diff)
+
+        mu = 0
+        sigma = numpy.std(self.diff)
+        self.pdf_error = thinkbayes.GaussianPdf(mu, sigma)
+\end{verbatim}
+
+{\tt price} is a sequence of showcase prices, {\tt bid} is a
+sequence of bids, and {\tt diff} is a sequence of diffs, where
+again {\tt diff = price - bid}.
+
+\verb"pdf_price" is the smoothed PDF of prices, estimated by KDE.
+\verb"cdf_diff" is the cumulative distribution of {\tt diff},
+which we saw in Figure~\ref{fig.price2}.  And \verb"pdf_error"
+is the PDF that characterizes the distribution of errors; where
+{\tt error = price - guess}.
+
+Again, we use the variance of {\tt diff} to estimate the
+variance of {\tt error}.
+But contestant's bids are sometimes strategic; for example, if
+Player 2 thinks that Player 1 has overbid, Player 2 might make
+a very low bid.  In that case {\tt diff} does not reflect
+the error in {\tt guess}, so the variance in {\tt diff}
+might overestimate the variance in {\tt error}.
+Nevertheless, I think it is a reasonable modeling decision.
+
+As an alternative, someone preparing to appear on the show could estimate
+their own distribution of error by watching previous shows
+and recording their guesses and the actual prices.
+
+
+\section{Likelihood}
+
+Now we are ready to write the likelihood function.  As usual,
+I define a new class that extends {\tt thinkbayes.Suite}:
+
+\begin{verbatim}
+class Price(thinkbayes.Suite):
+
+    def __init__(self, pmf, player):
+        thinkbayes.Suite.__init__(self)
+
+        for price, prob in pmf.Items():
+            self.Set(price, prob)
+
+        self.player = player
+\end{verbatim}
+
+{\tt pmf} represents the prior distribution.  The {\tt for}
+loop copies the values and probabilities from {\tt pmf} into
+the new {\tt Suite}.
+
+{\tt player} is a Player object as described in the previous
+section.
+
+And here's {\tt Likelihood}:
+
+\begin{verbatim}
+    def Likelihood(self, hypo, data):
+        price = hypo
+        guess = data
+
+        error = price - guess
+        like = self.player.ErrorDensity(error)
+
+        return like
+\end{verbatim}
+
+{\tt hypo} is the hypothetical price of the showcase.  {\tt data}
+is the contestant's best guess at the price.  {\tt error} is
+the difference, and {\tt like} is the likelihood of the data,
+given the hypothesis.
+
+{\tt ErrorDensity} is defined in {\tt Player}:
+
+\begin{verbatim}
+# class Player:
+
+    def ErrorDensity(self, error):
+        return self.pdf_error.Density(error)
+\end{verbatim}
+
+{\tt ErrorDensity} works by evaluating \verb"pdf_error" at
+the given value of {\tt error}.  The result is a probability
+density, which means we can't treat it as a probability.  But
+remember that {\tt Likelihood} does not really need to compute
+a probability; it only has to compute something {\em proportional}
+to a probability.
+
+As long as the constant of proportionality is the same for
+all likelihoods, it gets cancelled out when we normalize the
+posterior distribution.
+
+And therefore, a probability density is a perfectly good likelihood.
+
+
+\section{Update}
+
+\begin{figure}
+% price.py
+\centerline{\includegraphics[height=2.5in]{figs/price3.pdf}}
+\caption{Prior and posterior distributions for Player 1, based on
+  a best guess of \$20,000.}
+\label{fig.price3}
+\end{figure}
+
+
+{\tt Player} provides a method that takes the contestant's
+guess and computes the posterior distribution:
+
+\begin{verbatim}
+    def MakeBeliefs(self, guess):
+        pmf = self.PmfPrice()
+        self.prior = Price(pmf, self, name='prior')
+        self.posterior = self.prior.Copy(name='posterior')
+        self.posterior.Update(guess)
+\end{verbatim}
+
+{\tt PmfPrice} evaluates \verb"pdf_price" at an equally-spaced
+series of values:
+
+\begin{verbatim}
+    def PmfPrice(self):
+        return self.pdf_price.MakePmf(self.price_xs)
+\end{verbatim}
+
+The result is a new {\tt Pmf} object, which we use to construct
+the prior.  To construct the posterior, we make a copy of the
+prior and then invoke {\tt Update}, which invokes {\tt Likelihood}
+for each hypothesis, multiplies the priors by the likelihoods,
+and then renormalizes.
+
+So let's get back to the original scenario.  Suppose you are
+Player 1 and when you see your showcase, your best guess is
+that the total price of the prizes is \$20,000.
+
+The following code would construct and plot your prior and
+posterior beliefs about the actual price:
+
+\begin{verbatim}
+    player1.MakeBeliefs(20000)
+    myplot.Pmf(player1.prior)
+    myplot.Pmf(player2.prior)
+\end{verbatim}
+
+Figure~\ref{fig.price3} shows the results.  The value of your guess
+is on the low end of the prior range, so the posterior is shifted
+to the left.  The mean of the posterior is \$25,096; the most
+likely value is \$24,000.
+
+One one level, this result makes sense.  The most likely value
+in the prior is \$27,750.  Your best guess is \$20,000.  And the
+most likely value in the posterior is about half way in between.
+
+On another level, you might find this result bizarre, because it
+seems to suggest that if you think the price is \$20,000, then you
+should believe the price is \$24,000.
+
+To resolve this apparent paradox, remember that you are combining two
+sources of information, historical data about past showcases and
+guesses about the prizes you see.
+
+We are treating the historical data as the prior and updating it
+based on your guesses, but we could equivalently use your guess
+as a prior and update it based on historical data.  I think the
+second approach is harder to think about, but it would yield the
+same result.
+
+
+\section{Optimal bidding}
+
+Now that we have a posterior distribution, we can use it to
+compute the optimal bid, which I define as the bid that maximizes
+expected gain.
+
+To compute optimal bids, I define a class called {\tt GainCalculator}:
+
+\begin{verbatim}
+class GainCalculator(object):
+
+    def __init__(self, player, opponent):
+        self.player = player
+        self.opponent = opponent
+\end{verbatim}
+
+{\tt player} and {\tt opponent} are both {\tt Player} objects.
+
+{\tt GainCalculator} provides {\tt ExpectedGains}, which
+computes a sequence of bids and the expected gain for each
+bid:
+
+\begin{verbatim}
+    def ExpectedGains(self, low=0, high=75000, n=101):
+        bids = numpy.linspace(low, high, n)
+
+        gains = [self.ExpectedGain(bid) for bid in bids]
+
+        return bids, gains
+\end{verbatim}
+
+{\tt low} and {\tt high} specify the range of possible bids;
+{\tt n} is the number of bids to try.  Here is the function
+that computes expected gain for a given bid:
+
+\begin{verbatim}
+    def ExpectedGain(self, bid):
+        suite = self.player.posterior
+        total = 0
+        for price, prob in sorted(suite.Items()):
+            gain = self.Gain(bid, price)
+            total += prob * gain
+        return total
+\end{verbatim}
+
+{\tt ExpectedGain} loops through the values in the posterior
+and computes the gain for each bid, given the actual prices of
+the showcase.  It weights each gain with the corresponding
+probability and returns the total.
+
+\begin{figure}
+% price.py
+\centerline{\includegraphics[height=2.5in]{figs/price5.pdf}}
+\caption{Expected gain versus bid in a scenario where Player 1's best guess is \$20,000 and Player 2's best guess is \$40,000.}
+\label{fig.price5}
+\end{figure}
+
+{\tt Gain} takes a bid and an actual price and returns 
+the expected gain:
+
+\begin{verbatim}
+    def Gain(self, bid, price):
+        if bid > price:
+            return 0
+
+        diff = price - bid
+        prob = self.ProbWin(diff)
+
+        if diff <= 250:
+            return 2 * price * prob
+        else:
+            return price * prob
+\end{verbatim}
+
+If you overbid, you get nothing.  Otherwise we compute 
+the difference between your bid and the price, which determines
+your probability of winning.
+
+If {\tt diff} is less than \$250, you win both showcases.  For
+simplicity, I assume that both showcases have the same price.  Since
+this outcome is rare, it doesn't make much difference.
+
+And finally, we have to compute the probability of winning based
+on {\tt diff}:
+
+\begin{verbatim}
+    def ProbWin(self, diff):
+        prob = (self.opponent.ProbOverbid() + 
+                self.opponent.ProbWorseThan(diff))
+        return prob
+\end{verbatim}
+
+If your opponent overbids, you win.  Otherwise, you have to hope
+that your opponent is off by more than {\tt diff}.  {\tt Player}
+provides methods to compute both probabilities:
+
+\begin{verbatim}
+# class Player:
+
+    def ProbOverbid(self):
+        return self.cdf_diff.Prob(-1)
+
+    def ProbWorseThan(self, diff):
+        return 1 - self.cdf_diff.Prob(diff)
+\end{verbatim}
+
+This code might be confusing because the computation is now from
+the point of view of the opponent, who is computing, ``What is
+the probability that I overbid?'' and ``What is the probability
+that my bid off by more than {\tt diff}?''
+
+Both answers are based on the CDF of {\tt diff}.  If your opponent's
+{\tt diff} is less than or equal to -1, you win.  If your opponent's
+{\tt diff} is worse than yours, you win.  Otherwise you lose.
+
+Finally, here's the code that computes optimal bids:
+
+\begin{verbatim}
+# class Player:
+
+    def OptimalBid(self, guess, opponent):
+        self.MakeBeliefs(guess)
+        calc = GainCalculator(self, opponent)
+        bids, gains = calc.ExpectedGains()
+        gain, bid = max(zip(gains, bids))
+        return bid, gain
+\end{verbatim}
+
+Given a guess and an opponent, {\tt OptimalBid} computes
+the posterior distribution, instantiates a {\tt GainCalculator},
+computes expected gains for a range of bids and returns
+the optimal bid and expected gain.  Whew!
+
+Figure~\ref{fig.price5} shows the results for both players,
+based on a scenario where Player 1's best guess is \$20,000
+and Player 2's best guess is \$40,000.
+
+For Player 1 the optimal bid is \$21,000, yielding an expected
+return of almost \$16,700.  So this is a case (which turns out
+to be unusual) where the optimal bid is actually higher than
+the contestant's best guess.
+
+For Player 2 the optimal bid is \$31,500, yielding an expected
+return of almost \$19,400.  This is the more typical case where
+the optimal bid is less than the best guess.
+
+
+\section{Discussion}
+
+One of the most useful features of Bayesian estimation is that the
+result comes in the form of a posterior distribution
+
+
+
+
 
 
 
