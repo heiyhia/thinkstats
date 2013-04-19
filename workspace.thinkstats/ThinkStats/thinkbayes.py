@@ -1078,7 +1078,7 @@ class Pdf(object):
     def MakePmf(self, xs):
         """Makes a discrete version of this Pdf, evaluated at xs.
 
-        xs: sequence of values
+        xs: equally-spaced sequence of values
 
         Returns: new Pmf
         """
@@ -1104,17 +1104,19 @@ class GaussianPdf(Pdf):
 
         Returns: float probability density
         """
-        density = scipy.stats.norm.pdf(x, loc=self.mu, scale=self.sigma)
+        density = scipy.stats.norm.pdf(x, 
+                                       loc=self.mu, 
+                                       scale=self.sigma)
         return density
 
 
 class EstimatedPdf(Pdf):
-    def __init__(self, seq):
+    def __init__(self, sample):
         """Estimates the density function based on a sample.
 
-        seq: sequence of data
+        sample: sequence of data
         """
-        xs = numpy.array(seq, dtype=numpy.double)
+        xs = numpy.array(sample, dtype=numpy.double)
         self.kde = scipy.stats.gaussian_kde(xs)
 
     def Density(self, x):
