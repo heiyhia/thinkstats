@@ -102,8 +102,8 @@ class GainCalculator(object):
         suite = self.player.posterior
         total = 0
         for price, prob in sorted(suite.Items()):
-            roi = self.Gain(bid, price)
-            total += prob * roi
+            gain = self.Gain(bid, price)
+            total += prob * gain
         return total
 
     def Gain(self, bid, price):
