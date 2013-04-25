@@ -621,6 +621,20 @@ def MakeMixture(metapmf, name='mix'):
     return mix
 
 
+def MakeUniformPmf(low, high, n):
+    """Make a uniform Pmf.
+
+    low: lowest value (inclusive)
+    high: highest value (inclusize)
+    n: number of values
+    """
+    pmf = Pmf()
+    for x in numpy.linspace(low, high, n):
+        pmf.Set(x, 1)
+    pmf.Normalize()
+    return pmf
+
+
 class Cdf(object):
     """Represents a cumulative distribution function.
 
@@ -1075,14 +1089,14 @@ class Pdf(object):
         """
         raise UnimplementedMethodException()
 
-    def MakePmf(self, xs):
+    def MakePmf(self, xs, name=''):
         """Makes a discrete version of this Pdf, evaluated at xs.
 
         xs: equally-spaced sequence of values
 
         Returns: new Pmf
         """
-        pmf = Pmf()
+        pmf = Pmf(name=name)
         for x in xs:
             pmf.Set(x, self.Density(x))
         pmf.Normalize()
@@ -1126,9 +1140,9 @@ class EstimatedPdf(Pdf):
         """
         return self.kde.evaluate(x)
 
-    def MakePmf(self, xs):
+    def MakePmf(self, xs, name=''):
         ps = self.kde.evaluate(xs)
-        pmf = MakePmfFromItems(zip(xs, ps))
+        pmf = MakePmfFromItems(zip(xs, ps), name=name)
         return pmf
 
 
