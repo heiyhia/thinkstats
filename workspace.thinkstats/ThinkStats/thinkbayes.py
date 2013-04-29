@@ -220,8 +220,8 @@ class Hist(_DictWrapper):
         return self.d.get(x, 0)
 
     def Freqs(self):
-        """Gets an unsorted sequence of frequencies."""
-        return self.d.values()
+        """Gets the sequence of frequencies in value order."""
+        return [freq for val, freq in sorted(self.d.iteritems())]
 
     def IsSubset(self, other):
         """Checks whether the values in this histogram are a subset of
@@ -257,15 +257,19 @@ class Pmf(_DictWrapper):
         return self.d.get(x, default)
 
     def Probs(self):
-        """Gets an unsorted sequence of probabilities."""
-        return self.d.values()
+        """Gets the sequence of probabilities in order by value."""
+        return [prob for val, prob in sorted(self.d.iteritems())]
+
+    def MakeCdf(self, name=None):
+        """Makes a Cdf."""
+        return MakeCdfFromPmf(self, name=name)
 
     def ProbGreater(self, x):
-        t = [prob for (val, prob) in self.Items() if val > x]
+        t = [prob for (val, prob) in self.d.iteritems() if val > x]
         return sum(t)
 
     def ProbLess(self, x):
-        t = [prob for (val, prob) in self.Items() if val < x]
+        t = [prob for (val, prob) in self.d.iteritems() if val < x]
         return sum(t)
 
     def Normalize(self, fraction=1.0):
@@ -1488,7 +1492,7 @@ class Dirichlet(object):
         name: string name
         """
         self.n = n
-        self.params = numpy.ones(n, dtype=numpy.int)
+        self.params = numpy.ones(n, dtype=numpy.float)
         self.name = name
 
     def Update(self, data):
@@ -1551,6 +1555,17 @@ class Dirichlet(object):
         alpha0 = self.params.sum()
         alpha = self.params[i]
         return Beta(alpha, alpha0-alpha)
+
+    def PredictivePmf(self, xs, name=''):
+        """Makes a predictive distribution.
+
+        xs: values to go into the Pmf
+
+        Returns: Pmf that maps from x to the mean prevalence of x
+        """
+        alpha0 = self.params.sum()
+        ps = self.params / alpha0
+        return MakePmfFromItems(zip(xs, ps), name=name)
 
 
 def BinomialCoef(n, k, d={}):

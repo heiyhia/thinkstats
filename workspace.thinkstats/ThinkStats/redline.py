@@ -77,7 +77,7 @@ def BiasPmf(pmf, name='', invert=False):
     return new_pmf
 
 
-def UnbiasPmf(pmf, name):
+def UnbiasPmf(pmf, name=''):
     """Returns the Pmf with oversampling proportional to 1/value.
 
     Args:
@@ -111,40 +111,206 @@ def MakeUniformPmf(low, high):
     high: highest value (inclusize)
     """
     pmf = thinkbayes.Pmf()
-    for x in range(low, high+1, 10):
+    for x in MakeRange(low=low, high=high):
         pmf.Set(x, 1)
     pmf.Normalize()
     return pmf    
     
 
-def PmfOfWaitTime(pmf_z):
-    pmf_zp = BiasPmf(pmf_z, name="z'")
+def MakeRange(low=0, high=1300, skip=10):
+    return range(low, high+skip, skip)
 
-    meta_pmf = thinkbayes.Pmf()
-    for interarrival, prob in pmf_zp.Items():
-        uniform = MakeUniformPmf(0, interarrival)
-        meta_pmf.Set(uniform, prob)
 
-    pmf_y = thinkbayes.MakeMixture(meta_pmf, name='y')
-    return pmf_zp, pmf_y
+class Forward(object):
+
+    def __init__(self, interarrival_times):
+        self.interarrival_times = interarrival_times
+        self.pdf_z = thinkbayes.EstimatedPdf(interarrival_times)
+        self.xs = MakeRange(low=10)
+        self.pmf_z = self.pdf_z.MakePmf(self.xs, name='z')
+        self.pmf_zp = BiasPmf(self.pmf_z, name="z'")
+        self.pmf_y = self.PmfOfWaitTime(self.pmf_zp)
+
+    def PmfOfWaitTime(self, pmf_zp):
+        meta_pmf = thinkbayes.Pmf()
+        for interarrival, prob in pmf_zp.Items():
+            uniform = MakeUniformPmf(10, interarrival)
+            meta_pmf.Set(uniform, prob)
+
+        pmf_y = thinkbayes.MakeMixture(meta_pmf, name='y')
+        return pmf_y
+
+    def GenerateSampleWaitTimes(self, n):
+        cdf_y = thinkbayes.MakeCdfFromPmf(self.pmf_y)
+        sample = cdf_y.Sample(n)
+        return sample
+
+    def PlotPmfs(self):
+        print 'Mean z', self.pmf_z.Mean()
+        print 'Mean zp', self.pmf_zp.Mean()
+        print 'Mean y', self.pmf_y.Mean()
+
+        myplot.Pmf(self.pmf_z)
+        myplot.Pmf(self.pmf_zp)
+        myplot.Pmf(self.pmf_y)
+        myplot.Show()
+
+
+class Interarrivals(thinkbayes.Suite):
+
+    def __init__(self, prior):
+        thinkbayes.Suite.__init__(self)
+        for x, p in prior.Items():
+            self.Set(x, p)
+        self.Normalize()
+
+    def Likelihood(self, hypo, data):
+        """
+
+        If the actual interarrival time is z, what is the likelihood
+        of arriving during a z interval and waiting y seconds?
+        """
+        z = hypo
+        y = data
+        if y > z:
+            return 0
+        return 1.0 / z
+
+
+class InterarrivalDirichlet(thinkbayes.Dirichlet):
+
+    def __init__(self, xs):
+        n = len(xs)
+        thinkbayes.Dirichlet.__init__(self, n)
+        self.xs = xs
+
+    def Preload(self, data):
+        """Adds pseudocounts to the parameters.
+
+        data: sequence of pseudocounts
+        """
+        thinkbayes.Dirichlet.Update(data)
+
+    def Update(self, data):
+        """Computes the likelihood of the data.
+
+        data: wait time observed by random arrival (y)
+
+        Returns: float probability
+        """
+        y = data
+
+        print y
+        prior = self.PredictivePmf(self.xs)
+        interarrivals = Interarrivals(prior)
+        interarrivals.Update(y)
+        probs = interarrivals.Probs()
+
+        print len(probs)
+        print len(self.params)
+        self.params += numpy.array(probs)
+
+    def InterarrivalProbs(self, wait_time):
+        """
+        """
+        xs = range(len(self.params))
+        ps = self.Random()
+        prior = thinkbayes.MakePmfFromItems(zip(xs, ps))
+        interarrivals = Interarrivals(prior)
+        interarrivals.Update(wait_time)
+        return interarrivals.Probs()
+
+
+class Reverse(object):
+
+    def __init__(self, pcounts, wait_times):
+        self.pcounts = pcounts
+        self.wait_times = wait_times
+        self.pdf_y = thinkbayes.EstimatedPdf(wait_times)
+        self.xs = MakeRange(low=10)
+        self.pmf_y = self.pdf_y.MakePmf(self.xs, name='y')
+        self.pmf_y = thinkbayes.MakePmfFromList(wait_times, name='y')
+
+        self.pmf_z = self.PmfOfInterarrivalTime(wait_times)
+        self.pmf_zp = UnbiasPmf(self.pmf_z, name="z'")
+
+    def PmfOfInterarrivalTime(self, wait_times):
+        n = len(self.xs)
+        dirichlet = InterarrivalDirichlet(self.xs)
+        dirichlet.Preload(self.pcounts)
+        self.prior_z = dirichlet.PredictivePmf(self.xs, name='prior')
+        
+        dirichlet.params /= 100000.0
+
+        for y in wait_times:
+            dirichlet.Update(y)
+
+        pmf_z = dirichlet.PredictivePmf(self.xs, name='z')
+        return pmf_z
+
+    def PlotPmfs(self):
+        print 'Mean y', self.pmf_y.Mean()
+        print 'Mean z', self.pmf_z.Mean()
+        print "Mean z'", self.pmf_zp.Mean()
+
+        myplot.Pmf(self.pmf_y)
+        myplot.Pmf(self.pmf_z)
+        myplot.Pmf(self.pmf_zp)
+        myplot.Show()
+
+    def PlotCdfs(self):
+        myplot.Cdf(self.pmf_y.MakeCdf())
+        myplot.Cdf(self.prior_z.MakeCdf())
+        myplot.Cdf(self.pmf_z.MakeCdf())
+        #myplot.Cdf(self.pmf_zp.MakeCdf())
+        myplot.Show()
 
 
 def main(script):
-    pdf_z = thinkbayes.EstimatedPdf(interarrival_times)
-    low, high = 0, 1300
-    xs = range(low, high+1, 10)
-    pmf_z = pdf_z.MakePmf(xs, name='z')
+    # forward = Forward(interarrival_times)
 
-    pmf_zp, pmf_y = PmfOfWaitTime(pmf_z)
+    fake = [200, 300]*10
+    forward = Forward(fake)
 
-    myplot.Pmf(pmf_z)
-    myplot.Pmf(pmf_zp)
-    myplot.Pmf(pmf_y)
+    myplot.Cdf(thinkbayes.MakeCdfFromList(fake, name='z orig'))
+    myplot.Cdf(forward.pmf_y.MakeCdf(name='y'))
+    #forward.PlotPmfs()
+
+    n = len(interarrival_times)
+    sample_y = forward.GenerateSampleWaitTimes(100)
+    myplot.Cdf(thinkbayes.MakeCdfFromList(sample_y))
+
+
+    #cdf = thinkbayes.MakeCdfFromList(sample_y)
+    #myplot.Cdf(cdf)
+    #myplot.Show()
+
+    hist = thinkbayes.MakeHistFromList(interarrival_times)
+    for val, freq in hist.Items():
+        print val, freq
+
+    pcounts = hist.Freqs()
+    print len(pcounts)
+    print pcounts
+
+    return
+
+    reverse = Reverse(pcounts, sample_y)
+    #reverse = Reverse([200, 300]*100)
+    reverse.PlotCdfs()
+
+    return
+    
+    for y in [100, 200, 300, 1100]:
+        inter = Interarrivals(y)
+        inter.Update(y)
+        myplot.Pmf(inter)
+        #myplot.Cdf(inter.MakeCdf())
     myplot.Show()
 
-    print 'Mean z', pmf_z.Mean()
-    print 'Mean zp', pmf_zp.Mean()
-    print 'Mean y', pmf_y.Mean()
+    return
+
+    
 
     # arrival rate of passengers in passengers / second
     lam_pass = 0.05
