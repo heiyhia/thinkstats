@@ -107,6 +107,9 @@ class _DictWrapper(object):
         self.d = d
         self.name = name
 
+    def __len__(self):
+        return len(self.d)
+
     def Copy(self, name=None):
         """Returns a copy.
 
@@ -219,9 +222,9 @@ class Hist(_DictWrapper):
         """
         return self.d.get(x, 0)
 
-    def Freqs(self):
-        """Gets the sequence of frequencies in value order."""
-        return [freq for val, freq in sorted(self.d.iteritems())]
+    def Freqs(self, xs):
+        """Gets frequencies for a sequence of values."""
+        return [self.Freq(x) for x in xs]
 
     def IsSubset(self, other):
         """Checks whether the values in this histogram are a subset of
@@ -256,9 +259,9 @@ class Pmf(_DictWrapper):
         """
         return self.d.get(x, default)
 
-    def Probs(self):
-        """Gets the sequence of probabilities in order by value."""
-        return [prob for val, prob in sorted(self.d.iteritems())]
+    def Probs(self, xs):
+        """Gets probabilities for a sequence of values."""
+        return [self.Prob(x) for x in xs]
 
     def MakeCdf(self, name=None):
         """Makes a Cdf."""
@@ -908,11 +911,34 @@ class Suite(Pmf):
         hypos: sequence of hypotheses
         """
         Pmf.__init__(self, name=name)
-        for hypo in hypos:
-            self.Set(hypo, 1)
+
+        methods = [
+            self.InitPmf,
+            self.InitMapping,
+            self.InitSequence,
+            ]
+        for method in methods:
+            try:
+                method(hypos)
+                break
+            except AttributeError:
+                pass
+            raise ValueError('None of the initialization methods worked.')
 
         if len(hypos) > 0:
             self.Normalize()
+
+    def InitSequence(self, hypos):
+        for hypo in hypos:
+            self.Set(hypo, 1)
+
+    def InitMapping(self, hypos):
+        for hypo, prob in hypos.iteritems():
+            self.Set(hypo, prob)
+
+    def InitPmf(self, hypos):
+        for hypo, prob in hypos.Items():
+            self.Set(hypo, prob)
 
     def Update(self, data):
         """Updates each hypothesis based on the data.
