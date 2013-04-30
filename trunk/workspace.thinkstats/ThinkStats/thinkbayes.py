@@ -110,6 +110,15 @@ class _DictWrapper(object):
     def __len__(self):
         return len(self.d)
 
+    def __iter__(self):
+        return iter(self.d)
+
+    def iterkeys(self):
+        return iter(self.d)
+
+    def __contains__(self, value):
+        return value in self.d
+
     def Copy(self, name=None):
         """Returns a copy.
 
@@ -135,9 +144,9 @@ class _DictWrapper(object):
     def Values(self):
         """Gets an unsorted sequence of values.
 
-        Note: one source of confusion is that the keys in this
-        dictionaries are the values of the Hist/Pmf, and the
-        values are frequencies/probabilities.
+        Note: one source of confusion is that the keys of this
+        dictionary are the values of the Hist/Pmf, and the
+        values of the dictionary are frequencies/probabilities.
         """
         return self.d.keys()
 
@@ -687,6 +696,13 @@ class Cdf(object):
         self.xs.append(x)
         self.ps.append(p)
 
+    def Scale(self, factor):
+        """Multiplies the xs by a factor.
+
+        factor: what to multiply by
+        """
+        self.xs = [x * factor for x in self.xs]
+
     def Prob(self, x):
         """Returns CDF(x), the probability that corresponds to value x.
 
@@ -781,7 +797,7 @@ class Cdf(object):
         default is 1000, which keeps log10(1000) = 3 significant digits.
         """
         # TODO(write this method)
-        pass
+        raise UnimplementedMethodException()
 
     def Render(self):
         """Generates a sequence of points suitable for plotting.
@@ -916,16 +932,17 @@ class Suite(Pmf):
             self.InitPmf,
             self.InitMapping,
             self.InitSequence,
+            self.InitFailure,
             ]
+
         for method in methods:
             try:
                 method(hypos)
                 break
             except AttributeError:
-                pass
-            raise ValueError('None of the initialization methods worked.')
+                continue
 
-        if len(hypos) > 0:
+        if len(self) > 0:
             self.Normalize()
 
     def InitSequence(self, hypos):
@@ -939,6 +956,9 @@ class Suite(Pmf):
     def InitPmf(self, hypos):
         for hypo, prob in hypos.Items():
             self.Set(hypo, prob)
+
+    def InitFailure(self, hypos):
+        raise ValueError('None of the initialization methods worked.')
 
     def Update(self, data):
         """Updates each hypothesis based on the data.

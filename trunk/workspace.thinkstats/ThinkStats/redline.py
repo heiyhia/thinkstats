@@ -8,7 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import thinkbayes
 
 import matplotlib.pyplot as pyplot
-import myplot
+import thinkplot
 import numpy
 
 import csv
@@ -19,7 +19,7 @@ import time
 
 from math import log
 
-formats = ['pdf']
+FORMATS = ['pdf']
 
 """
 Notation guide:
@@ -36,6 +36,8 @@ z': distribution of z as seen by a random arrival
 # interarrival_times in seconds, collected by Kai Austin and Brendan Ritter
 # using http://developer.mbta.com/Data/Red.txt
 
+# actual time between trains in seconds
+
 observed_interarrival_times = [
     365, 47, 146, 545, 132, 270, 443, 190, 372, 167, 
     375, 128, 455, 262, 233, 386, 561, 386, 241, 562, 489, 
@@ -43,6 +45,16 @@ observed_interarrival_times = [
     201, 245, 567, 633, 627, 643, 159, 827, 773, 159, 1100, 160, 
     148, 187, 290, 353, 133, 180, 355, 151, 558, 220, 232, 
     353, 199, 160, 172
+]
+
+# pairs of observation time in seconds and number of passenger arrivals
+
+observed_passenger_data = [
+    (150, 3),
+    (250, 10),
+    (660, 15),
+    (510, 13),
+    (30, 1),
 ]
 
 def BiasPmf(pmf, name='', invert=False):
@@ -90,25 +102,21 @@ def UnbiasPmf(pmf, name=''):
     return BiasPmf(pmf, name, invert=True)
 
 
-def WeibullSample(n, lam, k):
-    return [random.weibullvariate(lam, k) for i in range(n)]
+def MakeRange(low=10, high=1300, skip=10):
+    """Makes a range representing possible interarrival times in seconds.
 
-
-def ActualInterarrivals(n, lam=12, k=1.5):
-    sample = WeibullSample(n, lam, k)
-    pmf = thinkbayes.MakePmfFromList(sample)
-    pmf.name = 'actual'
-    
-def BiasedInterarrivals(n, lam=12, k=1.5):
-    actual_pmf = ActualInterarrivals(1000)
-    observed_pmf = BiasPmf(actual_pmf, 'observed')
+    low: where to start
+    high: where to end
+    skip: how many to skip
+    """
+    return range(low, high+skip, skip)
 
 
 def MakeUniformPmf(low, high):
     """Make a uniform Pmf.
 
     low: lowest value (inclusive)
-    high: highest value (inclusize)
+    high: highest value (inclusive)
     """
     pmf = thinkbayes.Pmf()
     for x in MakeRange(low=low, high=high):
@@ -117,11 +125,7 @@ def MakeUniformPmf(low, high):
     return pmf    
     
 
-def MakeRange(low=0, high=1300, skip=10):
-    return range(low, high+skip, skip)
-
-
-class Forward(object):
+class WaitTimeCalculator(object):
     """Encapsulates the forward inference process.
 
     Given the actual distribution of interarrival times (z),
@@ -135,7 +139,7 @@ class Forward(object):
 
         # distribution of interarrival time (z)
         self.pdf_z = thinkbayes.EstimatedPdf(interarrival_times)
-        self.xs = MakeRange(low=10)
+        self.xs = MakeRange()
         self.pmf_z = self.pdf_z.MakePmf(self.xs, name='z')
 
         # distribution of interarrival time as seen by a random
@@ -175,6 +179,24 @@ class Forward(object):
         sample = cdf_y.Sample(n)
         return sample
 
+    def GenerateSamplePassengers(self, lam, n, high=100):
+        """Generates a sample wait time and number of arrivals.
+
+        lam: arrival rate in passengers per second
+        n: number of samples
+
+        Returns: list of (wait time, number of passenger) pairs
+        """
+        wait_times = self.GenerateSampleWaitTimes(n)
+
+        res = []
+        for y in wait_times:
+            pmf_k = thinkbayes.MakePoissonPmf(lam * y, high)
+            k = pmf_k.Random()
+            res.append((y, k))
+
+        return res
+
     def PlotPmfs(self):
         """Plots the computed Pmfs.
         """
@@ -182,9 +204,166 @@ class Forward(object):
         print 'Mean zp', self.pmf_zp.Mean()
         print 'Mean y', self.pmf_y.Mean()
 
-        myplot.Pmf(self.pmf_z)
-        myplot.Pmf(self.pmf_zp)
-        myplot.Pmf(self.pmf_y)
+        thinkplot.Pmf(self.pmf_z)
+        thinkplot.Pmf(self.pmf_zp)
+        thinkplot.Pmf(self.pmf_y)
+
+    def MakePlot(self, root='redline2'):
+        """Plots the computed CDFs.
+        """
+        cdf_z = self.pmf_z.MakeCdf()
+        cdf_zp = self.pmf_zp.MakeCdf()
+        cdf_y = self.pmf_y.MakeCdf()
+
+        cdfs = ScaleCdfs([cdf_y, cdf_z, cdf_zp], 1.0/60)
+
+        thinkplot.Clf()
+        thinkplot.PrePlot(3)
+        thinkplot.Cdfs(cdfs)
+        thinkplot.Save(root=root,
+                       xlabel='Time (min)',
+                       ylabel='CDF',
+                       formats=FORMATS)
+
+
+def ScaleCdfs(cdfs, factor):
+    [cdf.Scale(factor) for cdf in cdfs]
+    return cdfs
+
+
+class ElapsedTimeEstimator(object):
+
+    def __init__(self, wtc, lam, num_passengers):
+        """Constructor
+
+        interarrival_times: sample of actual interarrival times
+        lam: arrival rate in passengers per second
+        num_passengers: # passengers seen on the platform
+        """
+        self.wtc = wtc
+
+        # prior for elapsed time
+        self.prior = Elapsed(wtc.pmf_x, 'prior x')
+
+        # posterior of elapsed time (based on number of passengers)
+        self.posterior = self.prior.Copy(name='posterior x')
+        self.posterior.Update((lam, num_passengers))
+
+        # predictive distribution of wait time
+        self.pmf_y = self.posterior.PredictWaitTime(wtc.pmf_zp)
+
+    def MakePlot(self, root='redline3'):
+
+        # observed interarrivals
+        cdf_z = self.wtc.pmf_z.MakeCdf()
+        cdf_prior = self.prior.MakeCdf()
+        cdf_posterior = self.posterior.MakeCdf()
+        cdf_y = self.pmf_y.MakeCdf()
+
+        cdfs = ScaleCdfs([cdf_prior, cdf_posterior, cdf_y], 1.0/60)
+
+        thinkplot.Clf()
+        thinkplot.PrePlot(3)
+        thinkplot.Cdfs(cdfs)
+        thinkplot.Save(root=root,
+                       xlabel='Time (min)',
+                       ylabel='CDF',
+                       formats=FORMATS)
+
+
+class ArrivalRate(thinkbayes.Suite):
+    """Represents the distribution of arrival rates (lambda)."""
+
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of the data under the hypothesis.
+
+        Evaluates the Poisson PMF for lambda and k.
+
+        hypo: arrival rate in passengers per second
+        data: tuple of elapsed_time and number of passengers
+        """
+        lam = hypo
+        elapsed_time, k = data
+        like = thinkbayes.EvalPoissonPmf(lam * elapsed_time, k)
+        return like
+
+
+class ArrivalRateEstimator(object):
+
+    def __init__(self, passenger_data):
+        """Constructor
+
+        passenger_data: sequence of (y, k) pairs
+        """
+        self.passenger_data = passenger_data
+
+        # range for lambda in passengers per second
+        low, high = 0, 5
+        n = 101
+        hypos = numpy.linspace(low, high, n) / 60
+
+        self.prior = ArrivalRate(hypos, name='prior')
+
+        self.posterior = self.prior.Copy(name='posterior')
+
+        for y, k in passenger_data:
+            self.posterior.Update((y, k))
+
+        print 'Mean posterior lambda', self.posterior.Mean()
+
+    def MakePlot(self, root='redline1'):
+        thinkplot.Clf()
+
+        # convert units to passengers per minute
+        cdf = self.posterior.MakeCdf()
+        cdf.Scale(60)
+
+        thinkplot.Cdfs([cdf])
+
+        thinkplot.Save(root=root,
+                       xlabel='Arrival rate (passengers / min)',
+                       ylabel='CDF',
+                       formats=FORMATS)
+                       
+
+class Elapsed(thinkbayes.Suite):
+    """Represents the distribution of elapsed time (x)."""
+
+    def Likelihood(self, hypo, data):
+        """Computes the likelihood of the data under the hypothesis.
+
+        Evaluates the Poisson PMF for lambda and k.
+
+        hypo: elapsed time since the last train
+        data: tuple of arrival rate and number of passengers
+        """
+        elapsed_time = hypo
+        lam, k = data
+        like = thinkbayes.EvalPoissonPmf(lam * elapsed_time, k)
+        return like
+
+    def PredictWaitTime(self, pmf_zp):
+        """Computes the distribution of wait times.
+
+        Enumerate all pairs of zp from pmf_zp and x from self,
+        and accumulate the distribution of y = z - x.
+
+        pmf_zp: distribution of interarrivals seen by random observer
+        """
+        pmf_y = pmf_zp - self
+        pmf_y.name = 'y'
+        RemoveNegatives(pmf_y)
+        return pmf_y
+
+
+def RemoveNegatives(pmf):
+    """Removes negative values from a PMF.
+
+    pmf: Pmf
+    """
+    for val in pmf.Values():
+        if val < 0:
+            pmf.Remove(val)
 
 
 class Interarrivals(thinkbayes.Suite):
@@ -257,7 +436,7 @@ class InterarrivalDirichlet(thinkbayes.Dirichlet):
         return interarrivals.Probs(needs_xs)
 
 
-class Reverse(object):
+class InterarrivalTimeEstimator(object):
     """Represents the reverse inference process.
 
     """
@@ -265,10 +444,15 @@ class Reverse(object):
     def __init__(self, pcounts, wait_times):
         self.pcounts = pcounts
         self.wait_times = wait_times
-        self.pdf_y = thinkbayes.EstimatedPdf(wait_times)
-        self.xs = MakeRange(low=10)
-        self.pmf_y = self.pdf_y.MakePmf(self.xs, name='y')
+        self.xs = MakeRange()
+
+        # smooth the observed wait times?
+        #self.pdf_y = thinkbayes.EstimatedPdf(wait_times)
+        #self.xs = MakeRange()
+        #self.pmf_y = self.pdf_y.MakePmf(self.xs, name='y')
+
         self.pmf_y = thinkbayes.MakePmfFromList(wait_times, name='y')
+        thinkplot.Cdf(self.pmf_y.MakeCdf())
 
         self.pmf_z = self.PmfOfInterarrivalTime(wait_times)
         self.pmf_zp = UnbiasPmf(self.pmf_z, name="z'")
@@ -276,15 +460,25 @@ class Reverse(object):
     def PmfOfInterarrivalTime(self, wait_times):
         n = len(self.xs)
         dirichlet = InterarrivalDirichlet(self.xs)
-        dirichlet.Preload(self.pcounts)
-        self.prior_z = dirichlet.PredictivePmf(self.xs, name='prior')
-        
-        dirichlet.params /= 100000.0
+        dirichlet.params /= 1.0
 
+        # self.prior_z = dirichlet.PredictivePmf(self.xs, name='prior')
+        # thinkplot.Cdf(self.prior_z.MakeCdf())
+
+        dirichlet.Preload(self.pcounts)
+        dirichlet.params /= 10000.0
+
+        self.prior_z = dirichlet.PredictivePmf(self.xs, name='preloaded')
+        thinkplot.Cdf(self.prior_z.MakeCdf())
+        
         for y in wait_times:
             dirichlet.Update(y)
 
         pmf_z = dirichlet.PredictivePmf(self.xs, name='z')
+
+        self.posterior_z = dirichlet.PredictivePmf(self.xs, name='posterior')
+        thinkplot.Cdf(self.posterior_z.MakeCdf())
+
         return pmf_z
 
     def PlotPmfs(self):
@@ -292,15 +486,15 @@ class Reverse(object):
         print 'Mean z', self.pmf_z.Mean()
         print "Mean z'", self.pmf_zp.Mean()
 
-        myplot.Pmf(self.pmf_y)
-        myplot.Pmf(self.pmf_z)
-        myplot.Pmf(self.pmf_zp)
+        thinkplot.Pmf(self.pmf_y)
+        thinkplot.Pmf(self.pmf_z)
+        thinkplot.Pmf(self.pmf_zp)
 
-    def PlotCdfs(self):
-        myplot.Cdf(self.pmf_y.MakeCdf())
-        myplot.Cdf(self.prior_z.MakeCdf())
-        myplot.Cdf(self.pmf_z.MakeCdf())
-        #myplot.Cdf(self.pmf_zp.MakeCdf())
+    def MakePlot(self):
+        thinkplot.Cdf(self.pmf_y.MakeCdf())
+        thinkplot.Cdf(self.prior_z.MakeCdf())
+        thinkplot.Cdf(self.pmf_z.MakeCdf())
+        #thinkplot.Cdf(self.pmf_zp.MakeCdf())
 
 
 def Floor(x, factor=10):
@@ -311,115 +505,58 @@ def Floor(x, factor=10):
     return int(x/factor) * factor
 
 
-def RunForward(interarrival_times):
-    """Runs the forward inference process.
-    """
-    forward = Forward(interarrival_times)
-
-    cdf_z = thinkbayes.MakeCdfFromList(interarrival_times, name='z obs')
-    cdf_zp = forward.pmf_zp.MakeCdf(name="z'")
-    cdf_y = forward.pmf_y.MakeCdf(name='y')
-    myplot.Cdfs([cdf_z, cdf_zp, cdf_y])
-
-    n = len(interarrival_times)
-    sample_y = forward.GenerateSampleWaitTimes(n)
-
-    cdf_y_sample = thinkbayes.MakeCdfFromList(sample_y, 'y sample')
-    myplot.Cdf(cdf_y_sample)
-    myplot.Show()
-
-    return forward
-
-
-def RunElapsed(interarrival_times, lam, num_passengers):
-    """Estimates the elapsed time based on number of passengers
-    and known lam.
-    """
-    forward = Forward(interarrival_times)
-    cdf_z = thinkbayes.MakeCdfFromList(interarrival_times, name='z obs')
-
-    prior = forward.pmf_x
-    elapsed = Elapsed(lam, prior, 'elapsed prior')
-    cdf_prior = elapsed.MakeCdf()
-
-    elapsed.Update(num_passengers)
-    elapsed.name = 'elapsed posterior'
-    cdf_posterior = elapsed.MakeCdf()
-
-    myplot.Cdfs([cdf_z, cdf_prior, cdf_posterior])
-    myplot.Show()
-
-    return forward, elapsed
-
-
-class Elapsed(thinkbayes.Suite):
-    """Represents the distribution of elapsed time (x)."""
-
-    def __init__(self, lam, hypos, name=''):
-        thinkbayes.Suite.__init__(self, hypos, name)
-        self.lam = lam
-
-    def Likelihood(self, hypo, data):
-        """Computes the likelihood of the data under the hypothesis.
-
-        Evaluates the Poisson PMF for lambda and k.
-
-        hypo: elapsed time since the last train
-        data: number of passengers on the platform
-        """
-        elapsed_time = hypo
-        k = data
-        like = thinkbayes.EvalPoissonPmf(self.lam * elapsed_time, k)
-        return like
-
-    def WaitTime(self, pmf_zp):
-        """Computes the distribution of wait times.
-
-        Enumerate all pairs of zp from pmf_zp and x from self,
-        and accumulate the distribution of y = z - x.
-
-        pmf_zp: distribution of interarrivals seen by random observer
-        """
-        return pmf_zp - self
-
-
-def main(script):
-
-    # forward = RunForward(observed_interarrival_times)
-    elapsed = RunElapsed(observed_interarrival_times, 
-                         lam=0.0333,
-                         num_passengers=20)
-
-    return
-
-    # interarrival_times = [200, 300]*10
-
+def MakePcounts(interarrival_times):
 
     # use the actual interarrival times to make pcounts
     vals = [Floor(t) for t in interarrival_times]
     hist = thinkbayes.MakeHistFromList(vals)
-    for val, freq in hist.Items():
-        print val, freq
 
-    xs = MakeRange(low=10)
+    xs = MakeRange()
     pcounts = hist.Freqs(xs)
-    print len(pcounts)
+
+    return pcounts
+
+
+def main(script):
+    cdf_z = thinkbayes.MakeCdfFromList(observed_interarrival_times, name='z')
+    thinkplot.Cdf(cdf_z)
+    
+    pcounts = MakePcounts(observed_interarrival_times)
     print pcounts
 
-    # do reverse inference
-    reverse = Reverse(pcounts, sample_y)
-    reverse.PlotCdfs()
+    wait_times = [t for t, k in observed_passenger_data ]
+    print wait_times
 
-    myplot.Show()
+    ite = InterarrivalTimeEstimator(pcounts, wait_times)
+    thinkplot.Show()
+
+    #ite.MakePlot()
+
+    return
+
+    are = ArrivalRateEstimator(observed_passenger_data)
+    are.MakePlot()
+
+
+    wtc = WaitTimeCalculator(observed_interarrival_times)
+    wtc.MakePlot()
+
+
+    elapsed = ElapsedTimeEstimator(wtc,
+                                   lam=0.0333,
+                                   num_passengers=10)
+    elapsed.MakePlot()
+
+
 
     return
     
     for y in [100, 200, 300, 1100]:
         inter = Interarrivals(y)
         inter.Update(y)
-        myplot.Pmf(inter)
-        #myplot.Cdf(inter.MakeCdf())
-    myplot.Show()
+        thinkplot.Pmf(inter)
+        #thinkplot.Cdf(inter.MakeCdf())
+    thinkplot.Show()
 
     return
 
@@ -439,8 +576,8 @@ def main(script):
     k = 0.9
     sample = WeibullSample(n, lam, k)
     cdf = thinkbayes.MakeCdfFromList(sample)
-    myplot.Cdf(cdf)
-    myplot.Show()
+    thinkplot.Cdf(cdf)
+    thinkplot.Show()
 
     print 'mean', cdf.Mean()
     print 'median', cdf.Percentile(50)
