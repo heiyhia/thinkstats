@@ -410,10 +410,34 @@ class Pmf(_DictWrapper):
 
         returns: new Pmf
         """
+        try:
+            return self.AddPmf(other)
+        except AttributeError:
+            return self.AddConstant(other)
+
+    def AddPmf(self, other):
+        """Computes the Pmf of the sum of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
         pmf = Pmf()
         for v1, p1 in self.Items():
             for v2, p2 in other.Items():
                 pmf.Incr(v1+v2, p1*p2)
+        return pmf
+
+    def AddConstant(self, other):
+        """Computes the Pmf of the sum a constant and  values from self.
+
+        other: a number
+
+        returns: new Pmf
+        """
+        pmf = Pmf()
+        for v1, p1 in self.Items():
+            pmf.Set(v1+other, p1)
         return pmf
 
     def __sub__(self, other):
@@ -695,6 +719,13 @@ class Cdf(object):
         """
         self.xs.append(x)
         self.ps.append(p)
+
+    def Shift(self, term):
+        """Adds a term to the xs.
+
+        term: how much to add
+        """
+        self.xs = [x + term for x in self.xs]
 
     def Scale(self, factor):
         """Multiplies the xs by a factor.
