@@ -517,7 +517,7 @@ class InterarrivalTimeEstimator(object):
         dirichlet.params /= 1.0
 
         dirichlet.Preload(self.pcounts)
-        dirichlet.params /= 1.0
+        dirichlet.params /= 20.0
 
         self.prior_zp = dirichlet.PredictivePmf(self.xs, name="prior z'")
         
@@ -602,41 +602,35 @@ def GenerateFakeData(lam=0.0333, n=10):
 
     wtc = WaitTimeCalculator(pmf_z, prime=False)
     passenger_data = wtc.GenerateSamplePassengers(lam, n)
-    return passenger_data
+    return wtc, passenger_data
 
 
 def main(script):
     random.seed(17)
-    passenger_data = GenerateFakeData(lam=0.0333, n=10)
+    wtc, passenger_data = GenerateFakeData(lam=0.0333, n=20)
 
-    TestITE()
-    return
+    #TestITE()
+    #return
+
+    # wtc.MakePlot()
 
     xs = MakeRange(low=10)
 
-    cdf_z = thinkbayes.MakeCdfFromList(observed_interarrival_times, name="z")
-    thinkplot.Cdf(cdf_z)
+    cdf_zp = wtc.pmf_zp.MakeCdf(name="actual z'")
+    thinkplot.Cdf(cdf_zp)
     
     pcounts = MakePcounts(xs, observed_interarrival_times)
+    pcounts = [0] * len(xs)
     print pcounts
-
-    wait_times = [t for t, k in passenger_data ]
-    print wait_times
 
     ite = InterarrivalTimeEstimator(xs, pcounts, passenger_data)
     ite.MakePlot()
 
+    return
 
     are = ArrivalRateEstimator(passenger_data)
     are.MakePlot()
 
-
-    # estimate elapsed time
-    pdf_z = thinkbayes.EstimatedPdf(observed_interarrival_times)
-    pmf_z = pdf_z.MakePmf(xs, name="z")
-
-    wtc = WaitTimeCalculator(pmf_z)
-    wtc.MakePlot()
 
     elapsed = ElapsedTimeEstimator(wtc,
                                    lam=0.0333,
