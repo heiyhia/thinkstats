@@ -698,6 +698,10 @@ class Cdf(object):
             name = self.name
         return Cdf(list(self.xs), list(self.ps), name)
 
+    def MakePmf(self, name=None):
+        """Makes a Pmf."""
+        return MakePmfFromCdf(self, name=name)
+
     def Values(self):
         """Returns a sorted list of values.
         """

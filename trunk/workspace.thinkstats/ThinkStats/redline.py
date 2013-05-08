@@ -28,23 +28,19 @@ z: time between trains
 x: time since the last train
 y: time until the next train
 
-z': distribution of z as seen by a random arrival
+zb: distribution of z as seen by a random arrival
 
 """
 
 
-# interarrival_times in seconds, collected by Kai Austin and Brendan Ritter
+# gap_times in seconds, collected by Kai Austin and Brendan Ritter
 # using http://developer.mbta.com/Data/Red.txt
 
 # actual time between trains in seconds
 
-observed_interarrival_times = [
-    365, 47, 146, 545, 132, 270, 443, 190, 372, 167, 
-    375, 128, 455, 262, 233, 386, 561, 386, 241, 562, 489, 
-    455, 410, 489, 342, 347, 170, 260, 148, 375, 312, 265, 
-    201, 245, 567, 633, 627, 643, 159, 827, 773, 159, 1100, 160, 
-    148, 187, 290, 353, 133, 180, 355, 151, 558, 220, 232, 
-    353, 199, 160, 172
+observed_gap_times = [
+    428, 705, 407, 465, 433, 425, 204, 
+    506, 143, 351, 450, 598, 464, 749
 ]
 
 # pairs of observation time in seconds and number of passenger arrivals
@@ -102,16 +98,6 @@ def UnbiasPmf(pmf, name=''):
     return BiasPmf(pmf, name, invert=True)
 
 
-def MakeRange(low=10, high=1300, skip=10):
-    """Makes a range representing possible interarrival times in seconds.
-
-    low: where to start
-    high: where to end
-    skip: how many to skip
-    """
-    return range(low, high+skip, skip)
-
-
 def MakeUniformPmf(low, high):
     """Make a uniform Pmf.
 
@@ -125,49 +111,44 @@ def MakeUniformPmf(low, high):
     return pmf    
     
 
+def MakeRange(low=10, high=1300, skip=10):
+    """Makes a range representing possible gap times in seconds.
+
+    low: where to start
+    high: where to end
+    skip: how many to skip
+    """
+    return range(low, high+skip, skip)
+
+
 class WaitTimeCalculator(object):
     """Encapsulates the forward inference process.
 
-    Given the actual distribution of interarrival times (z),
-    computes the distribution of interarrivals as seen by
-    a random passenger (z'), which yields the distribution
+    Given the actual distribution of gap times (z),
+    computes the distribution of gaps as seen by
+    a random passenger (zb), which yields the distribution
     of wait times (y) and the distribution of elapsed times (x).
     """
 
-    def __init__(self, pmf, prime=False):
+    def __init__(self, pmf, inverse=False):
         """Constructor.
 
-        pmf: Pmf of either z or z'
-        prime: boolean, true if pmf is z', false if pmf is z
+        pmf: Pmf of either z or zb
+        inverse: boolean, true if pmf is zb, false if pmf is z
         """
-        if prime:
-            self.pmf_zp = pmf
+        if inverse:
+            self.pmf_zb = pmf
             self.pmf_z = UnbiasPmf(pmf, name="z")
         else:
             self.pmf_z = pmf
-            self.pmf_zp = BiasPmf(pmf, name="z'")
+            self.pmf_zb = BiasPmf(pmf, name="zb")
 
-        # distribution of elapsed time (x)
-        self.pmf_x = self.PmfOfWaitTime(self.pmf_zp)
+        # distribution of wait time
+        self.pmf_y = PmfOfWaitTime(self.pmf_zb)
 
-        # the distribution of wait time (y) is the same as the
-        # distribution of elapsed time (x)
-        self.pmf_y = self.pmf_x
-
-    def PmfOfWaitTime(self, pmf_zp):
-        """Distribution of wait time.
-
-        pmf_zp: dist of interarrival time as seen by a random observer
-
-        Returns: dist of wait time (also dist of elapsed time)
-        """
-        meta_pmf = thinkbayes.Pmf()
-        for interarrival, prob in pmf_zp.Items():
-            uniform = MakeUniformPmf(10, interarrival)
-            meta_pmf.Set(uniform, prob)
-
-        pmf_y = thinkbayes.MakeMixture(meta_pmf, name="y")
-        return pmf_y
+        # the distribution of elapsed time is the same as the
+        # distribution of wait time
+        self.pmf_x = self.pmf_y
 
     def GenerateSampleWaitTimes(self, n):
         """Generates a random sample of wait times.
@@ -180,15 +161,15 @@ class WaitTimeCalculator(object):
         sample = cdf_y.Sample(n)
         return sample
 
-    def GenerateSampleInterarrivals(self, n):
-        """Generates a random sample of interarrivals seen by passengers.
+    def GenerateSampleGaps(self, n):
+        """Generates a random sample of gaps seen by passengers.
 
         n: sample size
 
         Returns: sequence of values
         """
-        cdf_zp = thinkbayes.MakeCdfFromPmf(self.pmf_zp)
-        sample = cdf_zp.Sample(n)
+        cdf_zb = thinkbayes.MakeCdfFromPmf(self.pmf_zb)
+        sample = cdf_zb.Sample(n)
         return sample
 
     def GenerateSamplePassengers(self, lam, n):
@@ -202,8 +183,8 @@ class WaitTimeCalculator(object):
         y: wait time
         k2: passengers arrived while waiting
         """
-        zs = self.GenerateSampleInterarrivals(n)
-        xs, ys = self.SplitInterarrivals(zs)
+        zs = self.GenerateSampleGaps(n)
+        xs, ys = self.SplitGaps(zs)
 
         res = []
         for x, y in zip(xs, ys):
@@ -213,10 +194,10 @@ class WaitTimeCalculator(object):
 
         return res
 
-    def SplitInterarrivals(self, zs):
+    def SplitGaps(self, zs):
         """Splits zs into xs and ys.
 
-        zs: sequence of interarrivals
+        zs: sequence of gaps
         
         Returns: tuple of sequences (xs, ys)
         """
@@ -228,21 +209,21 @@ class WaitTimeCalculator(object):
         """Plots the computed Pmfs.
         """
         print 'Mean z', self.pmf_z.Mean()
-        print 'Mean zp', self.pmf_zp.Mean()
+        print 'Mean zb', self.pmf_zb.Mean()
         print 'Mean y', self.pmf_y.Mean()
 
         thinkplot.Pmf(self.pmf_z)
-        thinkplot.Pmf(self.pmf_zp)
+        thinkplot.Pmf(self.pmf_zb)
         thinkplot.Pmf(self.pmf_y)
 
     def MakePlot(self, root='redline2'):
         """Plots the computed CDFs.
         """
         cdf_z = self.pmf_z.MakeCdf()
-        cdf_zp = self.pmf_zp.MakeCdf()
+        cdf_zb = self.pmf_zb.MakeCdf()
         cdf_y = self.pmf_y.MakeCdf()
 
-        cdfs = ScaleCdfs([cdf_y, cdf_z, cdf_zp], 1.0/60)
+        cdfs = ScaleCdfs([cdf_y, cdf_z, cdf_zb], 1.0/60)
 
         thinkplot.Clf()
         thinkplot.PrePlot(3)
@@ -251,6 +232,22 @@ class WaitTimeCalculator(object):
                        xlabel='Time (min)',
                        ylabel='CDF',
                        formats=FORMATS)
+
+
+def PmfOfWaitTime(pmf_zb):
+    """Distribution of wait time.
+
+    pmf_zb: dist of gap time as seen by a random observer
+
+    Returns: dist of wait time (also dist of elapsed time)
+    """
+    metapmf = thinkbayes.Pmf()
+    for gap, prob in pmf_zb.Items():
+        uniform = MakeUniformPmf(0, gap)
+        metapmf.Set(uniform, prob)
+
+    pmf_y = thinkbayes.MakeMixture(metapmf, name="y")
+    return pmf_y
 
 
 def ScaleCdfs(cdfs, factor):
@@ -276,11 +273,11 @@ class ElapsedTimeEstimator(object):
         self.post_x.Update((lam, num_passengers))
 
         # predictive distribution of wait time
-        self.pmf_y = self.post_x.PredictWaitTime(wtc.pmf_zp)
+        self.pmf_y = PredictWaitTime(wtc.pmf_zb, self.post_x)
 
     def MakePlot(self, root='redline3'):
 
-        # observed interarrivals
+        # observed gaps
         cdf_prior_x = self.prior_x.MakeCdf()
         cdf_post_x = self.post_x.MakeCdf()
         cdf_y = self.pmf_y.MakeCdf()
@@ -308,8 +305,8 @@ class ArrivalRate(thinkbayes.Suite):
         data: tuple of elapsed_time and number of passengers
         """
         lam = hypo
-        elapsed_time, k = data
-        like = thinkbayes.EvalPoissonPmf(lam * elapsed_time, k)
+        x, k = data
+        like = thinkbayes.EvalPoissonPmf(lam * x, k)
         return like
 
 
@@ -364,23 +361,25 @@ class Elapsed(thinkbayes.Suite):
         hypo: elapsed time since the last train
         data: tuple of arrival rate and number of passengers
         """
-        elapsed_time = hypo
+        x = hypo
         lam, k = data
-        like = thinkbayes.EvalPoissonPmf(lam * elapsed_time, k)
+        like = thinkbayes.EvalPoissonPmf(lam * x, k)
         return like
 
-    def PredictWaitTime(self, pmf_zp):
-        """Computes the distribution of wait times.
 
-        Enumerate all pairs of zp from pmf_zp and x from self,
-        and accumulate the distribution of y = z - x.
+def PredictWaitTime(pmf_zb, pmf_x):
+    """Computes the distribution of wait times.
 
-        pmf_zp: distribution of interarrivals seen by random observer
-        """
-        pmf_y = pmf_zp - self
-        pmf_y.name = "y"
-        RemoveNegatives(pmf_y)
-        return pmf_y
+    Enumerate all pairs of zb from pmf_zb and x from pmf_x,
+    and accumulate the distribution of y = z - x.
+
+    pmf_zb: distribution of gaps seen by random observer
+    pmf_x: distribution of elapsed time
+    """
+    pmf_y = pmf_zb - pmf_x
+    pmf_y.name = "y"
+    RemoveNegatives(pmf_y)
+    return pmf_y
 
 
 def RemoveNegatives(pmf):
@@ -391,16 +390,17 @@ def RemoveNegatives(pmf):
     for val in pmf.Values():
         if val < 0:
             pmf.Remove(val)
+    pmf.Normalize()
 
 
-class Interarrivals(thinkbayes.Suite):
-    """Represents the distribution of interarrival times,
+class Gaps(thinkbayes.Suite):
+    """Represents the distribution of gap times,
     as updated by an observed waiting time."""
 
     def Likelihood(self, hypo, data):
         """The likelihood of the data under the hypothesis.
 
-        If the actual interarrival time is z, what is the likelihood
+        If the actual gap time is z, what is the likelihood
         of waiting y seconds?
 
         hypo: actual time between trains
@@ -413,22 +413,22 @@ class Interarrivals(thinkbayes.Suite):
         return 1.0 / z
 
 
-class InterarrivalDirichlet(thinkbayes.Dirichlet):
+class GapDirichlet(thinkbayes.Dirichlet):
     """Represents the distribution of prevalences for each
-    interarrival time."""
+    gap time."""
 
     def __init__(self, xs):
         """Constructor.
 
-        xs: sequence of possible interarrival times
+        xs: sequence of possible gap times
         """
         n = len(xs)
         thinkbayes.Dirichlet.__init__(self, n)
         self.xs = xs
-        self.mean_zps = []
+        self.mean_zbs = []
 
-    def PmfMeanZp(self):
-        return thinkbayes.MakePmfFromList(self.mean_zps)
+    def PmfMeanZb(self):
+        return thinkbayes.MakePmfFromList(self.mean_zbs)
 
     def Preload(self, data):
         """Adds pseudocounts to the parameters.
@@ -448,26 +448,26 @@ class InterarrivalDirichlet(thinkbayes.Dirichlet):
 
         print k, y
         prior = self.PredictivePmf(self.xs)
-        interarrivals = Interarrivals(prior)
-        interarrivals.Update(y)
-        probs = interarrivals.Probs(self.xs)
+        gaps = Gaps(prior)
+        gaps.Update(y)
+        probs = gaps.Probs(self.xs)
 
         self.params += numpy.array(probs)
 
-    def InterarrivalProbs(self, wait_time):
+    def GapProbs(self, wait_time):
         """Not currently working
         """
         xs = range(len(self.params))
         ps = self.Random()
         prior = thinkbayes.MakePmfFromItems(zip(xs, ps))
-        interarrivals = Interarrivals(prior)
-        interarrivals.Update(wait_time)
-        return interarrivals.Probs(needs_xs)
+        gaps = Gaps(prior)
+        gaps.Update(wait_time)
+        return gaps.Probs(needs_xs)
 
 
-class InterarrivalDirichlet2(InterarrivalDirichlet):
+class GapDirichlet2(GapDirichlet):
     """Represents the distribution of prevalences for each
-    interarrival time."""
+    gap time."""
 
     def Update(self, data):
         """Computes the likelihood of the data.
@@ -479,10 +479,10 @@ class InterarrivalDirichlet2(InterarrivalDirichlet):
         k, y = data
 
         # get the current best guess for pmf_z
-        pmf_zp = self.PredictivePmf(self.xs)
+        pmf_zb = self.PredictivePmf(self.xs)
 
         # use it to compute prior pmf_x, pmf_y, pmf_z
-        wtc = WaitTimeCalculator(pmf_zp, prime=True)
+        wtc = WaitTimeCalculator(pmf_zb, inverse=True)
 
         # use the observed passengers to estimate posterior pmf_x
         elapsed = ElapsedTimeEstimator(wtc,
@@ -490,19 +490,19 @@ class InterarrivalDirichlet2(InterarrivalDirichlet):
                                        num_passengers=k)
 
         # use posterior_x and observed y to estimate observed z
-        obs_zp = elapsed.post_x + Floor(y)
-        probs = obs_zp.Probs(self.xs)
+        obs_zb = elapsed.post_x + Floor(y)
+        probs = obs_zb.Probs(self.xs)
 
-        mean_zp = obs_zp.Mean()
-        self.mean_zps.append(mean_zp)
-        print k, y, mean_zp
+        mean_zb = obs_zb.Mean()
+        self.mean_zbs.append(mean_zb)
+        print k, y, mean_zb
 
         # use observed z to update beliefs about pmf_z
         self.params += numpy.array(probs)
 
 
-class InterarrivalTimeEstimator(object):
-    """Infers interarrival times using passenger data."""
+class GapTimeEstimator(object):
+    """Infers gap times using passenger data."""
 
     def __init__(self, xs, pcounts, passenger_data):
         self.xs = xs
@@ -513,37 +513,37 @@ class InterarrivalTimeEstimator(object):
         self.pmf_y = thinkbayes.MakePmfFromList(self.wait_times, name="y")
 
         n = len(self.xs)
-        dirichlet = InterarrivalDirichlet2(self.xs)
+        dirichlet = GapDirichlet2(self.xs)
         dirichlet.params /= 1.0
 
         dirichlet.Preload(self.pcounts)
         dirichlet.params /= 20.0
 
-        self.prior_zp = dirichlet.PredictivePmf(self.xs, name="prior z'")
+        self.prior_zb = dirichlet.PredictivePmf(self.xs, name="prior zb")
         
         for k1, y, k2 in passenger_data:
             dirichlet.Update((k1, y))
 
-        self.pmf_mean_zp = dirichlet.PmfMeanZp()
+        self.pmf_mean_zb = dirichlet.PmfMeanZb()
 
-        self.post_zp = dirichlet.PredictivePmf(self.xs, name="post z'")
-        self.post_z = UnbiasPmf(self.post_zp, name="post z")
+        self.post_zb = dirichlet.PredictivePmf(self.xs, name="post zb")
+        self.post_z = UnbiasPmf(self.post_zb, name="post z")
 
     def PlotPmfs(self):
         print 'Mean y', self.pmf_y.Mean()
         print 'Mean z', self.pmf_z.Mean()
-        print "Mean z'", self.pmf_zp.Mean()
+        print 'Mean zb', self.pmf_zb.Mean()
 
         thinkplot.Pmf(self.pmf_y)
         thinkplot.Pmf(self.pmf_z)
-        thinkplot.Pmf(self.pmf_zp)
+        thinkplot.Pmf(self.pmf_zb)
 
     def MakePlot(self):
 
         thinkplot.Cdf(self.pmf_y.MakeCdf())
-        thinkplot.Cdf(self.prior_zp.MakeCdf())
-        thinkplot.Cdf(self.post_zp.MakeCdf())
-        thinkplot.Cdf(self.pmf_mean_zp.MakeCdf())
+        thinkplot.Cdf(self.prior_zb.MakeCdf())
+        thinkplot.Cdf(self.post_zb.MakeCdf())
+        thinkplot.Cdf(self.pmf_mean_zb.MakeCdf())
         thinkplot.Show()
 
 
@@ -555,11 +555,11 @@ def Floor(x, factor=10):
     return int(x/factor) * factor
 
 
-def MakePcounts(xs, interarrival_times):
+def MakePcounts(xs, gap_times):
     """
     """
-    # use the actual interarrival times to make pcounts
-    vals = [Floor(t) for t in interarrival_times]
+    # use the actual gap times to make pcounts
+    vals = [Floor(t) for t in gap_times]
     hist = thinkbayes.MakeHistFromList(vals)
     pcounts = hist.Freqs(xs)
     return pcounts
@@ -570,42 +570,60 @@ def TestITE():
 
     xs = [60, 120, 240]
     
-    interarrival_times = [60,60,60,60,60,120,120,120,240,240]
+    gap_times = [60,60,60,60,60,120,120,120,240,240]
 
-    # distribution of interarrival time (z)
-    pdf_z = thinkbayes.EstimatedPdf(interarrival_times)
+    # distribution of gap time (z)
+    pdf_z = thinkbayes.EstimatedPdf(gap_times)
     pmf_z = pdf_z.MakePmf(xs, name="z")
 
-    wtc = WaitTimeCalculator(pmf_z, prime=False)
+    wtc = WaitTimeCalculator(pmf_z, inverse=False)
 
     lam = 0.0333
     n = 100
     passenger_data = wtc.GenerateSamplePassengers(lam, n)
 
-    pcounts = MakePcounts(xs, interarrival_times)
+    pcounts = MakePcounts(xs, gap_times)
     pcounts = [0, 0, 0]
     print pcounts
 
-    ite = InterarrivalTimeEstimator(xs, pcounts, passenger_data)
+    ite = GapTimeEstimator(xs, pcounts, passenger_data)
 
     thinkplot.Clf()
 
     # thinkplot.Cdf(wtc.pmf_z.MakeCdf(name="actual z"))    
-    thinkplot.Cdf(wtc.pmf_zp.MakeCdf(name="actual z'"))
+    thinkplot.Cdf(wtc.pmf_zb.MakeCdf(name="actual zb"))
     ite.MakePlot()
 
 
 def GenerateFakeData(lam=0.0333, n=10):
     xs = MakeRange(low=10)
-    pdf_z = thinkbayes.EstimatedPdf(observed_interarrival_times)
+    pdf_z = thinkbayes.EstimatedPdf(observed_gap_times)
     pmf_z = pdf_z.MakePmf(xs, name="z")
 
-    wtc = WaitTimeCalculator(pmf_z, prime=False)
+    wtc = WaitTimeCalculator(pmf_z, inverse=False)
     passenger_data = wtc.GenerateSamplePassengers(lam, n)
     return wtc, passenger_data
 
 
+def RunSimpleProcess(gap_times):
+    xs = MakeRange(low=10)
+    pdf_z = thinkbayes.EstimatedPdf(gap_times)
+    pmf_z = pdf_z.MakePmf(xs, name="z")
+
+    wtc = WaitTimeCalculator(pmf_z, inverse=False)    
+    wtc.MakePlot()
+
+    elapsed = ElapsedTimeEstimator(wtc,
+                                   lam=0.0333,
+                                   num_passengers=15)
+    elapsed.MakePlot()
+
+
 def main(script):
+    RunSimpleProcess(observed_gap_times)
+    return
+
+
     random.seed(17)
     wtc, passenger_data = GenerateFakeData(lam=0.0333, n=20)
 
@@ -616,14 +634,14 @@ def main(script):
 
     xs = MakeRange(low=10)
 
-    cdf_zp = wtc.pmf_zp.MakeCdf(name="actual z'")
-    thinkplot.Cdf(cdf_zp)
+    cdf_zb = wtc.pmf_zb.MakeCdf(name="actual zb")
+    thinkplot.Cdf(cdf_zb)
     
-    pcounts = MakePcounts(xs, observed_interarrival_times)
+    pcounts = MakePcounts(xs, observed_gap_times)
     pcounts = [0] * len(xs)
     print pcounts
 
-    ite = InterarrivalTimeEstimator(xs, pcounts, passenger_data)
+    ite = GapTimeEstimator(xs, pcounts, passenger_data)
     ite.MakePlot()
 
     return
@@ -632,10 +650,6 @@ def main(script):
     are.MakePlot()
 
 
-    elapsed = ElapsedTimeEstimator(wtc,
-                                   lam=0.0333,
-                                   num_passengers=10)
-    elapsed.MakePlot()
     
 
 if __name__ == '__main__':
