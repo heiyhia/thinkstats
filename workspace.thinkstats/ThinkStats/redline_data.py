@@ -21,6 +21,8 @@ from time import sleep
 
 
 class Redis(object):
+    """Provides access to a Redis instance on Redis To Go"""
+
     host = 'dory.redistogo.com'
     port = 10534
 
@@ -175,7 +177,7 @@ def GetInterarrivals(arrival_map):
     Returns: list of float interarrival times in seconds
     """
     interarrival_seconds = []
-    for day, arrivals in arrival_map.iteritems():
+    for day, arrivals in sorted(arrival_map.iteritems()):
         print day, len(arrivals)
         arrivals.sort()
         diffs = numpy.diff(arrivals)

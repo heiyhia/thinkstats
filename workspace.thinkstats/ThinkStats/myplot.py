@@ -91,14 +91,14 @@ def PrePlot(num=None):
     else:
         color_iter = ColorGenerator(num)
     
-    pyplot.clf()
+    # I think we don't want to clear the figure
+    # pyplot.clf()
     
 
 def Clf():
     """Clears the figure and any hints that have been set."""
     global color_iter
     color_iter = None
-
     pyplot.clf()
     
 
@@ -111,8 +111,14 @@ def Plot(xs, ys, style='', **options):
       style: style string passed along to pyplot.plot
       options: keyword args passed to pyplot.plot
     """
+    global color_iter
+
     if color_iter:
-        options = Underride(options, color=color_iter.next())
+        try:
+            options = Underride(options, color=color_iter.next())
+        except StopIteration:
+            print 'Warning: color_iter ran out of colors.'
+            color_iter = None
         
     options = Underride(options, linewidth=3, alpha=0.8)
     pyplot.plot(xs, ys, style, **options)
@@ -360,6 +366,7 @@ def Save(root=None, formats=None, **options):
         for format in formats:
             SaveFormat(root, format)
 
+    Clf()
 
 def SaveFormat(root, format='eps'):
     """Writes the current figure to a file in the given format.

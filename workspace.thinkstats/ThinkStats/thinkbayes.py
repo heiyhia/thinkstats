@@ -33,14 +33,18 @@ from scipy.special import erf, erfinv
 def Odds(p):
     """Computes odds for a given probability.
 
-    Example: p=0.75 means 72 for and 25 against, or 3:1 odds in favor.
+    Example: p=0.75 means 75 for and 25 against, or 3:1 odds in favor.
 
-    Note: for p=0, odds are undefined.
+    Note: when p=1, the formula for odds divides by zero, which is
+    normally undefined.  But I think it is reasonable to define Odds(1)
+    to be infinity, so that's what this function does.
 
     p: float 0-1
 
     Returns: float odds
     """
+    if p == 1:
+        return float('inf')
     return p / (1-p)
 
 
@@ -131,6 +135,20 @@ class _DictWrapper(object):
         new = copy.copy(self)
         new.d = copy.copy(self.d)
         new.name = name if name is not None else self.name
+        return new
+
+    def Scale(self, factor):
+        """Multiplies the values by a factor.
+
+        factor: what to multiply by
+
+        Returns: new object
+        """
+        new = self.Copy()
+        new.d.clear()
+    
+        for val, prob in self.Items():
+            new.Set(val * factor, prob)
         return new
 
     def GetDict(self):
@@ -729,14 +747,18 @@ class Cdf(object):
 
         term: how much to add
         """
-        self.xs = [x + term for x in self.xs]
+        new = self.Copy()
+        new.xs = [x + term for x in self.xs]
+        return new
 
     def Scale(self, factor):
         """Multiplies the xs by a factor.
 
         factor: what to multiply by
         """
-        self.xs = [x * factor for x in self.xs]
+        new = self.Copy()
+        new.xs = [x * factor for x in self.xs]
+        return new
 
     def Prob(self, x):
         """Returns CDF(x), the probability that corresponds to value x.

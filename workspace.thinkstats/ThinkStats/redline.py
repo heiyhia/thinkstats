@@ -19,7 +19,7 @@ import time
 
 from math import log
 
-FORMATS = ['pdf']
+FORMATS = ['pdf', 'eps', 'png']
 
 """
 Notation guide:
@@ -32,26 +32,20 @@ zb: distribution of z as seen by a random arrival
 
 """
 
-
-# gap_times in seconds, collected by Kai Austin and Brendan Ritter
-# using http://developer.mbta.com/Data/Red.txt
+upper_bound = 1200
 
 # actual time between trains in seconds
 
 observed_gap_times = [
-    428, 705, 407, 465, 433, 425, 204, 
-    506, 143, 351, 450, 598, 464, 749
+    428.0, 705.0, 407.0, 465.0, 433.0, 425.0, 204.0, 506.0, 143.0, 351.0, 
+    450.0, 598.0, 464.0, 749.0, 341.0, 586.0, 754.0, 256.0, 378.0, 435.0, 
+    176.0, 405.0, 360.0, 519.0, 648.0, 374.0, 483.0, 537.0, 578.0, 534.0, 
+    577.0, 619.0, 538.0, 331.0, 186.0, 629.0, 193.0, 360.0, 660.0, 484.0, 
+    512.0, 315.0, 457.0, 404.0, 740.0, 388.0, 357.0, 485.0, 567.0, 160.0, 
+    428.0, 387.0, 901.0, 187.0, 622.0, 616.0, 585.0, 474.0, 442.0, 499.0, 
+    437.0, 620.0, 351.0, 286.0, 373.0, 232.0, 393.0, 745.0, 636.0, 758.0,
 ]
 
-# pairs of observation time in seconds and number of passenger arrivals
-
-observed_passenger_data = [
-    (150, 3),
-    (250, 10),
-    (660, 15),
-    (510, 13),
-    (30, 1),
-]
 
 def BiasPmf(pmf, name='', invert=False):
     """Returns the Pmf with oversampling proportional to value.
@@ -111,13 +105,16 @@ def MakeUniformPmf(low, high):
     return pmf    
     
 
-def MakeRange(low=10, high=1300, skip=10):
+def MakeRange(low=10, high=None, skip=10):
     """Makes a range representing possible gap times in seconds.
 
     low: where to start
     high: where to end
     skip: how many to skip
     """
+    if high is None:
+        high = upper_bound
+
     return range(low, high+skip, skip)
 
 
@@ -205,25 +202,32 @@ class WaitTimeCalculator(object):
         ys = [z-x for z, x in zip(zs, xs)]
         return xs, ys
 
-    def PlotPmfs(self):
+    def PlotPmfs(self, root='redline0'):
         """Plots the computed Pmfs.
         """
-        print 'Mean z', self.pmf_z.Mean()
-        print 'Mean zb', self.pmf_zb.Mean()
-        print 'Mean y', self.pmf_y.Mean()
+        pmfs = ScaleDists([self.pmf_z, self.pmf_zb], 1.0/60)
 
-        thinkplot.Pmf(self.pmf_z)
-        thinkplot.Pmf(self.pmf_zb)
-        thinkplot.Pmf(self.pmf_y)
+        thinkplot.Clf()
+        thinkplot.PrePlot(2)
+        thinkplot.Pmfs(pmfs)
+        thinkplot.Save(root=root,
+                       xlabel='Time (min)',
+                       ylabel='CDF',
+                       formats=FORMATS)
+
 
     def MakePlot(self, root='redline2'):
         """Plots the computed CDFs.
         """
+        print 'Mean z', self.pmf_z.Mean() / 60
+        print 'Mean zb', self.pmf_zb.Mean() / 60
+        print 'Mean y', self.pmf_y.Mean() / 60
+
         cdf_z = self.pmf_z.MakeCdf()
         cdf_zb = self.pmf_zb.MakeCdf()
         cdf_y = self.pmf_y.MakeCdf()
 
-        cdfs = ScaleCdfs([cdf_y, cdf_z, cdf_zb], 1.0/60)
+        cdfs = ScaleDists([cdf_z, cdf_zb, cdf_y], 1.0/60)
 
         thinkplot.Clf()
         thinkplot.PrePlot(3)
@@ -246,13 +250,17 @@ def PmfOfWaitTime(pmf_zb):
         uniform = MakeUniformPmf(0, gap)
         metapmf.Set(uniform, prob)
 
-    pmf_y = thinkbayes.MakeMixture(metapmf, name="y")
+    pmf_y = thinkbayes.MakeMixture(metapmf, name='y')
     return pmf_y
 
 
-def ScaleCdfs(cdfs, factor):
-    [cdf.Scale(factor) for cdf in cdfs]
-    return cdfs
+def ScaleDists(dists, factor):
+    """Scales each of the distributions in a sequence.
+
+    dists: sequence of Pmf or Cdf
+    factor: float scale factor
+    """
+    return [dist.Scale(factor) for dist in dists]
 
 
 class ElapsedTimeEstimator(object):
@@ -266,7 +274,7 @@ class ElapsedTimeEstimator(object):
         num_passengers: # passengers seen on the platform
         """
         # prior for elapsed time
-        self.prior_x = Elapsed(wtc.pmf_x, 'prior x')
+        self.prior_x = Elapsed(wtc.pmf_x, name='prior x')
 
         # posterior of elapsed time (based on number of passengers)
         self.post_x = self.prior_x.Copy(name='posterior x')
@@ -282,7 +290,7 @@ class ElapsedTimeEstimator(object):
         cdf_post_x = self.post_x.MakeCdf()
         cdf_y = self.pmf_y.MakeCdf()
 
-        cdfs = ScaleCdfs([cdf_prior_x, cdf_post_x, cdf_y], 1.0/60)
+        cdfs = ScaleDists([cdf_prior_x, cdf_post_x, cdf_y], 1.0/60)
 
         thinkplot.Clf()
         thinkplot.PrePlot(3)
@@ -323,10 +331,11 @@ class ArrivalRateEstimator(object):
 
         # range for lambda
         low, high = 0, 5
-        n = 101
+        n = 51
         hypos = numpy.linspace(low, high, n) / 60
 
         self.prior_lam = ArrivalRate(hypos, name='prior')
+        self.prior_lam.Remove(0)
 
         self.post_lam = self.prior_lam.Copy(name='posterior')
 
@@ -337,12 +346,13 @@ class ArrivalRateEstimator(object):
 
     def MakePlot(self, root='redline1'):
         thinkplot.Clf()
+        thinkplot.PrePlot(2)
 
         # convert units to passengers per minute
-        cdf = self.post_lam.MakeCdf()
-        cdf.Scale(60)
+        prior = self.prior_lam.MakeCdf().Scale(60)
+        post = self.post_lam.MakeCdf().Scale(60)
 
-        thinkplot.Cdfs([cdf])
+        thinkplot.Cdfs([prior, post])
 
         thinkplot.Save(root=root,
                        xlabel='Arrival rate (passengers / min)',
@@ -377,7 +387,7 @@ def PredictWaitTime(pmf_zb, pmf_x):
     pmf_x: distribution of elapsed time
     """
     pmf_y = pmf_zb - pmf_x
-    pmf_y.name = "y"
+    pmf_y.name = 'pred y'
     RemoveNegatives(pmf_y)
     return pmf_y
 
@@ -453,16 +463,6 @@ class GapDirichlet(thinkbayes.Dirichlet):
         probs = gaps.Probs(self.xs)
 
         self.params += numpy.array(probs)
-
-    def GapProbs(self, wait_time):
-        """Not currently working
-        """
-        xs = range(len(self.params))
-        ps = self.Random()
-        prior = thinkbayes.MakePmfFromItems(zip(xs, ps))
-        gaps = Gaps(prior)
-        gaps.Update(wait_time)
-        return gaps.Probs(needs_xs)
 
 
 class GapDirichlet2(GapDirichlet):
@@ -595,9 +595,56 @@ def TestITE():
     ite.MakePlot()
 
 
-def GenerateFakeData(lam=0.0333, n=10):
+class WaitMixtureEstimator(object):
+    """Encapsulates the process of estimating wait time with uncertain lam.
+    """
+
+    def __init__(self, wtc, are, num_passengers=15):
+        """Constructor.
+
+        wtc: WaitTimeCalculator
+        are: ArrivalTimeEstimator
+        num_passengers: number of passengers seen on the platform
+        """
+        self.metapmf = thinkbayes.Pmf()
+
+        for lam, prob in sorted(are.post_lam.Items()):
+            ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
+            self.metapmf.Set(ete.pmf_y, prob)
+
+        self.mixture = thinkbayes.MakeMixture(self.metapmf)
+
+        lam = are.post_lam.Mean()
+        ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
+        self.point = ete.pmf_y
+
+    def MakePlot(self, root='redline4'):
+        thinkplot.Clf()
+
+        # plot the MetaPmf
+        for pmf, prob in sorted(self.metapmf.Items()):
+            cdf = pmf.MakeCdf().Scale(1.0/60)
+            width = 2/math.log(-math.log(prob))
+            thinkplot.Plot(cdf.xs, cdf.ps,
+                           alpha=0.2, linewidth=width, color='blue', 
+                           label='')
+
+        # plot the mixture and the distribution based on a point estimate
+        thinkplot.PrePlot(2)
+        #thinkplot.Cdf(self.point.MakeCdf(name='point').Scale(1.0/60))
+        thinkplot.Cdf(self.mixture.MakeCdf(name='mix').Scale(1.0/60))
+
+        thinkplot.Save(root=root,
+                       xlabel='Wait time (min)',
+                       ylabel='CDF',
+                       formats=FORMATS,
+                       axis=[0,10,0,1])
+
+
+
+def GenerateFakeData(gap_times, lam=0.0333, n=10):
     xs = MakeRange(low=10)
-    pdf_z = thinkbayes.EstimatedPdf(observed_gap_times)
+    pdf_z = thinkbayes.EstimatedPdf(gap_times)
     pmf_z = pdf_z.MakePmf(xs, name="z")
 
     wtc = WaitTimeCalculator(pmf_z, inverse=False)
@@ -605,22 +652,82 @@ def GenerateFakeData(lam=0.0333, n=10):
     return wtc, passenger_data
 
 
-def RunSimpleProcess(gap_times):
+def RandomSeed(x):
+    random.seed(x)
+    numpy.random.seed(x)
+    
+
+def RunSimpleProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
     xs = MakeRange(low=10)
+
     pdf_z = thinkbayes.EstimatedPdf(gap_times)
     pmf_z = pdf_z.MakePmf(xs, name="z")
 
     wtc = WaitTimeCalculator(pmf_z, inverse=False)    
-    wtc.MakePlot()
 
-    elapsed = ElapsedTimeEstimator(wtc,
-                                   lam=0.0333,
-                                   num_passengers=15)
-    elapsed.MakePlot()
+    if plot:
+        wtc.PlotPmfs()
+        wtc.MakePlot()
+
+    ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
+
+    if plot:
+        ete.MakePlot()
+
+    return wtc, ete
+
+
+def RunMixProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
+    wtc, ete = RunSimpleProcess(gap_times, lam, num_passengers)
+
+    RandomSeed(17)
+    passenger_data = wtc.GenerateSamplePassengers(lam, n=5)
+
+    total_y = 0
+    total_k2 = 0
+    for k1, y, k2 in passenger_data:
+        print k1, y/60, k2
+        total_y += y/60
+        total_k2 += k2
+    print total_k2, total_y
+    print 'Average arrival rate', total_k2 / total_y
+
+    are = ArrivalRateEstimator(passenger_data)
+
+    if plot:
+        are.MakePlot()
+
+    wme = WaitMixtureEstimator(wtc, are, num_passengers)
+
+    if plot:
+        wme.MakePlot()
+
+    return wme
+
+
+def RunLoop(gap_times, nums, lam=0.0333):
+    global upper_bound
+    upper_bound = 2400
+
+    thinkplot.Clf()
+
+    fake_gap_times = gap_times * 50 + [1800, 2400, 3000, 3600]
+
+    for num_passengers in nums:
+        wtc, ete = RunSimpleProcess(fake_gap_times, 
+                                    lam, 
+                                    num_passengers, 
+                                    plot=False)
+        thinkplot.Cdf(ete.pmf_y.MakeCdf(name=str(num_passengers)))
+    
+    thinkplot.Show()
 
 
 def main(script):
-    RunSimpleProcess(observed_gap_times)
+    RunMixProcess(observed_gap_times)
+    return
+
+    RunLoop(observed_gap_times, nums=[0, 5, 10, 20, 30, 40])
     return
 
 
@@ -645,9 +752,6 @@ def main(script):
     ite.MakePlot()
 
     return
-
-    are = ArrivalRateEstimator(passenger_data)
-    are.MakePlot()
 
 
     
