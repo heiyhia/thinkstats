@@ -32,9 +32,13 @@ zb: distribution of z as seen by a random arrival
 
 """
 
+# longest hypothetical time between trains, in seconds
+
 upper_bound = 1200
 
-# actual time between trains in seconds
+# observed gaps between trains, in seconds
+# collected using code in redline_data.py, run daily 4-6pm
+# for 5 days, Monday 6 May 2013 to Friday 10 May 2013
 
 observed_gap_times = [
     428.0, 705.0, 407.0, 465.0, 433.0, 425.0, 204.0, 506.0, 143.0, 351.0, 
@@ -642,7 +646,13 @@ class WaitMixtureEstimator(object):
 
 
 
-def GenerateFakeData(gap_times, lam=0.0333, n=10):
+def GenerateSampleData(gap_times, lam=0.0333, n=10):
+    """Generates passenger data based on actual gap times.
+
+    gap_times: sequence of float
+    lam: arrival rate in passengers per second
+    n: number of simulated observations
+    """
     xs = MakeRange(low=10)
     pdf_z = thinkbayes.EstimatedPdf(gap_times)
     pmf_z = pdf_z.MakePmf(xs, name="z")
@@ -653,11 +663,24 @@ def GenerateFakeData(gap_times, lam=0.0333, n=10):
 
 
 def RandomSeed(x):
+    """Initialize the random and numpy.random generators.
+
+    x: int seed
+    """
     random.seed(x)
     numpy.random.seed(x)
     
 
 def RunSimpleProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
+    """Runs the basic analysis and generates figures.
+
+    gap_times: sequence of float
+    lam: arrival rate in passengers per second
+    num_passengers: int number of passengers on the platform
+    plot: boolean, whether to generate plots
+
+    Returns: WaitTimeCalculator, ElapsedTimeEstimator
+    """
     xs = MakeRange(low=10)
 
     pdf_z = thinkbayes.EstimatedPdf(gap_times)
@@ -678,6 +701,15 @@ def RunSimpleProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
 
 
 def RunMixProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
+    """Runs the analysis for unknown lambda.
+
+    gap_times: sequence of float
+    lam: arrival rate in passengers per second
+    num_passengers: int number of passengers on the platform
+    plot: boolean, whether to generate plots
+
+    Returns: WaitMixtureEstimator
+    """
     wtc, ete = RunSimpleProcess(gap_times, lam, num_passengers)
 
     RandomSeed(17)
@@ -705,34 +737,85 @@ def RunMixProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
     return wme
 
 
+def Resample(sample, n):
+    """Estimate a PDF for the same and generate a random sample from it.
+
+    sample: sequence of observed values
+    n: sample size to generate
+    """
+    pdf = thinkbayes.EstimatedPdf(sample)
+    xs = MakeRange(low=10)
+    pmf = pdf.MakePmf(xs)
+    cdf = pmf.MakeCdf()
+    sample = cdf.Sample(n)
+    return sample
+    
+
 def RunLoop(gap_times, nums, lam=0.0333):
+    """Runs the basic analysis for a range of num_passengers.
+
+    gap_times: sequence of float
+    nums: sequence of values for num_passengers
+    lam: arrival rate in passengers per second
+
+    Returns: WaitMixtureEstimator
+    """
     global upper_bound
-    upper_bound = 2400
+    upper_bound = 4000
 
     thinkplot.Clf()
 
-    fake_gap_times = gap_times * 50 + [1800, 2400, 3000, 3600]
+    RandomSeed(18)
 
+    # resample gap_times
+    n = 200
+    cdf_z = thinkbayes.MakeCdfFromList(gap_times)
+    sample_z = cdf_z.Sample(n)
+
+    # compute the biased pmf and add some long delays
+    pmf_z = thinkbayes.MakePmfFromList(sample_z)
+    cdf_zp = BiasPmf(pmf_z).MakeCdf()
+    sample_zb = cdf_zp.Sample(n) + [1800, 2400, 3000]
+
+    # smooth the distribution of zb
+    pdf_zb = thinkbayes.EstimatedPdf(sample_zb)
+    xs = MakeRange(low=60)
+    pmf_zb = pdf_zb.MakePmf(xs)
+
+    # unbias the distribution of zb and make wtc
+    pmf_z = UnbiasPmf(pmf_zb)
+    wtc = WaitTimeCalculator(pmf_z)
+    wtc.PlotPmfs()
+    wtc.MakePlot()
+
+    probs = []
     for num_passengers in nums:
-        wtc, ete = RunSimpleProcess(fake_gap_times, 
-                                    lam, 
-                                    num_passengers, 
-                                    plot=False)
-        thinkplot.Cdf(ete.pmf_y.MakeCdf(name=str(num_passengers)))
+        ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
+
+        # compute the posterior prob of waiting more than 15 minutes
+        cdf_y = ete.pmf_y.MakeCdf()
+        prob = 1 - cdf_y.Prob(900)
+        probs.append(prob)
+
+        # thinkplot.Cdf(ete.pmf_y.MakeCdf(name=str(num_passengers)))
     
-    thinkplot.Show()
+    thinkplot.Plot(nums, probs)
+    thinkplot.Save(root='redline5',
+                   xlabel='Num passengers',
+                   ylabel='P(y > 15 min)',
+                   formats=FORMATS,
+                   )
 
 
 def main(script):
+    RunLoop(observed_gap_times, nums=[0, 5, 10, 15, 20, 25, 30, 35])
+    return
+
     RunMixProcess(observed_gap_times)
     return
 
-    RunLoop(observed_gap_times, nums=[0, 5, 10, 20, 30, 40])
-    return
-
-
     random.seed(17)
-    wtc, passenger_data = GenerateFakeData(lam=0.0333, n=20)
+    wtc, passenger_data = GenerateSampleData(lam=0.0333, n=20)
 
     #TestITE()
     #return
