@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.19.0}
+\newcommand{\theversion}{0.23}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -495,6 +495,8 @@ Barnes, Kari Bender, Rachel Boy, Kat Mendoza, Arjun Iyer, Ben Kroop,
 Nathan Lintz, Kyle McCannaughay, Alec Radford, Brendan Ritter and
 Evan Simpson.
 
+\item Greg Marra and Matt Aasted helped me clarify the discussion
+of {\it The Price is Right} problem.
 
 % ENDCONTRIB
 
@@ -1032,8 +1034,8 @@ that includes each word and how many times it appears.
 In Python, you could represent a distribution with a dictionary that
 maps from each value to its probability.  As an alternative, I have
 written a class called {\tt Pmf} that represents a distribution.  PMF
-stands for ``probability mass function'' which is the more specific
-mathematical term for what I am calling a distribution.
+stands for ``probability mass function'' which is a specific
+kind of distribution (we'll see others soon).
 
 {\tt Pmf} is defined in a Python module I wrote to accompany this
 book, called {\tt thinkbayes.py}.  You can download it from
@@ -1879,7 +1881,7 @@ width of this range suggests, correctly, that we are still quite
 uncertain about how many locomotives there are.
 
 
-\section{Cumulative distribution function}
+\section{Cumulative distribution functions}
 
 In the previous section we computed percentiles by iterating through
 the values and probabilities in a Pmf.  If we need to compute more
@@ -1918,128 +1920,6 @@ The examples in this section are in \url{http://thinkbayes.com/train.py}.
 
 
 \chapter{More estimation}
-
-\section{Four Urns}
-
-James Joyce, the American philosopher not the Irish author, wrote
-a paper called {\it How probabilities reflect evidence} that poses
-the following problem (which I am quoting loosely):
-
-\begin{quote}
-Jacob and Emily both start out knowing that an urn, U, was
-randomly chosen from a set of four urns ${urn_0, urn_1, urn_2, urn_3}$
-where $urn_i$ contains three balls, $i$ of which are blue and $3-i$ of
-which are green. [...]  Jacob and Emily regard random drawing with
-replacement as an exchangeable process, so that any series of draws
-that produces m blue balls and n green balls is as likely as any other
-such series, irrespective of order.  Use $B^m G^n$ to denote the generic
-event in which $m$ blue balls and $n$ green balls are drawn at random
-and with replacement from U.  Against this backdrop of shared
-evidence, suppose Jacob sees five balls drawn at random and with
-replacement from U and observes that all are blue, so his evidence is
-$B^5 G^0$.  Emily, who sees Jacob's evidence, looks at fifteen additional
-draws of which twelve come up blue, so her evidence is $B^{17} G^3$.  [If
-$B_{next}$ is the probability that the next ball drawn from the urn is
-blue,] what should Emily and Jacob think about $B_{next}$?
-\end{quote}
-
-We'll proceed in two steps: the first is to compute the probability
-that U is $urn_i$ for each $i$.  The second is to compute $B_{next}$.
-
-Let's use $H_i$ to represent the hypothesis that the urn we chose, U,
-is $urn_i$.  Since we are told that U was chosen at random, we can
-infer that the prior probabilities are $H_i = 1/4$ for all $i$.
-
-And the likelihood function is easy.  If $H_i$ is true, U contains
-$i$ blue balls, so $\p{B|H_i} = i/3$.  Or in Python
-
-\begin{verbatim}
-class Urn(Suite):
-    def Likelihood(self, hypo, data):
-        """
-        hypo: integer number of blue balls (out of three)
-        data: string 'B' or 'G'
-        """
-        p = hypo / 3.0
-        if data == 'B':
-            return p
-        else:
-            return 1-p
-\end{verbatim}
-
-And here's the code that creates the prior and updates it
-with Jacob's data:
-
-\begin{verbatim}
-    suite = Urn([0,1,2,3])
-
-    for data in 'BBBBB':
-        suite.Update(data)
-\end{verbatim}
-
-And here are the results:
-
-\begin{verbatim}
-0 0.0
-1 0.0036231884058
-2 0.115942028986
-3 0.880434782609
-\end{verbatim}
-
-Since he has seen 5 blue and no green balls, Jacob rules out $urn_0$
-and gives low posterior probabilities to $urn_1$ and $urn_2$.  Based
-on this data, Jacob is 88\% sure that U is $urn_3$.
-
-So what should Jacob believe about $B_{next}$, the chance that the
-next ball from U is blue.  If $H_3$ is right, and U is $urn_3$,
-then $B_{next}$ is 100\%.  But Jacob is not sure about $H_3$.
-
-Jacob can compute $B_{next}$ using the law of total probability, which
-says that the probability that the next ball is blue is the sum
-of the probabilities for each way it can happen; in this case
-%
-\[ B_{next} = \sum_i \frac{i}{3}~\p{H_i | D} \]
-%
-Pulling out the factor of $1/3$, we have
-%
-\[ B_{next} = \frac{1}{3} \sum_i i~\p{H_i | D} \]
-%
-which we recognize as the mean of the posterior distribution
-divided by 3.
-
-\begin{verbatim}
-print suite.Mean() / 3.0
-\end{verbatim}
-
-For Jacob, $B_{next}$ is 0.96.  For Emily, who sees 17 blue and 3 green
-balls, the posterior distribution is 
-
-\begin{verbatim}
-0 0.0
-1 3.05166468308e-05
-2 0.999969483353
-3 0.0
-\end{verbatim}
-
-Since Emily has seen a blue and a green ball, she can rule out $H_0$
-and $H_3$.  And since she has seen many more blue than green balls,
-she is all but certain that U is $urn_2$, so her value for $B_{next}$
-is very close to 2/3.
-
-Joyce constructed this example to point out a difference between the
-evidence seen by Jacob and Emily.  Jacob's evidence has more
-``force,'' in one sense of the word, because his posterior belief
-about $B_{next}$ is more strongly biased.  But Emily's evidence has
-more ``weight,'' because she is more confident about which urn U is.
-
-For Joyce the point of this example is to probe what we mean
-when we talk about the ``weight'' or ``force,'' of
-evidence.  We come back to this question, from a Bayesian
-perspective, in the next chapter.
-
-For us, the point of this example is to provide a warm-up exercise
-that will help with the next problem.
-
 
 \section{The Euro coin problem}
 \label{euro}
@@ -2546,6 +2426,7 @@ If the odds are $5:1$ against my horse, then five out of six
 people think she will lose, so the probability of winning
 is $1/6$.
 
+
 \section{The odds form of Bayes's Theorem}
 
 In Chapter~\ref{intro} I wrote Bayes's Theorem in the ``probability
@@ -2669,8 +2550,19 @@ event still unexplained.  If Oliver doesn't account for the
 population with 'AB' blood.  And that factor of two makes
 the difference.
 
+
 \section{Addends}
 \label{addends}
+
+The fundamental operation of Bayesian statistics is
+{\tt Update}, which takes a prior distribution and a set
+of data, and produces a posterior distribution.  But solving
+real problems usually involves a number of other operations,
+including scaling, addition and other arithmetic operations,
+max and min, and mixtures.
+
+This chapter presents addition and max; I will present
+other operations as we need them.
 
 Dungeons and Dragons is a role-playing game where the results
 of players' decisions are usually determined by rolling dice.
@@ -2753,11 +2645,17 @@ in the \verb"Pmf.__add__" method:
         return pmf
 \end{verbatim}
 
+{\tt self} and {\tt other} can be Pmfs, or anything else that
+provides {\tt Items}.  The result is a new Pmf.
+
 And here's how it's used:
 
 \begin{verbatim}
     three_exact = d6 + d6 + d6
 \end{verbatim}
+
+When you apply the {\tt +} operator to a Pmf, Python invokes
+\verb"__add__".  In this example, \verb"__add__" is invoked twice.
 
 The approximate and exact distributions are shown in
 Figure~\ref{fig.dungeons1}.
@@ -2873,7 +2771,10 @@ distribution,
 %
 \[ CDF_n(z) = CDF_1(z)^n \]
 %
-And \verb"Cdf" provides a method that does just that:
+So to find the distribution of the maximum of $n$ values,
+we can enumerate the probabilities in the given Cdf
+and raise them to the $n$th power.
+\verb"Cdf" provides a method that does just that:
 
 \begin{verbatim}
     def Max(self, n):
@@ -2896,7 +2797,7 @@ your character's best attribute:
 
 \begin{verbatim}
     best_attr_cdf = three_exact.Max(6)
-    best_attr_pmf = thinkbayes.MakePmfFromCdf(best_attr_cdf)
+    best_attr_pmf = best_attr_cdf.MakePmf()
 \end{verbatim}
 
 Where \verb"three_exact" is defined in the previous section.
@@ -2950,7 +2851,11 @@ optimization.  Given a posterior distribution, we can choose
 the bid that maximizes the contestant's expected return.
 
 This problem is inspired by an example in Cameron Davidson-Pilon's
-book, {\it Bayesian Methods for Hackers}.
+book, {\it Bayesian Methods for Hackers}.  The code I wrote for this
+chapter is available from \url{http://thinkbayes.com/price.py}; it
+reads data you can download from
+\url{http://thinkbayes.com/showcases.2011.csv} and
+\url{http://thinkbayes.com/showcases.2012.csv}.
 
 
 \section{The prior}
@@ -2982,7 +2887,7 @@ So before we go on, I want to take a detour to talk about
 probability density functions and KDE.
 
 
-\chapter{PDF}
+\section{Probability density functions}
 
 So far we have been working with probability mass functions, or PMFs.
 A PMF is a mapping from each possible value to its probability.  In my
@@ -2995,11 +2900,11 @@ PMF, where the possible values make up a continuous range rather than
 a discrete set.  
 
 In mathematical notation, PDFs are usually written as functions; for
-example, here is the Pdf of a Gaussian distribution with
+example, here is the PDF of a Gaussian distribution with
 mean 0 and standard deviation 1:
-
+%
 \[ f(x) = \exp(-x^2) \]
-
+%
 To represent this PDF in Python, I could define a class like this:
 
 \begin{verbatim}
@@ -3013,12 +2918,12 @@ class StandardGaussianPdf(object):
 density evaluated at {\tt x}.  
 
 A probability density is similar
-to a probability in one way: higher density indicates that a
+to a probability mass in one way: higher density indicates that a
 value is more likely.
 
-But it is not a probability.  In order to get a probability, you
-have to integrate a density over a range.  Although it turns out
-that for the applications in this book we seldom have to do that.
+But a density is not a probability.  If you integrate a density
+over a continuous range, the result is a probability.  But 
+for the applications in this book we seldom have to do that.
 
 In this book we primarily use probability densities as part
 of a {\tt Likelihood} function.  We will see an example soon.
@@ -3048,12 +2953,15 @@ class Pdf(object):
 
 {\tt Pdf} is an {\bf abstract type}, which means that it defines
 the interface a Pdf is supposed to have, but does not provide
-a complete implementation.  Specifically, {\tt Pdf} provides
-an implementation of {\tt MakePdf} but not {\tt Density}.
+a complete implementation.  {\tt Pdf} provides
+{\tt MakePmf}, which makes a discrete approximation to the
+PDF, but does not provide {\tt Density}.
 
-In order to provide {\tt Density} you have to define a child
-class that extends {\tt Pdf}.  For example, {\tt thinkbayes}
-provides {\tt GaussianPdf}:
+A {\bf concrete type} is a class that extends an abstract parent
+class and provides an implementation of the missing methods.
+
+For example, {\tt GaussianPdf} extends {\tt Pdf} and provides
+{\tt Density}:
 
 \begin{verbatim}
 class GaussianPdf(Pdf):
@@ -3090,10 +2998,10 @@ For example, in {\it The Price Is Right} data, we have
 values as a sample from the population of all possible showcase
 prices.
 
-Near the middle of the distribution, we the following values:
-
+Near the middle of the distribution, we see the following values:
+%
 \[ 28800, 28868, 28941, 28957, 28958 \]
-
+%
 In the sample, no values appear between 28801 and 28867, but
 there is no reason to think that these values are impossible.
 Based on our background information, we would expect all
@@ -3156,13 +3064,12 @@ And now back to {\it The Price is Right}.
 \label{fig.price2}
 \end{figure}
 
-The PDFs in Figure~\ref{fig.price1} estimate the
-distribution of possible prices for each showcase.  These
-distributions represent the prior beliefs of the contestants
-before they see the prizes (or, at least, they are a reasonable
-choice).
+The PDFs in Figure~\ref{fig.price1} estimate the distribution of
+possible prices for each showcase.  If you were a contestant on the
+show, you could use this distribution to quantify your prior belief
+about the price of the showcases (before you see the prizes).
 
-In order to update these priors, we have to answer these questions:
+To update these priors, you have to answer these questions:
 
 \begin{enumerate}
 
@@ -3251,17 +3158,16 @@ which we saw in Figure~\ref{fig.price2}.  And \verb"pdf_error"
 is the PDF that characterizes the distribution of errors; where
 {\tt error = price - guess}.
 
-Again, we use the variance of {\tt diff} to estimate the
-variance of {\tt error}.
-But contestant's bids are sometimes strategic; for example, if
-Player 2 thinks that Player 1 has overbid, Player 2 might make
-a very low bid.  In that case {\tt diff} does not reflect
-the error in {\tt guess}, so the variance in {\tt diff}
-might overestimate the variance in {\tt error}.
-Nevertheless, I think it is a reasonable modeling decision.
+Again, we use the variance of {\tt diff} to estimate the variance of
+{\tt error}.  But contestant's bids are sometimes strategic; for
+example, if Player 2 thinks that Player 1 has overbid, Player 2 might
+make a very low bid.  In that case {\tt diff} does not reflect {\tt
+  error}.  If this strategy is common, the observed variance in {\tt
+  diff} might overestimate the variance in {\tt error}.  Nevertheless,
+I think it is a reasonable modeling decision.
 
-As an alternative, someone preparing to appear on the show could estimate
-their own distribution of error by watching previous shows
+As an alternative, someone preparing to appear on the show could
+estimate their own distribution of {\tt error} by watching previous shows
 and recording their guesses and the actual prices.
 
 
@@ -3317,15 +3223,14 @@ given the hypothesis.
 \end{verbatim}
 
 {\tt ErrorDensity} works by evaluating \verb"pdf_error" at
-the given value of {\tt error}.  The result is a probability
-density, which means we can't treat it as a probability.  But
-remember that {\tt Likelihood} does not really need to compute
-a probability; it only has to compute something {\em proportional}
-to a probability.
+the given value of {\tt error}.
 
-As long as the constant of proportionality is the same for
-all likelihoods, it gets cancelled out when we normalize the
-posterior distribution.
+The result is a probability density, which means we can't treat it as
+a probability.  But remember that {\tt Likelihood} does not really
+need to compute a probability; it only has to compute something {\em
+  proportional} to a probability.  As long as the constant of
+proportionality is the same for all likelihoods, it gets cancelled out
+when we normalize the posterior distribution.
 
 And therefore, a probability density is a perfectly good likelihood.
 
@@ -3347,12 +3252,16 @@ guess and computes the posterior distribution:
 \begin{verbatim}
     def MakeBeliefs(self, guess):
         pmf = self.PmfPrice()
-        self.prior = Price(pmf, self, name='prior')
-        self.posterior = self.prior.Copy(name='posterior')
+        self.prior = Price(pmf, self)
+        self.posterior = self.prior.Copy()
         self.posterior.Update(guess)
 \end{verbatim}
 
-{\tt PmfPrice} evaluates \verb"pdf_price" at an equally-spaced
+{\tt PmfPrice} generates a discrete approximation
+to the PDF of price, which we use to construct the prior.
+
+{\tt PmfPrice} uses {\tt MakePmf}, which
+evaluates \verb"pdf_price" at an equally-spaced
 series of values:
 
 \begin{verbatim}
@@ -3360,8 +3269,7 @@ series of values:
         return self.pdf_price.MakePmf(self.price_xs)
 \end{verbatim}
 
-The result is a new {\tt Pmf} object, which we use to construct
-the prior.  To construct the posterior, we make a copy of the
+To construct the posterior, we make a copy of the
 prior and then invoke {\tt Update}, which invokes {\tt Likelihood}
 for each hypothesis, multiplies the priors by the likelihoods,
 and then renormalizes.
@@ -3370,7 +3278,7 @@ So let's get back to the original scenario.  Suppose you are
 Player 1 and when you see your showcase, your best guess is
 that the total price of the prizes is \$20,000.
 
-The following code would construct and plot your prior and
+The following code constructs and plots your prior and
 posterior beliefs about the actual price:
 
 \begin{verbatim}
@@ -3379,17 +3287,17 @@ posterior beliefs about the actual price:
     myplot.Pmf(player2.prior)
 \end{verbatim}
 
-Figure~\ref{fig.price3} shows the results.  The value of your guess
+Figure~\ref{fig.price3} shows the results.  Your guess (\$20,000)
 is on the low end of the prior range, so the posterior is shifted
 to the left.  The mean of the posterior is \$25,096; the most
 likely value is \$24,000.
 
-One one level, this result makes sense.  The most likely value
+On one level, this result makes sense.  The most likely value
 in the prior is \$27,750.  Your best guess is \$20,000.  And the
 most likely value in the posterior is about half way in between.
 
 On another level, you might find this result bizarre, because it
-seems to suggest that if you think the price is \$20,000, then you
+suggests that if you think the price is \$20,000, then you
 should believe the price is \$24,000.
 
 To resolve this apparent paradox, remember that you are combining two
@@ -3398,9 +3306,10 @@ guesses about the prizes you see.
 
 We are treating the historical data as the prior and updating it
 based on your guesses, but we could equivalently use your guess
-as a prior and update it based on historical data.  I think the
-second approach is harder to think about, but it would yield the
-same result.
+as a prior and update it based on historical data.  
+
+If you think of it that way, maybe it is less surprising that the
+most likely value in the posterior is not your original guess.
 
 
 \section{Optimal bidding}
@@ -3409,7 +3318,12 @@ Now that we have a posterior distribution, we can use it to
 compute the optimal bid, which I define as the bid that maximizes
 expected gain.
 
-To compute optimal bids, I define a class called {\tt GainCalculator}:
+I'm going to present the methods in this section top-down, which
+means I will show you how they are used before I show you how they
+work.  So if you see an unfamiliar method, don't panic; the definition
+will be along shortly.
+
+To compute optimal bids, I wrote a class called {\tt GainCalculator}:
 
 \begin{verbatim}
 class GainCalculator(object):
@@ -3419,7 +3333,7 @@ class GainCalculator(object):
         self.opponent = opponent
 \end{verbatim}
 
-{\tt player} and {\tt opponent} are both {\tt Player} objects.
+{\tt player} and {\tt opponent} are {\tt Player} objects.
 
 {\tt GainCalculator} provides {\tt ExpectedGains}, which
 computes a sequence of bids and the expected gain for each
@@ -3435,8 +3349,10 @@ bid:
 \end{verbatim}
 
 {\tt low} and {\tt high} specify the range of possible bids;
-{\tt n} is the number of bids to try.  Here is the function
-that computes expected gain for a given bid:
+{\tt n} is the number of bids to try.  
+
+{\tt ExpectedGains} calls {\tt ExpectedGain}, which
+computes expected gain for a given bid:
 
 \begin{verbatim}
     def ExpectedGain(self, bid):
@@ -3460,8 +3376,8 @@ probability and returns the total.
 \label{fig.price5}
 \end{figure}
 
-{\tt Gain} takes a bid and an actual price and returns 
-the expected gain:
+{\tt ExpectedGain} invokes {\tt Gain}, which takes a bid and an actual
+price and returns the expected gain:
 
 \begin{verbatim}
     def Gain(self, bid, price):
@@ -3485,7 +3401,7 @@ If {\tt diff} is less than \$250, you win both showcases.  For
 simplicity, I assume that both showcases have the same price.  Since
 this outcome is rare, it doesn't make much difference.
 
-And finally, we have to compute the probability of winning based
+Finally, we have to compute the probability of winning based
 on {\tt diff}:
 
 \begin{verbatim}
@@ -3512,7 +3428,7 @@ provides methods to compute both probabilities:
 This code might be confusing because the computation is now from
 the point of view of the opponent, who is computing, ``What is
 the probability that I overbid?'' and ``What is the probability
-that my bid off by more than {\tt diff}?''
+that my bid is off by more than {\tt diff}?''
 
 Both answers are based on the CDF of {\tt diff}.  If your opponent's
 {\tt diff} is less than or equal to -1, you win.  If your opponent's
@@ -3541,7 +3457,7 @@ based on a scenario where Player 1's best guess is \$20,000
 and Player 2's best guess is \$40,000.
 
 For Player 1 the optimal bid is \$21,000, yielding an expected
-return of almost \$16,700.  So this is a case (which turns out
+return of almost \$16,700.  This is a case (which turns out
 to be unusual) where the optimal bid is actually higher than
 the contestant's best guess.
 
@@ -3555,9 +3471,10 @@ the optimal bid is less than the best guess.
 One of the most useful features of Bayesian estimation is that the
 result comes in the form of a posterior distribution.  Classical
 estimation usually generates a single point estimate or a confidence
-interval, which is sufficient if estimation is the last step in
-the process, but if you want to use an estimate as an input to
-a subsequent analysis, point estimates and intervals are not much help.
+interval, which is sufficient if estimation is the last step in the
+process, but if you want to use an estimate as an input to a
+subsequent analysis, point estimates and intervals are often not much
+help.
 
 In this example, the Bayesian analysis yields a posterior distribution
 we can use to compute an optimal bid.  The gain function is asymmetric
@@ -4132,6 +4049,734 @@ light bulb survival curves.
 \end{exercise}
 
 
+\chapter{Observer bias}
+
+\section{The Red Line problem}
+
+In Boston, the Red Line is a subway that runs north-south from
+Cambridge to Boston.  When I was working in Cambridge I took the Red
+Line from Kendall Square to South Station and caught the commuter rail
+to Needham.  During rush hour Red Line trains run every 7--8
+minutes, on average.
+
+When I arrived at the station, I could estimate the time until
+the next train based on the number of passengers on the platform.
+If there were only a few people, I inferred that I just missed
+a train and expected to wait about 7 minutes.  If there were
+more passengers, I expected the train to arrive sooner.  But if
+there were a large number of passengers, I suspected that
+trains were not running on schedule, so I would go back to the
+street level and get a taxi.
+
+While I was waiting for trains, I thought about how Bayesian
+estimation could help predict my wait time and decide when I
+should give up and take a taxi.  This chapter presents the
+analysis I came up with.
+
+This case study is based on a project by Brendan Ritter and
+Kai Austin, who took a class with me at Olin College.
+The code in this chapter is available from
+\url{http://thinkbayes.com/redline.py}.
+
+
+\section{The model}
+
+\begin{figure}
+% redline.py
+\centerline{\includegraphics[height=2.5in]{figs/redline0.pdf}}
+\caption{PMF of gaps between trains, based on collected data,
+smoothed by KDE.  {\tt z} is the actual distribution; {\tt zb}
+is the biased distribution seen by passengers. }
+\label{fig.redline0}
+\end{figure}
+
+Before we get to the analysis, we have to make some
+modeling decisions.  First, I will treat passenger arrivals as
+a Poisson process, which means I assume that passengers are equally
+likely to arrive at any time, and that they arrive at an unknown
+rate, $lambda$, measured in passengers per minute.  Since I
+observe passengers during a short period of time, and at the same
+time every day, I assume that $lambda$ is constant.
+
+On the other hand, the arrival process for trains is not Poisson.
+Trains to Boston are supposed to leave from the end of the line
+(Alewife station) every 7--8 minutes during peak times, but by the time
+they get to Kendall Square, the time between trains varies between 3
+and 13 minutes.
+
+To gather data on the time between trains, I wrote a script that
+downloads real-time data from
+\url{http://www.mbta.com/rider_tools/developers/}, selects south-bound
+trains arriving at Kendall square, and records their arrival times
+in a database.  I ran the script from 4pm to 6pm every weekday
+for xx days, and recorded about 15 arrivals per day.  Then
+I computed the time between consecutive arrivals; the distribution
+of these inter-arrival times is in Figure~\ref{fig.redline0}.
+
+If you stood on the platform from 4pm to 6pm and recorded the time
+between trains, this is the distribution you would see.  But if you
+arrive at some random time (without regard to the train schedule) you
+would see a different distribution.  As it turns out, the average time
+between trains, as seen by a random passenger, is substantially
+higher than the true average.
+
+Why?  Because a passenger is more like to arrive during a
+large interval than a small one.  Consider a simple example:
+suppose that the time between trains is either 5 minutes
+or 10 minutes with equal probability.  In that case
+the average time between
+trains is 7.5 minutes.
+
+But a passenger is more likely to arrive during a 10 minute gap 
+than a 5 minute gap; in fact, twice as likely.  If we surveyed
+arriving passengers, we would find that 2/3 of them arrived during
+a 10 minute gap, and only 1/3 during a 5 minute gap.  So the
+average time between trains, as seen by an arriving passenger,
+is 8.33 minutes.
+
+This kind of ``observer bias'' appears in many contexts.  Students
+think that classes are bigger than they are, because more of them are
+in the big classes.  Airline passengers think that planes are fuller
+than they are, because more of them are on full flights.
+
+In each case, values from the actual distribution are
+oversampled in proportion to their value.  In the Red Line example,
+a gap that is twice as big is twice as likely to be observed.
+
+So given the actual distribution of gaps, we can compute the
+distribution of gaps as seen by passengers.  {\tt BiasPmf}
+does this computation:
+
+\begin{verbatim}
+def BiasPmf(pmf):
+    new_pmf = pmf.Copy()
+
+    for x, p in pmf.Items():
+        new_pmf.Mult(x, x)
+        
+    new_pmf.Normalize()
+    return new_pmf
+\end{verbatim}
+
+{\tt pmf} is the actual distribution; \verb"new_pmf" is the
+biased distribution.  Inside the loop, we multiply the
+probability of each value, {\tt x}, by the likelihood it will
+be observed, which is proportional to {\tt x}.  Then we
+normalize the result.
+
+Figure~\ref{fig.redline0} shows the actual distribution of gaps, which
+I call {\tt z}, and the distribution of gaps seen by passengers,
+which I call {\tt zb} for ``z biased''.  
+
+
+\section{Wait times}
+
+\begin{figure}
+% redline.py
+\centerline{\includegraphics[height=2.5in]{figs/redline2.pdf}}
+\caption{CDF of {\tt z}, {\tt zb} and the wait time seen
+by passengers, {\tt y}. }
+\label{fig.redline2}
+\end{figure}
+
+Wait time, which I call {\tt y}, is the time between the arrival
+of a passenger and the next arrival of a train.  Elapsed time, which I
+call {\tt x}, is the time between the arrival of the previous
+train and the arrival of a passenger.  I chose these definitions
+so that {\tt zb = x + y}.
+
+Given the distribution of {\tt zb}, we can compute the distribution of
+{\tt y}.  I'll start with a simple case and then generalize.
+Suppose, as in the previous example, that {\tt zb} is either 5 minutes
+with probability 1/3, or 10 minutes with probability 2/3.
+
+If we arrive at a random time during a 5 minute gap, the distribution
+of {\tt y} is uniform from 0 to 5 minutes.  If we arrive during a 10
+minute gap, the distribution is uniform from 0 to 10.  So the overall
+distribution is a mixture of uniform distributions weighted
+according to the probability of each gap.
+
+To encapsulate the process of computing these distributions, I
+created a class called {\tt WaitTimeCalculator}:
+
+\begin{verbatim}
+class WaitTimeCalculator(object):
+
+    def __init__(self, pmf):
+        self.pmf_z = pmf
+        self.pmf_zb = BiasPmf(pmf)
+
+        self.pmf_y = self.PmfOfWaitTime(self.pmf_zb)
+        self.pmf_x = self.pmf_y
+\end{verbatim}
+
+The parameter, {\tt pmf}, is the unbiased distribution of {\tt z}.
+\verb"pmf_zb" is the biased distribution of gap time, as seen by
+passengers.
+
+\verb"pmf_y" is the distribution of wait time.  \verb"pmf_x" is the
+distribution of elapsed time, which is the same as the distribution of
+wait time.  To see why, remember that for a particular value of
+{\tt zp}, the distribution of {\tt y} is uniform from 0 to {\tt zp}.
+Also
+%
+\begin{verbatim}
+x = zp - y
+\end{verbatim}
+%
+So the distribution of {\tt x} is also uniform from 0 to {\tt zp}.
+
+{\tt PmfOfWaitTime} takes the distribution of {\tt zb} and
+computes the distribution of {\tt y}:
+
+\begin{verbatim}
+def PmfOfWaitTime(pmf_zb):
+    metapmf = thinkbayes.Pmf()
+    for gap, prob in pmf_zb.Items():
+        uniform = MakeUniformPmf(0, gap)
+        metapmf.Set(uniform, prob)
+
+    pmf_y = thinkbayes.MakeMixture(metapmf)
+    return pmf_y
+\end{verbatim}
+
+{\tt PmfOfWaitTime} makes a Meta-Pmf that maps from each uniform
+distribution to its probability.  Then it uses {\tt MakeMixture},
+which we saw in Section~\ref{meta-pmf}, to compute the mixture.
+
+It also uses {\tt MakeUniformPmf}, defined here:
+
+\begin{verbatim}
+def MakeUniformPmf(low, high):
+    pmf = thinkbayes.Pmf()
+    for x in MakeRange(low=low, high=high):
+        pmf.Set(x, 1)
+    pmf.Normalize()
+    return pmf
+\end{verbatim}
+
+{\tt low} and {\tt high} are the range of the uniform distribution,
+(both ends included).  {\tt MakeUniformPmf} uses {\tt MakeRange},
+defined here:
+
+\begin{verbatim}
+def MakeRange(low, high, skip=10):
+    return range(low, high+skip, skip)
+\end{verbatim}
+
+{\tt MakeRange} defines a set of possible values for wait time
+(expressed in seconds).  By default it divides the range into 
+10 second intervals.
+
+Figure~\ref{fig.redline2} shows the distribution of {\tt z}, {\tt zb}
+and {\tt y} based on the data I collected from the Red Line web site.
+
+To present these distributions, I am switching from Pmfs to Cdfs.
+Most people are more familiar with Pmfs, but I find Cdfs easier
+to interpret, once you get used to them.  And if you want to plot
+several distributions on the same axes, Cdfs are the way to go.
+
+The mean of {\tt z} is 7.6 minutes.  The mean of {\tt zb} is 8.6
+minutes, about 13\% higher.  The mean of {\tt y} is 4.3, exactly half
+the mean of {\tt zb}.
+
+As an aside, the Red Line schedule reports that trains run every
+9 minutes during peak times.  This is close to the average of
+{\tt zb}, but higher than the average of {\tt z}.  I wonder if
+they are deliberately reporting the mean as seen by passengers,
+rather than the actual mean, to avoid complaints.
+
+
+\section{Predicting wait times}
+\label{elapsed}
+
+\begin{figure}
+% redline.py
+\centerline{\includegraphics[height=2.5in]{figs/redline3.pdf}}
+\caption{CDF of {\tt x} before and after the update, and predicted
+{\tt y} based on posterior {\tt x}. }
+\label{fig.redline3}
+\end{figure}
+
+So let's get back to the motivating question: suppose that when
+I arrive at the platform I see 10 people waiting.
+How long should I expect to wait until the next train arrives?
+
+As always, let's start with the easiest version of the problem
+and work our way up.  Suppose we are given the actual distribution of
+{\tt z}, and we know that the passenger arrival rate,
+$\lambda$, is 2 passengers per minute.
+
+In that case we can use the distribution of {\tt z} to compute
+the prior distribution of {\tt zp}, the time between trains
+as seen by a passenger.
+
+Then we can use the number of passengers to estimate the distribution
+of {\tt x}, the elapsed time since the last train.
+
+Finally, we use the relation {\tt y = zp - x} to get the
+distribution of {\tt y}.
+
+The first step is to create a {\tt WaitTimeCalculator} that
+encapsulates the distributions of {\tt zp}, {\tt x},
+and {\tt y}, prior to taking into account the number of
+passengers.
+
+\begin{verbatim}
+    wtc = WaitTimeCalculator(pmf_z)
+\end{verbatim}
+
+\verb"pmf_z" is the given distribution of gap times.
+
+The next
+step is to make an {\tt ElapsedTimeEstimator}, which encapsulates
+the posterior distribution of {\tt x} and
+the predictive distribution of {\tt y}.
+
+\begin{verbatim}
+    ete = ElapsedTimeEstimator(wtc,
+                               lam=2.0/60,
+                               num_passengers=15)
+\end{verbatim}
+
+The parameters are the {\tt WaitTimeCalculator}, the passenger
+arrival rate, {\tt lam} (expressed in passengers per second),
+and the observed number of passengers, let's say 15.
+
+Here is the definition of {\tt ElapsedTimeEstimator}:
+
+\begin{verbatim}
+class ElapsedTimeEstimator(object):
+
+    def __init__(self, wtc, lam, num_passengers):
+        self.prior_x = Elapsed(wtc.pmf_x)
+
+        self.post_x = self.prior_x.Copy()
+        self.post_x.Update((lam, num_passengers))
+
+        self.pmf_y = self.post_x.PredictWaitTime(wtc.pmf_zb)
+\end{verbatim}
+
+I'll present the functions in this section top-down, so if you see a
+function before its definition, be patient.
+
+{\tt Elapsed} is a Suite that represents the hypothetical
+distribution of {\tt x}.  The prior distribution of {\tt x}
+comes straight from the {\tt WaitTimeCalculator}.  Then we
+use the data, which consists of the arrival rate, {\tt lam},
+and the number of passengers on the platform, to compute
+the posterior distribution.
+
+Finally, we use {\tt PredictWaitTime} to get the posterior
+predictive distribution of {\tt y}.
+
+Here's the definition of {\tt Elapsed}:
+
+\begin{verbatim}
+class Elapsed(thinkbayes.Suite):
+
+    def Likelihood(self, hypo, data):
+        x = hypo
+        lam, k = data
+        like = thinkbayes.EvalPoissonPmf(lam * x, k)
+        return like
+\end{verbatim}
+
+As always, {\tt Likelihood} takes a hypothesis and data, and
+computes the likelihood of the data under the hypothesis.
+In this case {\tt hypo} is the elapsed time since the last train
+and {\tt data} is a tuple of {\tt lam} and the number of
+passengers.
+
+So the likelihood of the data is the probability of getting
+{\tt k} arrivals in {\tt x} time, given arrival rate
+{\tt lam}.  We compute that using the PMF of the Poisson
+distribution.
+
+Finally, we use the posterior distribution of {\tt x}
+to predict the distribution of {\tt y}.
+
+\begin{verbatim}
+def PredictWaitTime(pmf_zb, pmf_x):
+    pmf_y = pmf_zb - pmf_x
+    RemoveNegatives(pmf_y)
+    return pmf_y
+\end{verbatim}
+
+\verb"pmf_zb" is the distribution of gaps between trains;
+\verb"pmf_x" is the distribution of elapsed time, based on
+the observed number of passengers.  Since {\tt y = zb - x},
+we can compute
+
+\begin{verbatim}
+    pmf_y = pmf_zb - pmf_x
+\end{verbatim}
+
+The subtraction operator invokes \verb"Pmf.__sub__", which enumerates
+all pairs of {\tt zb} and {\tt x}, computes the differences, and adds
+the results to \verb"pmf_y" with the appropriate weights.
+
+The resulting Pmf includes some negative values, which we know are
+impossible.  For example, if you arrive during a gap of 5 minutes, you
+can't wait more than 5 minutes.  {\tt RemoveNegatives} removes the
+impossible values from the distribution and renormalizes.
+
+\begin{verbatim}
+def RemoveNegatives(pmf):
+    for val in pmf.Values():
+        if val < 0:
+            pmf.Remove(val)
+    pmf.Normalize()
+\end{verbatim}
+
+Figure~\ref{fig.redline3} shows the results.  The prior distribution
+of {\tt x} is the same as the distribution of {\tt y} in
+Figure~\ref{fig.redline2}.  The posterior distribution of {\tt x} shows that,
+after seeing 15 passengers on the platform, we believe that the time
+since the last train is probably 5-10 minutes.  
+The predictive distribution of {\tt y} indicates that
+we expect the next train in less than 5 minutes,
+with about 80\% confidence.
+
+
+\section{Estimating the arrival rate}
+
+\begin{figure}
+% redline.py
+\centerline{\includegraphics[height=2.5in]{figs/redline1.pdf}}
+\caption{Prior and posterior distributions of {\tt lam} based
+on five days of passenger data. }
+\label{fig.redline1}
+\end{figure}
+
+The analysis so far has been based on the assumption that we know (1)
+the distribution of gaps and (2) the passenger arrival rate.  Now we
+are ready to relax the second assumption.
+
+Suppose that you just moved to Boston, so you don't know much about
+the passenger arrival rate on the Red Line.  After a few days of
+commuting, you could make a guess, at least qualitatively.  With
+a little more effort, you could estimate $\lambda$ quantitatively.
+
+Each day when you arrive at the platform, you should note the
+time and the number of passengers waiting (if the platform is too
+big, you could choose a sample area).  Then you should note the
+number of new arrivals while you are waiting and the wait time.
+
+After five days, you might have data like this:
+%
+\begin{verbatim}
+k1      y     k2
+--     ---    --
+10     2.5     4
+16     3.8     6
+3     12.0    21
+0      6.8    17
+4      6.6    14
+\end{verbatim}
+%
+where {\tt k1} is the number of passengers waiting when you arrive,
+{\tt y} is your wait time, and {\tt k2} is the number of passengers
+who arrive while you are waiting.
+
+Over the course of one week, you waited 31 minutes and saw 62
+passengers arrive, so you would estimate that the arrival rate is
+2 passengers per minute.  For practical purposes that estimate is
+good enough, but for the sake of completeness I
+will compute a posterior distribution for $\lambda$ and show how
+to use that distribution in the rest of the analysis.
+
+{\tt ArrivalRate} is a {\tt Suite} that represents hypotheses about
+$\lambda$.  As always, {\tt Likelihood} takes a hypothesis and data,
+and computes the likelihood of the data under the hypothesis.
+
+In this case the hypothesis is a value of $\lambda$.  The data is a
+pair, {\tt y, k}, where {\tt y} is a wait time and {\tt k} is the
+number of passengers that arrived.
+
+\begin{verbatim}
+class ArrivalRate(thinkbayes.Suite):
+
+    def Likelihood(self, hypo, data):
+        lam = hypo
+        y, k = data
+        like = thinkbayes.EvalPoissonPmf(lam * y, k)
+        return like
+\end{verbatim}
+
+If this {\tt Likelihood} looks familiar, there is a good reason.  It
+is almost identical to {\tt Elapsed.Likelihood} in
+Section~\ref{elapsed}.  The difference is that in {\tt
+  Elapsed.Likelihood} the hypothesis is {\tt x}, the elapsed time; in
+{\tt ArrivalRate.Likelihood} the hypothesis is {\tt lam}, the arrival
+rate.  But in both cases the likelihood is the probability of seeing
+{\tt k} arrivals in some period of time, given {\tt lam}.
+
+{\tt ArrivalRateEstimator} encapsulates the process of estimating
+$\lambda$.  The parameter, \verb"passenger_data", is a list
+of {\tt k1, y, k2} tuples, as in the table above.
+
+\begin{verbatim}
+class ArrivalRateEstimator(object):
+
+    def __init__(self, passenger_data):
+        self.passenger_data = passenger_data
+
+        low, high = 0, 5
+        n = 51
+        hypos = numpy.linspace(low, high, n) / 60
+
+        self.prior_lam = ArrivalRate(hypos)
+
+        self.post_lam = self.prior_lam.Copy()
+        for k1, y, k2 in passenger_data:
+            self.post_lam.Update((y, k2))
+\end{verbatim}
+
+\verb"__init__" builds
+{\tt hypos}, which is a sequence of hypothetical values for {\tt lam},
+then builds the prior distribution, \verb"prior_lam".
+
+The {\tt for} loop updates the prior with the data, yielding the posterior
+distribution, \verb "post_lam".  Figure~\ref{fig.redline1} shows
+the prior and posterior distributions.  As expected, the mean and
+median of the posterior are near the observed rate, 2 passengers per
+minute.  But the spread of the posterior distribution captures our
+uncertainty about $\lambda$ based on a small sample.
+
+
+\section{Incorporating uncertainty}
+
+\begin{figure}
+% redline.py
+\centerline{\includegraphics[height=2.5in]{figs/redline4.pdf}}
+\caption{Predictive distribution of {\tt y} based on a single
+point estimate for {\tt lam} or on a mixture of distributions
+for possible values of {\tt lam}. }
+\label{fig.redline4}
+\end{figure}
+
+Whenever there is uncertainty about one of the inputs to an analysis,
+we can take it into account by a process like this:
+
+\begin{enumerate}
+
+\item Implement the analysis based on a deterministic value of the
+  uncertain parameter (in this case $\lambda$).
+
+\item Compute the distribution of the uncertain parameter.
+
+\item Run the analysis for each value of the parameter, and generate a
+  set of predictive distributions.
+
+\item Compute a mixture of the predictive distributions, using the
+  weights from the distribution of the parameter.
+
+\end{enumerate}
+
+We have already done steps (1) and (2).  I wrote a class
+called {\tt WaitMixtureEstimator} to handle steps (3) and (4).
+
+\begin{verbatim}
+class WaitMixtureEstimator(object):
+
+    def __init__(self, wtc, are, num_passengers=15):
+        self.metapmf = thinkbayes.Pmf()
+
+        for lam, prob in sorted(are.post_lam.Items()):
+            ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
+            self.metapmf.Set(ete.pmf_y, prob)
+
+        self.mixture = thinkbayes.MakeMixture(self.metapmf)
+\end{verbatim}
+
+{\tt wtc} is the {\tt WaitTimeCalculator} that contains the
+distribution of {\tt zb}.  {\tt are} is the {\tt ArrivalTimeEstimator}
+that contains the distribution of {\tt lam}.
+
+The first line makes a Meta-Pmf that maps from each possible
+distribution of {\tt y} to its probability.  For each value
+of {\tt lam}, we use {\tt ElapsedTimeEstimator} to
+compute the corresponding distribution of
+{\tt y} and store it in the Meta-Pmf.  Then
+we use {\tt thinkbayes.MakeMixture} to compute the mixture.
+
+%For purposes of comparison, I also compute the distribution of
+%{\tt y} based on a single point estimate of {\tt lam}, which is
+%the mean of the posterior distribution.
+
+Figure~\ref{fig.redline4} shows the results.  The shaded lines
+in the background are the distributions of {\tt y} for each value
+of {\tt lam}, with line thickness that represents likelihood.
+The dark line is the mixture of these distributions.
+
+In this case we could get a very similar result using a single point
+estimate of {\tt lam}; it was not necessary, for practical purposes,
+to include the uncertainty of the estimate.
+
+
+\section{Decision analysis}
+
+\begin{figure}
+% redline.py
+\centerline{\includegraphics[height=2.5in]{figs/redline5.pdf}}
+\caption{Probability that wait time exceeds 15 minutes as
+a function of the number of passengers on the platform. }
+\label{fig.redline5}
+\end{figure}
+
+At this point we can use the number of passengers on the platform
+to predict the distribution of wait times.  To finish the analysis,
+let's get to the second part of the question: when should I stop
+waiting for a train and go catch a taxi?
+
+Remember that in the original scenario, I am trying to get to
+South Station to catch the commuter rail.  Suppose I
+arrive at Kendall Square early enough that I can wait 15 minutes
+for a train and still make my connection at South Station.
+
+So I would like to know the probability that {\tt y} exceeds 15
+minutes as a function of \verb"num_passengers".  I can take
+the analysis from Section~\ref{elapsed} and run it for a range of
+\verb"num_passengers".
+
+This analysis is sensitive to the frequency of long delays, but
+because long delays are rare, it is hard estimate
+their frequency.
+
+I only have data from one week,
+and the longest delay I observed was 15 minutes.  I can't
+estimate the frequency of longer delays accurately, but we
+can start with a coarse estimate.
+
+When I commuted by Red Line for a year, I saw a few longer delays
+caused by a signaling problem, a power outage, and ``police activity''
+at another stop.
+
+But remember that my observations are biased.  I was more likely
+to observe these long delays because they affected a large number
+of passengers.  So we should treat my observations as a sample
+of {\tt zb} rather than {\tt z.  Here's how we can do that.
+
+During my year of commuting, I took the Red Line home about 220
+times.  So take the observed gap times, \verb"gap_times",
+generate a sample of 220 gaps, and compute their Pmf:
+
+\begin{verbatim}
+    n = 220
+    cdf_z = thinkbayes.MakeCdfFromList(gap_times)
+    sample_z = cdf_z.Sample(n)
+    pmf_z = thinkbayes.MakePmfFromList(sample_z)
+
+\end{verbatim}
+
+Next I bias \verb"pmf_z" to get the distribution of
+{\tt zb}, draw a sample, and then add in 3 delays of
+30, 40 and 50 minutes (expressed in seconds):
+
+\begin{verbatim}
+    cdf_zp = BiasPmf(pmf_z).MakeCdf()
+    sample_zb = cdf_zp.Sample(n) + [1800, 2400, 3000]
+\end{verbatim}
+
+{\tt Cdf.Sample} is more efficient than {\tt Pmf.Sample}, so it
+is usually faster to convert a Pmf to a Cdf before sampling.
+
+Next I use the sample of {\tt zb} to estimate a Pdf using
+KDE, and then convert the Pdf to a Pmf:
+
+\begin{verbatim}
+    pdf_zb = thinkbayes.EstimatedPdf(sample_zb)
+    xs = MakeRange(low=60)
+    pmf_zb = pdf_zb.MakePmf(xs)
+\end{verbatim}
+
+Finally I unbias the distribution of {\tt zb} to get the
+distribution of {\tt z}, which I used to create the
+{\tt WaitTimeCalculator}:
+
+\begin{verbatim}
+    pmf_z = UnbiasPmf(pmf_zb)
+    wtc = WaitTimeCalculator(pmf_z)
+\end{verbatim}
+
+This process is a bit convoluted, but each step is a simple
+combination of functions we have seen before.
+
+Now we are ready to estimate wait time as a function of
+\verb"num_passengers":
+
+\begin{verbatim}
+    for num_passengers in nums:
+        ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
+
+        cdf_y = ete.pmf_y.MakeCdf()
+        prob = 1 - cdf_y.Prob(900)
+\end{verbatim}
+
+For each value in {\tt nums}, we make an {\tt ElapsedTimeEstimator},
+extract the distribution of wait time, \verb"pmf_y", and compute
+the probability that wait time exceeds 15 minutes (900 seconds).
+
+Figure~\ref{fig.redline5} shows the result.  When the number of
+passengers is less than 20, we infer that they system is
+operating normally, and the probability of a long delay is small.
+When there are 30 passengers, we estimate that it has been 15
+minutes since the last train; that's longer than a normal delay,
+so we infer that something is wrong and expect longer delays.
+
+If we are willing to accept a 10\% chance of missing the connection
+at South Station, we should stay and wait as long as there
+are fewer than 30 passengers, and take a taxi if there are more.
+
+Or, to take this analysis one step farther, we could quantify the cost
+of missing the connection and the cost of taking a taxi, then choose
+the threshold that minimizes expected cost.
+
+The analysis so far has been based on the assumption that the
+arrival rate of passengers is the same every day.  For a commuter
+train during rush hour, that might not be a bad assumption, but
+there are some obvious exceptions.  For example, if there is a special
+event nearby, a large number of people might arrive at the same time.
+In that case, the estimate of {\tt lam} would be too low, so the
+estimates of {\tt x} and {\tt y} would be too high.
+
+If special events are about as common as major delays, it would
+be important to include them in the model.  We could do that by
+extending the distribution of {\tt lam} to include occasional
+large values.
+
+
+\section{Discussion}
+
+We started with the assumption that we know the passenger arrival
+rate and distribution of {\tt z}.  Then we relaxed the first assumption,
+using the observations of a hypothetical passenger to estimate
+{\tt lam}.
+
+It is also possible for a passenger to estimate the distribution 
+of {\tt z}, but it is harder because passengers generally observe
+only their own wait times, {\tt y}.  Unless you choose to skip
+the first train and wait for a second train, you generally don't
+observe the gap between trains, {\tt z}.
+
+However, we can make some inferences about {\tt zb}.  If we note
+the number of passengers waiting when we arrive, we can estimate
+the elapsed time since the last train, {\tt x}.  Then we observe
+{\tt y}.  If we add the posterior distribution of {\tt x} to
+the observed {\tt y}, we get a distribution that represents
+our posterior belief about the observed value of {\tt zb}.
+
+We can use this distribution to update our beliefs about the
+distribution of {\tt zb}.  Finally, we can compute the
+inverse of {\tt BiasPmf} to get from the distribution of {\tt zb}
+to the distribution of {\tt z}.
+
+I leave the implementation of this analysis as an exercise for the
+reader.  One suggestion: you should read Chapter~\ref{species} first.
+
+ 
+
 \chapter{Two dimensions}
 \label{paintball}
 
@@ -4146,8 +4791,8 @@ light bulb survival curves.
 
 Paintball is a sport in which competing teams try to shoot each other
 with guns that fire paint-filled pellets that break on impact, leaving
-a colorful mark on the target.  It is usually played in a demarcated
-area decorated with barriers and other objects that can be
+a colorful mark on the target.  It is usually played in an
+arena decorated with barriers and other objects that can be
 used as cover.
 
 Suppose you are playing paintball in an indoor arena 30 feet
