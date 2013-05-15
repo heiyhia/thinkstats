@@ -681,6 +681,12 @@ def RunSimpleProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
 
     Returns: WaitTimeCalculator, ElapsedTimeEstimator
     """
+    global upper_bound
+    upper_bound = 1200
+
+    cdf_z = thinkbayes.MakeCdfFromList(gap_times).Scale(1.0/60)
+    print 'CI z', cdf_z.CredibleInterval(90)
+
     xs = MakeRange(low=10)
 
     pdf_z = thinkbayes.EstimatedPdf(gap_times)
@@ -710,9 +716,12 @@ def RunMixProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
 
     Returns: WaitMixtureEstimator
     """
+    global upper_bound
+    upper_bound = 1200
+
     wtc, ete = RunSimpleProcess(gap_times, lam, num_passengers)
 
-    RandomSeed(17)
+    RandomSeed(20)
     passenger_data = wtc.GenerateSamplePassengers(lam, n=5)
 
     total_y = 0
@@ -737,20 +746,6 @@ def RunMixProcess(gap_times, lam=0.0333, num_passengers=15, plot=True):
     return wme
 
 
-def Resample(sample, n):
-    """Estimate a PDF for the same and generate a random sample from it.
-
-    sample: sequence of observed values
-    n: sample size to generate
-    """
-    pdf = thinkbayes.EstimatedPdf(sample)
-    xs = MakeRange(low=10)
-    pmf = pdf.MakePmf(xs)
-    cdf = pmf.MakeCdf()
-    sample = cdf.Sample(n)
-    return sample
-    
-
 def RunLoop(gap_times, nums, lam=0.0333):
     """Runs the basic analysis for a range of num_passengers.
 
@@ -768,12 +763,12 @@ def RunLoop(gap_times, nums, lam=0.0333):
     RandomSeed(18)
 
     # resample gap_times
-    n = 200
+    n = 220
     cdf_z = thinkbayes.MakeCdfFromList(gap_times)
     sample_z = cdf_z.Sample(n)
+    pmf_z = thinkbayes.MakePmfFromList(sample_z)
 
     # compute the biased pmf and add some long delays
-    pmf_z = thinkbayes.MakePmfFromList(sample_z)
     cdf_zp = BiasPmf(pmf_z).MakeCdf()
     sample_zb = cdf_zp.Sample(n) + [1800, 2400, 3000]
 
@@ -785,8 +780,6 @@ def RunLoop(gap_times, nums, lam=0.0333):
     # unbias the distribution of zb and make wtc
     pmf_z = UnbiasPmf(pmf_zb)
     wtc = WaitTimeCalculator(pmf_z)
-    wtc.PlotPmfs()
-    wtc.MakePlot()
 
     probs = []
     for num_passengers in nums:
@@ -809,8 +802,6 @@ def RunLoop(gap_times, nums, lam=0.0333):
 
 def main(script):
     RunLoop(observed_gap_times, nums=[0, 5, 10, 15, 20, 25, 30, 35])
-    return
-
     RunMixProcess(observed_gap_times)
     return
 
