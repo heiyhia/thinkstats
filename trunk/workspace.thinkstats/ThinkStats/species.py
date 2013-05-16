@@ -6,7 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import matplotlib.pyplot as pyplot
-import myplot
+import thinkplot
 import numpy
 
 import csv
@@ -24,6 +24,8 @@ formats = ['pdf', 'eps', 'png']
 
 
 class Locker(object):
+    """Encapsulates a shelf for storing key-value pairs."""
+
     def __init__(self, shelf_file):
         self.shelf = shelve.open(shelf_file)
 
@@ -47,6 +49,10 @@ class Subject(object):
     """Represents a subject from the belly button study."""
 
     def __init__(self, code):
+        """
+        code: string ID
+        species: sequence of (int count, string species) pairs
+        """
         self.code = code
         self.species = []
 
@@ -125,13 +131,13 @@ class Subject(object):
         print '90% CI for N:', pmf.CredibleInterval(90)
         pmf.name = self.code
 
-        myplot.Clf()
-        myplot.PrePlot(num=1)
+        thinkplot.Clf()
+        thinkplot.PrePlot(num=1)
 
-        myplot.Pmf(pmf)
+        thinkplot.Pmf(pmf)
 
         root = 'species-ndist-%s' % self.code
-        myplot.Save(root=root,
+        thinkplot.Save(root=root,
                     xlabel='Number of species',
                     ylabel='Prob',
                     formats=formats,
@@ -142,14 +148,14 @@ class Subject(object):
 
         num: how many species (starting with the highest prevalence)
         """
-        myplot.Clf()
-        myplot.PrePlot(num=5)
+        thinkplot.Clf()
+        thinkplot.PrePlot(num=5)
 
         for rank in range(1, num+1):
             self.PlotPrevalence(rank)
 
         root = 'species-prev-%s' % self.code
-        myplot.Save(root=root,
+        thinkplot.Save(root=root,
                     xlabel='Prevalence',
                     ylabel='Prob',
                     formats=formats,
@@ -174,9 +180,9 @@ class Subject(object):
 
         if cdf_flag:
             cdf = thinkbayes.MakeCdfFromPmf(mix)
-            myplot.Cdf(cdf)
+            thinkplot.Cdf(cdf)
         else:
-            myplot.Pmf(pmf)
+            thinkplot.Pmf(pmf)
 
     def PlotMixture(self, rank=1):
         """Plots dist of prevalence for all n, and the mix.
@@ -191,14 +197,14 @@ class Subject(object):
 
         pmfs, mix = self.suite.DistOfPrevalence(index)
 
-        myplot.Clf()
+        thinkplot.Clf()
         for pmf in pmfs.Values():
-            myplot.Pmf(pmf, color='blue', alpha=0.2, linewidth=0.5)
+            thinkplot.Pmf(pmf, color='blue', alpha=0.2, linewidth=0.5)
 
-        myplot.Pmf(mix, color='blue', alpha=0.9, linewidth=2)
+        thinkplot.Pmf(mix, color='blue', alpha=0.9, linewidth=2)
 
         root = 'species-mix-%s' % self.code
-        myplot.Save(root=root,
+        thinkplot.Save(root=root,
                     xlabel='Prevalence',
                     ylabel='Prob',
                     formats=formats,
@@ -332,6 +338,7 @@ def SpeciesGenerator(names, num):
     Additional names are 'unseen' plus a serial number.
 
     names: list of strings
+    num: total number of species names to generate
 
     Returns: string iterator
     """
@@ -427,7 +434,7 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
 def ComputeNumReads(subject_map):
     """Computes the number of reads for each subject.
 
-    Adds attributes named num_species and num_reads.
+    Creates attributes named num_species and num_reads.
 
     subject_map: map from subject code to Subject.
     """
@@ -495,16 +502,16 @@ def PlotCurves(curves, root='species-rare'):
 
     curves is a list of curves; each curve is a list of (x, y) pairs.
     """
-    myplot.Clf()
+    thinkplot.Clf()
     color = '#225EA8'
 
     n = len(curves)
     for i, curve in enumerate(curves):
         curve = OffsetCurve(curve, i, n)
         xs, ys = zip(*curve)
-        myplot.Plot(xs, ys, color=color, alpha=0.3, linewidth=0.5)
+        thinkplot.Plot(xs, ys, color=color, alpha=0.3, linewidth=0.5)
 
-    myplot.Save(root=root,
+    thinkplot.Save(root=root,
                 xlabel='# samples',
                 ylabel='# species',
                 formats=formats,
@@ -517,12 +524,12 @@ def PlotConditionals(cdfs, root='species.cond'):
     cdfs: list of Cdf
     root: string filename root
     """
-    myplot.Clf()
-    myplot.PrePlot(num=len(cdfs))
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=len(cdfs))
 
-    myplot.Cdfs(cdfs)
+    thinkplot.Cdfs(cdfs)
 
-    myplot.Save(root=root,
+    thinkplot.Save(root=root,
                 xlabel='# new species',
                 ylabel='Prob',
                 formats=formats)
@@ -533,7 +540,7 @@ def PlotFracCdfs(cdfs, root='species.frac'):
 
     cdfs: map from k to CDF of fraction of species seen after k samples
     """
-    myplot.Clf()
+    thinkplot.Clf()
     color = '#225EA8'
 
     for k, cdf in cdfs.iteritems():
@@ -543,7 +550,7 @@ def PlotFracCdfs(cdfs, root='species.frac'):
         print k
         xs, ys = cdf.Render()
         ys = [1-y for y in ys]
-        myplot.Plot(xs, ys, color=color, linewidth=1)
+        thinkplot.Plot(xs, ys, color=color, linewidth=1)
 
         x = 0.9
         y = 1 - cdf.Prob(x)
@@ -552,7 +559,7 @@ def PlotFracCdfs(cdfs, root='species.frac'):
                     verticalalignment='center',
                     bbox=dict(facecolor='white', edgecolor='none'))
 
-    myplot.Save(root=root,
+    thinkplot.Save(root=root,
                 xlabel='Fraction of species seen',
                 ylabel='Probability',
                 formats=formats,
@@ -841,7 +848,7 @@ class Species5(Species2):
     def Update(self, data):
         """Updates the suite based on the data.
 
-        data: list of observed frequencies
+        data: list of observed frequencies in increasing order
         """
         # loop through the species and update one at a time
         m = len(data)
@@ -894,115 +901,6 @@ class Species5(Species2):
         return likes
 
 
-class Species6(Species):
-    """Represents hypotheses about the number of species."""
-    
-    def __init__(self, ns):
-        hypos = [OversampledDirichlet(n) for n in ns]
-        thinkbayes.Suite.__init__(self, hypos)
-
-    def Update(self, data):
-        """Updates the suite based on the data.
-
-        data: list of observed frequencies
-        """
-        for hypo in self.Values():
-            hypo.Peek(data)
-
-        # call Update in the parent class, which calls Likelihood
-        thinkbayes.Suite.Update(self, data)
-
-        for hypo in self.Values():
-            hypo.Update(data)
-
-
-class OversampledDirichlet(thinkbayes.Dirichlet):
-    """Provides oversampled random selection from a Dirichlet distribution.
-
-    By peeking at the posterior distribution, we can see where the
-    non-negligible mass will be, then restrict the uniform prior to
-    just this range.
-
-    This version doesn't provide Update, because it only handles the
-    special case when the prior distribution is still uniform.
-
-    """
-    
-    def Likelihood(self, data):
-        like = thinkbayes.Dirichlet.Likelihood(self, data)
-        return like * self.weight
-
-    def Peek(self, data):
-        """Figures out the bounds in the posterior distribution that
-        contain non-negligible mass.
-        """
-        m = len(data)
-        priors = self.MakeConditionals(self.params)
-        pmfs = [prior.MakePmf() for prior in priors]
-        self.conditionals = pmfs
-
-        self.TrimMarginals(data)
-
-    def TrimMarginals(self, data):
-        m = len(data)
-        params = numpy.copy(self.params)
-        params[:m] += data
-
-        posteriors = self.MakeMarginals(params)
-        cdfs = [beta.MakeCdf() for beta in posteriors]
-
-        lows = [cdf.Percentile(2) for cdf in cdfs]
-        highs = [cdf.Percentile(98) for cdf in cdfs]
-        
-        p_hit = 1
-        pmfs = self.conditionals
-        for pmf, low, high in zip(pmfs, lows, highs):
-            mass = self.TrimMarginal(pmf, low, high)
-            print self.n, low, high, mass
-            p_hit *= mass
-
-        self.weight = p_hit
-        print self.n, self.weight
-        conditionals = [thinkbayes.MakeCdfFromPmf(pmf) for pmf in pmfs]
-        self.conditionals = conditionals
-
-    def TrimMarginal(self, pmf, low, high):
-        for val in pmf.Values():
-            if val < low or val > high:
-                pmf.Remove(val)
-        return pmf.Normalize()
-
-    def MakeMarginals(self, params):
-        total = sum(params)
-        betas = [thinkbayes.Beta(x, total-x) for x in params]
-        return betas
-
-    def MakeConditionals(self, params):
-        total = sum(params)
-        betas = []
-        for x in params[:-1]:
-            total -= x
-            beta = thinkbayes.Beta(x, total)
-            betas.append(beta)
-        return betas
-
-    def Random(self):
-        """Generates a random variate from this distribution.
-
-        Returns: normalized array of probabilities
-        """
-        fraction = 1.0
-        ps = numpy.zeros(self.n)
-
-        for i, cond in enumerate(self.conditionals):
-            p = cond.Random()
-            ps[i] = p * fraction
-            fraction *= 1-p
-
-        ps[-1] = fraction
-        return ps
-
-
 def MakePosterior(constructor, data, ns, iterations=1000):
     """Makes a suite, updates it and returns the PMF of N.
 
@@ -1011,10 +909,12 @@ def MakePosterior(constructor, data, ns, iterations=1000):
     data: observed species and their counts
     ns: sequence of hypothetical ns
     iterations: how many samples to draw
+
+    Returns: posterior suite, pmf of N
     """
     suite = constructor(ns, iterations)
 
-    print constructor.__name__
+    # print constructor.__name__
     start = time.time()
     suite.Update(data)
     end = time.time()
@@ -1022,7 +922,7 @@ def MakePosterior(constructor, data, ns, iterations=1000):
     print end-start
 
     pmf = suite.DistOfN()
-    return pmf
+    return suite, pmf
 
 
 def PlotAllVersions():
@@ -1033,14 +933,14 @@ def PlotAllVersions():
     ns = range(m, n)
 
     for constructor in [Species, Species2, Species3, Species4, Species5]:
-        pmf = MakePosterior(constructor, data, ns)
+        suite, pmf = MakePosterior(constructor, data, ns)
         pmf.name = '%s' % (constructor.__name__)
-        myplot.Pmf(pmf)
+        thinkplot.Pmf(pmf)
 
-    myplot.Show()
+    thinkplot.Show()
     return
 
-    myplot.Save(root='species3',
+    thinkplot.Save(root='species3',
                 xlabel='Number of species',
                 ylabel='Prob')
 
@@ -1053,11 +953,11 @@ def PlotMedium():
     ns = range(m, n)
 
     for constructor in [Species, Species2, Species3, Species4, Species5]:
-        pmf = MakePosterior(constructor, data, ns)
+        suite, pmf = MakePosterior(constructor, data, ns)
         pmf.name = '%s' % (constructor.__name__)
-        myplot.Pmf(pmf)
+        thinkplot.Pmf(pmf)
 
-    myplot.Show()
+    thinkplot.Show()
 
 
 def CompareHierarchicalExample():
@@ -1071,11 +971,11 @@ def CompareHierarchicalExample():
     iterations = [1000, 100]
 
     for constructor, iterations in zip(constructors, iterations):
-        pmf = MakePosterior(constructor, data, ns, iterations)
+        suite, pmf = MakePosterior(constructor, data, ns, iterations)
         pmf.name = '%s' % (constructor.__name__)
-        myplot.Pmf(pmf)
+        thinkplot.Pmf(pmf)
 
-    myplot.Show()
+    thinkplot.Show()
 
 
 def SimpleDirichletExample():
@@ -1083,8 +983,8 @@ def SimpleDirichletExample():
 
     This is the case where we know there are exactly three species.
     """
-    myplot.Clf()
-    myplot.PrePlot(3)
+    thinkplot.Clf()
+    thinkplot.PrePlot(3)
 
     names = ['lions',  'tigers', 'bears']
     data = [3, 2, 1]
@@ -1100,9 +1000,9 @@ def SimpleDirichletExample():
         print 'mean', names[i], beta.Mean()
 
         pmf = beta.MakePmf(name=names[i])
-        myplot.Pmf(pmf)
+        thinkplot.Pmf(pmf)
 
-    myplot.Save(root='species1',
+    thinkplot.Save(root='species1',
                 xlabel='Prevalence',
                 ylabel='Prob',
                 formats=formats,
@@ -1118,12 +1018,12 @@ def HierarchicalExample():
     data = [3, 2, 1]
     suite.Update(data)
 
-    myplot.Clf()
-    myplot.PrePlot(num=1)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=1)
 
     pmf = suite.DistOfN()
-    myplot.Pmf(pmf)
-    myplot.Save(root='species2',
+    thinkplot.Pmf(pmf)
+    thinkplot.Save(root='species2',
                 xlabel='Number of species',
                 ylabel='Prob',
                 formats=formats,
@@ -1135,8 +1035,8 @@ def ProcessSubjects(codes):
 
     code: sequence of string codes
     """
-    myplot.Clf()
-    myplot.PrePlot(len(codes))
+    thinkplot.Clf()
+    thinkplot.PrePlot(len(codes))
 
     subjects = ReadRarefactedData()
     pmfs = []
@@ -1146,14 +1046,14 @@ def ProcessSubjects(codes):
         subject.Process()
         pmf = subject.suite.DistOfN()
         pmf.name = subject.code
-        myplot.Pmf(pmf)
+        thinkplot.Pmf(pmf)
 
         pmfs.append(pmf)
 
     print 'ProbGreater', thinkbayes.PmfProbGreater(pmfs[0], pmfs[1])
     print 'ProbLess', thinkbayes.PmfProbLess(pmfs[0], pmfs[1])
 
-    myplot.Save(root='species4',
+    thinkplot.Save(root='species4',
                 xlabel='Number of species',
                 ylabel='Prob',
                 formats=formats,
@@ -1329,12 +1229,96 @@ def ValidatePredictions(lockername='species_locker.db'):
         pmf = subject.suite.GetPmf()
         print pmf.Mean(), pmf.CredibleInterval(90)
 
-        myplot.Pmf(pmf)
-        myplot.Show()
+        thinkplot.Pmf(pmf)
+        thinkplot.Show()
 
+
+def ValidationRun(seed, ps, plot=False):
+    """Runs the most basic validation process.
+    """
+    # generate a random number of species and their prevalences
+    # (from a Dirichlet distribution with alpha_i = 1 for all i)
+    RandomSeed(seed)
+
+    low, high = 10, 70
+    n = random.randrange(low, high)
+    dirichlet = thinkbayes.Dirichlet(n)
+    prevalences = dirichlet.Random()
+
+    # generate a simulated sample
+    pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
+    cdf = pmf.MakeCdf()
+    sample = cdf.Sample(10)
+
+    # collect the species counts
+    hist = thinkbayes.MakeHistFromList(sample)
+    data = [count for species, count in hist.Items()]
+    data.sort()
+
+    # run the Bayesian analysis
+    suite, pmf = MakePosterior(
+        constructor=Species5,
+        data=data,
+        ns=range(low, high),
+        iterations=100,
+        )
+
+    cdf = pmf.MakeCdf()
+
+    scores = []
+    for p in ps:
+        low, high = cdf.CredibleInterval(p)
+        score = Score(low, high, n)
+        scores.append(score)
+
+    # plot the posterior distribution of n
+    if plot:
+        thinkplot.Cdf(cdf)
+        thinkplot.Show()
+
+    return numpy.array(scores)
+
+
+def Score(low, high, n):
+    """
+    """
+    if low < n < high:
+        return 1
+    if n == low or n == high:
+        return 0.5
+    else:
+        return 0
+
+
+def RandomSeed(x):
+    """
+    """
+    random.seed(x)
+    numpy.random.seed(x)
+
+
+def Validate(n=100):
+    ps = [10, 20, 30, 40, 50, 60, 70, 80, 90]
+
+    total = ValidationRun(0, ps)
+
+    for i in range(1, n):
+        scores = ValidationRun(i, ps)
+        total += scores
+
+    ys = total * 100 / n
+    
+    thinkplot.Plot(ps, ys)
+    thinkplot.Show(
+        xlabel='Observed frequency',
+        ylable='Forecast percentage',
+        axis=[0, 100, 0, 100],
+        )
 
 def main(script, *args):
-    random.seed(17)
+
+    Validate()
+    return
 
     # MakePredictions(num=60, replace=True)
     ValidatePredictions()
@@ -1363,9 +1347,9 @@ def main(script, *args):
     PlotAllVersions()
     return
 
-    pmf = MakePosterior(Species)
-    myplot.Pmf(pmf)
-    myplot.Show()
+    suite, pmf = MakePosterior(Species)
+    thinkplot.Pmf(pmf)
+    thinkplot.Show()
     return
 
 
@@ -1388,9 +1372,9 @@ def main(script, *args):
     cols = zip(*xs)
     for col in cols:
         cdf = thinkbayes.MakeCdfFromList(col)
-        myplot.Cdf(cdf)
+        thinkplot.Cdf(cdf)
 
-    myplot.Show()
+    thinkplot.Show()
     return
 
 
@@ -1399,8 +1383,8 @@ def main(script, *args):
     print beta.Mean()
 
     pmf = beta.MakePmf(101)
-    myplot.Pmf(pmf)
-    myplot.Show()
+    thinkplot.Pmf(pmf)
+    thinkplot.Show()
     return
 
 
