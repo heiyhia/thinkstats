@@ -464,6 +464,7 @@ def JoinSubjects():
     number of reads and stores it as total_reads.  num_reads
     is normally 400.
     
+    Returns: map from code to Subject
     """
 
     # read the rarefacted dataset
@@ -1071,9 +1072,14 @@ def RunSubject(code, conc=1):
 
     code: string code
     """
-    subjects = ReadRarefactedData()
+    subjects = JoinSubjects()
+
     subject = subjects[code]
     subject.Process(conc=conc)
+
+    PrintSummary(subject)
+    return
+
     subject.MakeFigures()
 
     num_samples = 400
@@ -1242,18 +1248,14 @@ def ValidatePredictions(lockername='species_locker.db'):
     total = numpy.ones(len(ps))
 
     for code, subject in subject_map.iteritems():
-        print subject.code
-        print 'sample size', subject.num_reads
-        print 'sample species', subject.num_species
-        print 'total reads', subject.total_reads
-        print 'total species', subject.total_species
-        n_actual = subject.total_species
 
         pmf = subject.suite.DistOfN()
         cdf = pmf.MakeCdf()
+        n_actual = subject.total_species
         scores = ScoreVector(cdf, ps, n_actual)
         total += scores
 
+        PrintSummary(subject)
         print scores
 
         #thinkplot.Pmf(pmf)
@@ -1264,6 +1266,18 @@ def ValidatePredictions(lockername='species_locker.db'):
 
     PlotValidation(ps, ys)
 
+
+def PrintSummary(subject):
+    print subject.code
+    print 'found %d species in %d reads' % (subject.num_species,
+                                            subject.num_reads)
+    print 'total %d species in %d reads' % (subject.total_species,
+                                            subject.total_reads)
+
+    print 'sample species', subject.num_species
+    print 'total reads', subject.total_reads
+    print 'total species', subject.total_species
+    
 
 def ValidationRun(seed, ps, plot=False):
     """Runs the basic validation process.
