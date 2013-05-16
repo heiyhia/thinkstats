@@ -124,6 +124,12 @@ def Plot(xs, ys, style='', **options):
     pyplot.plot(xs, ys, style, **options)
 
 
+def Scatter(xs, ys, **options):
+    options = Underride(options, color='blue', alpha=0.2, 
+                        s=30, edgecolors='none')
+    pyplot.scatter(xs, ys, **options)
+
+
 def Pmf(pmf, **options):
     """Plots a Pmf or Hist as a line.
 
