@@ -121,7 +121,7 @@ class Subject(object):
         counts = self.GetCounts()
         m = len(counts)
 
-        n = 400
+        n = 1000
         ns = range(m, n)
 
         start = time.time()    
@@ -130,6 +130,10 @@ class Subject(object):
         end = time.time()
 
         print 'time', end-start
+
+    def CalcError(self):
+        n_pred = self.suite.DistOfN().Mean()
+        n_actual = self.total_species
 
     def MakeFigures(self):
         """Makes figures showing distribution of n and the prevalences."""
@@ -341,6 +345,12 @@ class Subject(object):
             print '90%% credible interval for %d' % k,
             print cdf.CredibleInterval(90)
         return cdfs
+
+    def PredictAdditionalSpecies(self, k, num_sims=100):
+        curves = subject.RunSimulations(num_sims, k)
+        joint = self.MakeJointPredictive(curves)
+        pmf = joint.Conditional(1, 0, k)
+        return pmf
 
 
 def SpeciesGenerator(names, num):
@@ -1073,11 +1083,12 @@ def RunSubject(code, conc=1):
     code: string code
     """
     subjects = JoinSubjects()
-
     subject = subjects[code]
-    subject.Process(conc=conc)
+
+    cdf = MakePrediction(subject, conc=conc)
 
     PrintSummary(subject)
+    CheckPrediction(subject, cdf)
     return
 
     subject.MakeFigures()
@@ -1149,11 +1160,8 @@ def MakePrediction(subject, conc=1, num_sims=300):
     """
     subject.Process(conc=conc)
 
-    print subject.code, subject.num_reads, subject.total_reads
-
     add_reads = subject.total_reads - subject.num_reads
     curves = subject.RunSimulations(num_sims, add_reads)
-    #PlotCurves(curves, root='species.subject')
     cdfs = subject.MakeConditionals(curves, [add_reads])
     cdf = cdfs[0]
 
@@ -1165,6 +1173,8 @@ def MakePrediction(subject, conc=1, num_sims=300):
 
     subject.ps = ps
     subject.cis = cis
+
+    return cdf
 
 
 def MakePredictionTable(subject_map):
@@ -1274,10 +1284,22 @@ def PrintSummary(subject):
     print 'total %d species in %d reads' % (subject.total_species,
                                             subject.total_reads)
 
-    print 'sample species', subject.num_species
-    print 'total reads', subject.total_reads
-    print 'total species', subject.total_species
+    pmf = subject.suite.DistOfN()
+    cdf = pmf.MakeCdf()
+    PrintPrediction(cdf, subject.total_species)
+
+
+def PrintPrediction(cdf, actual):
+    median = cdf.Percentile(50)
+    low, high = cdf.CredibleInterval(75)
     
+    print 'predicted %0.0f (%0.0f %0.0f)' % (median, low, high)
+    print 'actual', actual
+
+
+def CheckPrediction(subject, cdf):
+    PrintPrediction(cdf, subject.total_species - subject.num_species)
+
 
 def ValidationRun(seed, ps, plot=False):
     """Runs the basic validation process.
@@ -1501,7 +1523,7 @@ def ExpectedMaxPrev(m, conc=1, iters=100):
         
 
 def main(script, *args):
-    RunSubject('B1242', conc=1)
+    RunSubject('B1265', conc=0.5)
     return
 
     MakePredictions(num=60, conc=10, replace=True)
