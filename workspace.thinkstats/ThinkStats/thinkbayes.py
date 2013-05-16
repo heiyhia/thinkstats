@@ -1237,7 +1237,7 @@ class EstimatedPdf(Pdf):
 
         sample: sequence of data
         """
-        xs = numpy.array(sample, dtype=numpy.double)
+        xs = numpy.array(sample, dtype=numpy.float)
         self.kde = scipy.stats.gaussian_kde(xs)
 
     def Density(self, x):
@@ -1588,14 +1588,19 @@ class Dirichlet(object):
 
     See http://en.wikipedia.org/wiki/Dirichlet_distribution
     """
-    def __init__(self, n, name=''):
+    def __init__(self, n, conc=1, name=''):
         """Initializes a Dirichlet distribution.
 
         n: number of dimensions
+        conc: concentration parameter (smaller yields more concentration)
         name: string name
         """
+        if n < 2:
+            raise ValueError('A Dirichlet distribution with '
+                             'n<2 makes no sense')
+
         self.n = n
-        self.params = numpy.ones(n, dtype=numpy.float)
+        self.params = numpy.ones(n, dtype=numpy.float) * conc
         self.name = name
 
     def Update(self, data):
