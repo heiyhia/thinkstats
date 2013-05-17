@@ -389,7 +389,7 @@ class Pmf(_DictWrapper):
         Returns:
             sequence of two floats, low and high
         """
-        cdf = MakeCdfFromPmf(self)
+        cdf = self.MakeCdf()
         return cdf.CredibleInterval(percentage)
 
     def Log(self, m=None):
@@ -478,7 +478,7 @@ class Pmf(_DictWrapper):
 
         returns: new Cdf
         """
-        cdf = MakeCdfFromPmf(self)
+        cdf = self.MakeCdf()
         cdf.ps = [p**n for p in cdf.ps]
         return cdf
 
@@ -1278,7 +1278,7 @@ def CredibleInterval(pmf, percentage=90):
     Returns:
         sequence of two floats, low and high
     """
-    cdf = MakeCdfFromPmf(pmf)
+    cdf = pmf.MakeCdf()
     prob = (1 - percentage/100.0) / 2
     interval = cdf.Value(prob), cdf.Value(1-prob)
     return interval
@@ -1570,7 +1570,22 @@ class Beta(object):
         return x**(self.alpha-1) * (1-x)**(self.beta-1)
         
     def MakePmf(self, steps=101, name=''):
-        """Returns a Pmf of this distribution."""
+        """Returns a Pmf of this distribution.
+
+        Note: Normally, we just evaluate the PDF at a sequence
+        of points and treat the probability density as a probability
+        mass.
+
+        But if alpha or beta is less than one, we have to be
+        more careful because the PDF goes to infinity at x=0
+        and x=1.  In that case we evaluate the CDF and compute
+        differences.
+        """
+        if self.alpha < 1 or self.beta < 1:
+            cdf = self.MakeCdf()
+            pmf = cdf.MakePmf()
+            return pmf
+
         xs = [i / (steps-1.0) for i in xrange(steps)]
         probs = [self.EvalPdf(x) for x in xs]
         pmf = MakePmfFromDict(dict(zip(xs, probs)), name)
@@ -1578,10 +1593,10 @@ class Beta(object):
 
     def MakeCdf(self, steps=101):
         """Returns the CDF of this distribution."""
-        pmf = self.MakePmf(steps=steps)
-        cdf = MakeCdfFromPmf(pmf)
+        xs = [i / (steps-1.0) for i in xrange(steps)]
+        ps = [scipy.special.betainc(self.alpha, self.beta, x) for x in xs]
+        cdf = Cdf(xs, ps)
         return cdf
-
 
 class Dirichlet(object):
     """Represents a Dirichlet distribution.
