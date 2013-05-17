@@ -19,6 +19,10 @@ import time
 
 import thinkbayes
 
+import warnings
+
+warnings.simplefilter('error', RuntimeWarning)
+
 
 formats = ['pdf', 'eps', 'png']
 
@@ -111,18 +115,20 @@ class Subject(object):
         prevs = numpy.array(counts, dtype=numpy.float) / total
         return prevs
 
-    def Process(self, conc=1, iters=300):
+    def Process(self, high=1000, conc=1, iters=300):
         """Computes the posterior distribution of n and the prevalences.
 
-        Sets: self.suite
+        Sets attribute: self.suite
+
+        high:
+        conc:
+        iters:
         """
         #self.PrintCounts()
 
         counts = self.GetCounts()
         m = len(counts)
-
-        n = 1000
-        ns = range(m, n)
+        ns = range(m, high+1)
 
         start = time.time()    
         self.suite = Species5(ns, conc=conc, iters=iters)
@@ -131,9 +137,27 @@ class Subject(object):
 
         print 'time', end-start
 
-    def CalcError(self):
-        n_pred = self.suite.DistOfN().Mean()
-        n_actual = self.total_species
+    def MakePrediction(self, num_sims=300):
+        """Make predictions for the given subject.
+
+        Precondition: Process has run
+
+        num_sims: how many simulations to run for predictions
+
+        Adds attributes
+        cdf_pred: predictive distribution of additional species
+        ps: list of probabilities
+        cis: list of credible intervals
+
+        Returns: Cdf of additional species
+        """
+        add_reads = self.total_reads - self.num_reads
+        curves = self.RunSimulations(num_sims, add_reads)
+        pmf = self.MakePredictive(curves)
+        self.cdf_pred = pmf.MakeCdf()
+
+        self.ps = range(10, 100, 10)
+        self.cis = [self.cdf_pred.CredibleInterval(p) for p in self.ps]
 
     def MakeFigures(self):
         """Makes figures showing distribution of n and the prevalences."""
@@ -236,62 +260,82 @@ class Subject(object):
         seen = set(SpeciesGenerator(names, m))
         return m, seen
 
-    def GenerateObservations(self, num_samples):
+    def SamplePosterior(self):
+        return self.suite.SamplePosterior()
+
+    def GenerateObservations(self, num_reads):
         """Generates a series of random observations.
+
+        num_reads: number of reads to generate
 
         Returns: number of species, sequence of string species names
         """
-        n, prevalences = self.suite.Sample()
+        n, prevalences = self.SamplePosterior()
 
         names = self.GetNames()
         name_iter = SpeciesGenerator(names, n)
 
         d = dict(zip(name_iter, prevalences))
         cdf = thinkbayes.MakeCdfFromDict(d)
-        observations = cdf.Sample(num_samples)
+        observations = cdf.Sample(num_reads)
 
         return n, observations
 
-    def RunSimulation(self, num_samples, frac_flag=False, delta=0.01):
+    def RunSimulation(self, num_reads, frac_flag=False, jitter=0.01):
         """Simulates additional observations and returns a rarefaction curve.
 
         k is the number of additional observations
         num_new is the number of new species seen
 
-        num_samples: how many new samples to simulate
+        num_reads: how many new reads to simulate
         frac_flag: whether to convert to fraction of species seen
+        jitter: size of jitter added if frac_flag is true
 
         Returns: list of (k, num_new) pairs
         """
         m, seen = self.GetSeenSpecies()
-        n, observations = self.GenerateObservations(num_samples)
+        n, observations = self.GenerateObservations(num_reads)
 
         curve = []
-        for k, obs in enumerate(observations):
+        for i, obs in enumerate(observations):
             seen.add(obs)
 
             if frac_flag:
                 frac_seen = len(seen) / float(n)
-                frac_seen += random.uniform(-delta, delta)
-                curve.append((k+1, frac_seen))
+                frac_seen += random.uniform(-jitter, jitter)
+                curve.append((i+1, frac_seen))
             else:
                 num_new = len(seen) - m
-                curve.append((k+1, num_new))
+                curve.append((i+1, num_new))
 
         return curve
 
-    def RunSimulations(self, num_sims, num_samples, frac_flag=False):
+    def RunSimulations(self, num_sims, num_reads, frac_flag=False):
         """Runs simulations and returns a list of curves.
 
         Each curve is a sequence of (k, num_new) pairs.
 
         num_sims: how many simulations to run
-        num_samples: how many samples to generate in each simulation
+        num_reads: how many samples to generate in each simulation
         frac_flag: whether to convert num_new to fraction of total
         """
-        curves = [self.RunSimulation(num_samples, frac_flag) 
+        curves = [self.RunSimulation(num_reads, frac_flag) 
                   for i in range(num_sims)]
         return curves
+
+    def MakePredictive(self, curves):
+        """Makes a predictive distribution of additional species.
+
+        curves: list of (k, num_new) curves 
+
+        Returns: Pmf of num_new
+        """
+        pred = thinkbayes.Pmf(name=self.code)
+        for curve in curves:
+            last_k, last_num_new = curve[-1]
+            pred.Incr(last_num_new)
+        pred.Normalize()
+        return pred
 
     def MakeJointPredictive(self, curves):
         """Makes a joint distribution of k and num_new.
@@ -649,6 +693,7 @@ class Species2(object):
     
     def __init__(self, ns, conc=1, iters=1000):
         self.ns = ns
+        self.conc = conc
         self.probs = numpy.ones(len(ns), dtype=numpy.float)
         self.params = numpy.ones(self.ns[-1], dtype=numpy.float) * conc
         self.iters = iters
@@ -662,7 +707,7 @@ class Species2(object):
         self.probs /= self.probs.sum()
 
         m = len(data)
-        self.params[:m] += data
+        self.params[:m] += data * self.conc
 
     def SampleLikelihood(self, data):
         """Computes the likelihood of the data for all values of n.
@@ -731,7 +776,7 @@ class Species2(object):
         mix = thinkbayes.MakeMixture(pmfs)
         return pmfs, mix
         
-    def Sample(self):
+    def SamplePosterior(self):
         """Draws random n and prevalences.
 
         Returns: (n, prevalences)
@@ -739,6 +784,13 @@ class Species2(object):
         pmf = self.DistOfN()
         n = pmf.Random()
         prevalences = self.SampleConditional(n)
+
+        global n_cheat, prev_cheat
+        #print 'Replacing %d with %d' % (n, n_cheat)
+        #n = n_cheat
+        #print 'Replacing prevalences'
+        #prevalences = prev_cheat
+
         return n, prevalences
 
     def SampleConditional(self, n):
@@ -748,6 +800,9 @@ class Species2(object):
 
         Returns: numpy array of n prevalences
         """
+        if n == 1:
+            return [1.0]
+
         params = self.params[:n]
         gammas = numpy.random.gamma(params)
         gammas /= gammas.sum()
@@ -771,7 +826,7 @@ class Species3(Species2):
         self.probs /= self.probs.sum()
 
         m = len(data)
-        self.params[:m] += data
+        self.params[:m] += data * self.conc
 
     def SampleLikelihood(self, data):
         """Computes the likelihood of the data under all hypotheses.
@@ -870,7 +925,7 @@ class Species5(Species2):
         m = len(data)
         for i in range(m):
             self.UpdateOne(i+1, data[i])
-            self.params[i] += data[i]
+            self.params[i] += data[i] * self.conc
 
     def UpdateOne(self, m, count):
         """Updates the suite based on the data.
@@ -935,11 +990,9 @@ def MakePosterior(constructor, data, ns, conc=1, iters=1000):
     start = time.time()
     suite.Update(data)
     end = time.time()
+    print 'Processing time', end-start
 
-    print end-start
-
-    pmf = suite.DistOfN()
-    return suite, pmf
+    return suite
 
 
 def PlotAllVersions():
@@ -950,7 +1003,8 @@ def PlotAllVersions():
     ns = range(m, n)
 
     for constructor in [Species, Species2, Species3, Species4, Species5]:
-        suite, pmf = MakePosterior(constructor, data, ns)
+        suite = MakePosterior(constructor, data, ns)
+        pmf = suite.DistOfN()
         pmf.name = '%s' % (constructor.__name__)
         thinkplot.Pmf(pmf)
 
@@ -970,7 +1024,8 @@ def PlotMedium():
     ns = range(m, n)
 
     for constructor in [Species, Species2, Species3, Species4, Species5]:
-        suite, pmf = MakePosterior(constructor, data, ns)
+        suite = MakePosterior(constructor, data, ns)
+        pmf = suite.DistOfN()
         pmf.name = '%s' % (constructor.__name__)
         thinkplot.Pmf(pmf)
 
@@ -988,7 +1043,8 @@ def CompareHierarchicalExample():
     iters = [1000, 100]
 
     for constructor, iters in zip(constructors, iters):
-        suite, pmf = MakePosterior(constructor, data, ns, iters)
+        suite = MakePosterior(constructor, data, ns, iters)
+        pmf = suite.DistOfN()
         pmf.name = '%s' % (constructor.__name__)
         thinkplot.Pmf(pmf)
 
@@ -1085,27 +1141,31 @@ def RunSubject(code, conc=1):
     subjects = JoinSubjects()
     subject = subjects[code]
 
-    cdf = MakePrediction(subject, conc=conc)
+    subject.Process(conc=conc)
+    subject.MakePrediction()
 
     PrintSummary(subject)
-    CheckPrediction(subject, cdf)
+    actual = subject.total_species - subject.num_species
+    PrintPrediction(subject.cdf_pred, actual)
+
+
     return
 
     subject.MakeFigures()
 
-    num_samples = 400
-    curves = subject.RunSimulations(100, num_samples)
+    num_reads = 400
+    curves = subject.RunSimulations(100, num_reads)
     root = 'species-rare-%s' % subject.code
     PlotCurves(curves, root=root)
 
-    num_samples = 800
-    curves = subject.RunSimulations(500, num_samples)
+    num_reads = 800
+    curves = subject.RunSimulations(500, num_reads)
     ks = [100, 200, 400, 800]
     cdfs = subject.MakeConditionals(curves, ks)
     root = 'species-cond-%s' % subject.code
     PlotConditionals(cdfs, root=root)
 
-    curves = subject.RunSimulations(500, num_samples, frac_flag=True)
+    curves = subject.RunSimulations(500, num_reads, frac_flag=True)
     cdfs = subject.MakeFracCdfs(curves)
     root = 'species-frac-%s' % subject.code
     PlotFracCdfs(cdfs, root=root)
@@ -1137,7 +1197,8 @@ def MakePredictions(lockername='species_locker.db',
                 continue
 
         print 'Processing'
-        MakePrediction(subject, conc=conc)
+        subject.Process(conc=conc)
+        subject.MakePrediction()
         locker.Add(subject.code, subject)
 
         i += 1
@@ -1145,36 +1206,6 @@ def MakePredictions(lockername='species_locker.db',
             break
 
     locker.Close()
-
-
-def MakePrediction(subject, conc=1, num_sims=300):
-    """Make predictions for the given subject.
-
-    subject: Subject object
-    conc: concentration parameter
-    num_sims: how many simulations to run for predictions
-
-    Adds attributes
-    ps: list of probabilities
-    cis: list of credible intervals
-    """
-    subject.Process(conc=conc)
-
-    add_reads = subject.total_reads - subject.num_reads
-    curves = subject.RunSimulations(num_sims, add_reads)
-    cdfs = subject.MakeConditionals(curves, [add_reads])
-    cdf = cdfs[0]
-
-    ps = range(10, 100, 10)
-    cis = [cdf.CredibleInterval(p) for p in ps]
-
-    for p, ci in zip(ps, cis):
-        print p, ci
-
-    subject.ps = ps
-    subject.cis = cis
-
-    return cdf
 
 
 def MakePredictionTable(subject_map):
@@ -1248,6 +1279,7 @@ def SummarizeData():
 def ValidatePredictions(lockername='species_locker.db'):
     """Reads the subject maps and prints summary information.
 
+    conc: concentration parameter
     lockername: string filename
     """
     locker = Locker(lockername)
@@ -1255,17 +1287,16 @@ def ValidatePredictions(lockername='species_locker.db'):
     locker.Close()
 
     ps = range(10, 100, 10)
-    total = numpy.ones(len(ps))
+    total = numpy.zeros(len(ps))
 
     for code, subject in subject_map.iteritems():
 
-        pmf = subject.suite.DistOfN()
-        cdf = pmf.MakeCdf()
-        n_actual = subject.total_species
-        scores = ScoreVector(cdf, ps, n_actual)
+        actual = subject.total_species - subject.num_species
+        scores = ScoreVector(subject.cdf_pred, ps, actual)
         total += scores
 
         PrintSummary(subject)
+        PrintPrediction(subject.cdf_pred, actual)
         print scores
 
         #thinkplot.Pmf(pmf)
@@ -1274,34 +1305,79 @@ def ValidatePredictions(lockername='species_locker.db'):
     ys = total * 100.0 / len(subject_map)
     print ys
 
-    PlotValidation(ps, ys)
+    PlotCalibration(ps, ys)
 
 
 def PrintSummary(subject):
+    """Print a summary of a subject.
+
+    subject: Subject
+    """
     print subject.code
     print 'found %d species in %d reads' % (subject.num_species,
                                             subject.num_reads)
+
+    cdf = subject.suite.DistOfN().MakeCdf()
+    PrintPrediction(cdf, 'unknown')
+    
     print 'total %d species in %d reads' % (subject.total_species,
                                             subject.total_reads)
 
-    pmf = subject.suite.DistOfN()
-    cdf = pmf.MakeCdf()
-    PrintPrediction(cdf, subject.total_species)
-
 
 def PrintPrediction(cdf, actual):
+    """Print a summary of a prediction.
+
+    cdf: predictive distribution
+    actual: actual value
+    """
     median = cdf.Percentile(50)
     low, high = cdf.CredibleInterval(75)
     
-    print 'predicted %0.0f (%0.0f %0.0f)' % (median, low, high)
+    print 'predicted %0.2f (%0.2f %0.2f)' % (median, low, high)
     print 'actual', actual
 
 
-def CheckPrediction(subject, cdf):
-    PrintPrediction(cdf, subject.total_species - subject.num_species)
+def PlotCalibration(ps, ys):
+    thinkplot.Plot([0, 100], [0, 100], color='gray', alpha=0.2)
+    thinkplot.Plot(ps, ys)
+    thinkplot.Show(
+        xlabel='Observed frequency',
+        ylable='Forecast percentage',
+#        axis=[0, 100, 0, 100],
+        )
 
 
-def ValidationRun(seed, ps, plot=False):
+def RandomSeed(x):
+    """Initialize random.random and numpy.random.
+
+    x: int seed
+    """
+    random.seed(x)
+    numpy.random.seed(x)
+
+
+def Calibrate(n=100):
+    """Generates a validation curve.
+
+    For each percentage in ps, plots the observed frequency (number
+    of predictions that fell in the predicted range) versus the
+    forecast percentage (fraction of predictions that should fall
+    in each range).
+
+    n: number of validation runs
+    """
+    ps = range(10, 100, 10)
+    total = numpy.zeros(len(ps))
+
+    for i in range(0, n):
+        scores = CalibrationRun(i, ps)
+        total += scores
+
+    ys = total * 100 / n
+    PlotCalibration(ps, ys)
+
+
+def CalibrationRun(seed, ps, t=[], plot=False):
     """Runs the basic validation process.
 
     Generates N and prevalences from a Dirichlet distribution,
@@ -1325,23 +1401,36 @@ def ValidationRun(seed, ps, plot=False):
     # generate a random number of species and their prevalences
     # (from a Dirichlet distribution with alpha_i = conc for all i)
     conc = 0.1
-    low, high = 10, 70
+    low, high = 10, 20
     n_actual = random.randrange(low, high)
     dirichlet = thinkbayes.Dirichlet(n_actual, conc=conc)
     prevalences = dirichlet.Random()
+    prevalences.sort()
+    print prevalences
 
     # generate a simulated sample
     pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
     cdf = pmf.MakeCdf()
-    sample = cdf.Sample(10)
+    sample = cdf.Sample(20)
 
     # collect the species counts
     hist = thinkbayes.MakeHistFromList(sample)
+    seen = [species for species, count in hist.Items()]
+    print 'Seen species', seen
+
+    prev_unseen = 0
+    for species, prev in enumerate(prevalences):
+        if species not in seen:
+             prev_unseen += prev
+    print 'Prevalence of unseen species', prev_unseen
+
     data = [count for species, count in hist.Items()]
     data.sort()
+    m = len(data)
+    print data
 
     # run the Bayesian analysis
-    suite, pmf = MakePosterior(
+    suite = MakePosterior(
         constructor=Species5,
         data=data,
         ns=range(low, high),
@@ -1349,14 +1438,35 @@ def ValidationRun(seed, ps, plot=False):
         iters=100,
         )
 
-    cdf = pmf.MakeCdf()
+    # check the distribution of prevalence
+    pred_prev_unseen = 1
+    for rank in range(1, m+1):
+        actual = prevalences[-rank]
+
+        index = m - rank
+        pmfs, mix = suite.DistOfPrevalence(index)
+
+        pred_prev_unseen -= mix.Mean()
+
+        cdf = mix.MakeCdf()
+
+        print 'Prevalence', rank
+        PrintPrediction(cdf, actual)
+
+    print 'Predicted prevalence of unseen species', pred_prev_unseen
+    t.append((prev_unseen, pred_prev_unseen))
+    # check the distribution of N
+    cdf = suite.DistOfN().MakeCdf()
 
     # plot the posterior distribution of n
     if plot:
         thinkplot.Cdf(cdf)
         thinkplot.Show()
 
-    return ScoreVector(cdf, ps, n_actual)
+    PrintPrediction(cdf, n_actual)
+
+    sv = ScoreVector(cdf, ps, n_actual)
+    return sv
 
 
 def ScoreVector(cdf, ps, n_actual):
@@ -1390,44 +1500,97 @@ def Score(low, high, n):
         return 0
 
 
-def RandomSeed(x):
-    """Initialize random.random and numpy.random.
+class FakeSubject(Subject):
 
-    x: int seed
+    def __init__(self, code, n, prevalences):
+        self.code = code
+        self.species = []
+        self.n = n
+        self.prevalences = prevalences
+
+    def SamplePosterior(self):
+        return self.n, self.prevalences
+
+
+def CalibrationRun2(seed, ps):
+    """Runs the basic validation process.
+
+    Generates N and prevalences from a Dirichlet distribution,
+    the generates simulated data.
+
+    Runs analysis to get the posterior predictive distribution of N.
+
+    Checks to see how often the actual value falls in the predictive 
+    intervals.
+
+    Returns an array of scores, one for each value of p.
+
+    seed: int random seed
+    ps: range of percentages to test
+    plot: boolean, whether to generate the plot
+
+    Returns: numpy array of scores
     """
-    random.seed(x)
-    numpy.random.seed(x)
+    RandomSeed(seed)
 
+    # generate a random number of species and their prevalences
+    # (from a Dirichlet distribution with alpha_i = conc for all i)
+    conc = 0.1
+    low, high = 10, 20
+    n_actual = random.randrange(low, high)
 
-def Validate(n=100):
-    """Generates a validation curve.
+    dirichlet = thinkbayes.Dirichlet(n_actual, conc=conc)
+    prevalences = dirichlet.Random()
+    prevalences.sort()
+    print prevalences
 
-    For each percentage in ps, plots the observed frequency (number
-    of predictions that fell in the predicted range) versus the
-    forecast percentage (fraction of predictions that should fall
-    in each range).
+    global n_cheat, prev_cheat
+    n_cheat = n_actual
+    prev_cheat = prevalences
 
-    n: number of validation runs
-    """
-    ps = range(10, 100, 10)
-    total = ValidationRun(0, ps)
+    # at this point we know the true value of n and the prevalences
+    fake = FakeSubject('fake', n_actual, prevalences)
 
-    for i in range(1, n):
-        scores = ValidationRun(i, ps)
-        total += scores
+    # generate a simulated sample
+    num_reads = 20
+    total_reads = 80
+    pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
+    cdf = pmf.MakeCdf()
+    sample = cdf.Sample(20)
 
-    ys = total * 100 / n
-    PlotValidation(ps, ys)
+    subject = Subject('simulated')
+    
+    # collect the species counts
+    hist = thinkbayes.MakeHistFromList(sample)
+    m = len(hist)
 
+    for species, count in hist.Items():
+        fake.Add(species, count)
+        subject.Add(species, count)
+    fake.Sort()
+    subject.Sort()
 
-def PlotValidation(ps, ys):
-    thinkplot.Plot([0, 100], [0, 100], color='gray', alpha=0.2)
-    thinkplot.Plot(ps, ys)
-    thinkplot.Show(
-        xlabel='Observed frequency',
-        ylable='Forecast percentage',
-#        axis=[0, 100, 0, 100],
-        )
+    subject.Process(high=high, conc=conc)
+
+    #pmf = subject.suite.DistOfN()
+    #pmf.name = subject.code
+    #thinkplot.Pmf(pmf)
+    #thinkplot.Show()
+
+    subject.num_reads = num_reads
+    subject.total_reads = total_reads
+    subject.MakePrediction()
+
+    fake.num_reads = num_reads
+    fake.total_reads = total_reads
+    fake.MakePrediction()
+
+    thinkplot.Cdf(subject.cdf_pred)
+    thinkplot.Cdf(fake.cdf_pred)
+    thinkplot.Show()
+
+    print 'new_species sim', subject.cdf_pred.Mean()
+    print 'new_species fake', fake.cdf_pred.Mean()
 
 
 def PlotActualPrevalences():
@@ -1520,21 +1683,38 @@ def ExpectedMaxPrev(m, conc=1, iters=100):
         t.append(max(prevs))
 
     return numpy.mean(t)
-        
+
 
 def main(script, *args):
-    RunSubject('B1265', conc=0.5)
+    ps = range(10, 100, 10)
+    t = []
+    scores = CalibrationRun(20, ps, t)
+    CalibrationRun2(20, ps)
     return
 
-    MakePredictions(num=60, conc=10, replace=True)
+    t = []
+    for i in range(100):
+        scores = CalibrationRun(i, ps, t)
+        
+    xs, ys = zip(*t)
+    thinkplot.Plot([0, 0.2], [0, 0.2], color='gray')
+    thinkplot.Scatter(xs, ys)
+    thinkplot.Show()
+    return
+
+
+    Calibrate()
+    return
+
+    RunSubject('B1246', conc=0.1)
+    return
+
+    #MakePredictions(num=60, conc=0.1, replace=True)
 
     ValidatePredictions()
     return
 
     PlotActualPrevalences()
-    return
-
-    Validate()
     return
 
     SummarizeData()
@@ -1557,7 +1737,8 @@ def main(script, *args):
     PlotAllVersions()
     return
 
-    suite, pmf = MakePosterior(Species)
+    suite = MakePosterior(Species)
+    pmf = suite.DistOfN()
     thinkplot.Pmf(pmf)
     thinkplot.Show()
     return
