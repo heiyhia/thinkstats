@@ -115,11 +115,12 @@ class Subject(object):
         prevs = numpy.array(counts, dtype=numpy.float) / total
         return prevs
 
-    def Process(self, high=1000, conc=1, iters=300):
+    def Process(self, low=None, high=1000, conc=1, iters=300):
         """Computes the posterior distribution of n and the prevalences.
 
         Sets attribute: self.suite
 
+        low:
         high:
         conc:
         iters:
@@ -128,7 +129,9 @@ class Subject(object):
 
         counts = self.GetCounts()
         m = len(counts)
-        ns = range(m, high+1)
+        if low is None:
+            low = max(m, 2)
+        ns = range(low, high+1)
 
         start = time.time()    
         self.suite = Species5(ns, conc=conc, iters=iters)
@@ -704,14 +707,21 @@ class Species2(object):
         data: numpy array of counts
         """
         like = numpy.zeros(len(self.ns), dtype=numpy.float)
-        for i in range(1000):
+        for i in range(self.iters):
             like += self.SampleLikelihood(data)
 
         self.probs *= like
         self.probs /= self.probs.sum()
 
-        m = len(data)
-        self.params[:m] += data * self.conc
+        self.m = len(data)
+        self.params[:self.m] += data * self.conc
+
+    def SetPrevUnseen(self, pu):
+        """Attaches a PrevalenceUnseen object for use in sampling.
+
+        pu: PrevalenceUnseen
+        """
+        self.pu = pu
 
     def SampleLikelihood(self, data):
         """Computes the likelihood of the data for all values of n.
@@ -751,6 +761,36 @@ class Species2(object):
         pmf = thinkbayes.MakePmfFromItems(zip(self.ns, self.probs))
         return pmf
 
+    def RandomN(self):
+        try:
+            return self.cdf_n.Random()
+        except AttributeError:
+            self.cdf_n = self.DistN().MakeCdf()
+            return self.cdf_n.Random()
+
+    def DistQ(self):
+        """Computes the distribution of q based on distribution of n.
+
+        pmf_n: posterior distribution of n
+        """
+        pmf_n = self.DistN()
+        metapmf = thinkbayes.Pmf()
+        for n, prob in pmf_n.Items():
+            prevs_unseen = self.pu.GetPrevs(n, self.m)
+            pmf_q = thinkbayes.MakePmfFromList(prevs_unseen)
+            metapmf.Set(pmf_q, prob)
+
+        mix = thinkbayes.MakeMixture(metapmf)
+        return mix
+
+    def RandomQ(self, n):
+        """Get a random q from the PrevalenceUnseen object.
+
+        n: number of species
+        """
+        prevs_unseen = self.pu.GetPrevs(n, self.m)
+        return random.choice(prevs_unseen)
+
     def MarginalBeta(self, n, index):
         """Computes the conditional distribution of the indicated species.
         
@@ -785,19 +825,15 @@ class Species2(object):
 
         Returns: (n, prevalences)
         """
-        pmf = self.DistN()
-        n = pmf.Random()
-        prevalences = self.SampleConditional(n)
+        n = self.RandomN()
+        prevalences = self.SamplePrevalences(n)
 
-        global n_cheat, prev_cheat
-        #print 'Replacing %d with %d' % (n, n_cheat)
-        #n = n_cheat
-        #print 'Replacing prevalences'
-        #prevalences = prev_cheat
+        print 'Peeking at n_cheat'
+        n = n_cheat
 
         return n, prevalences
 
-    def SampleConditional(self, n):
+    def SamplePrevalences(self, n):
         """Draws a sample of prevalences given n.
 
         n: the number of species assumed in the conditional
@@ -807,31 +843,45 @@ class Species2(object):
         if n == 1:
             return [1.0]
 
-        # choose q
-        # params = self.Unbias(n, m, q_desired)
+        q_desired = self.RandomQ(n)
 
-        params = self.params[:n]
+        print 'Peeking at q_cheat'
+        q_desired = q_cheat
+
+        params = self.Unbias(n, self.m, q_desired)
+        # params = self.params[:n]
+
         gammas = numpy.random.gamma(params)
         gammas /= gammas.sum()
         return gammas
         
     def Unbias(self, n, m, q_desired):
-        params = self.params
+        """Adjusts the parameters to achieve desired prev_unseen (q).
 
+        n: number of species
+        m: seen species
+        q_desired: prevalence of unseen species
+        """
+        params = self.params[:n]
+        if n == m:
+            return params
+        
         x = sum(params[:m])
         y = sum(params[m:])
         a = x + y
-        print x, y, a, x/a, y/a
+        #print x, y, a, x/a, y/a
 
         g = q_desired * a / y
         f = (a - g * y) / x
         params[:m] *= f
         params[m:] *= g
 
-        x = sum(params[:m])
-        y = sum(params[m:])
-        a = x + y
-        print x, y, a, x/a, y/a
+        #x = sum(params[:m])
+        #y = sum(params[m:])
+        #a = x + y
+        #print x, y, a, x/a, y/a
+
+        return params
 
 
 class Species3(Species2):
@@ -947,8 +997,8 @@ class Species5(Species2):
         data: list of observed frequencies in increasing order
         """
         # loop through the species and update one at a time
-        m = len(data)
-        for i in range(m):
+        self.m = len(data)
+        for i in range(self.m):
             self.UpdateOne(i+1, data[i])
             self.params[i] += data[i] * self.conc
 
@@ -1040,7 +1090,14 @@ class PrevalenceUnseen(object):
             d = self.GetPrevMap(n)
             return d[m]
         except KeyError:
-            return None
+            return self.GetAllPrevs(n)
+
+    def GetAllPrevs(self, n):
+        d = self.GetPrevMap(n)
+        t = []
+        for n, prevs in d.iteritems():
+            t.extend(prevs)
+        return t
 
     def RunSimulations(self, n):
         """Runs simulations and returns map from m to list of q.
@@ -1053,9 +1110,8 @@ class PrevalenceUnseen(object):
         d = {}
 
         for i in range(self.iters):
-            hist, q = GenerateFakeSample(n, self.r, conc=self.conc)
+            hist, _, q = GenerateFakeSample(n, self.r, self.r, conc=self.conc)
             m = len(hist)
-
             d.setdefault(m, []).append(q)
 
         return d
@@ -1443,9 +1499,17 @@ def Calibrate(n=100):
     PlotCalibration(ps, ys)
 
 
-def GenerateFakeSample(n, r, conc=1):
+def GenerateFakeSample(n, r, tr, conc=1):
     """
+
+    n: number of species
+    r: number of reads in subsample
+    tr: total number of reads
+    conc: concentration parameter
+
+    Returns: hist of all reads, hist of subsample, prev_unseen
     """
+    # generate random prevalences
     dirichlet = thinkbayes.Dirichlet(n, conc=conc)
     prevalences = dirichlet.Random()
     prevalences.sort()
@@ -1453,39 +1517,50 @@ def GenerateFakeSample(n, r, conc=1):
     # generate a simulated sample
     pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
     cdf = pmf.MakeCdf()
-    sample = cdf.Sample(r)
+    sample = cdf.Sample(tr)
 
     # collect the species counts
     hist = thinkbayes.MakeHistFromList(sample)
-    seen = set(hist.Values())
+
+    # extract a subset of the data
+    if tr > r:
+        random.shuffle(sample)
+        subsample = sample[:r]
+        subhist = thinkbayes.MakeHistFromList(subsample)
+    else:
+        subhist = hist
 
     # add up the prevalence of unseen species
     prev_unseen = 0
     for species, prev in enumerate(prevalences):
-        if species not in seen:
+        if species not in subhist:
              prev_unseen += prev
 
-    return hist, prev_unseen
+    return hist, subhist, prev_unseen
 
 
 class Calibrator(object):
     """Encapsulates the calibration process."""
 
-    def __init__(self):
-        self.n_low = 10
-        self.n_high = 20
-        self.conc = 0.1
-        self.r = 20
-        self.iters = 1000
+    def __init__(self, n_low=10, n_high=20, conc=0.1, r=20, tr=80, iters=1000):
+        """
+        """
+        self.n_low = n_low
+        self.n_high = n_high
+        self.conc = conc
+        self.r = r
+        self.tr = tr
+        self.iters = iters
 
         self.ps =  range(10, 100, 10)
         self.total_n = numpy.zeros(len(self.ps))
         self.total_q = numpy.zeros(len(self.ps))
+        self.total_pred = numpy.zeros(len(self.ps))
 
         self.pu = PrevalenceUnseen(self.r, conc=self.conc, iters=self.iters)
         self.prev_seq = []
 
-    def Calibrate(self, num_runs=1):
+    def Calibrate(self, num_runs=100):
         """Runs calibrations.
 
         num_runs: how many runs
@@ -1508,12 +1583,15 @@ class Calibrator(object):
         """Plots calibration curves"""
         print self.total_n
         print self.total_q
+        print self.total_pred
 
         thinkplot.Plot([0, 100], [0, 100], color='gray', alpha=0.2)
 
         thinkplot.Plot(self.ps, self.total_n, label='n')
 
         thinkplot.Plot(self.ps, self.total_q, label='q')
+
+        thinkplot.Plot(self.ps, self.total_pred, label='pred')
 
         thinkplot.Show(
             xlabel='',
@@ -1531,30 +1609,46 @@ class Calibrator(object):
 
         seed: int random seed
         """
-        RandomSeed(seed)
-
         # generate a random number of species and their prevalences
         # (from a Dirichlet distribution with alpha_i = conc for all i)
+        RandomSeed(seed)
         n_actual = random.randrange(self.n_low, self.n_high)
 
-        hist, q_actual = GenerateFakeSample(n_actual, self.r, self.conc)
-        print 'Actual prevalence of unseen species', q_actual
+        hist, subhist, q_actual = GenerateFakeSample(
+            n_actual, 
+            self.r, 
+            self.tr, 
+            self.conc)
 
-        data = [count for species, count in hist.Items()]
+        print 'Actual prevalence of unseen species', q_actual
+        global n_cheat, q_cheat
+        n_cheat = n_actual
+        q_cheat = q_actual
+
+
+        # extract the data
+        data = [count for species, count in subhist.Items()]
         data.sort()
         m = len(data)
         print data
 
-        # run the Bayesian analysis
-        suite = MakePosterior(
-            constructor=Species5,
-            data=data,
-            ns=range(self.n_low, self.n_high),
-            conc=self.conc,
-            iters=100,
-            )
+        # make a Subject and process
+        subject = Subject('simulated')
 
-        # check the distribution of N
+        for species, count in subhist.Items():
+            subject.Add(species, count)
+        subject.Sort()
+
+        subject.Process(low=self.n_low,
+                        high=self.n_high,
+                        conc=self.conc,
+                        iters=100)
+
+        # extract the posterior suite
+        suite = subject.suite
+        suite.SetPrevUnseen(self.pu)
+
+        # check the distribution of n
         pmf_n = suite.DistN()
         cdf_n = pmf_n.MakeCdf()
         #PrintPrediction(cdf, n_actual)
@@ -1562,7 +1656,7 @@ class Calibrator(object):
         self.total_n += sv_n
 
         # check the distribution of q
-        pmf_q = self.DistQ(pmf_n, m)
+        pmf_q = suite.DistQ()
         cdf_q = pmf_q.MakeCdf()
         sv_q = ScoreVector(cdf_q, self.ps, q_actual)
         self.total_q += sv_q
@@ -1572,21 +1666,16 @@ class Calibrator(object):
         print 'Simulated q', mean_q
         self.prev_seq.append((q_actual, mean_q))
 
-        suite.Unbias(n_actual, m, mean_q)
+        # generate a simulated sample
+        subject.num_reads = self.r
+        subject.total_reads = self.tr
+        subject.MakePrediction()
 
-    def DistQ(self, pmf_n, m):
-        """Computes the distribution of q based on distribution of n.
+        add_species_actual = len(hist) - len(subhist)
+        cdf_pred = subject.cdf_pred
+        sv_pred = ScoreVector(cdf_pred, self.ps, add_species_actual)
+        self.total_pred += sv_pred
 
-        pmf_n: posterior distribution of n
-        """
-        metapmf = thinkbayes.Pmf()
-        for n, prob in pmf_n.Items():
-            prevs_unseen = self.pu.GetPrevs(n, m)
-            pmf_q = thinkbayes.MakePmfFromList(prevs_unseen)
-            metapmf.Set(pmf_q, prob)
-
-        mix = thinkbayes.MakeMixture(metapmf)
-        return mix
 
 def ScoreVector(cdf, ps, n_actual):
     """
