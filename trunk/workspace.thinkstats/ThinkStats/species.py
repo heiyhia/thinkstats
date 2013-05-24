@@ -1644,7 +1644,7 @@ def GenerateFakeSample(n, r, tr, conc=1):
 class Calibrator(object):
     """Encapsulates the calibration process."""
 
-    def __init__(self, n_low=30, n_high=60, conc=0.3, r=10, tr=100):
+    def __init__(self, n_low=30, n_high=400, conc=0.1, r=400, tr=800):
         """
         """
         self.n_low = n_low
