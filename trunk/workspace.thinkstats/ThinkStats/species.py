@@ -64,14 +64,22 @@ class Subject(object):
     def Add(self, species, count):
         """Add a species-count pair.
 
+        It is up to the caller to ensure that species names are unique.
+
         species: string species/genus name
         count: int number of individuals
         """
         self.species.append((count, species))
 
-    def Sort(self, reverse=False):
-        """Sorts the count-species pairs in increasing order."""
+    def Done(self, reverse=False):
+        """Called when we are done adding species counts.
+
+        reverse: which order to sort in
+        """
         self.species.sort(reverse=reverse)        
+        counts = self.GetCounts()
+        self.num_species = len(counts)
+        self.num_reads = sum(counts)
 
     def GetM(self):
         """Gets number of observed species."""
@@ -121,13 +129,11 @@ class Subject(object):
 
         Sets attribute: self.suite
 
-        low:
-        high:
-        conc:
-        iters:
+        low: minimum number of species
+        high: maximum number of species
+        conc: concentration parameter
+        iters: number of iterations to use in the estimator
         """
-        #self.PrintCounts()
-        
         counts = self.GetCounts()
         m = len(counts)
         if low is None:
@@ -149,31 +155,23 @@ class Subject(object):
         num_sims: how many simulations to run for predictions
 
         Adds attributes
-        cdf_pred: predictive distribution of additional species
-        ps: list of probabilities
-        cis: list of credible intervals
-
-        Returns: Cdf of additional species
+        pmf_l: predictive distribution of additional species
         """
         add_reads = self.total_reads - self.num_reads
         curves = self.RunSimulations(num_sims, add_reads)
-        pmf = self.MakePredictive(curves)
-        self.cdf_pred = pmf.MakeCdf()
+        self.pmf_l = self.MakePredictive(curves)
 
-        self.ps = range(10, 100, 10)
-        self.cis = [self.cdf_pred.CredibleInterval(p) for p in self.ps]
-
-    def MakeQuickPrediction(self, add_reads, num_sims=100):
+    def MakeQuickPrediction(self, num_sims=100):
         """Make predictions for the given subject.
 
         Precondition: Process has run
 
-        add_reads: how many more reads to simulate
         num_sims: how many simulations to run for predictions
 
         Adds attribute:
-        pmf_pred: predictive distribution of l
+        pmf_l: predictive distribution of additional species
         """
+        add_reads = self.total_reads - self.num_reads
         pmf = thinkbayes.Pmf()
         m, seen = self.GetSeenSpecies()
 
@@ -290,9 +288,6 @@ class Subject(object):
         seen = set(SpeciesGenerator(names, m))
         return m, seen
 
-    def SamplePosterior(self):
-        return self.suite.SamplePosterior()
-
     def GenerateObservations(self, num_reads):
         """Generates a series of random observations.
 
@@ -300,23 +295,65 @@ class Subject(object):
 
         Returns: number of species, sequence of string species names
         """
-        n, prevalences = self.SamplePosterior()
+        n, prevalences = self.suite.SamplePosterior()
 
         names = self.GetNames()
         name_iter = SpeciesGenerator(names, n)
 
         items = zip(name_iter, prevalences)
 
-        #total = 0
-        #for name, prev in items:
-        #    if name.startswith('unseen'):
-        #        total += prev
-        #print 'sample q', total
-
         cdf = thinkbayes.MakeCdfFromItems(items)
         observations = cdf.Sample(num_reads)
 
+        #for ob in observations:
+        #    print ob
+
         return n, observations
+
+    def Resample(self, num_reads):
+        """
+        """
+        t = []
+        for count, species in self.species:
+            t.extend([species]*count)
+
+        random.shuffle(t)
+        reads = t[:num_reads]
+
+        subject = Subject(self.code)
+        hist = thinkbayes.MakeHistFromList(reads)
+        for species, count in hist.Items():
+            subject.Add(species, count)
+
+        subject.Done()
+        return subject
+
+    def Match(self, match):
+        """Match up a rarefied subject with a complete subject.
+
+        match: complete Subject
+
+        Assigns attributes:
+        total_reads:
+        total_species:
+        prev_unseen:
+        """
+        self.total_reads = match.num_reads
+        self.total_species = match.num_species
+
+        # compute the prevalence of unseen species (at least approximately,
+        # based on all species counts in match
+        m, seen = self.GetSeenSpecies()
+
+        seen_total = 0.0
+        unseen_total = 0.0
+        for count, species in match.species:
+            if species in seen:
+                seen_total += count
+            else:
+                unseen_total += count
+
+        self.prev_unseen = unseen_total / (seen_total + unseen_total)
 
     def RunSimulation(self, num_reads, frac_flag=False, jitter=0.01):
         """Simulates additional observations and returns a rarefaction curve.
@@ -427,12 +464,6 @@ class Subject(object):
             print cdf.CredibleInterval(90)
         return cdfs
 
-    def PredictAdditionalSpecies(self, k, num_sims=100):
-        curves = subject.RunSimulations(num_sims, k)
-        joint = self.MakeJointPredictive(curves)
-        pmf = joint.Conditional(1, 0, k)
-        return pmf
-
 
 def SpeciesGenerator(names, num):
     """Generates a series of names, starting with the given names.
@@ -446,7 +477,7 @@ def SpeciesGenerator(names, num):
     """
     i = 0
     for name in names:
-        yield '%s-%d' % (name, i)
+        yield name
         i += 1
 
     while i < num:
@@ -469,21 +500,25 @@ def ReadRarefactedData(filename='journal.pone.0047712.s001.csv'):
     subject = Subject('')
     subject_map = {}
 
+    i = 0
     for t in reader:
         code = t[0]
         if code != subject.code:
-            # sort the old subject
-            subject.Sort()
-
             # start a new subject
             subject = Subject(code)
             subject_map[code] = subject
 
+        # append a number to the species names so they're unique
         species = t[1]
+        species = '%s-%d' % (species, i)
+        i += 1
+
         count = int(t[2])
         subject.Add(species, count)
 
-    ComputeNumReads(subject_map)
+    for code, subject in subject_map.iteritems():
+        subject.Done()
+
     return subject_map
 
 
@@ -509,15 +544,20 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
     subject_map = {}
     for code in subject_codes:
         subject_map[code] = Subject(code)
-    
+
+    i = 0
     for t in reader:
         otu_code = t[0]
         if otu_code == '':
             continue
 
+        # pull out a species name and give it a number
         otu_names = t[-1]
         taxons = otu_names.split(';')
         species = taxons[-1]
+        species = '%s-%d' % (species, i)
+        i += 1
+
         counts = [int(x) for x in t[1:-1]]
 
         # print otu_code, species
@@ -527,24 +567,10 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
                 subject_map[code].Add(species, count)
 
     for code, subject in subject_map.iteritems():
-        subject.Sort()
+        subject.Done()
 
-    ComputeNumReads(subject_map)
     return subject_map
         
-
-def ComputeNumReads(subject_map):
-    """Computes the number of reads for each subject.
-
-    Creates attributes named num_species and num_reads.
-
-    subject_map: map from subject code to Subject.
-    """
-    for code, subject in subject_map.iteritems():
-        counts = subject.GetCounts()
-        subject.num_species = len(counts)
-        subject.num_reads = sum(counts)
-
 
 def JoinSubjects():
     """Reads both datasets and computers their inner join.
@@ -568,9 +594,7 @@ def JoinSubjects():
     for code, subject in sampled_subjects.iteritems():
         if code in all_subjects:
             match = all_subjects[code]
-
-            subject.total_reads = match.num_reads
-            subject.total_species = match.num_species
+            subject.Match(match)
             count += 1
 
     return sampled_subjects
@@ -621,7 +645,7 @@ def PlotCurves(curves, root='species-rare'):
                 legend=False)
 
 
-def PlotConditionals(cdfs, root='species.cond'):
+def PlotConditionals(cdfs, root='species-cond'):
     """Plots cdfs of num_new conditioned on k.
 
     cdfs: list of Cdf
@@ -638,7 +662,7 @@ def PlotConditionals(cdfs, root='species.cond'):
                 formats=formats)
 
 
-def PlotFracCdfs(cdfs, root='species.frac'):
+def PlotFracCdfs(cdfs, root='species-frac'):
     """Plots CDFs of the fraction of species seen.
 
     cdfs: map from k to CDF of fraction of species seen after k samples
@@ -1366,12 +1390,12 @@ def RunSubject(code, conc=1):
     subject = subjects[code]
 
     subject.Process(conc=conc)
-    subject.MakePrediction()
+    subject.MakeQuickPrediction()
 
     PrintSummary(subject)
-    actual = subject.total_species - subject.num_species
-    PrintPrediction(subject.cdf_pred, actual)
-
+    actual_l = subject.total_species - subject.num_species
+    cdf_l = subject.DistL().MakeCdf()
+    PrintPrediction(cdf_l, actual_l)
 
     return
 
@@ -1422,7 +1446,7 @@ def MakePredictions(lockername='species_locker.db',
 
         print 'Processing'
         subject.Process(conc=conc)
-        subject.MakePrediction()
+        subject.MakeQuickPrediction()
         locker.Add(subject.code, subject)
 
         i += 1
@@ -1516,15 +1540,13 @@ def ValidatePredictions(lockername='species_locker.db'):
     for code, subject in subject_map.iteritems():
 
         actual = subject.total_species - subject.num_species
-        scores = ScoreVector(subject.cdf_pred, ps, actual)
+        cdf_l = subject.DistL().MakeCdf()
+        scores = ScoreVector(cdf_l, ps, actual)
         total += scores
 
         PrintSummary(subject)
-        PrintPrediction(subject.cdf_pred, actual)
+        PrintPrediction(cdf_l, actual)
         print scores
-
-        #thinkplot.Pmf(pmf)
-        #thinkplot.Show()
 
     ys = total * 100.0 / len(subject_map)
     print ys
@@ -1551,12 +1573,13 @@ def PrintSummary(subject):
     print 'found %d species in %d reads' % (subject.num_species,
                                             subject.num_reads)
 
-    cdf = subject.suite.DistN().MakeCdf()
-    PrintPrediction(cdf, 'unknown')
-    
     print 'total %d species in %d reads' % (subject.total_species,
                                             subject.total_reads)
 
+    cdf = subject.suite.DistN().MakeCdf()
+    print 'n'
+    PrintPrediction(cdf, 'unknown')
+    
 
 def PrintPrediction(cdf, actual):
     """Print a summary of a prediction.
@@ -1580,29 +1603,8 @@ def RandomSeed(x):
     numpy.random.seed(x)
 
 
-def Calibrate(n=100):
-    """Generates a validation curve.
-
-    For each percentage in ps, plots the observed frequency (number
-    of predictions that fell in the predicted range) versus the
-    forecast percentage (fraction of predictions that should fall
-    in each range).
-
-    n: number of validation runs
-    """
-    ps = range(10, 100, 10)
-    total = numpy.zeros(len(ps))
-
-    for i in range(0, n):
-        scores = CalibrationRun(i, ps)
-        total += scores
-
-    ys = total * 100 / n
-    PlotCalibration(ps, ys)
-
-
 def GenerateFakeSample(n, r, tr, conc=1):
-    """
+    """Generates fake data with the given parameters.
 
     n: number of species
     r: number of reads in subsample
@@ -1644,7 +1646,7 @@ def GenerateFakeSample(n, r, tr, conc=1):
 class Calibrator(object):
     """Encapsulates the calibration process."""
 
-    def __init__(self, n_low=30, n_high=400, conc=0.1, r=400, tr=800):
+    def __init__(self, n_low=30, n_high=400, conc=0.1, r=400, tr=1200):
         """
         """
         self.n_low = n_low
@@ -1702,7 +1704,7 @@ class Calibrator(object):
         thinkplot.Save(root='species-l',
                        xlabel='Actual l')
 
-    def PlotCalibrationCurves(self):
+    def PlotCalibrationCurves(self, root='species5'):
         """Plots calibration curves"""
         print self.total_n
         print self.total_q
@@ -1714,9 +1716,10 @@ class Calibrator(object):
         thinkplot.Plot(self.ps, self.total_q, label='q')
         thinkplot.Plot(self.ps, self.total_l, label='l')
 
-        thinkplot.Show(
-            xlabel='',
-            ylabel='',
+        thinkplot.Save(root=root,
+                       xlabel='Ideal percentages',
+                       ylabel='Predictive distributions',
+                       formats=formats,
         )
 
     def Run(self, seed):
@@ -1746,37 +1749,35 @@ class Calibrator(object):
         print 'Run r, tr', self.r, self.tr
         print 'Run n, q, l', n_actual, q_actual, l_actual
 
-        #global n_cheat, q_cheat, prevalences_cheat
-        #n_cheat = n_actual
-        #q_cheat = q_actual
-
         # extract the data
         data = [count for species, count in subhist.Items()]
         data.sort()
         m = len(data)
 
         seen = subhist.Values()
-        print 'seen', seen
         print 'data', data
 
         # make a Subject and process
         subject = Subject('simulated')
+        subject.num_reads = self.r
+        subject.total_reads = self.tr
 
         for species, count in subhist.Items():
             subject.Add(species, count)
-        subject.Sort()
+        subject.Done()
 
         # suppose we don't know n_low and n_high
         # Process uses m for n_low
         # and we'll overestimate n_high by 50%
         high = int(self.n_high * 1.5)
 
-        subject.Process(high=high,
-                        conc=self.conc,
-                        iters=100)
+        subject.Process(
+            high=high,
+            conc=self.conc,
+            iters=100)
 
         # generate a simulated sample
-        subject.MakeQuickPrediction(self.tr - self.r)
+        subject.MakeQuickPrediction()
 
         # extract the posterior suite
         suite = subject.suite
@@ -1810,13 +1811,19 @@ class Calibrator(object):
         return sv
 
 
-def ScoreVector(cdf, ps, n_actual):
-    """
+def ScoreVector(cdf, ps, actual):
+    """Checks whether the actual value falls in each credible interval.
+    
+    cdf: predictive distribution
+    ps: percentages to check (0-100)
+    actual: actual value
+
+    Returns: numpy array of 0, 0.5, or 1
     """
     scores = []
     for p in ps:
         low, high = cdf.CredibleInterval(p)
-        score = Score(low, high, n_actual)
+        score = Score(low, high, actual)
         scores.append(score)
 
     return numpy.array(scores)
@@ -1839,99 +1846,6 @@ def Score(low, high, n):
         return 0.5
     else:
         return 0
-
-
-class FakeSubject(Subject):
-
-    def __init__(self, code, n, prevalences):
-        self.code = code
-        self.species = []
-        self.n = n
-        self.prevalences = prevalences
-
-    def SamplePosterior(self):
-        return self.n, self.prevalences
-
-
-def CalibrationRun2(seed, ps):
-    """Runs the basic validation process.
-
-    Generates N and prevalences from a Dirichlet distribution,
-    the generates simulated data.
-
-    Runs analysis to get the posterior predictive distribution of N.
-
-    Checks to see how often the actual value falls in the predictive 
-    intervals.
-
-    Returns an array of scores, one for each value of p.
-
-    seed: int random seed
-    ps: range of percentages to test
-    plot: boolean, whether to generate the plot
-
-    Returns: numpy array of scores
-    """
-    RandomSeed(seed)
-
-    # generate a random number of species and their prevalences
-    # (from a Dirichlet distribution with alpha_i = conc for all i)
-    conc = 0.1
-    low, high = 10, 20
-    n_actual = random.randrange(low, high)
-
-    dirichlet = thinkbayes.Dirichlet(n_actual, conc=conc)
-    prevalences = dirichlet.Random()
-    prevalences.sort()
-    print prevalences
-
-    #global n_cheat, prev_cheat
-    #n_cheat = n_actual
-    #prev_cheat = prevalences
-
-    # at this point we know the true value of n and the prevalences
-    fake = FakeSubject('fake', n_actual, prevalences)
-
-    # generate a simulated sample
-    num_reads = 20
-    total_reads = 80
-    pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
-    cdf = pmf.MakeCdf()
-    sample = cdf.Sample(20)
-
-    subject = Subject('simulated')
-    
-    # collect the species counts
-    hist = thinkbayes.MakeHistFromList(sample)
-    m = len(hist)
-
-    for species, count in hist.Items():
-        fake.Add(species, count)
-        subject.Add(species, count)
-    fake.Sort()
-    subject.Sort()
-
-    subject.Process(high=high, conc=conc)
-
-    #pmf = subject.suite.DistN()
-    #pmf.name = subject.code
-    #thinkplot.Pmf(pmf)
-    #thinkplot.Show()
-
-    subject.num_reads = num_reads
-    subject.total_reads = total_reads
-    subject.MakePrediction()
-
-    fake.num_reads = num_reads
-    fake.total_reads = total_reads
-    fake.MakePrediction()
-
-    thinkplot.Cdf(subject.cdf_pred)
-    thinkplot.Cdf(fake.cdf_pred)
-    thinkplot.Show()
-
-    print 'new_species sim', subject.cdf_pred.Mean()
-    print 'new_species fake', fake.cdf_pred.Mean()
 
 
 def PlotActualPrevalences():
@@ -2026,30 +1940,110 @@ def ExpectedMaxPrev(m, conc=1, iters=100):
     return numpy.mean(t)
 
 
-def main(script, *args):
+class Validator(object):
+
+    def __init__(self, conc=1):
+        """
+        """
+        self.conc = conc
+        self.ps =  range(10, 100, 10)
+
+    def Validate(self, n=1):
+        subject_map = ReadCompleteDataset()
+
+        i = 0
+        for code, match in subject_map.iteritems():
+            print 'Validate', match.code
+            subject = self.FakeResample(match, num_reads=400)
+            self.ValidateOne(subject)
+            
+            i += 1
+            if i == n:
+                break
+
+    def FakeSubject(self, n=300, num_reads=400):
+        # generate random prevalences
+        dirichlet = thinkbayes.Dirichlet(n, conc=self.conc)
+        prevalences = dirichlet.Random()
+        prevalences.sort()
+
+        # generate a simulated sample
+        pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
+        cdf = pmf.MakeCdf()
+        sample = cdf.Sample(num_reads)
+
+        # collect the species counts
+        hist = thinkbayes.MakeHistFromList(sample)
+
+        # extract the data
+        data = [count for species, count in hist.Items()]
+        data.sort()
+        m = len(data)
+        print 'data', data
+
+        # make a Subject and process
+        subject = Subject('simulated')
+
+        for species, count in hist.Items():
+            subject.Add(species, count)
+        subject.Done()
+
+        return subject
+
+    def FakeResample(self, match, num_reads=400):
+        subject = match.Resample(num_reads)
+        subject.Match(match)
+        return subject
+
+    def ValidateOne(self, subject):
+
+        subject.Process(conc=self.conc)
+        subject.MakeQuickPrediction()
+
+        PrintSummary(subject)
+
+        pmf = subject.suite.DistQ()
+        cdf = pmf.MakeCdf()
+        print 'q'
+        PrintPrediction(cdf, subject.prev_unseen)
+
+        actual_l = subject.total_species - subject.num_species
+        cdf_l = subject.DistL().MakeCdf()
+        print 'l'
+        PrintPrediction(cdf_l, actual_l)
+
+
+def RunCalibration():
+    """
+    """
     cal = Calibrator()
-    cal.Calibrate()
+    cal.Calibrate(num_runs=10)
     cal.PlotN()
     cal.PlotQ()
     cal.PlotL()
     cal.PlotCalibrationCurves()
+
+
+def main(script, *args):
+    #RunCalibration()
+    #return
+    #print 'cal'
+    #cal = Calibrator()
+    #cal.Calibrate(num_runs=1)
+
+    print 'val'
+    val = Validator(conc=0.06)
+    val.Validate(2)
+
+    #match = val.FakeSubject(n=300, num_reads=800)
+    #subject = val.FakeResample(match, num_reads=400)
+    #val.ValidateOne(subject)
     return
 
-    ps = range(10, 100, 10)
-    t = []
-    scores = CalibrationRun(20, ps, t)
-
-    CalibrationRun2(20, ps)
+    RunSubject('B972', conc=0.05)
     return
 
-
-    Calibrate()
-    return
-
-    RunSubject('B1246', conc=0.1)
-    return
-
-    #MakePredictions(num=60, conc=0.1, replace=True)
+    MakePredictions(num=60, conc=0.1, replace=True)
 
     ValidatePredictions()
     return
