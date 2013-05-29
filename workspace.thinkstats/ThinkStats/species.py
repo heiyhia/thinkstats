@@ -71,15 +71,37 @@ class Subject(object):
         """
         self.species.append((count, species))
 
-    def Done(self, reverse=False):
+    def Done(self, reverse=False, clean=False):
         """Called when we are done adding species counts.
 
         reverse: which order to sort in
         """
+        if clean:
+            self.Clean()
+
         self.species.sort(reverse=reverse)        
         counts = self.GetCounts()
         self.num_species = len(counts)
         self.num_reads = sum(counts)
+
+    def Clean(self, alpha=80):
+        """
+        """
+        def prob_bogus(k, n):
+            q = alpha / n
+            p = (1-q) ** k
+            return p
+
+        counts = self.GetCounts()
+        n = 1.0 * sum(counts)
+
+        species_seq = []
+        for k, species in sorted(self.species):
+
+            if random.random() < prob_bogus(k, n):
+                continue
+            species_seq.append((k, species))
+        self.species = species_seq
 
     def GetM(self):
         """Gets number of observed species."""
@@ -91,6 +113,14 @@ class Subject(object):
         Should be in increasing order, if Sort() has been invoked.
         """
         return [count for count, _ in self.species]
+
+    def MakeCdf(self):
+        """
+        """
+        counts = self.GetCounts()
+        counts.sort(reverse=True)
+        cdf = thinkbayes.MakeCdfFromItems(enumerate(counts))
+        return cdf
 
     def GetNames(self):
         """Gets the names of the seen species."""
@@ -124,7 +154,7 @@ class Subject(object):
         prevs = numpy.array(counts, dtype=numpy.float) / total
         return prevs
 
-    def Process(self, low=None, high=1000, conc=1, iters=100):
+    def Process(self, low=None, high=500, conc=1, iters=100):
         """Computes the posterior distribution of n and the prevalences.
 
         Sets attribute: self.suite
@@ -142,6 +172,7 @@ class Subject(object):
 
         start = time.time()    
         self.suite = Species5(ns, conc=conc, iters=iters)
+        #self.suite.Preload(counts)
         self.suite.Update(counts)
         end = time.time()
 
@@ -185,6 +216,8 @@ class Subject(object):
         self.pmf_l = pmf
 
     def DistL(self):
+        """Returns the distribution of additional species, l.
+        """
         return self.pmf_l
 
     def MakeFigures(self):
@@ -193,7 +226,7 @@ class Subject(object):
         self.PlotPrevalences()
 
     def PlotDistN(self):
-        """Plots distribution of N."""
+        """Plots distribution of n."""
         pmf = self.suite.DistN()
         print '90% CI for N:', pmf.CredibleInterval(90)
         pmf.name = self.code
@@ -517,7 +550,7 @@ def ReadRarefactedData(filename='journal.pone.0047712.s001.csv'):
         subject.Add(species, count)
 
     for code, subject in subject_map.iteritems():
-        subject.Done()
+        subject.Done(clean=True)
 
     return subject_map
 
@@ -539,12 +572,13 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
     subject_codes = header[1:-1]
     subject_codes = ['B'+code for code in subject_codes]
 
-    # print subject_codes
-
+    # create the subject map
+    uber_subject = Subject('uber')
     subject_map = {}
     for code in subject_codes:
         subject_map[code] = Subject(code)
 
+    # read lines
     i = 0
     for t in reader:
         otu_code = t[0]
@@ -565,11 +599,13 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
         for code, count in zip(subject_codes, counts):
             if count > 0:
                 subject_map[code].Add(species, count)
+                uber_subject.Add(species, count)
 
+    uber_subject.Done(clean=True)
     for code, subject in subject_map.iteritems():
-        subject.Done()
+        subject.Done(clean=True)
 
-    return subject_map
+    return subject_map, uber_subject
         
 
 def JoinSubjects():
@@ -588,7 +624,7 @@ def JoinSubjects():
     sampled_subjects = ReadRarefactedData()
 
     # read the complete dataset
-    all_subjects = ReadCompleteDataset()
+    all_subjects, _ = ReadCompleteDataset()
 
     count = 0
     for code, subject in sampled_subjects.iteritems():
@@ -760,6 +796,17 @@ class Species2(object):
         self.iters = iters
         self.num_reads = 0
 
+    def Preload(self, data):
+        m = len(data)
+        singletons = data.count(1)
+        num = m - singletons
+        print m, singletons, num
+        addend = numpy.ones(num, dtype=numpy.float) * 1
+        print len(addend)
+        print len(self.params[singletons:m])
+        self.params[singletons:m] += addend
+        print 'Preload', num
+
     def Update(self, data):
         """Updates the distribution based on data.
 
@@ -923,11 +970,7 @@ class Species2(object):
         q_desired = self.RandomQ(n)
         q_desired = max(q_desired, 1e-6)
 
-        #print 'Peeking at q_cheat'
-        #q_desired = q_cheat
-
         params = self.Unbias(n, self.m, q_desired)
-        # params = self.params[:n]
 
         gammas = numpy.random.gamma(params)
         gammas /= gammas.sum()
@@ -1097,6 +1140,9 @@ class Species5(Species2):
 
         # how many reads have we seen
         self.num_reads += count
+
+        if self.iters == 0:
+            return
 
         # sample the likelihoods and add them up
         likes = numpy.zeros(len(self.ns), dtype=numpy.float)
@@ -1643,216 +1689,11 @@ def GenerateFakeSample(n, r, tr, conc=1):
     return hist, subhist, prev_unseen
 
 
-class Calibrator(object):
-    """Encapsulates the calibration process."""
-
-    def __init__(self, n_low=30, n_high=400, conc=0.1, r=400, tr=1200):
-        """
-        """
-        self.n_low = n_low
-        self.n_high = n_high
-        self.conc = conc
-        self.r = r
-        self.tr = tr
-
-        self.ps =  range(10, 100, 10)
-        self.total_n = numpy.zeros(len(self.ps))
-        self.total_q = numpy.zeros(len(self.ps))
-        self.total_l = numpy.zeros(len(self.ps))
-
-        # self.pu = PrevalenceUnseenSimple(self.r, conc=self.conc)
-        self.n_seq = []
-        self.q_seq = []
-        self.l_seq = []
-
-    def Calibrate(self, num_runs=100):
-        """Runs calibrations.
-
-        num_runs: how many runs
-        """
-        for seed in range(num_runs):
-            self.Run(seed)
-
-        self.total_n *= 100.0 / num_runs
-        self.total_q *= 100.0 / num_runs
-        self.total_l *= 100.0 / num_runs
-
-    def PlotN(self):
-        """Makes a scatter plot of simulated vs actual prev_unseen (q).
-        """
-        thinkplot.Plot([0, self.n_high], [0, self.n_high], color='gray')
-        xs, ys = zip(*self.n_seq)
-        thinkplot.Scatter(xs, ys)
-        thinkplot.Save(root='species-n',
-                       xlabel='Actual n')
-
-    def PlotQ(self):
-        """Makes a scatter plot of simulated vs actual prev_unseen (q).
-        """
-        thinkplot.Plot([0, 0.2], [0, 0.2], color='gray')
-        xs, ys = zip(*self.q_seq)
-        thinkplot.Scatter(xs, ys)
-        thinkplot.Save(root='species-q',
-                       xlabel='Actual q')
-
-    def PlotL(self):
-        """Makes a scatter plot of simulated vs actual l.
-        """
-        thinkplot.Plot([0, 20], [0, 20], color='gray')
-        xs, ys = zip(*self.l_seq)
-        thinkplot.Scatter(xs, ys)
-        thinkplot.Save(root='species-l',
-                       xlabel='Actual l')
-
-    def PlotCalibrationCurves(self, root='species5'):
-        """Plots calibration curves"""
-        print self.total_n
-        print self.total_q
-        print self.total_l
-
-        thinkplot.Plot([0, 100], [0, 100], color='gray', alpha=0.2)
-
-        thinkplot.Plot(self.ps, self.total_n, label='n')
-        thinkplot.Plot(self.ps, self.total_q, label='q')
-        thinkplot.Plot(self.ps, self.total_l, label='l')
-
-        thinkplot.Save(root=root,
-                       xlabel='Ideal percentages',
-                       ylabel='Predictive distributions',
-                       formats=formats,
-        )
-
-    def Run(self, seed):
-        """Runs a single calibration run.
-
-        Generates N and prevalences from a Dirichlet distribution,
-        then generates simulated data.
-
-        Runs analysis to get the posterior distributions.
-        Generates calibration curves for each posterior distribution.
-
-        seed: int random seed
-        """
-        # generate a random number of species and their prevalences
-        # (from a Dirichlet distribution with alpha_i = conc for all i)
-        RandomSeed(seed)
-        n_actual = random.randrange(self.n_low, self.n_high+1)
-
-        hist, subhist, q_actual = GenerateFakeSample(
-            n_actual, 
-            self.r, 
-            self.tr, 
-            self.conc)
-
-        l_actual = len(hist) - len(subhist)
-        print 'Run low, high, conc', self.n_low, self.n_high, self.conc
-        print 'Run r, tr', self.r, self.tr
-        print 'Run n, q, l', n_actual, q_actual, l_actual
-
-        # extract the data
-        data = [count for species, count in subhist.Items()]
-        data.sort()
-        m = len(data)
-
-        seen = subhist.Values()
-        print 'data', data
-
-        # make a Subject and process
-        subject = Subject('simulated')
-        subject.num_reads = self.r
-        subject.total_reads = self.tr
-
-        for species, count in subhist.Items():
-            subject.Add(species, count)
-        subject.Done()
-
-        # suppose we don't know n_low and n_high
-        # Process uses m for n_low
-        # and we'll overestimate n_high by 50%
-        high = int(self.n_high * 1.5)
-
-        subject.Process(
-            high=high,
-            conc=self.conc,
-            iters=100)
-
-        # generate a simulated sample
-        subject.MakeQuickPrediction()
-
-        # extract the posterior suite
-        suite = subject.suite
-
-        # check the distribution of n
-        pmf_n = suite.DistN()
-        self.total_n += self.CheckDistribution(pmf_n, n_actual, self.n_seq)
-
-        # check the distribution of q
-        pmf_q = suite.DistQ()
-        self.total_q += self.CheckDistribution(pmf_q, q_actual, self.q_seq)
-
-        # check the distribution of additional species
-        pmf_l = subject.DistL()
-        self.total_l += self.CheckDistribution(pmf_l, l_actual, self.l_seq)
-
-    def CheckDistribution(self, pmf, actual, seq):
-        """Checks a predictive distribution and returns a score vector.
-
-        pmf: predictive distribution
-        actual: actual value
-        seq: which sequence to append (actual, mean) onto
-        """
-        mean = pmf.Mean()
-        seq.append((actual, mean))
-
-        cdf = pmf.MakeCdf()
-        PrintPrediction(cdf, actual)
-
-        sv = ScoreVector(cdf, self.ps, actual)
-        return sv
-
-
-def ScoreVector(cdf, ps, actual):
-    """Checks whether the actual value falls in each credible interval.
-    
-    cdf: predictive distribution
-    ps: percentages to check (0-100)
-    actual: actual value
-
-    Returns: numpy array of 0, 0.5, or 1
-    """
-    scores = []
-    for p in ps:
-        low, high = cdf.CredibleInterval(p)
-        score = Score(low, high, actual)
-        scores.append(score)
-
-    return numpy.array(scores)
-
-
-def Score(low, high, n):
-    """Score whether the actual value falls in the range.
-
-    Hitting the posts counts as 0.5
-
-    low: low end of range
-    high: high end of range
-    n: actual value
-
-    Returns: 0, 0.5 or 1
-    """
-    if low < n < high:
-        return 1
-    if n == low or n == high:
-        return 0.5
-    else:
-        return 0
-
-
 def PlotActualPrevalences():
     """Makes a plot comparing actual prevalences with a model.
     """
     # read data
-    subject_map = ReadCompleteDataset()
+    subject_map, _ = ReadCompleteDataset()
 
     # list of (m, max prevalence) pairs
     res = []
@@ -1940,84 +1781,332 @@ def ExpectedMaxPrev(m, conc=1, iters=100):
     return numpy.mean(t)
 
 
-class Validator(object):
+class Calibrator(object):
+    """Encapsulates the calibration process."""
 
-    def __init__(self, conc=1):
+    def __init__(self, conc=0.1):
         """
         """
         self.conc = conc
-        self.ps =  range(10, 100, 10)
 
-    def Validate(self, n=1):
-        subject_map = ReadCompleteDataset()
+        self.ps =  range(10, 100, 10)
+        self.total_n = numpy.zeros(len(self.ps))
+        self.total_q = numpy.zeros(len(self.ps))
+        self.total_l = numpy.zeros(len(self.ps))
+
+        self.n_seq = []
+        self.q_seq = []
+        self.l_seq = []
+
+    def Calibrate(self, num_runs=100, n_low=30, n_high=400, r=400, tr=1200):
+        """Runs calibrations.
+
+        num_runs: how many runs
+        """
+        self.n_low = n_low
+        self.n_high = n_high
+        self.r = r
+        self.tr = tr
+
+        for seed in range(num_runs):
+            self.RunCalibration(seed)
+
+        self.total_n *= 100.0 / num_runs
+        self.total_q *= 100.0 / num_runs
+        self.total_l *= 100.0 / num_runs
+
+    def Validate(self, num_runs=100):
+        """Runs validations.
+
+        num_runs: how many runs
+        """
+        subject_map, _ = ReadCompleteDataset()
 
         i = 0
         for code, match in subject_map.iteritems():
+            if match.num_reads < 400:
+                continue
+            num_reads = 100
+
             print 'Validate', match.code
-            subject = self.FakeResample(match, num_reads=400)
-            self.ValidateOne(subject)
+            subject = match.Resample(num_reads)
+            subject.Match(match)
+
+            n_actual = None
+            q_actual = subject.prev_unseen
+            l_actual = subject.total_species - subject.num_species
+            self.RunSubject(subject, n_actual, q_actual, l_actual)
             
             i += 1
-            if i == n:
+            if i == num_runs:
                 break
 
-    def FakeSubject(self, n=300, num_reads=400):
-        # generate random prevalences
-        dirichlet = thinkbayes.Dirichlet(n, conc=self.conc)
-        prevalences = dirichlet.Random()
-        prevalences.sort()
+        self.total_n *= 100.0 / num_runs
+        self.total_q *= 100.0 / num_runs
+        self.total_l *= 100.0 / num_runs
 
-        # generate a simulated sample
-        pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
-        cdf = pmf.MakeCdf()
-        sample = cdf.Sample(num_reads)
+    def PlotN(self):
+        """Makes a scatter plot of simulated vs actual prev_unseen (q).
+        """
+        xs, ys = zip(*self.n_seq)
+        if None in xs:
+            return
+            
+        thinkplot.Plot([0, self.n_high], [0, self.n_high], color='gray')
+        thinkplot.Scatter(xs, ys)
+        thinkplot.Save(root='species-n',
+                       xlabel='Actual n')
 
-        # collect the species counts
-        hist = thinkbayes.MakeHistFromList(sample)
+    def PlotQ(self):
+        """Makes a scatter plot of simulated vs actual prev_unseen (q).
+        """
+        thinkplot.Plot([0, 0.2], [0, 0.2], color='gray')
+        xs, ys = zip(*self.q_seq)
+        thinkplot.Scatter(xs, ys)
+        thinkplot.Save(root='species-q',
+                       xlabel='Actual q')
+
+    def PlotL(self):
+        """Makes a scatter plot of simulated vs actual l.
+        """
+        thinkplot.Plot([0, 20], [0, 20], color='gray')
+        xs, ys = zip(*self.l_seq)
+        thinkplot.Scatter(xs, ys)
+        thinkplot.Save(root='species-l',
+                       xlabel='Actual l')
+
+    def PlotCalibrationCurves(self, root='species5'):
+        """Plots calibration curves"""
+        print self.total_n
+        print self.total_q
+        print self.total_l
+
+        thinkplot.Plot([0, 100], [0, 100], color='gray', alpha=0.2)
+
+        thinkplot.Plot(self.ps, self.total_n, label='n')
+        thinkplot.Plot(self.ps, self.total_q, label='q')
+        thinkplot.Plot(self.ps, self.total_l, label='l')
+
+        thinkplot.Save(root=root,
+                       axis=[0, 100, 0, 100],
+                       xlabel='Ideal percentages',
+                       ylabel='Predictive distributions',
+                       formats=formats,
+                       )
+
+    def RunCalibration(self, seed):
+        """Runs a single calibration run.
+
+        Generates N and prevalences from a Dirichlet distribution,
+        then generates simulated data.
+
+        Runs analysis to get the posterior distributions.
+        Generates calibration curves for each posterior distribution.
+
+        seed: int random seed
+        """
+        # generate a random number of species and their prevalences
+        # (from a Dirichlet distribution with alpha_i = conc for all i)
+        RandomSeed(seed)
+        n_actual = random.randrange(self.n_low, self.n_high+1)
+
+        hist, subhist, q_actual = GenerateFakeSample(
+            n_actual, 
+            self.r, 
+            self.tr, 
+            self.conc)
+
+        l_actual = len(hist) - len(subhist)
+        print 'Run low, high, conc', self.n_low, self.n_high, self.conc
+        print 'Run r, tr', self.r, self.tr
+        print 'Run n, q, l', n_actual, q_actual, l_actual
 
         # extract the data
-        data = [count for species, count in hist.Items()]
+        data = [count for species, count in subhist.Items()]
         data.sort()
         m = len(data)
+
+        seen = subhist.Values()
         print 'data', data
 
         # make a Subject and process
         subject = Subject('simulated')
+        subject.num_reads = self.r
+        subject.total_reads = self.tr
 
-        for species, count in hist.Items():
+        for species, count in subhist.Items():
             subject.Add(species, count)
         subject.Done()
 
-        return subject
+        self.RunSubject(subject, n_actual, q_actual, l_actual)
 
-    def FakeResample(self, match, num_reads=400):
-        subject = match.Resample(num_reads)
-        subject.Match(match)
-        return subject
-
-    def ValidateOne(self, subject):
-
-        subject.Process(conc=self.conc)
+    def RunSubject(self, subject, n_actual, q_actual, l_actual):
+        """
+        """
+        # process and make prediction
+        subject.Process(conc=self.conc, iters=100)
         subject.MakeQuickPrediction()
 
-        PrintSummary(subject)
+        # extract the posterior suite
+        suite = subject.suite
 
-        pmf = subject.suite.DistQ()
-        cdf = pmf.MakeCdf()
+        # check the distribution of n
+        pmf_n = suite.DistN() 
+        print 'n'
+        self.total_n += self.CheckDistribution(pmf_n, n_actual, self.n_seq)
+
+        # check the distribution of q
+        pmf_q = suite.DistQ()
         print 'q'
-        PrintPrediction(cdf, subject.prev_unseen)
+        self.total_q += self.CheckDistribution(pmf_q, q_actual, self.q_seq)
 
-        actual_l = subject.total_species - subject.num_species
-        cdf_l = subject.DistL().MakeCdf()
+        # check the distribution of additional species
+        pmf_l = subject.DistL()
         print 'l'
-        PrintPrediction(cdf_l, actual_l)
+        self.total_l += self.CheckDistribution(pmf_l, l_actual, self.l_seq)
+
+    def CheckDistribution(self, pmf, actual, seq):
+        """Checks a predictive distribution and returns a score vector.
+
+        pmf: predictive distribution
+        actual: actual value
+        seq: which sequence to append (actual, mean) onto
+        """
+        mean = pmf.Mean()
+        seq.append((actual, mean))
+
+        cdf = pmf.MakeCdf()
+        PrintPrediction(cdf, actual)
+
+        sv = ScoreVector(cdf, self.ps, actual)
+        return sv
 
 
-def RunCalibration():
+def ScoreVector(cdf, ps, actual):
+    """Checks whether the actual value falls in each credible interval.
+    
+    cdf: predictive distribution
+    ps: percentages to check (0-100)
+    actual: actual value
+
+    Returns: numpy array of 0, 0.5, or 1
+    """
+    scores = []
+    for p in ps:
+        low, high = cdf.CredibleInterval(p)
+        score = Score(low, high, actual)
+        scores.append(score)
+
+    return numpy.array(scores)
+
+
+def Score(low, high, n):
+    """Score whether the actual value falls in the range.
+
+    Hitting the posts counts as 0.5, -1 is invalid.
+
+    low: low end of range
+    high: high end of range
+    n: actual value
+
+    Returns: -1, 0, 0.5 or 1
+    """
+    if n is None:
+        return -1
+    if low < n < high:
+        return 1
+    if n == low or n == high:
+        return 0.5
+    else:
+        return 0
+
+
+def FakeSubject(n=300, conc=0.1, num_reads=400, prevalences=None):
     """
     """
-    cal = Calibrator()
-    cal.Calibrate(num_runs=10)
+    # generate random prevalences
+    if prevalences is None:
+        dirichlet = thinkbayes.Dirichlet(n, conc=conc)
+        prevalences = dirichlet.Random()
+        prevalences.sort()
+
+    # generate a simulated sample
+    pmf = thinkbayes.MakePmfFromItems(enumerate(prevalences))
+    cdf = pmf.MakeCdf()
+    sample = cdf.Sample(num_reads)
+
+    # collect the species counts
+    hist = thinkbayes.MakeHistFromList(sample)
+
+    # extract the data
+    data = [count for species, count in hist.Items()]
+    data.sort()
+    m = len(data)
+
+    # make a Subject and process
+    subject = Subject('simulated')
+
+    for species, count in hist.Items():
+        subject.Add(species, count)
+    subject.Done()
+
+    return subject
+
+
+def PlotSubjectCdf(code=None):
+    """Checks whether the Dirichlet model can replicate the data.
+    """
+    subject_map, uber_subject = ReadCompleteDataset()
+
+    if code is None:
+        subjects = subject_map.values()
+        subject = random.choice(subjects)
+    elif code == 'uber':
+        subject = uber_subject
+    else:
+        subject = subject_map[code]
+
+    print subject.code
+
+    m = subject.GetM()
+    counts = subject.GetCounts()
+    print m
+
+    subject.Process(high=m, conc=0.1, iters=0)
+    print subject.suite.params[:m]
+
+    # plot the cdf
+    options = dict(linewidth=1, color='blue', alpha=0.5)
+    cdf = subject.MakeCdf()
+    thinkplot.Cdf(cdf, **options)
+
+    options = dict(linewidth=0.5, color='green', alpha=0.5)
+
+    # generate fake subjects and plot their CDFs
+    for i in range(10):
+        print i
+        prevalences = subject.suite.SamplePrevalences(m)
+        fake = FakeSubject(prevalences=prevalences)
+        cdf = fake.MakeCdf()
+        thinkplot.Cdf(cdf, **options)
+
+    thinkplot.Show(
+        xlabel='rank',
+        ylabel='CDF',
+        xscale='log',
+        )
+
+
+def RunCalibration(validate=False):
+    """Runs either the calibration or validation process.
+    """
+    cal = Calibrator(conc=0.2)
+
+    if validate:
+        cal.Validate(num_runs=100)
+    else:
+        cal.Calibrate(num_runs=100)
+
     cal.PlotN()
     cal.PlotQ()
     cal.PlotL()
@@ -2025,15 +2114,28 @@ def RunCalibration():
 
 
 def main(script, *args):
-    #RunCalibration()
-    #return
+    RunCalibration(validate=True)
+    return
+
+    PlotSubjectCdf(None)
+    return
+
+    PlotSubjectCdf('B1558.G')
+    return
+
+    PlotSubjectCdf('uber')
+    return
+
+    print 'val'
+    val = Validator(conc=0.1)
+    val.Validate()
+
+    return
+
+
     #print 'cal'
     #cal = Calibrator()
     #cal.Calibrate(num_runs=1)
-
-    print 'val'
-    val = Validator(conc=0.06)
-    val.Validate(2)
 
     #match = val.FakeSubject(n=300, num_reads=800)
     #subject = val.FakeResample(match, num_reads=400)
