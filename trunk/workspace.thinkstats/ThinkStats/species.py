@@ -71,34 +71,34 @@ class Subject(object):
         """
         self.species.append((count, species))
 
-    def Done(self, reverse=False, clean=False):
+    def Done(self, reverse=False, clean_param=0):
         """Called when we are done adding species counts.
 
         reverse: which order to sort in
         """
-        if clean:
-            self.Clean()
+        if clean_param:
+            self.Clean(clean_param)
 
         self.species.sort(reverse=reverse)        
         counts = self.GetCounts()
         self.num_species = len(counts)
         self.num_reads = sum(counts)
 
-    def Clean(self, alpha=80):
+    def Clean(self, clean_param=50):
         """
         """
-        def prob_bogus(k, n):
-            q = alpha / n
+        def prob_bogus(k, r):
+            q = clean_param / r
             p = (1-q) ** k
             return p
 
         counts = self.GetCounts()
-        n = 1.0 * sum(counts)
+        r = 1.0 * sum(counts)
 
         species_seq = []
         for k, species in sorted(self.species):
 
-            if random.random() < prob_bogus(k, n):
+            if random.random() < prob_bogus(k, r):
                 continue
             species_seq.append((k, species))
         self.species = species_seq
@@ -518,11 +518,15 @@ def SpeciesGenerator(names, num):
         i += 1
             
 
-def ReadRarefactedData(filename='journal.pone.0047712.s001.csv'):
+def ReadRarefactedData(filename='journal.pone.0047712.s001.csv', 
+                       clean_param=0):
     """Reads a data file and returns a list of Subjects.
 
     Data from http://www.plosone.org/article/
     info%3Adoi%2F10.1371%2Fjournal.pone.0047712#s4
+
+    filename: string filename to read
+    clean_param: parameter passed to Clean
 
     Returns: map from code to Subject
     """
@@ -550,17 +554,19 @@ def ReadRarefactedData(filename='journal.pone.0047712.s001.csv'):
         subject.Add(species, count)
 
     for code, subject in subject_map.iteritems():
-        subject.Done(clean=True)
+        subject.Done(clean_param=clean_param)
 
     return subject_map
 
 
-def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
+def ReadCompleteDataset(filename='BBB_data_from_Rob.csv', clean_param=0):
     """Reads a data file and returns a list of Subjects.
 
     Data from personal correspondence with Rob Dunn, received 2-7-13.
-
     Converted from xlsx to csv.
+
+    filename: string filename to read
+    clean_param: parameter passed to Clean
 
     Returns: map from code to Subject
     """
@@ -601,9 +607,9 @@ def ReadCompleteDataset(filename='BBB_data_from_Rob.csv'):
                 subject_map[code].Add(species, count)
                 uber_subject.Add(species, count)
 
-    uber_subject.Done(clean=True)
+    uber_subject.Done(clean_param=clean_param)
     for code, subject in subject_map.iteritems():
-        subject.Done(clean=True)
+        subject.Done(clean_param=clean_param)
 
     return subject_map, uber_subject
         
@@ -997,12 +1003,6 @@ class Species2(object):
         f = (a - g * y) / x
         params[:m] *= f
         params[m:] *= g
-
-        #x = sum(params[:m])
-        #y = sum(params[m:])
-        #a = x + y
-        #q_achieved = y / a
-        #print 'Unbias', q_achieved
 
         return params
 
@@ -1815,12 +1815,12 @@ class Calibrator(object):
         self.total_q *= 100.0 / num_runs
         self.total_l *= 100.0 / num_runs
 
-    def Validate(self, num_runs=100):
+    def Validate(self, num_runs=100, clean_param=0):
         """Runs validations.
 
         num_runs: how many runs
         """
-        subject_map, _ = ReadCompleteDataset()
+        subject_map, _ = ReadCompleteDataset(clean_param=clean_param)
 
         i = 0
         for code, match in subject_map.iteritems():
@@ -1845,7 +1845,7 @@ class Calibrator(object):
         self.total_q *= 100.0 / num_runs
         self.total_l *= 100.0 / num_runs
 
-    def PlotN(self):
+    def PlotN(self, root='species-n'):
         """Makes a scatter plot of simulated vs actual prev_unseen (q).
         """
         xs, ys = zip(*self.n_seq)
@@ -1854,26 +1854,29 @@ class Calibrator(object):
             
         thinkplot.Plot([0, self.n_high], [0, self.n_high], color='gray')
         thinkplot.Scatter(xs, ys)
-        thinkplot.Save(root='species-n',
-                       xlabel='Actual n')
+        thinkplot.Save(root=root,
+                       xlabel='Actual n',
+                       ylabel='Predicted')
 
-    def PlotQ(self):
+    def PlotQ(self, root='species-q'):
         """Makes a scatter plot of simulated vs actual prev_unseen (q).
         """
         thinkplot.Plot([0, 0.2], [0, 0.2], color='gray')
         xs, ys = zip(*self.q_seq)
         thinkplot.Scatter(xs, ys)
-        thinkplot.Save(root='species-q',
-                       xlabel='Actual q')
+        thinkplot.Save(root=root,
+                       xlabel='Actual q',
+                       ylabel='Predicted')
 
-    def PlotL(self):
+    def PlotL(self, root='species-n'):
         """Makes a scatter plot of simulated vs actual l.
         """
         thinkplot.Plot([0, 20], [0, 20], color='gray')
         xs, ys = zip(*self.l_seq)
         thinkplot.Scatter(xs, ys)
-        thinkplot.Save(root='species-l',
-                       xlabel='Actual l')
+        thinkplot.Save(root=root,
+                       xlabel='Actual l',
+                       ylabel='Predicted')
 
     def PlotCalibrationCurves(self, root='species5'):
         """Plots calibration curves"""
@@ -1883,7 +1886,9 @@ class Calibrator(object):
 
         thinkplot.Plot([0, 100], [0, 100], color='gray', alpha=0.2)
 
-        thinkplot.Plot(self.ps, self.total_n, label='n')
+        if self.total_n[0] >= 0:
+            thinkplot.Plot(self.ps, self.total_n, label='n')
+
         thinkplot.Plot(self.ps, self.total_q, label='q')
         thinkplot.Plot(self.ps, self.total_l, label='l')
 
@@ -2053,14 +2058,15 @@ def FakeSubject(n=300, conc=0.1, num_reads=400, prevalences=None):
     return subject
 
 
-def PlotSubjectCdf(code=None):
+def PlotSubjectCdf(code=None, clean_param=0):
     """Checks whether the Dirichlet model can replicate the data.
     """
-    subject_map, uber_subject = ReadCompleteDataset()
+    subject_map, uber_subject = ReadCompleteDataset(clean_param=clean_param)
 
     if code is None:
         subjects = subject_map.values()
         subject = random.choice(subjects)
+        code = subject.code
     elif code == 'uber':
         subject = uber_subject
     else:
@@ -2076,11 +2082,11 @@ def PlotSubjectCdf(code=None):
     print subject.suite.params[:m]
 
     # plot the cdf
-    options = dict(linewidth=1, color='blue', alpha=0.5)
+    options = dict(linewidth=3, color='blue', alpha=0.5)
     cdf = subject.MakeCdf()
     thinkplot.Cdf(cdf, **options)
 
-    options = dict(linewidth=0.5, color='green', alpha=0.5)
+    options = dict(linewidth=1, color='green', alpha=0.5)
 
     # generate fake subjects and plot their CDFs
     for i in range(10):
@@ -2090,56 +2096,44 @@ def PlotSubjectCdf(code=None):
         cdf = fake.MakeCdf()
         thinkplot.Cdf(cdf, **options)
 
-    thinkplot.Show(
-        xlabel='rank',
-        ylabel='CDF',
-        xscale='log',
-        )
+    root = 'species-cdf-%s' % code
+    thinkplot.Save(root=root,
+                   xlabel='rank',
+                   ylabel='CDF',
+                   xscale='log',
+                   formats=formats,
+                   )
 
 
-def RunCalibration(validate=False):
+def RunCalibration(flag='cal', num_runs=100, clean_param=50):
     """Runs either the calibration or validation process.
     """
-    cal = Calibrator(conc=0.2)
+    cal = Calibrator(conc=0.1)
 
-    if validate:
-        cal.Validate(num_runs=100)
+    if flag == 'val':
+        cal.Validate(num_runs=num_runs, clean_param=clean_param)
     else:
-        cal.Calibrate(num_runs=100)
+        cal.Calibrate(num_runs=num_runs)
 
-    cal.PlotN()
-    cal.PlotQ()
-    cal.PlotL()
-    cal.PlotCalibrationCurves()
+    cal.PlotN(root='species-n-%s' % flag)
+    cal.PlotQ(root='species-q-%s' % flag)
+    cal.PlotL(root='species-l-%s' % flag)
+    cal.PlotCalibrationCurves(root='species5-%s' % flag)
 
 
 def main(script, *args):
-    RunCalibration(validate=True)
+    RunCalibration(flag='val')
     return
+
+    PlotSubjectCdf('B1558.G', clean_param=50)
+    return
+
+    RunCalibration(flag='cal')
 
     PlotSubjectCdf(None)
     return
 
-    PlotSubjectCdf('B1558.G')
-    return
-
     PlotSubjectCdf('uber')
-    return
-
-    print 'val'
-    val = Validator(conc=0.1)
-    val.Validate()
-
-    return
-
-
-    #print 'cal'
-    #cal = Calibrator()
-    #cal.Calibrate(num_runs=1)
-
-    #match = val.FakeSubject(n=300, num_reads=800)
-    #subject = val.FakeResample(match, num_reads=400)
-    #val.ValidateOne(subject)
     return
 
     RunSubject('B972', conc=0.05)
