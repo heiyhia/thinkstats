@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.23}
+\newcommand{\theversion}{0.24}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -344,7 +344,7 @@ contains the data files used by some of the programs.  When you
 unzip it, it creates a directory named \verb"thinkbayes_code"
 that contains all the code used in this book.
 
-One of the modules in that directory is {\tt myplot.py},
+One of the modules in that directory is {\tt thinkplot.py},
 which provides wrappers for some of the functions in {\tt pyplot},
 which is part of {\tt matplotlib}.  You can download {\tt matplotlib}
 from \url{http://matplotlib.org}, if you don't already have it
@@ -497,6 +497,9 @@ Evan Simpson.
 
 \item Greg Marra and Matt Aasted helped me clarify the discussion
 of {\it The Price is Right} problem.
+
+\item Marcus Ogren pointed out that the original statement of
+the Locomotive problem was ambiguous.
 
 % ENDCONTRIB
 
@@ -1375,7 +1378,7 @@ If you are familiar with
 design patterns, you might recognize this as an example of the
 Template method pattern: the parent class, \verb"Suite", defines an
 algorithm framework; the child class, \verb"Monty" provides the
-missing elements of the algorithm, in this case the \verb"Likelihood"
+missing elements of the algorithm, in this case the likelihood
 function.  You can read about this pattern at
 \url{http://en.wikipedia.org/wiki/Template_method_pattern}.
 
@@ -1621,7 +1624,7 @@ on a uniform prior.}
 
 We don't have much basis to choose a prior, but we can
 start with something simple and
-then evaluate some alternatives.  So let's assume that $N$ is less
+then evaluate alternatives.  So let's assume that $N$ is less
 than 1000, and equally likely to be any value from 1 to 1000.
 
 \begin{verbatim}
@@ -1629,9 +1632,14 @@ than 1000, and equally likely to be any value from 1 to 1000.
     suite = Train(hypos)
 \end{verbatim}
 
-Now all we need is a likelihood function.  With a little thought,
-you will realize that the likelihood functions for the Locomotive
-problem and the Dice problem are identical:
+Now all we need is a likelihood function.  In a hypothetical fleet of
+$N$ locomotives, what is the probability that we would see number 60?
+If we assume that there is only one train-operating company (or only
+one we care about) and that we are equally likely to see any of its
+locomotives, then the chance of seeing any particular locomotive is
+$1/N$.
+
+Here's the likelihood function:
 
 \begin{verbatim}
 class Train(Suite):
@@ -1642,18 +1650,21 @@ class Train(Suite):
             return 1.0/hypo
 \end{verbatim}
 
-And here's the update:
+This might look familiar; the likelihood functions for the Locomotive
+problem and the Dice problem are identical.
+
+Here's the update:
 
 \begin{verbatim}
     suite.Update(60)
 \end{verbatim}
 
 Since there are 1000 hypotheses, I didn't print the results.
-Instead I used {\tt myplot.Pmf}:
+Instead I used {\tt thinkplot.Pmf}:
 
 \begin{verbatim}
-    myplot.Pmf(suite)
-    myplot.Show(xlabel='Number of trains',
+    thinkplot.Pmf(suite)
+    thinkplot.Show(xlabel='Number of trains',
                 ylabel='Probability')
 \end{verbatim}
 
@@ -1722,7 +1733,7 @@ So that's bad.  There are two ways to proceed:
 
 \end{itemize}
 
-With more data, the posterior distributions based on different
+With more data, posterior distributions based on different
 priors tend to converge.  For example, suppose that in addition
 to train 60 we also see trains 30 and 90.  We can update the
 distribution like this:
@@ -1745,7 +1756,7 @@ With these data, the means of the posteriors are
   \hline
   \end{tabular}
 
-So the difference between the posteriors is smaller.
+So the differences are smaller.
 
 
 \section{An alternative prior}
@@ -1760,7 +1771,7 @@ compared to a uniform prior.}
 
 If more data are not available, another option is to improve the
 priors by gathering more background information.  It is probably
-not reasonable to assume that a railroad company with 1000 locomotives
+not reasonable to assume that a train-operating company with 1000 locomotives
 is just as likely as a company with only 1.
 
 With some effort, we could probably find a list of companies that
@@ -1779,8 +1790,8 @@ This law suggests that if there are 1000 companies with fewer than
 10 locomotives, there might be 100 companies with 100 locomotives,
 10 companies with 1000, and possibly one company with 10,000 locomotives.
 
-Mathematically, a power law means the number of companies
-with a given size is inversely proportional to the size, or
+Mathematically, a power law means that the number of companies
+with a given size is inversely proportional to size, or
 %
 \[ \PMF(x) \propto \left( \frac{1}{x} \right)^{\alpha}   \]
 %
@@ -1791,6 +1802,7 @@ We can construct a power law prior like this:
 
 \begin{verbatim}
 class Train(Dice):
+
     def __init__(self, hypos, alpha=1.0):
         Pmf.__init__(self)
         for hypo in hypos:
@@ -1829,7 +1841,7 @@ the means of the posteriors are
   \hline
   \end{tabular}
 
-Now the difference between the posteriors is much smaller.  In fact,
+Now the differences are much smaller.  In fact,
 with an arbitrarily large upper bound, the mean converges on 134.
 
 So the power law prior is more realistic, because it is based on
@@ -1838,6 +1850,7 @@ behaves better in practice.
 
 You can download the examples in this section from
 \url{http://thinkbayes.com/train3.py}.
+
 
 \section{Credible intervals}
 
@@ -1919,6 +1932,30 @@ calculations.
 The examples in this section are in \url{http://thinkbayes.com/train.py}.
 
 
+\begin{exercise}
+To write a likelihood function for the Locomotive problem, we had
+to answer this question:  ``If the railroad has $N$ locomotives, what
+is the probability that we see number 60?''
+
+The answer depends on what sampling process we use when we observe the
+locomotive.  In this chapter, I resolved the ambiguity by specifying
+that there is only one train-operating company (or only one that we
+care about).
+
+But suppose instead that there are many companies with different
+numbers of trains.  And suppose that you are equally likely to see any
+train operated by any company.
+
+In that case, the likelihood function is different because you
+are more likely to see a train operated by a large company.
+
+As an exercise, implement the likelihood function for this variation
+of the Locomotive problem, and compare the results.
+
+\end{exercise}
+
+
+
 \chapter{More estimation}
 
 \section{The Euro coin problem}
@@ -1996,8 +2033,8 @@ Here's the code that makes the suite and updates it:
 And then we can plot the posterior.
 
 \begin{verbatim}
-    myplot.Pmf(suite)
-    myplot.Show()
+    thinkplot.Pmf(suite)
+    thinkplot.Show()
 \end{verbatim}
 
 The result is in Figure~\ref{fig.euro1}.
@@ -2926,7 +2963,7 @@ over a continuous range, the result is a probability.  But
 for the applications in this book we seldom have to do that.
 
 In this book we primarily use probability densities as part
-of a {\tt Likelihood} function.  We will see an example soon.
+of a likelihood function.  We will see an example soon.
 
 
 \section{Representing Pdfs}
@@ -3048,7 +3085,7 @@ Figure~\ref{fig.price1}:
     xs = numpy.linspace(low, high, n) 
     pmf = kde.MakePmf(xs)
 
-    myplot.Pmf(pmf)
+    thinkplot.Pmf(pmf)
 \end{verbatim}
 
 And now back to {\it The Price is Right}.
@@ -3075,7 +3112,7 @@ To update these priors, you have to answer these questions:
 
 \item What data should we consider and how should we quantify it?
 
-\item Can we compute a {\tt Likelihood} function; that is,
+\item Can we compute a likelihood function; that is,
   for each hypothetical value of {\tt price}, can we compute
   the conditional likelihood of the data?
 
@@ -3283,8 +3320,8 @@ posterior beliefs about the actual price:
 
 \begin{verbatim}
     player1.MakeBeliefs(20000)
-    myplot.Pmf(player1.prior)
-    myplot.Pmf(player2.prior)
+    thinkplot.Pmf(player1.prior)
+    thinkplot.Pmf(player2.prior)
 \end{verbatim}
 
 Figure~\ref{fig.price3} shows the results.  Your guess (\$20,000)
@@ -4076,7 +4113,8 @@ analysis I came up with.
 This case study is based on a project by Brendan Ritter and
 Kai Austin, who took a class with me at Olin College.
 The code in this chapter is available from
-\url{http://thinkbayes.com/redline.py}.
+\url{http://thinkbayes.com/redline.py}.  The code I used
+to collect data is in \url{http://thinkbayes.com/redline_data.py}.
 
 
 \section{The model}
@@ -4102,21 +4140,21 @@ On the other hand, the arrival process for trains is not Poisson.
 Trains to Boston are supposed to leave from the end of the line
 (Alewife station) every 7--8 minutes during peak times, but by the time
 they get to Kendall Square, the time between trains varies between 3
-and 13 minutes.
+and 12 minutes.
 
 To gather data on the time between trains, I wrote a script that
 downloads real-time data from
 \url{http://www.mbta.com/rider_tools/developers/}, selects south-bound
 trains arriving at Kendall square, and records their arrival times
 in a database.  I ran the script from 4pm to 6pm every weekday
-for xx days, and recorded about 15 arrivals per day.  Then
+for 5 days, and recorded about 15 arrivals per day.  Then
 I computed the time between consecutive arrivals; the distribution
 of these inter-arrival times is in Figure~\ref{fig.redline0}.
 
 If you stood on the platform from 4pm to 6pm and recorded the time
 between trains, this is the distribution you would see.  But if you
 arrive at some random time (without regard to the train schedule) you
-would see a different distribution.  As it turns out, the average time
+would see a different distribution.  The average time
 between trains, as seen by a random passenger, is substantially
 higher than the true average.
 
@@ -4192,7 +4230,7 @@ with probability 1/3, or 10 minutes with probability 2/3.
 
 If we arrive at a random time during a 5 minute gap, the distribution
 of {\tt y} is uniform from 0 to 5 minutes.  If we arrive during a 10
-minute gap, the distribution is uniform from 0 to 10.  So the overall
+minute gap, {\tt y} is uniform from 0 to 10.  So the overall
 distribution is a mixture of uniform distributions weighted
 according to the probability of each gap.
 
@@ -4272,19 +4310,21 @@ Figure~\ref{fig.redline2} shows the distribution of {\tt z}, {\tt zb}
 and {\tt y} based on the data I collected from the Red Line web site.
 
 To present these distributions, I am switching from Pmfs to Cdfs.
-Most people are more familiar with Pmfs, but I find Cdfs easier
+Most people are more familiar with Pmfs, but I think Cdfs are easier
 to interpret, once you get used to them.  And if you want to plot
 several distributions on the same axes, Cdfs are the way to go.
 
-The mean of {\tt z} is 7.6 minutes.  The mean of {\tt zb} is 8.6
-minutes, about 13\% higher.  The mean of {\tt y} is 4.3, exactly half
+The mean of {\tt z} is 7.8 minutes.  The mean of {\tt zb} is 8.8
+minutes, about 13\% higher.  The mean of {\tt y} is 4.4, half
 the mean of {\tt zb}.
 
 As an aside, the Red Line schedule reports that trains run every
 9 minutes during peak times.  This is close to the average of
-{\tt zb}, but higher than the average of {\tt z}.  I wonder if
-they are deliberately reporting the mean as seen by passengers,
-rather than the actual mean, to avoid complaints.
+{\tt zb}, but higher than the average of {\tt z}.  I exchanged email
+with a representative of the MBTA, who confirmed that the reported
+time between trains is a deliberately conservative simplification
+of the actual gaps, which vary over time and at different
+points along the line.
 
 
 \section{Predicting wait times}
@@ -4298,7 +4338,7 @@ rather than the actual mean, to avoid complaints.
 \label{fig.redline3}
 \end{figure}
 
-So let's get back to the motivating question: suppose that when
+Let's get back to the motivating question: suppose that when
 I arrive at the platform I see 10 people waiting.
 How long should I expect to wait until the next train arrives?
 
@@ -4357,7 +4397,7 @@ class ElapsedTimeEstimator(object):
         self.pmf_y = self.post_x.PredictWaitTime(wtc.pmf_zb)
 \end{verbatim}
 
-I'll present the functions in this section top-down, so if you see a
+I present the functions in this section top-down, so if you see a
 function before its definition, be patient.
 
 {\tt Elapsed} is a Suite that represents the hypothetical
@@ -4468,18 +4508,18 @@ After five days, you might have data like this:
 \begin{verbatim}
 k1      y     k2
 --     ---    --
-10     2.5     4
-16     3.8     6
-3     12.0    21
-0      6.8    17
-4      6.6    14
+17     4.6     9
+22     1.0     0
+23     1.4     4
+18     5.4    12
+4      5.8    11
 \end{verbatim}
 %
 where {\tt k1} is the number of passengers waiting when you arrive,
 {\tt y} is your wait time, and {\tt k2} is the number of passengers
 who arrive while you are waiting.
 
-Over the course of one week, you waited 31 minutes and saw 62
+Over the course of one week, you waited 18 minutes and saw 36
 passengers arrive, so you would estimate that the arrival rate is
 2 passengers per minute.  For practical purposes that estimate is
 good enough, but for the sake of completeness I
@@ -4504,7 +4544,7 @@ class ArrivalRate(thinkbayes.Suite):
         return like
 \end{verbatim}
 
-If this {\tt Likelihood} looks familiar, there is a good reason.  It
+This {\tt Likelihood} might look familiar; it
 is almost identical to {\tt Elapsed.Likelihood} in
 Section~\ref{elapsed}.  The difference is that in {\tt
   Elapsed.Likelihood} the hypothesis is {\tt x}, the elapsed time; in
@@ -4611,8 +4651,14 @@ of {\tt lam}, with line thickness that represents likelihood.
 The dark line is the mixture of these distributions.
 
 In this case we could get a very similar result using a single point
-estimate of {\tt lam}; it was not necessary, for practical purposes,
+estimate of {\tt lam}.  So it was not necessary, for practical purposes,
 to include the uncertainty of the estimate.
+
+In general, it is important to include variability if the system
+response is non-linear; that is, if small changes in the input can
+cause big changes in the output.  In this case, posterior variability
+in {\tt lam} is small and the system response is approximately
+linear for small perturbations.
 
 
 \section{Decision analysis}
@@ -4626,40 +4672,43 @@ a function of the number of passengers on the platform. }
 \end{figure}
 
 At this point we can use the number of passengers on the platform
-to predict the distribution of wait times.  To finish the analysis,
+to predict the distribution of wait times.  Now
 let's get to the second part of the question: when should I stop
-waiting for a train and go catch a taxi?
+waiting for the train and go catch a taxi?
 
 Remember that in the original scenario, I am trying to get to
-South Station to catch the commuter rail.  Suppose I
-arrive at Kendall Square early enough that I can wait 15 minutes
-for a train and still make my connection at South Station.
+South Station to catch the commuter rail.  Suppose I leave
+the office with enough time that I can wait 15 minutes
+and still make my connection at South Station.
 
-So I would like to know the probability that {\tt y} exceeds 15
-minutes as a function of \verb"num_passengers".  I can take
-the analysis from Section~\ref{elapsed} and run it for a range of
+In that case I would like to know the probability that {\tt y} exceeds
+15 minutes as a function of \verb"num_passengers".  It is easy enough
+to use the
+analysis from Section~\ref{elapsed} and run it for a range of
 \verb"num_passengers".
 
-This analysis is sensitive to the frequency of long delays, but
+But there's a problem.
+The analysis is sensitive to the frequency of long delays, and
 because long delays are rare, it is hard estimate
 their frequency.
 
 I only have data from one week,
-and the longest delay I observed was 15 minutes.  I can't
-estimate the frequency of longer delays accurately, but we
-can start with a coarse estimate.
+and the longest delay I observed was 15 minutes.  So I can't
+estimate the frequency of longer delays accurately.
 
-When I commuted by Red Line for a year, I saw a few longer delays
-caused by a signaling problem, a power outage, and ``police activity''
-at another stop.
+However, I can use previous observations to make at least a coarse
+estimate.  When I commuted by Red Line for a year, I saw three long
+delays caused by a signaling problem, a power outage, and ``police
+activity'' at another stop.  So I estimate that there are about
+3 major delays per year.
 
-But remember that my observations are biased.  I was more likely
-to observe these long delays because they affected a large number
+But remember that my observations are biased.  I am more likely
+to observe long delays because they affect a large number
 of passengers.  So we should treat my observations as a sample
-of {\tt zb} rather than {\tt z.  Here's how we can do that.
+of {\tt zb} rather than {\tt z}.  Here's how we can do that.
 
 During my year of commuting, I took the Red Line home about 220
-times.  So take the observed gap times, \verb"gap_times",
+times.  So I take the observed gap times, \verb"gap_times",
 generate a sample of 220 gaps, and compute their Pmf:
 
 \begin{verbatim}
@@ -4667,11 +4716,10 @@ generate a sample of 220 gaps, and compute their Pmf:
     cdf_z = thinkbayes.MakeCdfFromList(gap_times)
     sample_z = cdf_z.Sample(n)
     pmf_z = thinkbayes.MakePmfFromList(sample_z)
-
 \end{verbatim}
 
 Next I bias \verb"pmf_z" to get the distribution of
-{\tt zb}, draw a sample, and then add in 3 delays of
+{\tt zb}, draw a sample, and then add in delays of
 30, 40 and 50 minutes (expressed in seconds):
 
 \begin{verbatim}
@@ -4700,28 +4748,26 @@ distribution of {\tt z}, which I used to create the
     wtc = WaitTimeCalculator(pmf_z)
 \end{verbatim}
 
-This process is a bit convoluted, but each step is a simple
-combination of functions we have seen before.
-
+This process is complicated, but
+all of the steps are operations we have seen before.
 Now we are ready to estimate wait time as a function of
 \verb"num_passengers":
 
 \begin{verbatim}
     for num_passengers in nums:
         ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
-
         cdf_y = ete.pmf_y.MakeCdf()
-        prob = 1 - cdf_y.Prob(900)
+        prob = 1 - cdf_y.Prob(15 * 60)
 \end{verbatim}
 
 For each value in {\tt nums}, we make an {\tt ElapsedTimeEstimator},
 extract the distribution of wait time, \verb"pmf_y", and compute
-the probability that wait time exceeds 15 minutes (900 seconds).
+the probability that wait time exceeds 15 minutes (expressed in seconds).
 
 Figure~\ref{fig.redline5} shows the result.  When the number of
 passengers is less than 20, we infer that they system is
 operating normally, and the probability of a long delay is small.
-When there are 30 passengers, we estimate that it has been 15
+If there are 30 passengers, we estimate that it has been 15
 minutes since the last train; that's longer than a normal delay,
 so we infer that something is wrong and expect longer delays.
 
@@ -4741,7 +4787,7 @@ event nearby, a large number of people might arrive at the same time.
 In that case, the estimate of {\tt lam} would be too low, so the
 estimates of {\tt x} and {\tt y} would be too high.
 
-If special events are about as common as major delays, it would
+If special events are as common as major delays, it would
 be important to include them in the model.  We could do that by
 extending the distribution of {\tt lam} to include occasional
 large values.
@@ -4751,12 +4797,12 @@ large values.
 
 We started with the assumption that we know the passenger arrival
 rate and distribution of {\tt z}.  Then we relaxed the first assumption,
-using the observations of a hypothetical passenger to estimate
+using observations by a hypothetical passenger to estimate
 {\tt lam}.
 
-It is also possible for a passenger to estimate the distribution 
-of {\tt z}, but it is harder because passengers generally observe
-only their own wait times, {\tt y}.  Unless you choose to skip
+It is also possible to estimate the
+distribution of {\tt z}, but it is harder because passengers generally
+observe only their own wait times, {\tt y}.  Unless you choose to skip
 the first train and wait for a second train, you generally don't
 observe the gap between trains, {\tt z}.
 
@@ -4774,7 +4820,7 @@ to the distribution of {\tt z}.
 
 I leave the implementation of this analysis as an exercise for the
 reader.  One suggestion: you should read Chapter~\ref{species} first.
-
+A Dirichlet distribution might help.
  
 
 \chapter{Two dimensions}
@@ -5076,7 +5122,7 @@ of {\tt alpha} for a range of values of {\tt beta}:
 
     for beta in betas:
         cond = suite.Conditional(0, 1, beta)
-        myplot.Pmf(cond)
+        thinkplot.Pmf(cond)
 \end{verbatim}
 
 Figure~\ref{fig.paintball3} shows the results, which we could
@@ -5156,14 +5202,14 @@ def MakeCrediblePlot(suite):
         for pair in interval:
             d[pair] += 1
 
-    myplot.Contour(d, contour=False, pcolor=True)
-    myplot.Show()
+    thinkplot.Contour(d, contour=False, pcolor=True)
+    thinkplot.Show()
 \end{verbatim}
 
 {\tt d} is a dictionary that maps from each value in the suite
 to the number of intervals it appears in.  The loop computes intervals
 for several percentages and modifies {\tt d}.  Then I use functions
-from {\tt myplot} to generate a pseudocolor plot.
+from {\tt thinkplot} to generate a pseudocolor plot.
 
 Figure~\ref{fig.paintball5} shows the result.  The 25\% credible
 interval is the darkest region near the bottom wall.  For higher
@@ -7816,7 +7862,7 @@ through the top-level hypotheses:
 \begin{figure}
 % species.py
 \centerline{\includegraphics[height=2.5in]{figs/species2.pdf}}
-\caption{Distribution of prevalences for three species.}
+\caption{Posterior distribution of {\tt n}.}
 \label{fig.species2}
 \end{figure}
 
@@ -7872,7 +7918,7 @@ a road map.
   Species4} is a simple implementation of this strategy using
   Dirichlet objects to represent the sub-hypotheses.
 
-\item Finally, {\tt Species5} combines the sub-hypothesis into the top
+\item Finally, {\tt Species5} combines the sub-hypotheses into the top
   level and uses {\tt numpy} array operations to speed things up.
 
 \end{itemize}
@@ -8017,7 +8063,7 @@ error-prone than the original.  But that's one reason I think it is
 a good idea to start with the simple version; we can use it for
 regression testing.  I plotted results from both versions and confirmed
 that they are approximately equal, and that they converge as the
-sample size increases.
+number of iterations increases.
 
 
 \section{One more problem}
@@ -8066,7 +8112,7 @@ represents the hypotheses as a list of Dirichlet objects (unlike
 
 {\tt Update} loops through the observed species and makes an
 array, {\tt one}, with all zeros and one species count.  Then
-is calls {\tt Update} in the parent class, which actually computes
+it calls {\tt Update} in the parent class, which actually computes
 the likelihoods and updates the sub-hypotheses.
 
 So in the running example, we do three updates.  The first
@@ -8162,15 +8208,14 @@ This function is similar to {\tt Species2.Update}, with two changes:
 
 \begin{itemize}
 
-\item The interface is different.  Instead of the whole dataset,
-we get {\tt m}, the number
-of species we have seen, and {\tt count}, how many of that
-species we've seen.
+\item The interface is different.  Instead of the whole dataset, we
+  get {\tt m}, the number of species we have seen, and {\tt count},
+  how many of that species we've seen.
 
-\item We have to apply a correction factor for the number
-of unseen species, as in {\tt Species4.Likelihood}.  The difference
-here is that we update all of the likelihoods at once with
-array multiplication.
+\item We have to apply a correction factor for the number of unseen
+  species, as in {\tt Species4.Likelihood}.  The difference here is
+  that we update all of the likelihoods at once with array
+  multiplication.
 
 \end{itemize}
 
@@ -8195,9 +8240,9 @@ Finally, here's {\tt SampleLikelihood}:
 
 This is similar to {\tt Species2.SampleLikelihood}; the
 difference is that each update only includes a single species,
-so we don't need a loop: \verb"log_likes" only has a single term.
+so we don't need a loop.
 
-So the runtime of this function is linear in {\tt n}, but does not
+The runtime of this function is linear in {\tt n}, but does not
 depend on {\tt m}.  {\tt Update} is linear in {\tt m}, so the
 whole update process is $\BigO{n m}$.  And the number of iterations
 we need to get an accurate result is usually small.
@@ -8229,14 +8274,14 @@ animal in the preserve is equally likely to be observed.
 Similarly, for the belly button data, we assume that each
 bacterium is equally likely to yield a read.
 
-In reality, it is possible that each step in the data-collection
+In reality, each step in the data-collection
 process might introduce consistent biases.  Some species might
 be more likely to be picked up by a swab, or to yield identifiable
 amplicons.  So when we talk about the prevalence of each species,
 we should remember this source of error.
 
 I should also acknowledge that I am using the term ``species''
-loosely.  First, bacterial species are not well-defined.  Second,
+loosely.  First, bacterial species are not well defined.  Second,
 some reads identify a particular species, others only identify
 a genus.  To be more precise, I should say ``operational
 taxonomic unit'', or OTU.
@@ -8256,7 +8301,7 @@ class Subject(object):
 Each subject has a string code, like ``B1242'', and a list of
 (count, species name) pairs, sorted in increasing order by count.
 {\tt Subject} provides several methods to make it
-easy to these counts and species names.  You can see the details
+easy to access these counts and species names.  You can see the details
 in \url{http://thinkbayes.com/species.py}.
 
 \begin{figure}
@@ -8266,18 +8311,16 @@ in \url{http://thinkbayes.com/species.py}.
 \label{species-ndist}
 \end{figure}
 
-In addition, {\tt Subject.Process} creates a suite, specifically
-a suite of type {\tt Species5}, which represents the distribution
-of {\tt n} and the prevalences after processing the data.
+{\tt Subject} provides a method named {\tt Process} that creates and
+then updates a suite, specifically a suite of type {\tt Species5},
+which represents the distribution of {\tt n} and the prevalences.
 
 It also provides {\tt PlotDistOfN}, which plots the posterior
 distribution of {\tt n}.  Figure~\ref{species-ndist} shows this
-distribution for subject B1242.
-The probability that there are exactly 61
-species, and no unseen
-species, is nearly zero.  The most likely value is 72,
-with 90\% credible interval 66 to 79.  At the high end, it is
-unlikely that there are as many as 87 species.
+distribution for subject B1242.  The probability that there are
+exactly 61 species, and no unseen species, is nearly zero.  The most
+likely value is 72, with 90\% credible interval 66 to 79.  At the high
+end, it is unlikely that there are as many as 87 species.
 
 Next we compute the posterior distribution of prevalence for
 each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
@@ -8286,15 +8329,15 @@ each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
 # class Species2
 
     def DistOfPrevalence(self, index):
-        pmfs = thinkbayes.Pmf()
+        metapmf = thinkbayes.Pmf()
 
         for n, prob in zip(self.ns, self.probs):
             beta = self.MarginalBeta(n, index)
             pmf = beta.MakePmf()
-            pmfs.Set(pmf, prob)
+            metapmf.Set(pmf, prob)
 
-        mix = thinkbayes.MakeMixture(pmfs)
-        return pmfs, mix
+        mix = thinkbayes.MakeMixture(metapmf)
+        return metapmf, mix
 \end{verbatim}
 
 {\tt index} indicates which species we want.  For each
@@ -8313,14 +8356,14 @@ and their probabilities.  For each value of {\tt n} it gets
 a Beta object representing the marginal distribution for the
 indicated species.  Remember that Beta objects contain the
 parameters {\tt alpha} and {\tt beta}; they don't have
-values and probabilities like a Pmf, but they provide {\tt MakePmf}
+values and probabilities like a Pmf, but they provide {\tt MakePmf},
 which generates a discrete approximation to the continuous
 beta distribution.
 
-{\tt pmfs} is a MetaPmf that contains the distributions
+{\tt metapmf} is a MetaPmf that contains the distributions
 of prevalence, conditioned on {\tt n}.  {\tt MakeMixture}
 combines the MetaPmf into {\tt mix}, which combines the
-conditional distributions into the answer, a single distribution
+conditional distributions into a single distribution
 of prevalence.
 
 Figure~\ref{species-prev} shows these distributions for the five
@@ -8328,6 +8371,7 @@ species with the most reads.  The most prevalent species accounts for
 23\% of the 400 reads, but since there are almost certainly unseen
 species, the most likely estimate for its prevalence is 20\%,
 with 90\% credible interval between 17\% and 23\%.
+
 
 \section{Predictive distributions}
 
@@ -8346,7 +8390,7 @@ The other two questions are:
 
 \begin{itemize}
 
-\item If we are planning to collect additional samples, can we predict
+\item If we are planning to collect additional reads, can we predict
   how many new species we are likely to discover?
 
 \item How many additional reads are needed to increase the
@@ -8371,7 +8415,7 @@ The kernel of these simulations looks like this:
 \item Generate a random sequence of future observations.
 
 \item Compute the number of new species, \verb"num_new", as a function
-  of the number of additional samples, {\tt k}.
+  of the number of additional reads, {\tt k}.
 
 \item Repeat the previous steps and accumulate the joint distribution
   of \verb"num_new" and {\tt k}.
@@ -8383,9 +8427,9 @@ And here's the code.  {\tt RunSimulation} runs a single simulation:
 \begin{verbatim}
 # class Subject
 
-    def RunSimulation(self, num_samples):
+    def RunSimulation(self, num_reads):
         m, seen = self.GetSeenSpecies()
-        n, observations = self.GenerateObservations(num_samples)
+        n, observations = self.GenerateObservations(num_reads)
 
         curve = []
         for k, obs in enumerate(observations):
@@ -8397,14 +8441,14 @@ And here's the code.  {\tt RunSimulation} runs a single simulation:
         return curve
 \end{verbatim}
 
-\verb"num_samples" is the number of additional samples to simulate.
+\verb"num_reads" is the number of additional reads to simulate.
 {\tt m} is the number of seen species, and {\tt seen} is a set of
 strings with a unique name for each species.
 {\tt n} is a random value from the posterior distribution, and
 {\tt observations} is a random sequence of species names.
 
 The result of {\tt RunSimulation} is a ``rarefaction curve'',
-represented as a list of pairs with the number of samples and
+represented as a list of pairs with the number of reads and
 the number of new species seen.
 
 Before we see the results, let's look at {\tt GetSeenSpecies} and
@@ -8446,20 +8490,20 @@ Here is {\tt GenerateObservations}:
 \begin{verbatim}
 # class Subject
 
-    def GenerateObservations(self, num_samples):
-        n, prevalences = self.suite.Sample()
+    def GenerateObservations(self, num_reads):
+        n, prevalences = self.suite.SamplePosterior()
 
         names = self.GetNames()
         name_iter = SpeciesGenerator(names, n)
 
         d = dict(zip(name_iter, prevalences))
         cdf = thinkbayes.MakeCdfFromDict(d)
-        observations = cdf.Sample(num_samples)
+        observations = cdf.Sample(num_reads)
 
         return n, observations
 \end{verbatim}
 
-Again, \verb"num_samples" is the number of additional samples
+Again, \verb"num_reads" is the number of additional reads
 to generate.  {\tt n} and {\tt prevalences} are samples from
 the posterior distribution.
 
@@ -8467,23 +8511,23 @@ the posterior distribution.
 unseen, to cumulative probabilities.  Using a Cdf makes it efficient
 to generate a random sequence of species names.
 
-Finally, here is {\tt Species2.Sample}:
+Finally, here is {\tt Species2.SamplePosterior}:
 
 \begin{verbatim}
-    def Sample(self):
+    def SamplePosterior(self):
         pmf = self.DistOfN()
         n = pmf.Random()
-        prevalences = self.SampleConditional(n)
+        prevalences = self.SamplePrevalences(n)
         return n, prevalences
 \end{verbatim}
 
-And {\tt SampleConditional}, which generates a sample of
+And {\tt SamplePrevalences}, which generates a sample of
 prevalences conditioned on {\tt n}:
 
 \begin{verbatim}
 # class Species2
 
-    def SampleConditional(self, n):
+    def SamplePrevalences(self, n):
         params = self.params[:n]
         gammas = numpy.random.gamma(params)
         gammas /= gammas.sum()
@@ -8496,7 +8540,7 @@ in {\tt Species2.SampleLikelihood}.
 Figure~\ref{species-rare} shows 100 simulated rarefaction curves
 for subject B1242.  I shifted each curve by a random offset so they
 would not all overlap.  By inspection we can estimate that after
-400 more samples we are likely to find 2--6 new species.
+400 more reads we are likely to find 2--6 new species.
 
 
 \section{Joint posterior}
@@ -8505,7 +8549,7 @@ would not all overlap.  By inspection we can estimate that after
 % species.py
 \centerline{\includegraphics[height=2.5in]{figs/species-cond-B1242.pdf}}
 \caption{Distributions of the number of new species conditioned on
-the number of additional samples.}
+the number of additional reads.}
 \label{species-cond}
 \end{figure}
 
@@ -8515,15 +8559,13 @@ we can get the distribution of \verb"num_new" conditioned on any
 value of {\tt k}.
 
 \begin{verbatim}
-# class Subject
-
-    def MakeJointPredictive(self, curves):
-        joint = thinkbayes.Joint()
-        for curve in curves:
-            for k, num_new in curve:
-                joint.Incr((k, num_new))
-        joint.Normalize()
-        return joint
+def MakeJointPredictive(curves):
+    joint = thinkbayes.Joint()
+    for curve in curves:
+        for k, num_new in curve:
+            joint.Incr((k, num_new))
+    joint.Normalize()
+    return joint
 \end{verbatim}
 
 {\tt MakeJointPredictive} makes a Joint object, which is a
@@ -8561,32 +8603,31 @@ and computes the conditional distribution of \verb"num_new"
 for each {\tt k}.  The result is a list of Cdf objects.
 
 \begin{verbatim}
-# class Subject
+def MakeConditionals(curves, ks):
+    joint = MakeJointPredictive(curves)
 
-    def MakeConditionals(self, curves, ks):
-        joint = self.MakeJointPredictive(curves)
+    cdfs = []
+    for k in ks:
+        pmf = joint.Conditional(1, 0, k)
+        pmf.name = 'k=%d' % k
+        cdf = thinkbayes.MakeCdfFromPmf(pmf)
+        cdfs.append(cdf)
 
-        cdfs = []
-        for k in ks:
-            pmf = joint.Conditional(1, 0, k)
-            pmf.name = 'k=%d' % k
-            cdf = thinkbayes.MakeCdfFromPmf(pmf)
-            cdfs.append(cdf)
-
-        return cdfs
+    return cdfs
 \end{verbatim}
 
-Figure~\ref{species-cond} shows the results.  After 100 samples, the
+Figure~\ref{species-cond} shows the results.  After 100 reads, the
 median predicted number of new species is 2; the 90\% credible
-interval is 0 to 5.  After 800 samples, we expect to see 3 to 12 new
+interval is 0 to 5.  After 800 reads, we expect to see 3 to 12 new
 species.
+
 
 \section{Coverage}
 
 \begin{figure}
 % species.py
 \centerline{\includegraphics[height=2.5in]{figs/species-frac-B1242.pdf}}
-\caption{Complementary CDF of coverage for a range of additional samples.}
+\caption{Complementary CDF of coverage for a range of additional reads.}
 \label{species-frac}
 \end{figure}
 
@@ -8601,9 +8642,9 @@ number of new species.
 \begin{verbatim}
 # class Subject
 
-    def RunSimulation(self, num_samples):
+    def RunSimulation(self, num_reads):
         m, seen = self.GetSeenSpecies()
-        n, observations = self.GenerateObservations(num_samples)
+        n, observations = self.GenerateObservations(num_reads)
 
         curve = []
         for k, obs in enumerate(observations):
@@ -8616,9 +8657,9 @@ number of new species.
 \end{verbatim}
 
 Next we loop through each curve and make a dictionary, {\tt d},
-that maps from the number of additional samples, {\tt k}, to
+that maps from the number of additional reads, {\tt k}, to
 a list of {\tt fracs}; that is, a list of values for the
-coverage achieved after {\tt k} samples.
+coverage achieved after {\tt k} reads.
 
 \begin{verbatim}
     def MakeFracCdfs(self, curves):
@@ -8636,7 +8677,7 @@ coverage achieved after {\tt k} samples.
 \end{verbatim}
 
 Then for each value of {\tt k} we make a Cdf of {\tt fracs}; this Cdf
-represents the distribution of coverage after {\tt k} samples.
+represents the distribution of coverage after {\tt k} reads.
 
 Remember that the CDF tells you the probability of falling below a
 given threshold, so the {\em complementary} CDF tells you the
@@ -8647,8 +8688,8 @@ To read this figure, select the level of coverage you want to achieve
 along the $x$-axis.  As an example, choose 90\%.
 
 Now you can read up the chart to find the probability of achieving
-90\% coverage after {\tt k} samples.  For example, with 300 samples,
-you have about a 60\% of getting 90\% coverage.  With 700 samples, you
+90\% coverage after {\tt k} reads.  For example, with 200 reads,
+you have about a 40\% of getting 90\% coverage.  With 1000 reads, you
 have a 90\% chance of getting 90\% coverage.
 
 With that, we have answered the four questions that make up the unseen
@@ -8656,6 +8697,8 @@ species problem.  This has been a longer chapter than most, but I
 think there is a lot to it.  So if you made it this far,
 congratulations!
 
+You can download the code in this chapter from
+\url{http://thinkbayes.com/species.py}.
 
 
 %\chapter{Future chapters}
