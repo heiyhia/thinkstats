@@ -1691,36 +1691,28 @@ class Dirichlet(object):
         return MakePmfFromItems(zip(xs, ps), name=name)
 
 
-def BinomialCoef(n, k, d={}):
+def BinomialCoef(n, k):
     """Compute the binomial coefficient "n choose k".
 
-    Args:
-      n: number of trials
-      k: number of successes
-      d: map from (n,k) tuples to cached results
+    n: number of trials
+    k: number of successes
 
-    Returns:
-      int
+    Returns: float
     """
-    if k == 0:
-        return 1
-    if n == 0:
-        return 0
-
-    try:
-        return d[n, k]
-    except KeyError:
-        res = BinomialCoef(n-1, k) + BinomialCoef(n-1, k-1)
-        d[n, k] = res
-        return res
+    return scipy.misc.comb(n, k)
 
 
-def LogBinomialCoef(n, m):
-    """
+def LogBinomialCoef(n, k):
+    """Computes the log of the binomial coefficient.
 
     http://math.stackexchange.com/questions/64716/
     approximating-the-logarithm-of-the-binomial-coefficient
+
+    n: number of trials
+    k: number of successes
+
+    Returns: float
     """
-    return n * log(n) - m * log(m) - (n-m) * log(n-m)
+    return n * log(n) - k * log(k) - (n-k) * log(n-k)
 
 
