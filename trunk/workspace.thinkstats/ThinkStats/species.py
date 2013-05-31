@@ -108,6 +108,8 @@ class Subject(object):
             p = (1-q) ** k
             return p
 
+        print self.code, clean_param
+
         counts = self.GetCounts()
         r = 1.0 * sum(counts)
 
@@ -166,8 +168,8 @@ class Subject(object):
         """
         counts = self.GetCounts()
         total = sum(counts)
-        prevs = numpy.array(counts, dtype=numpy.float) / total
-        return prevs
+        prevalences = numpy.array(counts, dtype=numpy.float) / total
+        return prevalences
 
     def Process(self, low=None, high=500, conc=1, iters=100):
         """Computes the posterior distribution of n and the prevalences.
@@ -309,10 +311,10 @@ class Subject(object):
         print self.GetSpecies(index)
         print self.GetCounts()[index]
 
-        pmfs, mix = self.suite.DistOfPrevalence(index)
+        metapmf, mix = self.suite.DistOfPrevalence(index)
 
         thinkplot.Clf()
-        for pmf in pmfs.Values():
+        for pmf in metapmf.Values():
             thinkplot.Pmf(pmf, color='blue', alpha=0.2, linewidth=0.5)
 
         thinkplot.Pmf(mix, color='blue', alpha=0.9, linewidth=2)
@@ -496,7 +498,8 @@ def MakeJointPredictive(curves):
     joint.Normalize()
     return joint
 
-def MakeFracCdfs(curves):
+
+def MakeFracCdfs(curves, ks):
     """Makes Cdfs of the fraction of species seen.
 
     curves: list of (k, num_new) curves 
@@ -506,7 +509,8 @@ def MakeFracCdfs(curves):
     d = {}
     for curve in curves:
         for k, frac in curve:
-            d.setdefault(k, []).append(frac)
+            if k in ks:
+                d.setdefault(k, []).append(frac)
 
     cdfs = {}
     for k, fracs in d.iteritems():
@@ -728,10 +732,6 @@ def PlotFracCdfs(cdfs, root='species-frac'):
     color = '#225EA8'
 
     for k, cdf in cdfs.iteritems():
-        if k not in [10, 50] and k % 100:
-            continue
-
-        print k
         xs, ys = cdf.Render()
         ys = [1-y for y in ys]
         thinkplot.Plot(xs, ys, color=color, linewidth=1)
@@ -785,7 +785,7 @@ class Species(thinkbayes.Suite):
             like += dirichlet.Likelihood(data)
 
         # correct for the number of ways the observed species
-        # might as been chosen from all species
+        # might have been chosen from all species
         m = len(data)
         like *= thinkbayes.BinomialCoef(dirichlet.n, m)
 
@@ -953,17 +953,17 @@ class Species2(object):
 
         index: which species
 
-        Returns: (pmfs, mix) where pmfs is a MetaPmf and mix is a Pmf
+        Returns: (metapmf, mix) where metapmf is a MetaPmf and mix is a Pmf
         """
-        pmfs = thinkbayes.Pmf()
+        metapmf = thinkbayes.Pmf()
 
         for n, prob in zip(self.ns, self.probs):
             beta = self.MarginalBeta(n, index)
             pmf = beta.MakePmf()
-            pmfs.Set(pmf, prob)
+            metapmf.Set(pmf, prob)
 
-        mix = thinkbayes.MakeMixture(pmfs)
-        return pmfs, mix
+        mix = thinkbayes.MakeMixture(metapmf)
+        return metapmf, mix
         
     def SamplePosterior(self):
         """Draws random n and prevalences.
@@ -1254,25 +1254,6 @@ def PlotMedium():
     thinkplot.Show()
 
 
-def CompareHierarchicalExample():
-    """Makes a graph of posterior distributions of N."""
-    data = [3, 2, 1]
-    m = len(data)
-    n = 30
-    ns = range(m, n)
-
-    constructors = [Species, Species5]
-    iters = [1000, 100]
-
-    for constructor, iters in zip(constructors, iters):
-        suite = MakePosterior(constructor, data, ns, iters)
-        pmf = suite.DistN()
-        pmf.name = '%s' % (constructor.__name__)
-        thinkplot.Pmf(pmf)
-
-    thinkplot.Show()
-
-
 def SimpleDirichletExample():
     """Makes a plot showing posterior distributions for three species.
 
@@ -1325,6 +1306,25 @@ def HierarchicalExample():
                 )
 
 
+def CompareHierarchicalExample():
+    """Makes a graph of posterior distributions of N."""
+    data = [3, 2, 1]
+    m = len(data)
+    n = 30
+    ns = range(m, n)
+
+    constructors = [Species, Species5]
+    iters = [1000, 100]
+
+    for constructor, iters in zip(constructors, iters):
+        suite = MakePosterior(constructor, data, ns, iters)
+        pmf = suite.DistN()
+        pmf.name = '%s' % (constructor.__name__)
+        thinkplot.Pmf(pmf)
+
+    thinkplot.Show()
+
+
 def ProcessSubjects(codes):
     """Process subjects with the given codes and plot their posteriors.
 
@@ -1355,7 +1355,7 @@ def ProcessSubjects(codes):
                 )
 
 
-def RunSubject(code, conc=1):
+def RunSubject(code, conc=1, high=500):
     """Run the analysis for the subject with the given code.
 
     code: string code
@@ -1363,15 +1363,13 @@ def RunSubject(code, conc=1):
     subjects = JoinSubjects()
     subject = subjects[code]
 
-    subject.Process(conc=conc)
+    subject.Process(conc=conc, high=high)
     subject.MakeQuickPrediction()
 
     PrintSummary(subject)
     actual_l = subject.total_species - subject.num_species
     cdf_l = subject.DistL().MakeCdf()
     PrintPrediction(cdf_l, actual_l)
-
-    return
 
     subject.MakeFigures()
 
@@ -1387,8 +1385,10 @@ def RunSubject(code, conc=1):
     root = 'species-cond-%s' % subject.code
     PlotConditionals(cdfs, root=root)
 
+    num_reads = 1000
     curves = subject.RunSimulations(500, num_reads, frac_flag=True)
-    cdfs = MakeFracCdfs(curves)
+    ks = [10, 100, 200, 400, 600, 800, 1000]
+    cdfs = MakeFracCdfs(curves, ks)
     root = 'species-frac-%s' % subject.code
     PlotFracCdfs(cdfs, root=root)
 
@@ -1491,12 +1491,12 @@ def PlotActualPrevalences():
     conc = 0.06
 
     for code, subject in subject_map.iteritems():
-        prevs = subject.GetPrevalences()
-        m = len(prevs)
+        prevalences = subject.GetPrevalences()
+        m = len(prevalences)
         if m < 2:
             continue
 
-        actual_max = max(prevs)
+        actual_max = max(prevalences)
         print code, m, actual_max
 
         # add a line to res
@@ -1541,8 +1541,8 @@ def SimulateMaxPrev(m, conc=1):
     Returns: float max of m prevalences
     """
     dirichlet = thinkbayes.Dirichlet(m, conc)
-    prevs = dirichlet.Random()
-    return max(prevs)
+    prevalences = dirichlet.Random()
+    return max(prevalences)
         
 
 def ExpectedMaxPrev(m, conc=1, iters=100):
@@ -1558,8 +1558,8 @@ def ExpectedMaxPrev(m, conc=1, iters=100):
 
     t = []
     for _ in range(iters):
-        prevs = dirichlet.Random()
-        t.append(max(prevs))
+        prevalences = dirichlet.Random()
+        t.append(max(prevalences))
 
     return numpy.mean(t)
 
@@ -1908,6 +1908,17 @@ def RunCalibration(flag='cal', num_runs=100, clean_param=50):
 
 def main(script, *args):
     """This is main."""
+    RandomSeed(17)
+    RunSubject('B1242', conc=1, high=100)
+    return
+
+    RandomSeed(17)
+    SimpleDirichletExample()
+
+    RandomSeed(17)
+    HierarchicalExample()
+    return
+
     RunCalibration(flag='val')
     return
 
@@ -1922,14 +1933,7 @@ def main(script, *args):
     PlotSubjectCdf('uber')
     return
 
-    RunSubject('B972', conc=0.05)
-    return
-
     PlotActualPrevalences()
-    return
-
-    SimpleDirichletExample()
-    HierarchicalExample()
     return
 
     CompareHierarchicalExample()
