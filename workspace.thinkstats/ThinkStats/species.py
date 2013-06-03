@@ -1910,7 +1910,6 @@ def main(script, *args):
     """This is main."""
     RandomSeed(17)
     RunSubject('B1242', conc=1, high=100)
-    return
 
     RandomSeed(17)
     SimpleDirichletExample()
@@ -1929,30 +1928,6 @@ def main(script, *args):
 
     PlotSubjectCdf(None)
     return
-
-    PlotSubjectCdf('uber')
-    return
-
-    PlotActualPrevalences()
-    return
-
-    CompareHierarchicalExample()
-    return
-
-    PlotMedium()
-    return
-
-    random.seed(17)
-    PlotAllVersions()
-    return
-
-    suite = MakePosterior(Species)
-    pmf = suite.DistN()
-    thinkplot.Pmf(pmf)
-    thinkplot.Show()
-    return
-
-
 
 
 if __name__ == '__main__':
