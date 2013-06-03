@@ -45,7 +45,7 @@ def Odds(p):
     """
     if p == 1:
         return float('inf')
-    return p / (1-p)
+    return p / (1 - p)
 
 
 def Probability(o):
@@ -57,7 +57,7 @@ def Probability(o):
 
     Returns: float probability
     """
-    return o / (o+1)
+    return o / (o + 1)
 
 
 def Probability2(yes, no):
@@ -77,6 +77,7 @@ class Interpolator(object):
         xs: sorted list
         ys: sorted list
     """
+
     def __init__(self, xs, ys):
         self.xs = xs
         self.ys = ys
@@ -96,8 +97,8 @@ class Interpolator(object):
         if x >= xs[-1]:
             return ys[-1]
         i = bisect.bisect(xs, x)
-        frac = 1.0 * (x - xs[i-1]) / (xs[i] - xs[i-1])
-        y = ys[i-1] + frac * 1.0 * (ys[i] - ys[i-1])
+        frac = 1.0 * (x - xs[i - 1]) / (xs[i] - xs[i - 1])
+        y = ys[i - 1] + frac * 1.0 * (ys[i] - ys[i - 1])
         return y
 
 
@@ -146,7 +147,7 @@ class _DictWrapper(object):
         """
         new = self.Copy()
         new.d.clear()
-    
+
         for val, prob in self.Items():
             new.Set(val * factor, prob)
         return new
@@ -315,13 +316,13 @@ class Pmf(_DictWrapper):
             raise ValueError('total probability is zero.')
             logging.warning('Normalize: total probability is zero.')
             return total
-        
+
         factor = float(fraction) / total
         for x in self.d:
             self.d[x] *= factor
 
         return total
-    
+
     def Random(self):
         """Chooses a random element from this PMF.
 
@@ -330,7 +331,7 @@ class Pmf(_DictWrapper):
         """
         if len(self.d) == 0:
             raise ValueError('Pmf contains no values.')
-            
+
         target = random.random()
         total = 0.0
         for x, p in self.d.iteritems():
@@ -364,10 +365,10 @@ class Pmf(_DictWrapper):
         """
         if mu is None:
             mu = self.Mean()
-            
+
         var = 0.0
         for x, p in self.d.iteritems():
-            var += p * (x - mu)**2
+            var += p * (x - mu) ** 2
         return var
 
     def MaximumLikelihood(self):
@@ -404,7 +405,7 @@ class Pmf(_DictWrapper):
 
         for x, p in self.d.iteritems():
             if p:
-                self.Set(x, math.log(p/m))
+                self.Set(x, math.log(p / m))
             else:
                 self.Remove(x)
 
@@ -419,7 +420,7 @@ class Pmf(_DictWrapper):
             m = self.MaxLike()
 
         for x, p in self.d.iteritems():
-            self.Set(x, math.exp(p-m))
+            self.Set(x, math.exp(p - m))
 
     def __add__(self, other):
         """Computes the Pmf of the sum of values drawn from self and other.
@@ -443,7 +444,7 @@ class Pmf(_DictWrapper):
         pmf = Pmf()
         for v1, p1 in self.Items():
             for v2, p2 in other.Items():
-                pmf.Incr(v1+v2, p1*p2)
+                pmf.Incr(v1 + v2, p1 * p2)
         return pmf
 
     def AddConstant(self, other):
@@ -455,7 +456,7 @@ class Pmf(_DictWrapper):
         """
         pmf = Pmf()
         for v1, p1 in self.Items():
-            pmf.Set(v1+other, p1)
+            pmf.Set(v1 + other, p1)
         return pmf
 
     def __sub__(self, other):
@@ -468,7 +469,7 @@ class Pmf(_DictWrapper):
         pmf = Pmf()
         for v1, p1 in self.Items():
             for v2, p2 in other.Items():
-                pmf.Incr(v1-v2, p1*p2)
+                pmf.Incr(v1 - v2, p1 * p2)
         return pmf
 
     def Max(self, n):
@@ -479,7 +480,7 @@ class Pmf(_DictWrapper):
         returns: new Cdf
         """
         cdf = self.MakeCdf()
-        cdf.ps = [p**n for p in cdf.ps]
+        cdf.ps = [p ** n for p in cdf.ps]
         return cdf
 
 
@@ -488,6 +489,7 @@ class Joint(Pmf):
 
     The values are sequences (usually tuples)
     """
+
     def Marginal(self, i):
         """Gets the marginal distribution of the indicated variable.
 
@@ -538,13 +540,12 @@ class Joint(Pmf):
         for prob, val in t:
             interval.append(val)
             total += prob
-            if total >= percentage/100.0:
+            if total >= percentage / 100.0:
                 break
 
         return interval
 
 
-        
 def MakeHistFromList(t, name=''):
     """Makes a histogram from an unsorted sequence of values.
 
@@ -657,7 +658,7 @@ def MakePmfFromCdf(cdf, name=None):
 
     prev = 0.0
     for val, prob in cdf.Items():
-        pmf.Incr(val, prob-prev)
+        pmf.Incr(val, prob - prev)
         prev = prob
 
     return pmf
@@ -701,6 +702,7 @@ class Cdf(object):
         ps: sequence of probabilities
         name: string used as a graph label.
     """
+
     def __init__(self, xs=None, ps=None, name=''):
         self.xs = [] if xs is None else xs
         self.ps = [] if ps is None else ps
@@ -771,7 +773,7 @@ class Cdf(object):
         """
         if x < self.xs[0]: return 0.0
         index = bisect.bisect(self.xs, x)
-        p = self.ps[index-1]
+        p = self.ps[index - 1]
         return p
 
     def Value(self, p):
@@ -789,8 +791,8 @@ class Cdf(object):
         if p == 0: return self.xs[0]
         if p == 1: return self.xs[-1]
         index = bisect.bisect(self.ps, p)
-        if p == self.ps[index-1]:
-            return self.xs[index-1]
+        if p == self.ps[index - 1]:
+            return self.xs[index - 1]
         else:
             return self.xs[index]
 
@@ -808,7 +810,7 @@ class Cdf(object):
     def Random(self):
         """Chooses a random value from this distribution."""
         return self.Value(random.random())
-    
+
     def Sample(self, n):
         """Generates a random sample from this distribution.
         
@@ -842,8 +844,8 @@ class Cdf(object):
         Returns:
             sequence of two floats, low and high
         """
-        prob = (1 - percentage/100.0) / 2
-        interval = self.Value(prob), self.Value(1-prob)
+        prob = (1 - percentage / 100.0) / 2
+        interval = self.Value(prob), self.Value(1 - prob)
         return interval
 
     def _Round(self, multiplier=1000.0):
@@ -872,7 +874,7 @@ class Cdf(object):
             ps.append(p)
 
             try:
-                xs.append(self.xs[i+1])
+                xs.append(self.xs[i + 1])
                 ps.append(p)
             except IndexError:
                 pass
@@ -886,7 +888,7 @@ class Cdf(object):
         returns: new Cdf
         """
         cdf = self.Copy()
-        cdf.ps = [p**n for p in cdf.ps]
+        cdf.ps = [p ** n for p in cdf.ps]
         return cdf
 
 
@@ -910,7 +912,7 @@ def MakeCdfFromItems(items, name=''):
         cs.append(runsum)
 
     total = float(runsum)
-    ps = [c/total for c in cs]
+    ps = [c / total for c in cs]
 
     cdf = Cdf(xs, ps, name)
     return cdf
@@ -990,7 +992,7 @@ class Suite(Pmf):
             self.InitMapping,
             self.InitSequence,
             self.InitFailure,
-            ]
+        ]
 
         for method in methods:
             try:
@@ -1025,7 +1027,7 @@ class Suite(Pmf):
         returns: the normalizing constant
         """
         for hypo in self.Values():
-            like = self.Likelihood(hypo, data)
+            like = self.Likelihood(data, hypo)
             self.Mult(hypo, like)
         return self.Normalize()
 
@@ -1041,7 +1043,7 @@ class Suite(Pmf):
             data: any representation of the data
         """
         for hypo in self.Values():
-            like = self.LogLikelihood(hypo, data)
+            like = self.LogLikelihood(data, hypo)
             self.Incr(hypo, like)
 
     def UpdateSet(self, dataset):
@@ -1059,7 +1061,7 @@ class Suite(Pmf):
         """
         for data in dataset:
             for hypo in self.Values():
-                like = self.Likelihood(hypo, data)
+                like = self.Likelihood(data, hypo)
                 self.Mult(hypo, like)
         return self.Normalize()
 
@@ -1076,7 +1078,7 @@ class Suite(Pmf):
         for data in dataset:
             self.LogUpdate(data)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: some representation of the hypothesis
@@ -1084,7 +1086,7 @@ class Suite(Pmf):
         """
         raise UnimplementedMethodException()
 
-    def LogLikelihood(self, hypo, data):
+    def LogLikelihood(self, data, hypo):
         """Computes the log likelihood of the data under the hypothesis.
 
         hypo: some representation of the hypothesis
@@ -1180,7 +1182,7 @@ def MakeSuiteFromCdf(cdf, name=None):
 
     prev = 0.0
     for val, prob in cdf.Items():
-        suite.Incr(val, prob-prev)
+        suite.Incr(val, prob - prev)
         prev = prob
 
     return suite
@@ -1219,14 +1221,14 @@ class GaussianPdf(Pdf):
         """
         self.mu = mu
         self.sigma = sigma
-        
+
     def Density(self, x):
         """Evaluates this Pdf at x.
 
         Returns: float probability density
         """
-        density = scipy.stats.norm.pdf(x, 
-                                       loc=self.mu, 
+        density = scipy.stats.norm.pdf(x,
+                                       loc=self.mu,
                                        scale=self.sigma)
         return density
 
@@ -1263,7 +1265,7 @@ def Percentile(pmf, percentage):
     for val, prob in pmf.Items():
         total += prob
         if total >= p:
-            return val    
+            return val
 
 
 def CredibleInterval(pmf, percentage=90):
@@ -1279,8 +1281,8 @@ def CredibleInterval(pmf, percentage=90):
         sequence of two floats, low and high
     """
     cdf = pmf.MakeCdf()
-    prob = (1 - percentage/100.0) / 2
-    interval = cdf.Value(prob), cdf.Value(1-prob)
+    prob = (1 - percentage / 100.0) / 2
+    interval = cdf.Value(prob), cdf.Value(1 - prob)
     return interval
 
 
@@ -1388,7 +1390,7 @@ def EvalGaussianPdf(mu, sigma, x, denom=math.sqrt(2 * math.pi)):
     returns: float probability density
     """
     z = (x - mu) / sigma
-    p = math.exp(-z**2/2) / sigma / denom
+    p = math.exp(-z ** 2 / 2) / sigma / denom
     return p
 
 
@@ -1403,8 +1405,8 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
     returns: normalized Pmf
     """
     pmf = Pmf()
-    low = mu - num_sigmas*sigma
-    high = mu + num_sigmas*sigma
+    low = mu - num_sigmas * sigma
+    high = mu + num_sigmas * sigma
 
     for x in numpy.linspace(low, high, n):
         p = EvalGaussianPdf(mu, sigma, x)
@@ -1421,7 +1423,7 @@ def EvalPoissonPmf(lam, k):
 
     returns: float probability
     """
-    return (lam)**k * math.exp(-lam) / math.factorial(k)
+    return (lam) ** k * math.exp(-lam) / math.factorial(k)
 
 
 def MakePoissonPmf(lam, high):
@@ -1433,7 +1435,7 @@ def MakePoissonPmf(lam, high):
     returns: normalized Pmf
     """
     pmf = Pmf()
-    for k in xrange(0, high+1):
+    for k in xrange(0, high + 1):
         p = EvalPoissonPmf(lam, k)
         pmf.Set(k, p)
     pmf.Normalize()
@@ -1484,7 +1486,7 @@ def EvalBinomialPmf(p, yes, no):
 
     returns: float likelihood
     """
-    return p**yes * (1-p)**no
+    return p ** yes * (1 - p) ** no
 
 
 def StandardGaussianCdf(x, root2=math.sqrt(2)):
@@ -1533,7 +1535,7 @@ def GaussianCdfInverse(p, mu=0, sigma=1):
     Returns:
         float
     """
-    x = root2 * erfinv(2*p - 1)
+    x = root2 * erfinv(2 * p - 1)
     return mu + x * sigma
 
 
@@ -1556,7 +1558,7 @@ class Beta(object):
         heads, tails = data
         self.alpha += heads
         self.beta += tails
-        
+
     def Mean(self):
         """Computes the mean of this distribution."""
         return float(self.alpha) / (self.alpha + self.beta)
@@ -1567,8 +1569,8 @@ class Beta(object):
 
     def EvalPdf(self, x):
         """Evaluates the PDF at x."""
-        return x**(self.alpha-1) * (1-x)**(self.beta-1)
-        
+        return x ** (self.alpha - 1) * (1 - x) ** (self.beta - 1)
+
     def MakePmf(self, steps=101, name=''):
         """Returns a Pmf of this distribution.
 
@@ -1586,23 +1588,25 @@ class Beta(object):
             pmf = cdf.MakePmf()
             return pmf
 
-        xs = [i / (steps-1.0) for i in xrange(steps)]
+        xs = [i / (steps - 1.0) for i in xrange(steps)]
         probs = [self.EvalPdf(x) for x in xs]
         pmf = MakePmfFromDict(dict(zip(xs, probs)), name)
         return pmf
 
     def MakeCdf(self, steps=101):
         """Returns the CDF of this distribution."""
-        xs = [i / (steps-1.0) for i in xrange(steps)]
+        xs = [i / (steps - 1.0) for i in xrange(steps)]
         ps = [scipy.special.betainc(self.alpha, self.beta, x) for x in xs]
         cdf = Cdf(xs, ps)
         return cdf
+
 
 class Dirichlet(object):
     """Represents a Dirichlet distribution.
 
     See http://en.wikipedia.org/wiki/Dirichlet_distribution
     """
+
     def __init__(self, n, conc=1, name=''):
         """Initializes a Dirichlet distribution.
 
@@ -1625,7 +1629,7 @@ class Dirichlet(object):
         """
         m = len(data)
         self.params[:m] += data
-        
+
     def Random(self):
         """Generates a random variate from this distribution.
 
@@ -1647,7 +1651,7 @@ class Dirichlet(object):
 
         x = data
         p = self.Random()
-        q = p[:m]**x
+        q = p[:m] ** x
         return q.prod()
 
     def LogLikelihood(self, data):
@@ -1677,7 +1681,7 @@ class Dirichlet(object):
         """
         alpha0 = self.params.sum()
         alpha = self.params[i]
-        return Beta(alpha, alpha0-alpha)
+        return Beta(alpha, alpha0 - alpha)
 
     def PredictivePmf(self, xs, name=''):
         """Makes a predictive distribution.
@@ -1713,6 +1717,6 @@ def LogBinomialCoef(n, k):
 
     Returns: float
     """
-    return n * log(n) - k * log(k) - (n-k) * log(n-k)
+    return n * log(n) - k * log(k) - (n - k) * log(n - k)
 
 

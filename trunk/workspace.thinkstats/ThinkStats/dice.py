@@ -9,7 +9,7 @@ from thinkbayes import Suite
 
 
 class Dice(Suite):
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer number of sides on the die

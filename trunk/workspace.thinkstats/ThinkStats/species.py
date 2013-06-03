@@ -770,7 +770,7 @@ class Species(thinkbayes.Suite):
         for hypo in self.Values():
             hypo.Update(data)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under this hypothesis.
 
         hypo: Dirichlet object
@@ -1097,7 +1097,7 @@ class Species4(Species):
             # call the parent class
             Species.Update(self, one)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under this hypothesis.
 
         Note: this only works correctly if we update one species at a time.

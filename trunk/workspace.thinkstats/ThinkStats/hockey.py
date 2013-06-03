@@ -33,7 +33,7 @@ class Hockey(thinkbayes.Suite):
             if x > 0:
                 self.Set(x, p)
             
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         Evaluates the Poisson PMF for lambda and k.

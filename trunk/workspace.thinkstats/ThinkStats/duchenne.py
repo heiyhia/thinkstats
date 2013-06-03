@@ -63,7 +63,7 @@ class Labeler(thinkbayes.Suite):
         for val, prob in beta.MakePmf().Items():
             self.Set(val, prob)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the prob of a correct vote (0-100)
@@ -90,7 +90,7 @@ class Photo(thinkbayes.Suite):
         for val, prob in beta.MakePmf().Items():
             self.Set(val, prob)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the prob of garnering an upvote

@@ -152,6 +152,26 @@ redline*.pdf redline*.eps \
 
 BAYES_TABLES = kidney_table*.tex
 
+bayes_run:
+	python cookie.py
+	python cookie2.py
+	python monty.py
+	python monty2.py
+	python m_and_m.py
+	python dice.py
+	python train.py
+	python train3.py
+	python dungeons.py
+	python price.py
+	python hockey.py
+	python redline.py
+	python variability.py
+	python euro.py
+	python euro3.py
+	python sat.py
+	python kidney.py
+	python species.py
+
 bayes_code:
 	rm -rf thinkbayes_code
 	mkdir thinkbayes_code

@@ -39,7 +39,7 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
 
         thinkbayes.Suite.__init__(self, pairs, name=name)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         Args:
@@ -54,7 +54,7 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         like = thinkbayes.EvalGaussianPdf(mu, sigma, x)
         return like
 
-    def LogLikelihood(self, hypo, data):
+    def LogLikelihood(self, data, hypo):
         """Computes the log likelihood of the data under the hypothesis.
 
         Args:
