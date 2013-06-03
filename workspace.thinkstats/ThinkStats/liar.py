@@ -76,7 +76,7 @@ class Liar(thinkbayes.Suite):
         xs = range(0, 101)
         thinkbayes.Suite.__init__(self, xs)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the probability of heads (0-100)

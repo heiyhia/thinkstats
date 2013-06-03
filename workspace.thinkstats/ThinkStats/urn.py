@@ -11,7 +11,7 @@ from thinkbayes import Suite
 
 
 class Urn(Suite):
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer number of blue marbles (out of three)

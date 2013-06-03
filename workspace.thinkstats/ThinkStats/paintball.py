@@ -75,7 +75,7 @@ class Paintball(thinkbayes.Suite, thinkbayes.Joint):
                  for beta in betas]
         thinkbayes.Suite.__init__(self, pairs)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: pair of alpha, beta

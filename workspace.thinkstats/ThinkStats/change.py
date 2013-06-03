@@ -47,7 +47,7 @@ class Series(object):
 class Expo(thinkbayes.Suite):
     """Suite of hypotheses about parameter of an exponential distribution."""
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under a hypothesis.
 
         hypo: hypothetical value of the parameter
@@ -55,10 +55,10 @@ class Expo(thinkbayes.Suite):
 
         Returns: float likelihood
         """
-        like = math.exp(self.LogLikelihood(hypo, data))
+        like = math.exp(self.LogLikelihood(data, hypo))
         return like
 
-    def LogLikelihood(self, hypo, data):
+    def LogLikelihood(self, data, hypo):
         """Computes the log-likelihood of the data under a hypothesis.
 
         hypo: hypothetical value of the parameter
@@ -74,7 +74,7 @@ class Expo(thinkbayes.Suite):
 class Erlang(thinkbayes.Suite):
     """Suite of hypotheses about the parameter of an Erlang distribution."""
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under a hypothesis.
 
         hypo: hypothetical value of the parameter
@@ -82,10 +82,10 @@ class Erlang(thinkbayes.Suite):
 
         Returns: float likelihood
         """
-        like = math.exp(self.LogLikelihood(hypo, data))
+        like = math.exp(self.LogLikelihood(data, hypo))
         return like
 
-    def LogLikelihood(self, hypo, data):
+    def LogLikelihood(self, data, hypo):
         """Computes the log-likelihood of the data under a hypothesis.
 
         hypo: hypothetical value of the parameter
@@ -118,7 +118,7 @@ class Split(thinkbayes.Suite):
         thinkbayes.Suite.__init__(self, hypos)
         self.lams = numpy.linspace(low, high, num_lams)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under a hypothesis.
 
         hypo: hypothetical location of the changepoint

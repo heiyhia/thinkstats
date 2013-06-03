@@ -28,7 +28,7 @@ import myplot
 
 class Euro(thinkbayes.Suite):
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the probability of heads (0-100)
@@ -71,16 +71,16 @@ def Main():
     data = 8, 12
 
     suite = Euro()
-    likelihoodF = suite.Likelihood(50, data)
+    likelihoodF = suite.Likelihood(data, 50)
     print 'p(D|F)', likelihoodF
 
     actual_percent = 100.0 * 140 / 250
-    likelihood = suite.Likelihood(actual_percent, data)
+    likelihood = suite.Likelihood(data, actual_percent)
     print 'p(D|B_cheat)', likelihood
     print 'p(D|B_cheat) / p(D|F)', likelihood / likelihoodF
 
-    like40 = suite.Likelihood(40, data)
-    like60 = suite.Likelihood(60, data)
+    like40 = suite.Likelihood(data, 40)
+    like60 = suite.Likelihood(data, 60)
     likelihood = 0.5 * like40 + 0.5 * like60
     print 'p(D|B_two)', likelihood
     print 'p(D|B_two) / p(D|F)', likelihood / likelihoodF

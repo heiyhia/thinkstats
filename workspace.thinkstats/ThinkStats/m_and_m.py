@@ -9,6 +9,8 @@ from thinkbayes import Suite
 
 
 class M_and_M(Suite):
+    """Map from hypothesis (A or B) to probability."""
+
     mix94 = dict(brown=30,
                  yellow=20,
                  red=20,
@@ -28,7 +30,12 @@ class M_and_M(Suite):
 
     hypotheses = dict(A=hypoA, B=hypoB)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
+        """Computes the likelihood of the data under the hypothesis.
+
+        hypo: string hypothesis (A or B)
+        data: tuple of string bag, string color
+        """
         bag, color = data
         mix = self.hypotheses[hypo][bag]
         like = mix[color]

@@ -308,7 +308,7 @@ class ElapsedTimeEstimator(object):
 class ArrivalRate(thinkbayes.Suite):
     """Represents the distribution of arrival rates (lambda)."""
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         Evaluates the Poisson PMF for lambda and k.
@@ -367,7 +367,7 @@ class ArrivalRateEstimator(object):
 class Elapsed(thinkbayes.Suite):
     """Represents the distribution of elapsed time (x)."""
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         Evaluates the Poisson PMF for lambda and k.
@@ -411,7 +411,7 @@ class Gaps(thinkbayes.Suite):
     """Represents the distribution of gap times,
     as updated by an observed waiting time."""
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """The likelihood of the data under the hypothesis.
 
         If the actual gap time is z, what is the likelihood

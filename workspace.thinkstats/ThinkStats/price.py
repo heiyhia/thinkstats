@@ -57,7 +57,7 @@ class Price(thinkbayes.Suite):
 
         self.player = player
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: actual price

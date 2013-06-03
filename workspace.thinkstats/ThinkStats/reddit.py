@@ -69,7 +69,7 @@ import myplot
 class Redditor(thinkbayes.Suite):
     """Represents hypotheses about the trustworthiness of a redditor."""
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the prob of a correct vote (0-100)
@@ -89,7 +89,7 @@ class Redditor(thinkbayes.Suite):
 class Item(thinkbayes.Suite):
     """Represents hypotheses about the trustworthiness of a redditor."""
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
         hypo: integer value of x, the prob of garnering an upvote

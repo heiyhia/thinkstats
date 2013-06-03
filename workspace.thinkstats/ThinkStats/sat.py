@@ -212,7 +212,7 @@ class Sat(thinkbayes.Suite):
         # update based on an exam score
         self.Update(score)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of a test score, given efficacy."""
         p_correct = hypo
         score = data
@@ -257,7 +257,7 @@ class Sat2(thinkbayes.Suite):
         # update based on an exam score
         self.Update(score)
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         """Computes the likelihood of a test score, given efficacy."""
         efficacy = hypo
         score = data
