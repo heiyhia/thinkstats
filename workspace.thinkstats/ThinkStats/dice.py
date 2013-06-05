@@ -9,6 +9,8 @@ from thinkbayes import Suite
 
 
 class Dice(Suite):
+    """Represents hypotheses about which die was rolled."""
+
     def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
 
