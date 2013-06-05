@@ -16,7 +16,13 @@ import myplot
 USE_SUMMARY_DATA = True
 
 class Hockey(thinkbayes.Suite):
+    """Represents hypotheses about the scoring rate for a team."""
+
     def __init__(self, name=''):
+        """Initializes the Hockey object.
+
+        name: string
+        """
         thinkbayes.Suite.__init__(self, name=name)
 
         if USE_SUMMARY_DATA:
@@ -83,7 +89,10 @@ def MakeGoalTimePmf(suite):
 
 
 class Game(object):
-    """Represents a game."""
+    """Represents a game.
+
+    Attributes are set in columns.read_csv.
+    """
     convert = dict()
 
     def clean(self):

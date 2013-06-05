@@ -6,7 +6,6 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import csv
-import math
 import myplot
 import numpy
 import thinkbayes
@@ -28,7 +27,7 @@ def ReadData(filename='showcases.2011.csv'):
     res = []
 
     for t in reader:
-        heading = t[0]
+        _heading = t[0]
         data = t[1:]
         try:
             data = [int(x) for x in data]
@@ -42,12 +41,14 @@ def ReadData(filename='showcases.2011.csv'):
     
 
 class Price(thinkbayes.Suite):
+    """Represents hypotheses about the price of a showcase."""
 
     def __init__(self, pmf, player, name=''):
         """Constructs the suite.
 
         pmf: prior distribution of price
         player: Player object
+        name: string
         """
         thinkbayes.Suite.__init__(self, name=name)
 
@@ -73,6 +74,7 @@ class Price(thinkbayes.Suite):
 
 
 class GainCalculator(object):
+    """Encapsulates computation of expected gain."""
 
     def __init__(self, player, opponent):
         """Constructs the calculator.
@@ -84,12 +86,18 @@ class GainCalculator(object):
         self.opponent = opponent
 
     def ExpectedGains(self, low=0, high=75000, n=101):
+        """Computes expected gains for a range of bids.
+
+        low: low bid
+        high: high bid
+        n: number of bids to evaluates
+
+        returns: tuple (sequence of bids, sequence of gains)
+    
+        """
         bids = numpy.linspace(low, high, n)
 
         gains = [self.ExpectedGain(bid) for bid in bids]
-
-        #for bid, ret in zip(bids, gains):
-        #    print bid, ret
 
         return bids, gains
 
@@ -97,7 +105,6 @@ class GainCalculator(object):
         """Computes the expected return of a given bid.
 
         bid: your bid
-        suite: posterior distribution of prices
         """
         suite = self.player.posterior
         total = 0
@@ -108,6 +115,9 @@ class GainCalculator(object):
 
     def Gain(self, bid, price):
         """Computes the return of a bid, given the actual price.
+
+        bid: number
+        price: actual price
         """
         # if you overbid, you get nothing
         if bid > price:
@@ -134,6 +144,7 @@ class GainCalculator(object):
 
 
 class Player(object):
+    """Represents a player on The Price is Right."""
 
     n = 101
     price_xs = numpy.linspace(0, 75000, n)
@@ -223,6 +234,7 @@ class Player(object):
         myplot.Pmfs([self.prior, self.posterior])
         myplot.Save(root=root,
                     xlabel='price ($)',
+                    ylabel='PMF',
                     formats=FORMATS)
 
 
@@ -243,6 +255,7 @@ def MakePlots(player1, player2):
     myplot.Pmfs([pmf1, pmf2])
     myplot.Save(root='price1',
                 xlabel='price ($)',
+                ylabel='PDF',
                 formats=FORMATS)
 
     # plot the historical distribution of underness for both players
@@ -262,6 +275,7 @@ def MakePlots(player1, player2):
     myplot.Cdfs([cdf1, cdf2])
     myplot.Save(root='price2',
                 xlabel='diff ($)',
+                ylabel='CDF',
                 formats=FORMATS)
 
 
@@ -321,7 +335,8 @@ def PlotExpectedGains(guess1=20000, guess2=40000):
     print 'Player 2 optimal bid', max(zip(gains, bids))
 
     myplot.Save(root='price5',
-                xlabel='price ($)',
+                xlabel='bid ($)',
+                ylabel='expected gain ($)',
                 formats=FORMATS)
 
 
@@ -344,10 +359,10 @@ def PlotOptimalBid():
 
         res.append((guess, mean, mle, gain, bid))
 
-    guesses, means, mles, gains, bids = zip(*res)
+    guesses, means, _mles, gains, bids = zip(*res)
     
     myplot.PrePlot(num=3)
-    pyplot.plot([15000,60000], [15000,60000], color='gray')
+    pyplot.plot([15000, 60000], [15000, 60000], color='gray')
     myplot.Plot(guesses, means, label='mean')
     #myplot.Plot(guesses, mles, label='MLE')
     myplot.Plot(guesses, bids, label='bid')
@@ -357,17 +372,20 @@ def PlotOptimalBid():
                 formats=FORMATS)
 
 
-def TestCode():
-    """Check some intermediate results."""
+def TestCode(calc):
+    """Check some intermediate results.
+
+    calc: GainCalculator
+    """
     # test ProbWin
     for diff in [0, 100, 1000, 10000, 20000]:
-        print diff, calc1.ProbWin(diff)
+        print diff, calc.ProbWin(diff)
     print
 
     # test Return
     price = 20000
     for bid in [17000, 18000, 19000, 19500, 19800, 20001]:
-        print bid, calc1.Gain(bid, price)
+        print bid, calc.Gain(bid, price)
     print
 
 

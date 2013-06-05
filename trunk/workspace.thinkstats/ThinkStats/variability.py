@@ -11,7 +11,6 @@ import cPickle
 import random
 
 import brfss
-import correlation
 import myplot
 
 import thinkbayes
@@ -400,6 +399,7 @@ def MedianIPR(xs, p):
     """Computes the median and interpercentile range.
 
     xs: sequence of values
+    p: range (0-1), 0.5 yields the interquartile range
 
     returns: tuple of float (median, IPR)
     """

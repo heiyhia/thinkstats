@@ -11,7 +11,14 @@ import thinkbayes
 import myplot
 
 class Die(thinkbayes.Pmf):
+    """Represents the PMF of outcomes for a die."""
+
     def __init__(self, sides, name=''):
+        """Initializes the die.
+
+        sides: int number of sides
+        name: string
+        """
         d = dict((i, 1) for i in xrange(1, sides+1))
         thinkbayes.Pmf.__init__(self, d, name)
         self.Normalize()

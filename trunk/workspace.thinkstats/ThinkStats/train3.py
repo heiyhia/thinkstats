@@ -13,18 +13,17 @@ from dice import Dice
 
 
 class Train(Dice):
-    """The likelihood function for the train problem is the same as
-    for the Dice problem."""
+    """Represents hypotheses about how many trains the company has."""
 
 
 class Train2(Dice):
-    """The likelihood function for the train problem is the same as
-    for the Dice problem."""
+    """Represents hypotheses about how many trains the company has."""
 
     def __init__(self, hypos, alpha=1.0):
         """Initializes the hypotheses with a power law distribution.
 
         hypos: sequence of hypotheses
+        alpha: parameter of the power law prior
         """
         Pmf.__init__(self)
         for hypo in hypos:
@@ -37,6 +36,7 @@ def MakePosterior(high, dataset, constructor):
 
     high: upper bound on the range of hypotheses
     dataset: observed data to use for the update
+    constructor: function that makes a new suite
 
     Returns: posterior Suite
     """
@@ -51,6 +51,7 @@ def MakePosterior(high, dataset, constructor):
 
 
 def ComparePriors():
+    """Runs the analysis with two different priors and compares them."""
     dataset = [60]
     high = 1000
 

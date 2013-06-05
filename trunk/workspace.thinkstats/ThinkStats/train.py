@@ -10,8 +10,11 @@ import myplot
 
 
 class Train(Dice):
-    """The likelihood function for the train problem is the same as
-    for the Dice problem."""
+    """Represents hypotheses about how many trains the company has.
+
+    The likelihood function for the train problem is the same as
+    for the Dice problem.
+    """
 
 
 def main():
