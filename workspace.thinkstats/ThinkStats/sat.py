@@ -13,7 +13,7 @@ import sys
 import matplotlib
 
 import thinkbayes
-import myplot
+import thinkplot
 
 
 def ReadScale(filename='sat_scale.csv', col=2):
@@ -26,6 +26,10 @@ def ReadScale(filename='sat_scale.csv', col=2):
     Returns: thinkbayes.Interpolator object
     """
     def ParseRange(s):
+        """Parse a range of values in the form 123-456
+
+        s: string
+        """
         t = [int(x) for x in s.split('-')]
         return 1.0 * sum(t) / len(t)
 
@@ -40,7 +44,7 @@ def ReadScale(filename='sat_scale.csv', col=2):
             raws.append(raw)
             score = ParseRange(t[col+1])
             scores.append(score)
-        except:
+        except ValueError:
             pass
 
     raws.sort()
@@ -105,10 +109,11 @@ class Exam(object):
         width = 1.8
         self.difficulties = MakeDifficulties(center, width, self.max_score)
 
-    def CompareScores(self, a_score, b_score):
+    def CompareScores(self, a_score, b_score, constructor):
         """Computes posteriors for two test scores and the likelihood ratio.
 
         a_score, b_score: scales SAT scores
+        constructor: function that instantiates an Sat or Sat2 object
         """
         a_sat = constructor(self, a_score)
         b_sat = constructor(self, b_score)
@@ -147,23 +152,27 @@ class Exam(object):
 
     def CalibrateDifficulty(self):
         """Make a plot showing the model distribution of raw scores."""
-        myplot.Clf()
-        myplot.PrePlot(num=2)
+        thinkplot.Clf()
+        thinkplot.PrePlot(num=2)
 
         cdf = thinkbayes.MakeCdfFromPmf(self.raw, name='data')
-        myplot.Cdf(cdf)
+        thinkplot.Cdf(cdf)
 
         efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
         pmf = self.MakeRawScoreDist(efficacies)
         cdf = thinkbayes.MakeCdfFromPmf(pmf, name='model')
-        myplot.Cdf(cdf)
+        thinkplot.Cdf(cdf)
         
-        myplot.Save(root='sat_calibrate',
+        thinkplot.Save(root='sat_calibrate',
                     xlabel='raw score',
                     ylabel='CDF',
                     formats=['pdf', 'eps'])
 
     def PmfCorrect(self, efficacy):
+        """Returns the PMF of number of correct responses.
+
+        efficacy: float
+        """
         pmf = PmfCorrect(efficacy, self.difficulties)
         return pmf
 
@@ -197,7 +206,7 @@ class Exam(object):
 
 
 class Sat(thinkbayes.Suite):
-    """Represents the distribution of efficacy for a test-taker."""
+    """Represents the distribution of p_correct for a test-taker."""
 
     def __init__(self, exam, score):
         thinkbayes.Suite.__init__(self)
@@ -227,14 +236,14 @@ class Sat(thinkbayes.Suite):
 
         self, other: Sat objects.
         """
-        myplot.Clf()
-        myplot.PrePlot(num=2)
+        thinkplot.Clf()
+        thinkplot.PrePlot(num=2)
 
         cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
         cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
 
-        myplot.Cdfs([cdf1, cdf2])
-        myplot.Save(xlabel='p_correct', 
+        thinkplot.Cdfs([cdf1, cdf2])
+        thinkplot.Save(xlabel='p_correct', 
                     ylabel='CDF', 
                     axis=[0.7, 1.0, 0.0, 1.0],
                     root='sat_posteriors_p_corr',
@@ -242,6 +251,7 @@ class Sat(thinkbayes.Suite):
 
 
 class Sat2(thinkbayes.Suite):
+    """Represents the distribution of efficacy for a test-taker."""
 
     def __init__(self, exam, score):
         thinkbayes.Suite.__init__(self)
@@ -277,14 +287,14 @@ class Sat2(thinkbayes.Suite):
 
         self, other: Sat objects.
         """
-        myplot.Clf()
-        myplot.PrePlot(num=2)
+        thinkplot.Clf()
+        thinkplot.PrePlot(num=2)
 
         cdf1 = thinkbayes.MakeCdfFromPmf(self, 'posterior %d' % self.score)
         cdf2 = thinkbayes.MakeCdfFromPmf(other, 'posterior %d' % other.score)
 
-        myplot.Cdfs([cdf1, cdf2])
-        myplot.Save(xlabel='efficacy', 
+        thinkplot.Cdfs([cdf1, cdf2])
+        thinkplot.Save(xlabel='efficacy', 
                     ylabel='CDF', 
                     axis=[0, 4.6, 0.0, 1.0],
                     root='sat_posteriors_eff',
@@ -300,21 +310,20 @@ def PlotJointDist(pmf1, pmf2, thresh=0.8):
     def Clean(pmf):
         """Removes values below thresh."""
         vals = [val for val in pmf.Values() if val < thresh]
-        t = [pmf.Remove(val) for val in vals]
+        [pmf.Remove(val) for val in vals]
 
-    myplot.Clf()
-    myplot.PrePlot(num=2)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
     Clean(pmf1)
     Clean(pmf2)
     pmf = thinkbayes.JointPmf(pmf1, pmf2)
 
-    myplot.Contour(pmf.GetDict(), contour=False, pcolor=True,
-                   cmap=matplotlib.cm.Blues)
+    thinkplot.Contour(pmf.GetDict(), contour=False, pcolor=True)
 
-    myplot.Plot([thresh, 1.0], [thresh, 1.0],
+    thinkplot.Plot([thresh, 1.0], [thresh, 1.0],
                 color='gray', alpha=0.2, linewidth=4)
 
-    myplot.Save(root='sat_joint',
+    thinkplot.Save(root='sat_joint',
                 xlabel='p_correct Alice', 
                 ylabel='p_correct Bob',
                 axis=[thresh, 1.0, thresh, 1.0],
@@ -330,9 +339,9 @@ def ComparePosteriorPredictive(a_sat, b_sat):
     a_pred = a_sat.MakePredictiveDist()
     b_pred = b_sat.MakePredictiveDist()
 
-    #myplot.Clf()
-    #myplot.Pmfs([a_pred, b_pred])
-    #myplot.Show()
+    #thinkplot.Clf()
+    #thinkplot.Pmfs([a_pred, b_pred])
+    #thinkplot.Show()
 
     a_like = thinkbayes.PmfProbGreater(a_pred, b_pred)
     b_like = thinkbayes.PmfProbLess(a_pred, b_pred)
@@ -349,15 +358,15 @@ def PlotPriorDist(pmf):
 
     pmf: prior
     """
-    myplot.Clf()
-    myplot.PrePlot(num=1)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=1)
 
     cdf1 = thinkbayes.MakeCdfFromPmf(pmf, 'prior')
-    myplot.Cdf(cdf1)
-    myplot.Save(root='sat_prior',
-                xlabel='p_correct', 
-                ylabel='CDF',
-                formats=['pdf', 'eps'])
+    thinkplot.Cdf(cdf1)
+    thinkplot.Save(root='sat_prior',
+                   xlabel='p_correct', 
+                   ylabel='CDF',
+                   formats=['pdf', 'eps'])
 
 
 class TopLevel(thinkbayes.Suite):
@@ -445,12 +454,7 @@ def ProbCorrectTable():
         print r'\\'
 
 
-# which version of the Sat class to use, Sat or Sat2?
-constructor = Sat
-
 def main(script):
-    global constructor
-
     ProbCorrectTable()
 
     exam = Exam()
@@ -458,11 +462,9 @@ def main(script):
     PlotPriorDist(exam.prior)
     exam.CalibrateDifficulty()
 
-    constructor = Sat
-    exam.CompareScores(780, 740)
+    exam.CompareScores(780, 740, constructor=Sat)
 
-    constructor = Sat2
-    exam.CompareScores(780, 740)
+    exam.CompareScores(780, 740, constructor=Sat2)
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import thinkbayes
-import myplot
+import thinkplot
 
 from thinkbayes import Pmf, Percentile
 from dice import Dice
@@ -55,8 +55,8 @@ def ComparePriors():
     dataset = [60]
     high = 1000
 
-    myplot.Clf()
-    myplot.PrePlot(num=2)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
 
     constructors = [Train, Train2]
     labels = ['uniform', 'power law']
@@ -64,9 +64,9 @@ def ComparePriors():
     for constructor, label in zip(constructors, labels):
         suite = MakePosterior(high, dataset, constructor)
         suite.name = label
-        myplot.Pmf(suite)
+        thinkplot.Pmf(suite)
 
-    myplot.Save(root='train4',
+    thinkplot.Save(root='train4',
                 xlabel='Number of trains',
                 ylabel='Probability')
 
@@ -75,16 +75,16 @@ def main():
 
     dataset = [30, 60, 90]
 
-    myplot.Clf()
-    myplot.PrePlot(num=3)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=3)
 
     for high in [500, 1000, 2000]:
         suite = MakePosterior(high, dataset, Train2)
         print high, suite.Mean()
 
-    myplot.Save(root='train3',
-                xlabel='Number of trains',
-                ylabel='Probability')
+    thinkplot.Save(root='train3',
+                   xlabel='Number of trains',
+                   ylabel='Probability')
 
     interval = Percentile(suite, 5), Percentile(suite, 95)
     print interval
@@ -92,6 +92,7 @@ def main():
     cdf = thinkbayes.MakeCdfFromPmf(suite)
     interval = cdf.Percentile(5), cdf.Percentile(95)
     print interval
+
 
 if __name__ == '__main__':
     main()

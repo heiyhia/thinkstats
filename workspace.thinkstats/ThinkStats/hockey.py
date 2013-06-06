@@ -10,7 +10,7 @@ import math
 import columns
 import thinkbayes
 import thinkstats
-import myplot
+import thinkplot
 
 
 USE_SUMMARY_DATA = True
@@ -143,8 +143,8 @@ def ReadHockeyData(filename='hockey_data.csv'):
 
     # make the distribution of average goals scored
     cdf = thinkbayes.MakeCdfFromList(lams)
-    myplot.Cdf(cdf)
-    myplot.Show()
+    thinkplot.Cdf(cdf)
+    thinkplot.Show()
 
     mu, var = thinkstats.MeanVar(lams)
     print 'mu, sig', mu, math.sqrt(var)
@@ -161,11 +161,11 @@ def main():
     suite1 = Hockey('bruins')
     suite2 = Hockey('canucks')
 
-    myplot.Clf()
-    myplot.PrePlot(num=2)
-    myplot.Pmf(suite1)
-    myplot.Pmf(suite2)
-    myplot.Save(root='hockey0',
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
+    thinkplot.Pmf(suite1)
+    thinkplot.Pmf(suite2)
+    thinkplot.Save(root='hockey0',
                 xlabel='Goals per game',
                 ylabel='Probability',
                 formats=formats)
@@ -173,11 +173,11 @@ def main():
     suite1.UpdateSet([0, 2, 8, 4])
     suite2.UpdateSet([1, 3, 1, 0])
 
-    myplot.Clf()
-    myplot.PrePlot(num=2)
-    myplot.Pmf(suite1)
-    myplot.Pmf(suite2)
-    myplot.Save(root='hockey1',
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
+    thinkplot.Pmf(suite1)
+    thinkplot.Pmf(suite2)
+    thinkplot.Save(root='hockey1',
                 xlabel='Goals per game',
                 ylabel='Probability',
                 formats=formats)
@@ -186,11 +186,11 @@ def main():
     goal_dist1 = MakeGoalPmf(suite1)
     goal_dist2 = MakeGoalPmf(suite2)
 
-    myplot.Clf()
-    myplot.PrePlot(num=2)
-    myplot.Pmf(goal_dist1)
-    myplot.Pmf(goal_dist2)
-    myplot.Save(root='hockey2',
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
+    thinkplot.Pmf(goal_dist1)
+    thinkplot.Pmf(goal_dist2)
+    thinkplot.Save(root='hockey2',
                 xlabel='Goals',
                 ylabel='Probability',
                 formats=formats)
@@ -201,14 +201,14 @@ def main():
     print 'MLE bruins', suite1.MaximumLikelihood()
     print 'MLE canucks', suite2.MaximumLikelihood()
    
-    myplot.Clf()
-    myplot.PrePlot(num=2)
-    myplot.Pmf(time_dist1)
-    myplot.Pmf(time_dist2)    
-    myplot.Save(root='hockey3',
-                xlabel='Games until goal',
-                ylabel='Probability',
-                formats=formats)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
+    thinkplot.Pmf(time_dist1)
+    thinkplot.Pmf(time_dist2)    
+    thinkplot.Save(root='hockey3',
+                   xlabel='Games until goal',
+                   ylabel='Probability',
+                   formats=formats)
 
     diff = goal_dist1 - goal_dist2
     p_win = diff.ProbGreater(0)

@@ -295,7 +295,7 @@ class Subject(object):
         print mix.CredibleInterval(90)
 
         if cdf_flag:
-            cdf = thinkbayes.MakeCdfFromPmf(mix)
+            cdf = mix.MakeCdf()
             thinkplot.Cdf(cdf)
         else:
             thinkplot.Pmf(mix)
@@ -477,7 +477,7 @@ def MakeConditionals(curves, ks):
     for k in ks:
         pmf = joint.Conditional(1, 0, k)
         pmf.name = 'k=%d' % k
-        cdf = thinkbayes.MakeCdfFromPmf(pmf)
+        cdf = pmf.MakeCdf()
         cdfs.append(cdf)
         print '90%% credible interval for %d' % k,
         print cdf.CredibleInterval(90)

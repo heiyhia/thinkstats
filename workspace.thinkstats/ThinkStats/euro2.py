@@ -23,10 +23,11 @@ rather than fair?"
 """
 
 import thinkbayes
-import myplot
+import thinkplot
 
 
 class Euro(thinkbayes.Suite):
+    """Represents hypotheses about the probability of heads."""
 
     def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
@@ -42,6 +43,7 @@ class Euro(thinkbayes.Suite):
 
 
 class Euro2(thinkbayes.Suite):
+    """Represents hypotheses about the probability of heads."""
 
     def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
@@ -83,15 +85,15 @@ def Version3():
     return suite
 
 
-def Main():
+def main():
 
     suite = Version3()
     print suite.Mean()
 
-    myplot.Pmf(suite)
-    myplot.Show()
+    thinkplot.Pmf(suite)
+    thinkplot.Show()
     
 
 
 if __name__ == '__main__':
-    Main()
+    main()

@@ -270,11 +270,16 @@ def Cdfs(cdfs, complement=False, transform=None, **options):
 def Contour(d, pcolor=False, contour=True, imshow=False, **options):
     """Makes a contour plot.
     
-    d: map from (x, y) to z
+    d: map from (x, y) to z, or object that provides GetDict
     pcolor: boolean, whether to make a pseudocolor plot
     contour: boolean, whether to make a contour plot
     options: keyword args passed to pyplot.pcolor and/or pyplot.contour
     """
+    try:
+        d = d.GetDict()
+    except AttributeError:
+        pass
+
     Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
     xs, ys = zip(*d.iterkeys())

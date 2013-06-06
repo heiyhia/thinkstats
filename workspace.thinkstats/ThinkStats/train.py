@@ -6,7 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from dice import Dice
-import myplot
+import thinkplot
 
 
 class Train(Dice):
@@ -24,12 +24,12 @@ def main():
     suite.Update(60)
     print suite.Mean()
 
-    myplot.PrePlot(1)
-    myplot.Pmf(suite)
-    myplot.Save(root='train1',
-                xlabel='Number of trains',
-                ylabel='Probability',
-                formats=['pdf', 'eps'])
+    thinkplot.PrePlot(1)
+    thinkplot.Pmf(suite)
+    thinkplot.Save(root='train1',
+                   xlabel='Number of trains',
+                   ylabel='Probability',
+                   formats=['pdf', 'eps'])
 
 
 if __name__ == '__main__':
