@@ -23,10 +23,11 @@ rather than fair?"
 """
 
 import thinkbayes
-import myplot
+import thinkplot
 
 
 class Euro(thinkbayes.Suite):
+    """Represents hypotheses about the probability of heads."""
 
     def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
@@ -42,6 +43,7 @@ class Euro(thinkbayes.Suite):
 
 
 class Euro2(thinkbayes.Suite):
+    """Represents hypotheses about the probability of heads."""
 
     def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
@@ -50,7 +52,7 @@ class Euro2(thinkbayes.Suite):
         data: tuple of (number of heads, number of tails)
         """
         x = hypo / 100.0
-        head, tails = data
+        heads, tails = data
         like = x**heads * (1-x)**tails
         return like
 
@@ -106,17 +108,17 @@ def PlotSuites(suites, root):
     suite1, suite2: Suite objects
     root: string filename to write
     """
-    myplot.Clf()
-    myplot.PrePlot(len(suites))
-    myplot.Pmfs(suites)
+    thinkplot.Clf()
+    thinkplot.PrePlot(len(suites))
+    thinkplot.Pmfs(suites)
 
-    myplot.Save(root=root,
-                xlabel='x',
-                ylabel='Probability',
-                formats=['pdf', 'eps'])
+    thinkplot.Save(root=root,
+                   xlabel='x',
+                   ylabel='Probability',
+                   formats=['pdf', 'eps'])
 
 
-def Main():
+def main():
     # make the priors
     suite1 = UniformPrior()
     suite1.name = 'uniform'
@@ -140,4 +142,4 @@ def Main():
 
 
 if __name__ == '__main__':
-    Main()
+    main()

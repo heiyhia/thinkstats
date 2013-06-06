@@ -11,7 +11,7 @@ import cPickle
 import random
 
 import brfss
-import myplot
+import thinkplot
 
 import thinkbayes
 import thinkstats
@@ -96,10 +96,10 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         n = len(xs)
 
         # compute summary stats
-        xbar, S2 = thinkstats.MeanVar(xs)
-        S = math.sqrt(S2)
+        xbar, s2 = thinkstats.MeanVar(xs)
+        s = math.sqrt(s2)
 
-        self.LogUpdateSetABC(n, xbar, S)
+        self.LogUpdateSetABC(n, xbar, s)
 
     def LogUpdateSetMedianIPR(self, data):
         """Updates the suite using ABC and median/iqr.
@@ -176,19 +176,19 @@ def FindPriorRanges(xs, num_points, num_stderrs=3.0, median_flag=False):
     # estimate mean and stddev of xs
     n = len(xs)
     if median_flag:
-        xbar, S = MedianSighat(xs, num_sigmas=NUM_SIGMAS)
+        xbar, s = MedianSighat(xs, num_sigmas=NUM_SIGMAS)
     else:
-        xbar, S2 = thinkstats.MeanVar(xs)
-        S = math.sqrt(S2)
+        xbar, s2 = thinkstats.MeanVar(xs)
+        s = math.sqrt(s2)
 
-    print 'classical estimators', xbar, S
+    print 'classical estimators', xbar, s
 
-    # compute ranges for xbar and S
-    stderr_xbar = S / math.sqrt(n)
+    # compute ranges for xbar and s
+    stderr_xbar = s / math.sqrt(n)
     mus = MakeRange(xbar, stderr_xbar)
 
-    stderr_S = S / math.sqrt(2 * (n-1))
-    sigmas = MakeRange(S, stderr_S)
+    stderr_s = s / math.sqrt(2 * (n-1))
+    sigmas = MakeRange(s, stderr_s)
 
     return mus, sigmas
 
@@ -225,15 +225,21 @@ def ComputeCoefVariation(suite):
 
 
 def PlotCdfs(d, labels):
+    """Plot CDFs for each sequence in a dictionary.
 
-    myplot.Clf()
+    Jitters the data and subtracts away the mean.
+
+    d: map from key to sequence of values
+    labels: map from key to string label
+    """
+    thinkplot.Clf()
     for key, xs in d.iteritems():
         mu = thinkstats.Mean(xs)
         xs = thinkstats.Jitter(xs, 1.3)
         xs = [x-mu for x in xs]
         cdf = thinkbayes.MakeCdfFromList(xs)
-        myplot.Cdf(cdf, label=labels[key])
-    myplot.Show()
+        thinkplot.Cdf(cdf, label=labels[key])
+    thinkplot.Show()
                   
 
 def PlotPosterior(suite, pcolor=False, contour=True):
@@ -241,10 +247,10 @@ def PlotPosterior(suite, pcolor=False, contour=True):
     
     suite: Suite that maps (mu, sigma) to probability
     """
-    myplot.Clf()
-    myplot.Contour(suite.GetDict(), pcolor=pcolor, contour=contour)
+    thinkplot.Clf()
+    thinkplot.Contour(suite.GetDict(), pcolor=pcolor, contour=contour)
 
-    myplot.Save(root='variability_posterior_%s' % suite.name,
+    thinkplot.Save(root='variability_posterior_%s' % suite.name,
                 title='Posterior joint distribution',
                 xlabel='Mean height (cm)',
                 ylabel='Stddev (cm)')
@@ -255,19 +261,19 @@ def PlotCoefVariation(suites):
 
     suites: map from label to Pmf of CVs.
     """
-    myplot.Clf()
-    myplot.PrePlot(num=2)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
 
     pmfs = {}
     for label, suite in suites.iteritems():
         pmf = ComputeCoefVariation(suite)
         print 'CV posterior mean', pmf.Mean()
         cdf = thinkbayes.MakeCdfFromPmf(pmf, label)
-        myplot.Cdf(cdf)
+        thinkplot.Cdf(cdf)
     
         pmfs[label] = pmf
 
-    myplot.Save(root='variability_cv',
+    thinkplot.Save(root='variability_cv',
                 xlabel='Coefficient of variation',
                 ylabel='Probability')
 
@@ -286,27 +292,32 @@ def PlotOutliers(samples):
         cdf = thinkbayes.MakeCdfFromList(outliers, label)
         cdfs.append(cdf)
 
-    myplot.Clf()
-    myplot.Cdfs(cdfs)
-    myplot.Save(root='variability_cdfs',
+    thinkplot.Clf()
+    thinkplot.Cdfs(cdfs)
+    thinkplot.Save(root='variability_cdfs',
                 title='CDF of height',
                 xlabel='Reported height (cm)',
                 ylabel='CDF')
 
+
 def PlotMarginals(suite):
-    myplot.Clf()
+    """Plots marginal distributions from a joint distribution.
+
+    suite: joint distribution of mu and sigma.
+    """
+    thinkplot.Clf()
 
     pyplot.subplot(1, 2, 1)
     pmf_m = suite.Marginal(0)
     cdf_m = thinkbayes.MakeCdfFromPmf(pmf_m)
-    myplot.Cdf(cdf_m)
+    thinkplot.Cdf(cdf_m)
 
     pyplot.subplot(1, 2, 2)
     pmf_s = suite.Marginal(1)
     cdf_s = thinkbayes.MakeCdfFromPmf(pmf_s)
-    myplot.Cdf(cdf_s)
+    thinkplot.Cdf(cdf_s)
 
-    myplot.Show()
+    thinkplot.Show()
 
 
 def DumpHeights(data_dir='.', n=10000):
@@ -430,11 +441,16 @@ def MedianSighat(xs, num_sigmas):
     return median, sighat
 
 def Summarize(xs):
-    # print outliers
+    """Prints summary statistics from a sequence of values.
+
+    xs: sequence of values
+    """
+    # print smallest and largest
     xs.sort()
     print 'smallest', xs[:10]
     print 'largest', xs[-10:]
 
+    # print median and interquartile range
     cdf = thinkbayes.MakeCdfFromList(xs)
     print cdf.Percentile(25), cdf.Percentile(50), cdf.Percentile(75)
 
@@ -489,7 +505,8 @@ if __name__ == '__main__':
     main()
 
 
-"""
+""" Results:
+
 UpdateSuite1 (100):
 marginal mu 162.816901408 0.55779791443
 marginal sigma 6.36966103214 0.277026082819

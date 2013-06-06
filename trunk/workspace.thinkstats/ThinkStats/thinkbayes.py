@@ -490,19 +490,19 @@ class Joint(Pmf):
     The values are sequences (usually tuples)
     """
 
-    def Marginal(self, i):
+    def Marginal(self, i, name=''):
         """Gets the marginal distribution of the indicated variable.
 
         i: index of the variable we want
 
         Returns: Pmf
         """
-        pmf = Pmf()
+        pmf = Pmf(name=name)
         for vs, prob in self.Items():
             pmf.Incr(vs[i], prob)
         return pmf
 
-    def Conditional(self, i, j, val):
+    def Conditional(self, i, j, val, name=''):
         """Gets the conditional distribution of the indicated variable.
 
         Distribution of vs[i], conditioned on vs[j] = val.
@@ -513,7 +513,7 @@ class Joint(Pmf):
 
         Returns: Pmf
         """
-        pmf = Pmf()
+        pmf = Pmf(name=name)
         for vs, prob in self.Items():
             if vs[j] != val: continue
             pmf.Incr(vs[i], prob)

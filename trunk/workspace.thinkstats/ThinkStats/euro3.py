@@ -23,10 +23,10 @@ rather than fair?"
 """
 
 import thinkbayes
-import myplot
 
 
 class Euro(thinkbayes.Suite):
+    """Represents hypotheses about the probability of heads."""
 
     def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
@@ -61,7 +61,7 @@ def SuiteLikelihood(suite, data):
     """
     total = 0
     for hypo, prob in suite.Items():
-        like = suite.Likelihood(hypo, data)
+        like = suite.Likelihood(data, hypo)
         total += prob * like
     return total
 
@@ -71,38 +71,33 @@ def Main():
     data = 8, 12
 
     suite = Euro()
-    likelihoodF = suite.Likelihood(data, 50)
-    print 'p(D|F)', likelihoodF
+    like_f = suite.Likelihood(data, 50)
+    print 'p(D|F)', like_f
 
     actual_percent = 100.0 * 140 / 250
     likelihood = suite.Likelihood(data, actual_percent)
     print 'p(D|B_cheat)', likelihood
-    print 'p(D|B_cheat) / p(D|F)', likelihood / likelihoodF
+    print 'p(D|B_cheat) / p(D|F)', likelihood / like_f
 
     like40 = suite.Likelihood(data, 40)
     like60 = suite.Likelihood(data, 60)
     likelihood = 0.5 * like40 + 0.5 * like60
     print 'p(D|B_two)', likelihood
-    print 'p(D|B_two) / p(D|F)', likelihood / likelihoodF
+    print 'p(D|B_two) / p(D|F)', likelihood / like_f
 
     b_uniform = Euro(xrange(0, 101))
     b_uniform.Remove(50)
     b_uniform.Normalize()
     likelihood = SuiteLikelihood(b_uniform, data)
-    likelihood2 = b_uniform.Update(data)
-    print likelihood == likelihood2
     print 'p(D|B_uniform)', likelihood
-    print 'p(D|B_uniform) / p(D|F)', likelihood / likelihoodF
+    print 'p(D|B_uniform) / p(D|F)', likelihood / like_f
 
     b_tri = TrianglePrior()
     b_tri.Remove(50)
     b_tri.Normalize()
     likelihood = b_tri.Update(data)
     print 'p(D|B_tri)', likelihood
-    print 'p(D|B_tri) / p(D|F)', likelihood / likelihoodF
-
-
-    
+    print 'p(D|B_tri) / p(D|F)', likelihood / like_f
 
 
 if __name__ == '__main__':

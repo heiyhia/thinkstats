@@ -6,13 +6,15 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import csv
-import myplot
 import numpy
 import thinkbayes
+import thinkplot
 
 import matplotlib.pyplot as pyplot
 
+
 FORMATS = ['png', 'pdf', 'eps']
+
 
 def ReadData(filename='showcases.2011.csv'):
     """Reads a CSV file of data.
@@ -229,10 +231,10 @@ class Player(object):
 
         root: string filename root for saved figure
         """
-        myplot.Clf()
-        myplot.PrePlot(num=2)
-        myplot.Pmfs([self.prior, self.posterior])
-        myplot.Save(root=root,
+        thinkplot.Clf()
+        thinkplot.PrePlot(num=2)
+        thinkplot.Pmfs([self.prior, self.posterior])
+        thinkplot.Save(root=root,
                     xlabel='price ($)',
                     ylabel='PMF',
                     formats=FORMATS)
@@ -246,21 +248,21 @@ def MakePlots(player1, player2):
     """
 
     # plot the prior distribution of price for both players
-    myplot.Clf()
-    myplot.PrePlot(num=2)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
     pmf1 = player1.PmfPrice()
     pmf1.name = 'showcase 1'
     pmf2 = player2.PmfPrice()
     pmf2.name = 'showcase 2'
-    myplot.Pmfs([pmf1, pmf2])
-    myplot.Save(root='price1',
+    thinkplot.Pmfs([pmf1, pmf2])
+    thinkplot.Save(root='price1',
                 xlabel='price ($)',
                 ylabel='PDF',
                 formats=FORMATS)
 
     # plot the historical distribution of underness for both players
-    myplot.Clf()
-    myplot.PrePlot(num=2)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
     cdf1 = player1.CdfDiff()
     cdf1.name = 'player 1'
     cdf2 = player2.CdfDiff()
@@ -272,8 +274,8 @@ def MakePlots(player1, player2):
     print 'Player 1 overbids', player1.ProbOverbid()
     print 'Player 2 overbids', player2.ProbOverbid()
 
-    myplot.Cdfs([cdf1, cdf2])
-    myplot.Save(root='price2',
+    thinkplot.Cdfs([cdf1, cdf2])
+    thinkplot.Save(root='price2',
                 xlabel='diff ($)',
                 ylabel='CDF',
                 formats=FORMATS)
@@ -323,18 +325,18 @@ def PlotExpectedGains(guess1=20000, guess2=40000):
     calc1 = GainCalculator(player1, player2)
     calc2 = GainCalculator(player2, player1)
 
-    myplot.Clf()
-    myplot.PrePlot(num=2)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
 
     bids, gains = calc1.ExpectedGains()
-    myplot.Plot(bids, gains, label='Player 1')
+    thinkplot.Plot(bids, gains, label='Player 1')
     print 'Player 1 optimal bid', max(zip(gains, bids))
 
     bids, gains = calc2.ExpectedGains()
-    myplot.Plot(bids, gains, label='Player 2')
+    thinkplot.Plot(bids, gains, label='Player 2')
     print 'Player 2 optimal bid', max(zip(gains, bids))
 
-    myplot.Save(root='price5',
+    thinkplot.Save(root='price5',
                 xlabel='bid ($)',
                 ylabel='expected gain ($)',
                 formats=FORMATS)
@@ -361,15 +363,15 @@ def PlotOptimalBid():
 
     guesses, means, _mles, gains, bids = zip(*res)
     
-    myplot.PrePlot(num=3)
+    thinkplot.PrePlot(num=3)
     pyplot.plot([15000, 60000], [15000, 60000], color='gray')
-    myplot.Plot(guesses, means, label='mean')
-    #myplot.Plot(guesses, mles, label='MLE')
-    myplot.Plot(guesses, bids, label='bid')
-    myplot.Plot(guesses, gains, label='gain')
-    myplot.Save(root='price6',
-                xlabel='guessed price ($)',
-                formats=FORMATS)
+    thinkplot.Plot(guesses, means, label='mean')
+    #thinkplot.Plot(guesses, mles, label='MLE')
+    thinkplot.Plot(guesses, bids, label='bid')
+    thinkplot.Plot(guesses, gains, label='gain')
+    thinkplot.Save(root='price6',
+                   xlabel='guessed price ($)',
+                   formats=FORMATS)
 
 
 def TestCode(calc):

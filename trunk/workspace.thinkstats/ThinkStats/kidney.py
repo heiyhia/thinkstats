@@ -11,12 +11,10 @@ import random
 import sys
 
 import correlation
-import myplot
+import thinkplot
 import matplotlib.pyplot as pyplot
 import thinkbayes
 
-
-import cProfile
 
 INTERVAL = 245/365.0
 FORMATS = ['pdf', 'eps']
@@ -31,6 +29,8 @@ def log2(x, denom=math.log(2)):
 
 
 def SimpleModel():
+    """Runs calculations based on a simple model."""
+
     # time between discharge and diagnosis, in days
     interval = 3291.0
 
@@ -87,19 +87,18 @@ def MakeCdf():
     return cdf
 
 
-def PlotCdf(cdf, fit):
+def PlotCdf(cdf):
     """Plots the actual and fitted distributions.
 
-    cdf:
-    fit:
+    cdf: CDF object
     """
     xs, ps = cdf.xs, cdf.ps
     cps = [1-p for p in ps]
 
     # CCDF on logy scale: shows exponential behavior
-    myplot.Clf()
-    myplot.Plot(xs, cps, 'bo-')
-    myplot.Save(root='kidney1',
+    thinkplot.Clf()
+    thinkplot.Plot(xs, cps, 'bo-')
+    thinkplot.Save(root='kidney1',
                 formats=FORMATS,
                 xlabel='RDT',
                 ylabel='CCDF (log scale)',
@@ -107,13 +106,13 @@ def PlotCdf(cdf, fit):
 
     # CDF, model and data
 
-    myplot.Clf()
-    myplot.PrePlot(num=2)
+    thinkplot.Clf()
+    thinkplot.PrePlot(num=2)
     mxs, mys = ModelCdf()
-    myplot.Plot(mxs, mys, label='model', linestyle='dashed') 
+    thinkplot.Plot(mxs, mys, label='model', linestyle='dashed') 
 
-    myplot.Plot(xs, ps, 'gs', label='data')
-    myplot.Save(root='kidney2',
+    thinkplot.Plot(xs, ps, 'gs', label='data')
+    thinkplot.Save(root='kidney2',
                 formats=FORMATS,
                 xlabel='RDT (volume doublings per year)',
                 ylabel='CDF',
@@ -129,14 +128,14 @@ def QQPlot(cdf, fit):
     fit: model
     """
     xs = [-1.5, 5.5]
-    myplot.Clf()
-    myplot.Plot(xs, xs, 'b-')
+    thinkplot.Clf()
+    thinkplot.Plot(xs, xs, 'b-')
 
     xs, ps = cdf.xs, cdf.ps
     fs = [fit.Value(p) for p in ps]
 
-    myplot.Plot(xs, fs, 'gs')
-    myplot.Save(root = 'kidney3',
+    thinkplot.Plot(xs, fs, 'gs')
+    thinkplot.Save(root = 'kidney3',
                 formats=FORMATS,
                 xlabel='Actual',
                 ylabel='Model')
@@ -153,7 +152,7 @@ def FitCdf(cdf):
     xs = xs[1:-1]
     lcps = [math.log(p) for p in cps[1:-1]]
     
-    inter, slope = correlation.LeastSquares(xs, lcps)
+    _inter, slope = correlation.LeastSquares(xs, lcps)
     return -slope
 
 
@@ -178,13 +177,13 @@ def CorrelatedGenerator(cdf, rho):
 
     # for subsequent values, choose from the conditional distribution
     # based on the previous value
-    sigma = math.sqrt(1 - rho**2);    
+    sigma = math.sqrt(1 - rho**2)
     while True:
         x = random.gauss(x * rho, sigma)
         yield Transform(x)
 
 
-def UncorrelatedGenerator(cdf, rho):
+def UncorrelatedGenerator(cdf, _rho):
     """Generates a sequence of values from cdf with no correlation.
 
     Ignores rho, which is accepted as a parameter to provide the
@@ -232,7 +231,7 @@ def GenerateSample(n, pc, lam1, lam2):
 
     Returns: list of random variates
     """
-    xs = [GenerateRdt(pc, lam1, lam2) for i in xrange(n)]
+    xs = [GenerateRdt(pc, lam1, lam2) for _ in xrange(n)]
     return xs
 
 
@@ -310,25 +309,15 @@ class Cache(object):
     """Records each observation point for each tumor."""
 
     def __init__(self):
-        """
-        joint: Pmf that maps from (age, size bucket) to frequency
+        """Initializes the cache.
 
-        sequences: map from size bucket to a list of sequences
-
+        joint: map from (age, bucket) to frequency
+        sequences: map from bucket to a list of sequences
         initial_rdt: sequence of (V0, rdt) pairs
         """
-        self.joint = thinkbayes.Pmf()
+        self.joint = thinkbayes.Joint()
         self.sequences = {}
         self.initial_rdt = []
-
-    def GetItems(self):
-        """Returns an iterator of (value, prob) pairs.
-
-        Each value is an (age, bucket) pair.
-
-        Returns: iterator of ((age, bucket), prob) pairs
-        """
-        return self.joint.Items()
 
     def GetBuckets(self):
         """Returns an iterator for the keys in the cache."""
@@ -337,6 +326,46 @@ class Cache(object):
     def GetSequence(self, bucket):
         """Looks up a bucket in the cache."""
         return self.sequences[bucket]
+
+    def ConditionalCdf(self, bucket, name=''):
+        """Forms the cdf of ages for a given bucket.
+
+        bucket: int bucket number
+        name: string
+        """
+        pmf = self.joint.Conditional(0, 1, bucket, name=name)
+        cdf = pmf.MakeCdf()
+        return cdf
+
+    def ProbOlder(self, cm, age):
+        """Computes the probability of exceeding age, given size.
+
+        cm: size in cm
+        age: age in years
+        """
+        bucket = CmToBucket(cm)
+        cdf = self.ConditionalCdf(bucket)
+        p = cdf.Prob(age)
+        return 1-p
+
+    def GetDistAgeSize(self, size_thresh=MAXSIZE):
+        """Gets the joint distribution of age and size.
+
+        Map from (age, log size in cm) to log freq
+        
+        Returns: new Pmf object
+        """
+        joint = thinkbayes.Joint()
+
+        for val, freq in self.joint.Items():
+            age, bucket = val
+            cm = BucketToCm(bucket)
+            if cm > size_thresh:
+                continue
+            log_cm = math.log10(cm)
+            joint.Set((age, log_cm), math.log(freq) * 10)
+
+        return joint
 
     def Add(self, age, seq, rdt):
         """Adds this observation point to the cache.
@@ -355,23 +384,6 @@ class Cache(object):
         initial = seq[-2]
         self.initial_rdt.append((initial, rdt))
 
-    def GetJointDist(self, size_thresh=MAXSIZE):
-        """Gets the current joint distribution.
-        
-        Returns: new Pmf object
-        """
-        joint = thinkbayes.Pmf()
-
-        for val, freq in cache.GetItems():
-            age, bucket = val
-            cm = BucketToCm(bucket)
-            if cm > size_thresh:
-                continue
-            log_cm = math.log10(cm)
-            joint.Set((age, log_cm), math.log(freq) * 10)
-
-        return joint
-
     def Print(self):
         """Prints the size (cm) for each bucket, and the number of sequences."""
         for bucket in sorted(self.GetBuckets()):
@@ -383,70 +395,228 @@ class Cache(object):
         """Computes the correlation between log volumes and rdts."""
         vs, rdts = zip(*self.initial_rdt)
         lvs = [math.log(v) for v in vs]
-        return correlation.Corr(vs, rdts)
+        return correlation.Corr(lvs, rdts)
 
 
+class Calculator(object):
+    """Encapsulates the state of the computation."""
 
-cache = Cache()
+    def __init__(self):
+        self.cache = Cache()
 
-def ExtendSequence(age, seq, rdt, interval):
-    """Generates a new random value and adds it to the end of seq.
+    def ExtendSequence(self, age, seq, rdt, interval):
+        """Generates a new random value and adds it to the end of seq.
 
-    Side-effect: adds sub-sequences to the cache.
+        Side-effect: adds sub-sequences to the cache.
 
-    age: age of tumor at the end of this interval
-    seq: sequence of values so far
-    rdt: reciprocal doubling time in doublings per year
-    interval: timestep in years
+        age: age of tumor at the end of this interval
+        seq: sequence of values so far
+        rdt: reciprocal doubling time in doublings per year
+        interval: timestep in years
+        """
+        initial = seq[-1]
+        doublings = rdt * interval
+        final = initial * 2**doublings
+        new_seq = seq + (final,)
+        self.cache.Add(age, new_seq, rdt)
+
+        return final, new_seq
+
+    def MakeSequence(self, iterator, v0=0.01, interval=INTERVAL, 
+                     vmax=Volume(MAXSIZE)):
+        """Simulate the growth of a tumor.
+
+        iterator: iterator of rdts
+        v0: initial volume in mL (cm^3)
+        interval: timestep in years
+        vmax: volume to stop at
+        """
+        seq = v0,
+        age = 0
+
+        for rdt in iterator:
+            age += interval
+            final, seq = self.ExtendSequence(age, seq, rdt, interval)
+            if final > vmax:
+                break
+
+        return seq
+
+    def MakeSequences(self, n, rho, cdf):
+        """Returns a sequence of times and a list of sequences of volumes.
+
+        n: sequence length
+        rho: serial correlation
+        cdf: Cdf of rdts
+
+        Returns: list of n iterators of n rdts
+        """
+        sequences = []
+        for i in range(n):
+            iterator = RdtGenerator(cdf, rho)
+            seq = self.MakeSequence(iterator)
+            sequences.append(seq)
+
+            if i % 100 == 0:
+                print i
+
+        return sequences
+
+    def PlotBucket(self, bucket, color='blue'):
+        """Plots the set of sequences for the given bucket.
+
+        bucket: int bucket number
+        color: string
+        """
+        sequences = self.cache.GetSequence(bucket)
+        for seq in sequences:
+            n = len(seq)
+            age = n * INTERVAL
+            ts = numpy.linspace(-age, 0, n)
+            PlotSequence(ts, seq, color)
+
+    def PlotBuckets(self):
+        """Plots the set of sequences that ended in a given bucket."""
+        # 2.01, 4.95 cm, 9.97 cm
+        buckets = [7.0, 16.0, 23.0]
+        buckets = [23.0]
+        colors = ['blue', 'green', 'red', 'cyan']
+
+        thinkplot.Clf()
+        for bucket, color in zip(buckets, colors):
+            self.PlotBucket(bucket, color)
+
+        thinkplot.Save(root='kidney5',
+                    formats=FORMATS,
+                    title='History of simulated tumors',
+                    axis=[-40, 1, MINSIZE, 12],
+                    xlabel='years',
+                    ylabel='diameter (cm, log scale)',
+                    yscale='log')
+
+    def PlotJointDist(self):
+        """Makes a pcolor plot of the age-size joint distribution."""
+        thinkplot.Clf()
+
+        joint = self.cache.GetDistAgeSize()
+        thinkplot.Contour(joint, contour=False, pcolor=True)
+
+        thinkplot.Save(root='kidney8',
+                    formats=FORMATS,
+                    axis=[0, 41, -0.7, 1.31],
+                    yticks=MakeLogTicks([0.2, 0.5, 1, 2, 5, 10, 20]),
+                    xlabel='ages',
+                    ylabel='diameter (cm, log scale)')
+
+    def PlotConditionalCdfs(self):
+        """Plots the cdf of ages for each bucket."""
+        buckets = [7.0, 16.0, 23.0, 27.0]
+        # 2.01, 4.95 cm, 9.97 cm, 14.879 cm
+        names = ['2 cm', '5 cm', '10 cm', '15 cm']
+        cdfs = []
+
+        for bucket, name in zip(buckets, names):
+            cdf = self.cache.ConditionalCdf(bucket, name)
+            cdfs.append(cdf)
+
+        thinkplot.Clf()
+        thinkplot.PrePlot(num=len(cdfs))
+        thinkplot.Cdfs(cdfs)
+        thinkplot.Save(root='kidney6',
+                    title='Distribution of age for several diameters',
+                    formats=FORMATS,
+                    xlabel='tumor age (years)',
+                    ylabel='CDF',
+                    loc=4)
+
+    def PlotCredibleIntervals(self, xscale='linear'):
+        """Plots the confidence interval for each bucket."""
+        xs = []
+        ts = []
+        percentiles = [95, 75, 50, 25, 5]
+        min_size = 0.3
+
+        # loop through the buckets, accumulate
+        # xs: sequence of sizes in cm
+        # ts: sequence of percentile tuples
+        for _, bucket in enumerate(sorted(self.cache.GetBuckets())):
+            cm = BucketToCm(bucket)
+            if cm < min_size or cm > 20.0:
+                continue
+            xs.append(cm)
+            cdf = self.cache.ConditionalCdf(bucket)      
+            ps = [cdf.Percentile(p) for p in percentiles]
+            ts.append(ps)
+
+        # dump the results into a table
+        fp = open('kidney_table.tex', 'w')
+        PrintTable(fp, xs, ts)
+        fp.close()
+
+        # make the figure
+        linewidths = [1, 2, 3, 2, 1]
+        alphas = [0.3, 0.5, 1, 0.5, 0.3]
+        labels = ['95th', '75th', '50th', '25th', '5th']
+
+        # transpose the ts so we have sequences for each percentile rank
+        thinkplot.Clf()
+        yys = zip(*ts)
+
+        for ys, linewidth, alpha, label in zip(yys, linewidths, alphas, labels):
+            options = dict(color='blue', linewidth=linewidth, 
+                                alpha=alpha, label=label, markersize=2)
+
+            # plot the data points
+            thinkplot.Plot(xs, ys, 'bo', **options)
+
+            # plot the fit lines
+            fxs = [min_size, 20.0]
+            fys = FitLine(xs, ys, fxs)
+
+            thinkplot.Plot(fxs, fys, **options)
+
+            # put a label at the end of each line
+            x, y = fxs[-1], fys[-1]
+            pyplot.Text(x*1.05, y, label, 
+                        horizontalalignment='left',
+                        verticalalignment='center')
+
+        # make the figure
+        thinkplot.Save(root='kidney7',
+                    formats=FORMATS,
+                    title='Credible interval for age vs diameter',
+                    xlabel='diameter (cm, log scale)',
+                    ylabel='tumor age (years)',
+                    xscale=xscale,
+                    xticks=MakeTicks([0.5, 1, 2, 5, 10, 20]),
+                    axis=[0.25, 35, 0, 45],
+                    legend=False)
+
+
+def PlotSequences(sequences):
+    """Plots linear measurement vs time.
+
+    sequences: list of sequences of volumes
     """
-    initial = seq[-1]
-    doublings = rdt * interval
-    final = initial * 2**doublings
-    new_seq = seq + (final,)
-    cache.Add(age, new_seq, rdt)
-    
-    return final, new_seq
+    thinkplot.Clf()
 
+    options = dict(color='gray', linewidth=1, linestyle='dashed')
+    thinkplot.Plot([0, 40], [10, 10], **options)
 
-def MakeSequence(iterator, v0=0.01, interval=INTERVAL, vmax=Volume(MAXSIZE)):
-    """Simulate the growth of a tumor.
+    for seq in sequences:
+        n = len(seq)
+        age = n * INTERVAL
+        ts = numpy.linspace(0, age, n)
+        PlotSequence(ts, seq)
 
-    iterator: iterator of rdts
-    v0: initial volume in mL (cm^3)
-    interval: timestep in years
-    vmax: volume to stop at
-    """
-    seq = v0,
-    age = 0
-
-    for rdt in iterator:
-        age += interval
-        final, seq = ExtendSequence(age, seq, rdt, interval)
-        if final > vmax:
-            break
-
-    return seq
-
-
-def MakeSequences(n, rho, cdf):
-    """Returns a sequence of times and a list of sequences of volumes.
-
-    n: sequence length
-    rho: serial correlation
-    cdf: Cdf of rdts
-
-    Returns: list of n iterators of n rdts
-    """
-    sequences = []
-    for i in range(n):
-        iterator = RdtGenerator(cdf, rho)
-        seq = MakeSequence(iterator)
-        sequences.append(seq)
-
-        if i % 100 == 0:
-            print i
-
-    return sequences
+    thinkplot.Save(root='kidney4',
+                   formats=FORMATS,
+                   axis=[0, 40, MINSIZE, 20],
+                   title='Simulations of tumor growth',
+                   xlabel='tumor age (years)',
+                   yticks=MakeTicks([0.2, 0.5, 1, 2, 5, 10, 20]),
+                   ylabel='diameter (cm, log scale)',
+                   yscale='log')
 
 
 def PlotSequence(ts, seq, color='blue'):
@@ -459,123 +629,7 @@ def PlotSequence(ts, seq, color='blue'):
     options = dict(color=color, linewidth=1, alpha=0.2)
     xs = [Diameter(v) for v in seq]
 
-    myplot.Plot(ts, xs, **options)
-
-
-def PlotSequences(sequences):
-    """Plots linear measurement vs time.
-
-    sequences: list of sequences of volumes
-    """
-    myplot.Clf()
-
-    options = dict(color='gray', linewidth=1, linestyle='dashed')
-    myplot.Plot([0, 40], [10, 10], **options)
-
-    for seq in sequences:
-        n = len(seq)
-        age = n * INTERVAL
-        ts = numpy.linspace(0, age, n)
-        PlotSequence(ts, seq)
-
-    myplot.Save(root='kidney4',
-                formats=FORMATS,
-                axis=[0, 40, MINSIZE, 20],
-                title='Simulations of tumor growth',
-                xlabel='tumor age (years)',
-                yticks=MakeTicks([0.2, 0.5, 1, 2, 5, 10, 20]),
-                ylabel='diameter (cm, log scale)',
-                yscale='log')
-
-
-def PlotBucket(bucket, color='blue'):
-    """Plots the set of sequences for the given bucket.
-
-    bucket: int bucket number
-    color: string
-    """
-    sequences = cache.GetSequence(bucket)
-    for seq in sequences:
-        n = len(seq)
-        age = n * INTERVAL
-        ts = numpy.linspace(-age, 0, n)
-        PlotSequence(ts, seq, color)
-
-
-def PlotBuckets():
-    """Plots the set of sequences that ended in a given bucket."""
-    # 2.01, 4.95 cm, 9.97 cm
-    buckets = [7.0, 16.0, 23.0]
-    buckets = [23.0]
-    colors = ['blue', 'green', 'red', 'cyan']
-    cdfs = []
-
-    myplot.Clf()
-    for bucket, color in zip(buckets, colors):
-        PlotBucket(bucket, color)
-
-    myplot.Save(root='kidney5',
-                formats=FORMATS,
-                title='History of simulated tumors',
-                axis=[-40, 1, MINSIZE, 12],
-                xlabel='years',
-                ylabel='diameter (cm, log scale)',
-                yscale='log')
-
-
-def PlotJointDist():
-    """Makes a pcolor plot of the age-size joint distribution."""
-    myplot.Clf()
-
-    joint = cache.GetJointDist()
-
-    myplot.Contour(joint.GetDict(), contour=False, pcolor=True)
-
-    myplot.Save(root='kidney8',
-                formats=FORMATS,
-                axis=[0, 41, -0.7, 1.31],
-                yticks=MakeLogTicks([0.2, 0.5, 1, 2, 5, 10, 20]),
-                xlabel='ages',
-                ylabel='diameter (cm, log scale)')
-
-
-def ConditionalCdf(size_bucket, name=''):
-    """Forms the cdf of ages for the sequences in this bucket.
-
-    size_bucket: int bucket number
-    name: string
-    """
-    pmf = thinkbayes.Pmf(name=name)
-    for val, prob in cache.GetItems():
-        age, bucket = val
-        if bucket == size_bucket:
-            pmf.Set(age, prob)
-
-    pmf.Normalize()
-    cdf = thinkbayes.MakeCdfFromPmf(pmf)
-    return cdf
-
-
-def PlotConditionalCdfs():
-    """Plots the cdf of ages for each bucket."""
-    buckets = [7.0, 16.0, 23.0, 27.0]
-    # 2.01, 4.95 cm, 9.97 cm, 14.879 cm
-    names = ['2 cm', '5 cm', '10 cm', '15 cm']
-    cdfs = []
-
-    for bucket, name in zip(buckets, names):
-        cdf = ConditionalCdf(bucket, name)
-        cdfs.append(cdf)
-
-    myplot.Clf()
-    myplot.PrePlot(num=len(cdfs))
-    myplot.Cdfs(cdfs)
-    myplot.Save(root='kidney6',
-                title='Distribution of age for several diameters',
-                formats=FORMATS,
-                xlabel='tumor age (years)',
-                ylabel='CDF',
-                loc=4)
+    thinkplot.Plot(ts, xs, **options)
 
 
 def PrintCI(fp, cm, ps):
@@ -624,76 +678,12 @@ def FitLine(xs, ys, fxs):
     """
     lxs = [math.log(x) for x in xs]
     inter, slope = correlation.LeastSquares(lxs, ys)
-    res = correlation.Residuals(lxs, ys, inter, slope)
-    R2 = correlation.CoefDetermination(ys, res)
+    # res = correlation.Residuals(lxs, ys, inter, slope)
+    # r2 = correlation.CoefDetermination(ys, res)
 
     lfxs = [math.log(x) for x in fxs]
     fys = [inter + slope * x for x in lfxs]
     return fys
-
-
-def PlotCredibleIntervals(xscale='linear'):
-    """Plots the confidence interval for each bucket."""
-    xs = []
-    ts = []
-    percentiles = [95, 75, 50, 25, 5]
-    min_size = 0.3
-    
-    # loop through the buckets, accumulate
-    # xs: sequence of sizes in cm
-    # ts: sequence of percentile tuples
-    for i, bucket in enumerate(sorted(cache.GetBuckets())):
-        cm = BucketToCm(bucket)
-        if cm < min_size or cm > 20.0:
-            continue
-        xs.append(cm)
-        cdf = ConditionalCdf(bucket)      
-        ps = [cdf.Percentile(p) for p in percentiles]
-        ts.append(ps)
-
-    # dump the results into a table
-    fp = open('kidney_table.tex', 'w')
-    PrintTable(fp, xs, ts)
-    fp.close()
-
-    # make the figure
-    linewidths = [1, 2, 3, 2, 1]
-    alphas = [0.3, 0.5, 1, 0.5, 0.3]
-    labels = ['95th', '75th', '50th', '25th', '5th']
-
-    # transpose the ts so we have sequences for each percentile rank
-    myplot.Clf()
-    yys = zip(*ts)
-
-    for ys, linewidth, alpha, label in zip(yys, linewidths, alphas, labels):
-        options = dict(color='blue', linewidth=linewidth, 
-                            alpha=alpha, label=label, markersize=2)
-
-        # plot the data points
-        myplot.Plot(xs, ys, 'bo', **options)
-
-        # plot the fit lines
-        fxs = [min_size, 20.0]
-        fys = FitLine(xs, ys, fxs)
-
-        myplot.Plot(fxs, fys, **options)
-
-        # put a label at the end of each line
-        x, y = fxs[-1], fys[-1]
-        pyplot.Text(x*1.05, y, label, 
-                    horizontalalignment='left',
-                    verticalalignment='center')
-
-    # make the figure
-    myplot.Save(root='kidney7',
-                formats=FORMATS,
-                title='Credible interval for age vs diameter',
-                xlabel='diameter (cm, log scale)',
-                ylabel='tumor age (years)',
-                xscale=xscale,
-                xticks=MakeTicks([0.5, 1, 2, 5, 10, 20]),
-                axis=[0.25, 35, 0, 45],
-                legend=False)
 
 
 def MakeTicks(xs):
@@ -728,26 +718,14 @@ def TestCorrelation(cdf):
     rho = 0.4
 
     iterator = CorrelatedGenerator(cdf, rho)
-    xs = [iterator.next() for i in range(n)]
+    xs = [iterator.next() for _ in range(n)]
     
     rho2 = correlation.SerialCorr(xs)
     print rho, rho2
     cdf2 = thinkbayes.MakeCdfFromList(xs)
 
-    myplot.Cdfs([cdf, cdf2])
-    myplot.Show()
-
-
-def ProbOlder(cm, age):
-    """Computes the probability of exceeding age, given size.
-
-    cm: size in cm
-    age: age in years
-    """
-    bucket = CmToBucket(cm)
-    cdf = ConditionalCdf(bucket)
-    p = cdf.Prob(age)
-    return 1-p
+    thinkplot.Cdfs([cdf, cdf2])
+    thinkplot.Show()
 
 
 def main(script):
@@ -766,34 +744,30 @@ def main(script):
 
     # TestCorrelation(fit)
 
-    PlotCdf(cdf, fit)
+    PlotCdf(cdf)
     # QQPlot(cdf, fit)
 
+    calc = Calculator()
     rho = 0.0
-    sequences = MakeSequences(100, rho, fit)
-
+    sequences = calc.MakeSequences(100, rho, fit)
     PlotSequences(sequences)
-    PlotBuckets()
 
-    sequences = MakeSequences(1900, rho, fit)
-    print 'V0-RDT correlation', cache.Correlation()
+    calc.PlotBuckets()
 
-    print '15.5 Probability age > 8 year', ProbOlder(15.5, 8)
-    print '6.0 Probability age > 8 year', ProbOlder(6.0, 8)
+    _ = calc.MakeSequences(1900, rho, fit)
+    print 'V0-RDT correlation', calc.cache.Correlation()
 
-    PlotConditionalCdfs()
+    print '15.5 Probability age > 8 year', calc.cache.ProbOlder(15.5, 8)
+    print '6.0 Probability age > 8 year', calc.cache.ProbOlder(6.0, 8)
 
-    PlotCredibleIntervals(xscale='log')
+    calc.PlotConditionalCdfs()
 
-    PlotJointDist()
+    calc.PlotCredibleIntervals(xscale='log')
+
+    calc.PlotJointDist()
 
 
 if __name__ == '__main__':
-    profile = False
-    if profile:
-        import cProfile
-        cProfile.run('main(*sys.argv)')
-    else:
-        main(*sys.argv)
+    main(*sys.argv)
 
 

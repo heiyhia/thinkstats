@@ -8,18 +8,13 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import thinkbayes
 
 import matplotlib.pyplot as pyplot
-import myplot
-import numpy
+import thinkplot
 
-import csv
 import math
-import random
 import sys
-import time
 
-from math import log
 
-formats = ['pdf', 'eps', 'png']
+FORMATS = ['pdf', 'eps', 'png']
 
 
 def StrafingSpeed(alpha, beta, x):
@@ -58,6 +53,7 @@ def MakeLocationPmf(alpha, beta, locations):
 
 
 class Paintball(thinkbayes.Suite, thinkbayes.Joint):
+    """Represents hypotheses about the location of an opponent."""
 
     def __init__(self, alphas, betas, locations):
         """Makes a joint suite of parameters alpha and beta.
@@ -95,21 +91,24 @@ def MakePmfPlot(alpha = 10):
     locations = range(0, 31)
 
     betas = [10, 20, 40]
-    myplot.PrePlot(num=len(betas))
+    thinkplot.PrePlot(num=len(betas))
 
     for beta in betas:
         pmf = MakeLocationPmf(alpha, beta, locations)
         pmf.name = 'beta = %d' % beta
-        myplot.Pmf(pmf)
+        thinkplot.Pmf(pmf)
 
-    myplot.Save('paintball1',
+    thinkplot.Save('paintball1',
                 xlabel='Distance',
                 ylabel='Prob',
-                formats=formats)
+                formats=FORMATS)
 
 
 def MakePosteriorPlot(suite):
+    """Plots the posterior marginal distributions for alpha and beta.
 
+    suite: posterior joint distribution of location
+    """
     marginal_alpha = suite.Marginal(0)
     marginal_alpha.name = 'alpha'
     marginal_beta = suite.Marginal(1)
@@ -118,46 +117,52 @@ def MakePosteriorPlot(suite):
     print 'alpha CI', marginal_alpha.CredibleInterval(50)
     print 'beta CI', marginal_beta.CredibleInterval(50)
 
-    myplot.PrePlot(num=2)
+    thinkplot.PrePlot(num=2)
 
-    #myplot.Pmf(marginal_alpha)
-    #myplot.Pmf(marginal_beta)
+    #thinkplot.Pmf(marginal_alpha)
+    #thinkplot.Pmf(marginal_beta)
     
-    myplot.Cdf(thinkbayes.MakeCdfFromPmf(marginal_alpha))
-    myplot.Cdf(thinkbayes.MakeCdfFromPmf(marginal_beta))
+    thinkplot.Cdf(thinkbayes.MakeCdfFromPmf(marginal_alpha))
+    thinkplot.Cdf(thinkbayes.MakeCdfFromPmf(marginal_beta))
     
-    myplot.Save('paintball2',
+    thinkplot.Save('paintball2',
                 xlabel='Distance',
                 ylabel='Prob',
                 loc=4,
-                formats=formats)
+                formats=FORMATS)
 
 
 def MakeConditionalPlot(suite):
+    """Plots marginal CDFs for alpha conditioned on beta.
 
+    suite: posterior joint distribution of location
+    """    
     betas = [10, 20, 40]
-    myplot.PrePlot(num=len(betas))
+    thinkplot.PrePlot(num=len(betas))
 
     for beta in betas:
         cond = suite.Conditional(0, 1, beta)
         cond.name = 'beta = %d' % beta
-        myplot.Pmf(cond)
+        thinkplot.Pmf(cond)
 
-    myplot.Save('paintball3',
+    thinkplot.Save('paintball3',
                 xlabel='Distance',
                 ylabel='Prob',
-                formats=formats)
+                formats=FORMATS)
 
 
 def MakeContourPlot(suite):
+    """Plots the posterior joint distribution as a contour plot.
 
-    myplot.Contour(suite.GetDict(), contour=False, pcolor=True)
+    suite: posterior joint distribution of location
+    """
+    thinkplot.Contour(suite.GetDict(), contour=False, pcolor=True)
 
-    myplot.Save('paintball4',
+    thinkplot.Save('paintball4',
                 xlabel='alpha',
                 ylabel='beta',
                 axis=[0, 30, 0, 20],
-                formats=formats)
+                formats=FORMATS)
 
 
 def MakeCrediblePlot(suite):
@@ -173,15 +178,15 @@ def MakeCrediblePlot(suite):
         for pair in interval:
             d[pair] += 1
 
-    myplot.Contour(d, contour=False, pcolor=True)
+    thinkplot.Contour(d, contour=False, pcolor=True)
     pyplot.text(17, 4, '25', color='white')
     pyplot.text(17, 15, '50', color='white')
     pyplot.text(17, 30, '75')
 
-    myplot.Save('paintball5',
+    thinkplot.Save('paintball5',
                 xlabel='alpha',
                 ylabel='beta',
-                formats=formats)
+                formats=FORMATS)
 
 
 def main(script):

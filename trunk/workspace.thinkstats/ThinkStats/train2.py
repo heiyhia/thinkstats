@@ -6,7 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from dice import Dice
-import myplot
+import thinkplot
 
 class Train(Dice):
     """The likelihood function for the train problem is the same as
@@ -28,7 +28,7 @@ def MakePosterior(high, dataset):
     for data in dataset:
         suite.Update(data)
 
-    myplot.Pmf(suite)
+    thinkplot.Pmf(suite)
     return suite
 
 
@@ -39,9 +39,9 @@ def main():
         suite = MakePosterior(high, dataset)
         print high, suite.Mean()
 
-    myplot.Save(root='train2',
-                xlabel='Number of trains',
-                ylabel='Probability')
+    thinkplot.Save(root='train2',
+                   xlabel='Number of trains',
+                   ylabel='Probability')
 
 
 if __name__ == '__main__':
