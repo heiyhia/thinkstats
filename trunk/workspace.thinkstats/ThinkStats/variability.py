@@ -21,6 +21,7 @@ import matplotlib.pyplot as pyplot
 NUM_SIGMAS = 1
 
 class Height(thinkbayes.Suite, thinkbayes.Joint):
+    """Hypotheses about parameters of the distribution of height."""
 
     def __init__(self, mus, sigmas, name=''):
         """Makes a prior distribution for mu and sigma based on a sample.
@@ -69,7 +70,9 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         return loglike
 
     def LogUpdateSetFast(self, data):
-        """Computes the log likelihood of the data under the hypothesis.
+        """Updates the suite using a faster implementation.
+
+        Computes the sum of the log likelihoods directly.
 
         Args:
             data: sequence of values
@@ -84,9 +87,7 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
             self.Incr(hypo, loglike)
 
     def LogUpdateSetMeanVar(self, data):
-        """Computes the log likelihood of the data under the hypothesis.
-
-        Estimates log likelihood using Approximate Bayesian Computation (ABC).
+        """Updates the suite using ABC and mean/var.
 
         Args:
             data: sequence of values
@@ -101,9 +102,7 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         self.LogUpdateSetABC(n, xbar, S)
 
     def LogUpdateSetMedianIPR(self, data):
-        """Computes the log likelihood of the data under the hypothesis.
-
-        Estimates log likelihood using Approximate Bayesian Computation (ABC).
+        """Updates the suite using ABC and median/iqr.
 
         Args:
             data: sequence of values
@@ -118,6 +117,12 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         self.LogUpdateSetABC(n, median, sighat)
 
     def LogUpdateSetABC(self, n, xbar, sighat):
+        """Updates the suite using ABC.
+
+        n: sample size
+        xbar: estimated central tendency
+        sighat: estimated spread
+        """
         for hypo in sorted(self.Values()):
             mu, sigma = hypo
 
