@@ -207,36 +207,23 @@ Unported License, which is available at
 \chapter{Preface}
 \label{preface}
 
-\section*{}
-
-This version of the book is a rough draft.  I am making this draft
-available for comments, but it comes with the warning that it is
-probably full of errors.
-
-If you find some of those errors, please let me know.  If I make
-a change based on your suggestion, I will add you to the
-contributors list (unless you ask me not to).
-
-
 \subsection*{My theory, which is mine\footnote{This section title
 is a reference to a Monty Python sketch, which is required for
 all Python-based books.}}
 
 The premise of this book, and the other books in the {\it Think}
 series, is that if you know how to program, you
-can use that skill to help you learn other topics, including
-Bayesian statistics.
+can use that skill to help you learn other topics.
 
 Most books on Bayesian statistics use mathematical notation and
 present ideas in terms of mathematical concepts like calculus.
-This book uses Python code instead of math, and discrete approximations
+This book uses Python code instead of math and discrete approximations
 instead of continuous mathematics.  As a result, what would
 be an integral in a math book becomes a summation, and
 most operations on distributions are simple loops.
 
 This presentation is easier to understand, at least for people with
-programming skills.  
-It is also more general, because when we make
+programming skills.  It is also more general, because when we make
 modeling decisions, we can choose the most appropriate model without
 worrying too much about whether the model lends itself to conventional
 analysis.
@@ -260,14 +247,13 @@ make decisions about which parts of the real-world system we
 have to include in the model, and which details we can abstract
 away.
 
-For example, in Chapter~\ref{prediction}, the motivating
-problem is to predict the winner of a hockey game.  I chose
-to model goal-scoring as a Poisson process, which implies that
-a goal is equally likely at any point in the game.  That is not
-exactly true, but it is probably a good enough model for
-most purposes.
+For example, in Chapter~\ref{prediction}, the motivating problem is to
+predict the winner of a hockey game.  I model goal-scoring as a
+Poisson process, which implies that a goal is equally likely at any
+point in the game.  That is not exactly true, but it is probably a
+good enough model for most purposes.
 
-In Chapter~ref{evidence} the motivating problem is interpreting SAT
+In Chapter~\ref{evidence} the motivating problem is interpreting SAT
 scores (the SAT is a standardized test used for college admissions in
 the U.S.).  I start with a simple model that assumes that all SAT
 questions are equally difficult, but in fact the designers of the SAT
@@ -303,11 +289,15 @@ and implement them in code that is clear, readable, and demonstrably
 correct.  Focus your attention on good modeling decisions, not
 optimization.
 
-\item If the performance of your solution is good enough for your
-application, stop!  Or if you insist, review and refine your modeling
-decisions.
+\item Once you have a simple model working, try to identify the
+biggest sources of error.  You might need to increase the number
+of values in a discrete approximation, or increase
+the number of iterations in a Monte Carlo simulation, or add
+details to the model.
 
-\item If you really feel the need for speed, there are two approaches
+\item If the performance of your solution is good enough for your
+application, you might not have to do any optimization.  But if
+you do, there are two approaches
 to consider.  You can review your code and look for optimizations; for
 example, caching previously computed results to avoid redundant
 computation.  Or you can look for analytic methods that
@@ -315,7 +305,7 @@ yield computational short-cuts.
 
 \end{enumerate}
 
-One benefit of this process is that Step 1 tends to be fast, so you
+One benefit of this process is that Steps 1 and 2 tend to be fast, so you
 can explore several alternative models before investing heavily in any
 of them.
 
@@ -340,15 +330,16 @@ each other without changing the Python path.
 You can download these files one at a time when you need them, or you
 can download them all at once in a zip file,
 \url{http://thinkbayes.com/thinkbayes_code.zip}.  This file also
-contains the data files used by some of the programs.  When you
-unzip it, it creates a directory named \verb"thinkbayes_code"
-that contains all the code used in this book.
+contains the data files used by some of the programs.  When you unzip
+it, it creates a directory named \verb"thinkbayes_code" that contains
+all the code used in this book.
 
 One of the modules in that directory is {\tt thinkplot.py},
 which provides wrappers for some of the functions in {\tt pyplot},
-which is part of {\tt matplotlib}.  You can download {\tt matplotlib}
-from \url{http://matplotlib.org}, if you don't already have it
-installed.
+which is part of {\tt matplotlib}.  If you don't have {\tt matplotlib}
+installed, check your package manager to see if it is available.
+Otherwise you can get download instructions
+from \url{http://matplotlib.org}.
 
 In addition, some programs in this book use NumPy and SciPy, which are
 available from \url{http://numpy.org} and \url{http://scipy.org}.
@@ -393,7 +384,7 @@ Chapter 3 introduces {\tt Suite}, a kind of {\tt Pmf} that provides
 a framework for doing Bayesian updates.  And that's just about
 all there is to it.
 
-Well, almost.  In some of the later chapters, I use some common
+Well, almost.  In some of the later chapters, I use common
 analytic distributions, including the Gaussian (normal) distribution,
 the exponential and Poisson distributions, and the beta distribution.
 In Chapter~\ref{species} I break out the less-common Dirichlet
@@ -405,34 +396,11 @@ a mathematical approach that is not particularly helpful for practical
 purposes).
 
 
-\subsection*{Case studies}
-
-After you read this book, you should be ready to apply Bayesian
-methods to real-world problems.  I have used this book in a college
-class with students who knew Python and a little bit of
-probability.  After a few weeks, they were able to work on projects
-with real-world applications.  As examples of the kind of work
-you can do with these methods, some of their reports are included
-as case studies at the end of this book.
-
-I am always looking for examples that would lend themselves to
-additional case studies.  If you use methods from this book on
-a real project, let me know.  Maybe we can include a case study
-about your project in a future edition.
-
-
-
-
 Allen B. Downey \\*
 Needham MA \\*
 
 Allen B. Downey is a Professor of Computer Science at 
 the Franklin W. Olin College of Engineering.
-
-
-
-
-%\section*{Acknowledgements}
 
 
 
@@ -465,7 +433,7 @@ Thanks!
 
 \item I wrote parts of this book during project nights with the Boston
   Python Users' Group, so I would like to thank them for their
-  company, and pizza.
+  company and pizza.
 
 \item Jonathan Edwards sent in the first typo.
 
@@ -490,16 +458,16 @@ with replacement is an unrealistic scenario.
 \item Ram Limbu found a typo and suggested a clarification.
 
 \item In Spring 2013, students in Computational Bayesian statistics
-made many helpful corrections and suggestions: Kai Austin, Claire
-Barnes, Kari Bender, Rachel Boy, Kat Mendoza, Arjun Iyer, Ben Kroop,
-Nathan Lintz, Kyle McCannaughay, Alec Radford, Brendan Ritter and
-Evan Simpson.
+  made many helpful corrections and suggestions: Kai Austin, Claire
+  Barnes, Kari Bender, Rachel Boy, Kat Mendoza, Arjun Iyer, Ben Kroop,
+  Nathan Lintz, Kyle McCannaughay, Alec Radford, Brendan Ritter and
+  Evan Simpson.
 
-\item Greg Marra and Matt Aasted helped me clarify the discussion
-of {\it The Price is Right} problem.
+\item Greg Marra and Matt Aasted helped me clarify the discussion of
+  {\it The Price is Right} problem.
 
-\item Marcus Ogren pointed out that the original statement of
-the Locomotive problem was ambiguous.
+\item Marcus Ogren pointed out that the original statement of the
+  Locomotive problem was ambiguous.
 
 % ENDCONTRIB
 
@@ -538,43 +506,47 @@ which is surprisingly easy to derive, provided that you understand
 conditional probability.  So we'll start with probability, then
 conditional probability, then Bayes's Theorem, and on to Bayesian
 statistics.
+\index{conditional probability}
+\index{probability!conditional}
 
 A probability is a number between 0 and 1 (including both) that
 represents a degree of belief in a fact or prediction.  A probability
 of 1 represents certainty that a fact is true, or that a prediction
-will come true.  A probability of 0 represents equal certainty
+will come true.  A probability of 0 represents certainty
 that the fact is false.
+\index{degree of belief}
 
 Intermediate values represent degrees of certainty.  The value 0.5,
 often represented as 50\%, means that a predicted outcome is
 as likely to happen as not.  For example, the probability that a tossed
 coin lands face up is very close to 50\%.
+\index{coin toss}
 
 A conditional probability is a probability based on some background
 information.  For example, I might be interested in the probability
 that I will have a heart attack in the next year.  According to the
 CDC, ``Every year about 785,000 Americans have a first coronary attack.
 (\url{http://www.cdc.gov/heartdisease/facts.htm})''
+\index{heart attack}
 
 The U.S. population is about 311 million, so the probability that a
 randomly-chosen American will have a heart attack in the next year is
 roughly 0.3\%.
 
 But I am not a randomly-chosen American.  Epidemiologists have
-identified many factors affect the risk of heart attacks; depending on
-those factors, my risk might be higher or lower than average.
+identified many factors that affect the risk of heart attacks;
+depending on those factors, my risk might be higher or lower than
+average.
 
-I am male, 45 years old, and I have
-borderline high cholesterol.  Those factors increase my chances.
-However, I have low blood pressure and I don't smoke, and
-those factors decrease my chances.
+I am male, 45 years old, and I have borderline high cholesterol.
+Those factors increase my chances.  However, I have low blood pressure
+and I don't smoke, and those factors decrease my chances.
 
 Plugging everything into the online calculator at
 \url{http://hp2010.nhlbihin.net/atpiii/calculator.asp}, I find that my
-risk of a heart attack in the next year is about 0.2\%,
-less than the national average.
-That value is a conditional probability, because it is based on
-a number of factors that make up my ``condition.''
+risk of a heart attack in the next year is about 0.2\%, less than the
+national average.  That value is a conditional probability, because it
+is based on a number of factors that make up my ``condition.''
 
 The usual notation for conditional probability is \p{A|B}, which
 is the probability of $A$ given that $B$ is true.  In this
@@ -587,6 +559,8 @@ attack in the next year, and $B$ is the set of conditions I listed.
 ``Conjoint probability'' is a fancy way to say the probability that
 two things are true.  I will write \p{A \AND B} to mean the
 probability that $A$ and $B$ are both true.
+\index{conjoint probability}
+\index{probability!conjoint}
 
 If you learned about probability in the context of coin tosses and
 dice, you might have learned the formula
@@ -600,6 +574,8 @@ face up, and $B$ means the second coin lands face up, then $\p{A} =
 But this formula only works because in this case $A$ and $B$ are
 independent; that is, the second event does not depend on the first.
 If you tell me the first coin is heads, that does not change \p{B}.
+\index{independent}
+\index{dependent}
 
 Here is a different example where the events are not independent.
 Suppose again that $A$ means the first coin lands face up, but let's
@@ -610,7 +586,7 @@ These events are dependent because if we know whether or not $A$ is
 true, that changes \p{C}.  Specifically, if $A$ is true then $\p{C}
 = 0.5$; but if $A$ is false $\p{C} = 0$.
 
-To be more correct, I should not say that \p{C} changes, but
+To be more precise, I should not say that \p{C} changes, but
 rather that the conditional probabilities are different: $\p{C|A} = 0.5$
 and $\p{C| \NOT A} = 0$.
 
@@ -629,10 +605,12 @@ example called The Cookie Problem\footnote{Based on an example from
   there.}.  Suppose there are two bowls of cookies.  Bowl 1 contains
   30 vanilla cookies and 10 chocolate cookies.  Bowl 2 contains 20 of
   each.
+\index{Bayes's Theorem}
+\index{Cookie problem}
 
-Now suppose you choose one of the bowls at random and, without looking,
-select a cookie at random.  The cookie is vanilla.  What is the probability
-that it came from Bowl 1?
+Now suppose you choose one of the bowls at random and, without
+looking, select a cookie at random.  The cookie is vanilla.  What is
+the probability that it came from Bowl 1?
 
 This is a conditional probability; we want \p{\T{Bowl 1} |
   \T{vanilla}}, but it is not obvious how to compute it.  If I asked a
@@ -653,6 +631,8 @@ We'll start with the observation that conjunction is commutative; that is
 \[ \p{A \AND B} = \p{B \AND A} \]
 %
 for any events $A$ and $B$.
+\index{Bayes's Theorem derivation}
+\index{conjunction}
 
 Next, we write the probability of a conjunction:
 %
@@ -728,6 +708,7 @@ left.
 There is another way to think of Bayes's Theorem: it gives us a
 way to update the probability of a hypothesis, $H$, in light of
 some body of data, $D$.
+\index{diachronic interpretation}
 
 This way of thinking about Bayes's Theorem is called the
 {\bf diachronic interpretation}.  ``Diachronic'' means that something
@@ -740,6 +721,10 @@ Rewriting Bayes's Theorem with $H$ and $D$ yields:
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
 %
 In this interpretation, each term has a name:
+\index{prior}
+\index{posterior}
+\index{likelihood}
+\index{normalizing constant}
 
 \begin{itemize}
 
@@ -757,15 +742,16 @@ called the {\bf normalizing constant}.
 
 \end{itemize}
 
-In some cases, we can compute the prior
-based on background information.  For example, the Cookie
-Problem specifies that we choose a bowl at random
-with equal probability.
+In some cases, we can compute the prior based on background
+information.  For example, the Cookie Problem specifies that we choose
+a bowl at random with equal probability.
 
-In other cases the prior
-is subjective; that is, reasonable people might disagree,
-either because they use different background information
-or because they interpret the same information differently.
+In other cases the prior is subjective; that is, reasonable people
+might disagree, either because they use different background
+information or because they interpret the same information
+differently.
+\index{subjective prior}
+\index{prior!subjective}
 
 The likelihood is usually the easiest part to compute.  In the
 Cookie Problem, if we know which bowl the cookie came from,
@@ -773,10 +759,12 @@ we can get the probability of getting a vanilla cookie by counting.
 
 The normalizing constant can be tricky.  It is supposed to be the
 probability of seeing the data under any hypothesis at all, but in the
-most general case it is hard to see what that means.
+most general case it is hard to nail down what that means.
 
 Most often we simplify things by specifying a set of hypotheses
 that are
+\index{mutually exclusive}
+\index{collectively exhaustive}
 
 \begin{description}
 
@@ -790,6 +778,7 @@ possibilities; one of the hypotheses has to be true.
 
 I use the word {\bf suite} for a set of hypotheses that has these
 properties.
+\index{suite}
 
 In the Cookie Problem, there are only two hypotheses---the cookie
 came from Bowl 1 or Bowl 2---and they are mutually exclusive and
@@ -807,6 +796,7 @@ Plugging in the values from the Cookie Problem, we have
 %
 which is what we computed earlier by mentally combining the two
 bowls.
+\index{total probability}
 
 
 \newcommand{\MM}{M\&M}
@@ -816,6 +806,7 @@ bowls.
 \MM's are small candy-coated chocolates that come in a variety of
 colors.  Mars, Inc., which makes \MM's, changes the mixture of
 colors from time to time.
+\index{M\&M problem}
 
 In 1995, they introduced blue \MM's.  Before then, the color mix in
 a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
@@ -835,6 +826,7 @@ draw one sample from each bowl/bag.  This problem also gives me a
 chance to demonstrate the table method, which is useful for solving
 problems like this on paper.  In the next chapter we will
 solve them computationally.
+\index{table method}
 
 The first step is to enumerate the hypotheses.  The bag the yellow
 \MM came from I'll call Bag 1; I'll call the other Bag 2.  So
@@ -881,8 +873,9 @@ That's it.  Simple, right?
 Well, you might be bothered by one detail.  I wrote \p{D|H}
 in terms of percentages, not probabilities, which means it
 is off by a factor of 10,000.  But that
-cancels out when we divide through by the normalizing factor, so
+cancels out when we divide through by the normalizing constant, so
 it doesn't affect the result.
+\index{normalizing constant}
 
 When the set of hypotheses is mutually exclusive and collectively
 exhaustive, you can multiply the likelihoods by any factor, if it is
@@ -897,6 +890,7 @@ answer is so counter-intuitive that many people just can't accept
 it, and many smart people have embarrassed themselves not just by
 getting it wrong but by arguing the wrong side, aggressively,
 in public.
+\index{Monty Hall problem}
 
 Monty Hall was the original host of the game show {\em Let's Make a
 Deal}.  The Monty Hall problem is based on one of the regular
@@ -946,8 +940,8 @@ To start, we should make a careful statement of the data.  In
 this case $D$ consists of two parts: Monty chooses Door B,
 and there is no car there.
 
-Next we define three hypotheses: $A$, $B$ and $C$ represent the
-hypothesis that the car is behind Door A, Door B or Door C.
+Next we define three hypotheses: $A$, $B$, and $C$ represent the
+hypothesis that the car is behind Door A, Door B, or Door C.
 Again, let's apply the table method:
 
 \begin{tabular}{|c|c|c|c|c|}
@@ -962,7 +956,7 @@ C  &  1/3  &  1  &   1/3  &  2/3 \\
 \end{tabular}
 
 Filling in the priors is easy because we are told that the prizes
-are arranged at random, which implies that the car is equally
+are arranged at random, which suggests that the car is equally
 likely to be behind any door.
 
 Figuring out the likelihoods takes some thought, but with reasonable
@@ -970,16 +964,16 @@ care we can be confident that we have it right:
 
 \begin{itemize}
 
-\item If the car is actually behind A, Monty could safely open Doors
-B or C.  So the probability that he chooses B is 1/2.  And since
-the car is actually behind A, the probability that the car is not
-behind B is 1.
+\item If the car is actually behind A, Monty could safely open Doors B
+  or C.  So the probability that he chooses B is 1/2.  And since the
+  car is actually behind A, the probability that the car is not behind
+  B is 1.
 
-\item If the car is actually behind B, Monty has to open door C,
-so the probability that he opens door B is 0.
+\item If the car is actually behind B, Monty has to open door C, so
+  the probability that he opens door B is 0.
 
-\item Finally, if the car is behind Door C, Monty opens B with probability
-1 and finds no car there with probability 1.
+\item Finally, if the car is behind Door C, Monty opens B with
+  probability 1 and finds no car there with probability 1.
 
 \end{itemize}
 
@@ -1018,6 +1012,25 @@ switches.
 
 On the other hand, if he had opened $C$, we would know $\p{B|D} = 1$.
 
+I included the Monty Hall problem in this chapter because I think it
+is fun, and because Bayes's Theorem makes the complexity of the
+problem a little more manageable.  But it is not a typical use of
+Bayes's Theorem, so if you found it confusing, don't worry!
+
+\section{Discussion}
+
+For many problems involving conditional probability, Bayes's Theorem
+provides a divide-and-conquer strategy.  If \p{A|B} it is hard to
+compute, or hard to measure experimentally, check whether it might be
+easier to compute the other terms in Bayes's Theorem, \p{B|A}, \p{A}
+and \p{B}.
+\index{divide-and-conquer}
+
+If the Monty Hall problem is your idea of fun, I have collected a
+number of similar problem in an article called ``All your Bayes are
+belong to us,'' which you can read at
+\url{http://allendowney.blogspot.com/2011/10/all-your-bayes-are-belong-to-us.html}.
+
 
 \chapter{Computational statistics}
 
@@ -1025,20 +1038,24 @@ On the other hand, if he had opened $C$, we would know $\p{B|D} = 1$.
 
 In statistics a {\bf distribution} is a set of values and their
 corresponding probabilities.
+\index{distribution}
 
 For example, if you roll a six-sided die, the set of possible
 values is the numbers 1 to 6, and the probability associated
 with each value is 1/6.
+\index{dice}
 
 As another example, you might be interested in how many times each
 word appears in common English usage.  You could build a distribution
 that includes each word and how many times it appears.
+\index{word frequency}
 
 In Python, you could represent a distribution with a dictionary that
 maps from each value to its probability.  As an alternative, I have
 written a class called {\tt Pmf} that represents a distribution.  PMF
 stands for ``probability mass function'' which is a specific
 kind of distribution (we'll see others soon).
+\index{Pmf class}
 
 {\tt Pmf} is defined in a Python module I wrote to accompany this
 book, called {\tt thinkbayes.py}.  You can download it from
@@ -1061,6 +1078,7 @@ for x in [1,2,3,4,5,6]:
 \verb"Pmf" creates an empty Pmf object with no values.  The
 \verb"Set" method sets the probability associated with each
 value to $1/6$.
+\index{Set}
 
 Here's another example that counts the number of times each word
 appears in a sequence:
@@ -1073,6 +1091,7 @@ for word in word_list:
 
 \verb"Incr" increases the ``probability'' associated with each
 word by 1.  If a word is not already in the Pmf, it is added.
+\index{Incr}
 
 I put ``probability'' in quotes because in this example, the
 probabilities are not normalized; that is, they do not add up to 1.
@@ -1082,6 +1101,7 @@ But in this example the word counts are proportional to the
 probabilities.  So after we count all the words, we can compute
 probabilities by dividing through by the total number of words.  {\tt
   Pmf} provides a method, \verb"Normalize", that does exactly that:
+\index{Normalize}
 
 \begin{verbatim}
 pmf.Normalize()
@@ -1089,6 +1109,7 @@ pmf.Normalize()
 
 Once you have made a Pmf object, you can ask for the probability
 associated with any value:
+\index{Prob}
 
 \begin{verbatim}
 print pmf.Prob('the')
@@ -1109,6 +1130,7 @@ In the context of Bayes's Theorem, it is natural to use a Pmf
 to map from each hypothesis to its probability.  In the Cookie
 Problem, the hypotheses are $B_1$ and $B_2$.  In Python, I
 represent them with strings:
+\index{Cookie problem}
 
 \begin{verbatim}
 pmf = Pmf()
@@ -1118,11 +1140,13 @@ pmf.Set('Bowl 2', 0.5)
 
 This distribution, which contains the priors for each hypothesis,
 is called (wait for it) the {\bf prior distribution}.
+\index{prior distribution}
 
 To update the distribution based on new data (the vanilla cookie),
 we multiply each prior by the corresponding likelihood.  The likelihood
 of drawing a vanilla cookie from Bowl 1 is 3/4.  The likelihood
 for Bowl 2 is 1/2.
+\index{Mult}
 
 \begin{verbatim}
 pmf.Mult('Bowl 1', 0.75)
@@ -1135,6 +1159,7 @@ for the given hypothesis and multiplies by the given likelihood.
 After this update, the distribution is no longer normalized, but
 because these hypotheses are mutually exclusive and collectively
 exhaustive, we can {\bf renormalize}:
+\index{renormalize}
 
 \begin{verbatim}
 pmf.Normalize()
@@ -1143,8 +1168,9 @@ pmf.Normalize()
 The result is a distribution that contains the posterior probability
 for each hypothesis, which is called (wait now) the
 {\bf posterior distribution}.
+\index{posterior distribution}
 
-Finally, we can get the posterior for Bowl 1.
+Finally, we can get the posterior probability for Bowl 1.
 
 \begin{verbatim}
 print pmf.Prob('Bowl 1')
@@ -1152,11 +1178,13 @@ print pmf.Prob('Bowl 1')
 
 And the answer is 0.6.  You can download this example
 from \url{http://thinkbayes.com/cookie.py}.
+\index{cookie.py}
 
 
 \section{The Bayesian framework}
 \label{framework}
 
+\index{Bayesian framework}
 Before we go on to other problems, I want to rewrite the code
 from the previous section to make it more general.  First I'll
 define a class to encapsulate the code related to this problem:
@@ -1183,11 +1211,12 @@ two hypotheses:
 
 \verb"Cookie" provides an \verb"Update" method that takes
 data as a parameter and updates the probabilities.
+\index{Update}
 
 \begin{verbatim}
     def Update(self, data):
         for hypo in self.Values():
-            like = self.Likelihood(hypo, data)
+            like = self.Likelihood(data, hypo)
             self.Mult(hypo, like)
         self.Normalize()
 \end{verbatim}
@@ -1195,6 +1224,7 @@ data as a parameter and updates the probabilities.
 \verb"Update" loops through each hypothesis in the suite
 and multiplies its probability by the likelihood of the
 data under the hypothesis, which is computed by \verb"Likelihood":
+\index{Likelihood}
 
 \begin{verbatim}
     mixes = {
@@ -1202,7 +1232,7 @@ data under the hypothesis, which is computed by \verb"Likelihood":
         'Bowl 2':dict(vanilla=0.5, chocolate=0.5),
         }
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         mix = self.mixes[hypo]
         like = mix[data]
         return like
@@ -1251,10 +1281,28 @@ the same.
 The code in this section is available from
 \url{http://thinkbayes.com/cookie2.py}.
 
+\begin{exercise}
+
+In Section~\ref{framework} I said that the solution to the cookie
+problem generalizes to the case where we draw multiple cookies
+with replacement.
+
+But in the more likely scenario where we eat the cookies we draw,
+the likelihood of each draw depends on the previous draws.
+
+Modify the solution in this chapter to handle selection without
+replacement.  Hint: add instance variables to {\tt Cookie} to
+represent the hypothetical state of the bowls, and modify
+{\tt Likelihood} accordingly.  You might want to define a 
+{\tt Bowl} object.
+
+\end{exercise}
+
 
 \section{The Monty Hall problem}
 
 To solve the Monty Hall problem, I'll define a new class:
+\index{Monty Hall problem}
 
 \begin{verbatim}
 class Monty(Pmf):
@@ -1287,7 +1335,7 @@ And the implementation of \verb"Update" is exactly the same:
 \begin{verbatim}
     def Update(self, data):
         for hypo in self.Values():
-            like = self.Likelihood(hypo, data)
+            like = self.Likelihood(data, hypo)
             self.Mult(hypo, like)
         self.Normalize()
 \end{verbatim}
@@ -1295,7 +1343,7 @@ And the implementation of \verb"Update" is exactly the same:
 The only part that requires some work is \verb"Likelihood".
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         if hypo == data:
             return 0
         elif hypo == 'A':
@@ -1326,6 +1374,7 @@ this section is available from \url{http://thinkbayes.com/monty.py}.
 
 \section{Encapsulating the framework}
 
+\index{Suite class}
 Now that we see what elements of the framework are the same, we
 can encapsulate them in an object: a \verb"Suite" is a \verb"Pmf"
 that provides \verb"__init__", \verb"Update" and \verb"Print".
@@ -1354,7 +1403,7 @@ from thinkbayes import Suite
 
 class Monty(Suite):
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         if hypo == data:
             return 0
         elif hypo == 'A':
@@ -1381,9 +1430,12 @@ algorithm framework; the child class, \verb"Monty" provides the
 missing elements of the algorithm, in this case the likelihood
 function.  You can read about this pattern at
 \url{http://en.wikipedia.org/wiki/Template_method_pattern}.
+\index{Template method pattern}
 
 
 \section{The \MM~problem}
+
+\index{\MM problem}
 
 We can use the \verb"Suite" framework to solve the \MM~problem.
 Writing the \verb"Likelihood" function is tricky, but everything
@@ -1431,7 +1483,7 @@ The data is a tuple that specifies a bag, \verb"bag1" or \verb"bag2",
 and a color.
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         bag, color = data
         mix = self.hypotheses[hypo][bag]
         like = mix[color]
@@ -1463,41 +1515,25 @@ The code in this section is available from
 \url{http://thinkbayes.com/m_and_m.py}.
 
 
-\section{Exercises}
-
-\begin{exercise}
-
-In Section~\ref{framework} I said that the solution to the cookie
-problem generalizes to the case where we draw multiple cookies
-with replacement.
-
-But in the more likely scenario where we eat the cookies we draw,
-the likelihood of each draw depends on the previous draws.
-
-Modify the solution in this chapter to handle selection without
-replacement.  Hint: add instance variables to {\tt Cookie} to
-represent the hypothetical state of the bowls, and modify
-{\tt Likelihood} accordingly.  You might want to define a 
-{\tt Bowl} object.
-
-\end{exercise}
-
 
 \chapter{Estimation}
 \label{estimation}
 
 \section{Which die was it?}
 
+\index{Dice problem}
 This problem is based on an example I saw in Sanjoy Mahajan's class on
 Bayesian inference.  You can download the code in this section from
 \url{http://thinkbayes.com/dice.py}.
 
 Suppose I have a box of dice that contains a 4-sided die, a 6-sided
 die, an 8-sided die, a 12-sided die and a 20-sided die.  If you
-have ever played Dungeons\&Dragons, you know what I am talking about.
+have ever played {\it Dungeons~\&~Dragons}, you know what I am talking about.
+\index{Dungeons\&Dragons}
 
 Suppose I select a die from the box at random, roll it, and get a 6.
 What is the probability that I rolled each die?
+\index{dice}
 
 Let me suggest a three-step strategy for approaching a problem like this.
 
@@ -1525,7 +1561,7 @@ write the likelihood function:
 
 \begin{verbatim}
 class Dice(Suite):
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         if hypo < data:
             return 0
         else:
@@ -1583,10 +1619,10 @@ and less than 1\% for the 20-sided die.
 
 
 \section{The Locomotive problem}
+
 \index{locomotive problem}
 \index{Mosteller, Frederick}
 \index{German tank problem}
-
 The locomotive problem is a classic also
 known as the ``German tank problem.''  Here is the version
 that appears in Mosteller, {\it Fifty Challenging Problems in
@@ -1640,10 +1676,11 @@ locomotives, then the chance of seeing any particular locomotive is
 $1/N$.
 
 Here's the likelihood function:
+\index{likelihood function}
 
 \begin{verbatim}
 class Train(Suite):
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         if hypo < data:
             return 0
         else:
@@ -1652,6 +1689,7 @@ class Train(Suite):
 
 This might look familiar; the likelihood functions for the Locomotive
 problem and the Dice problem are identical.
+\index{Dice problem}
 
 Here's the update:
 
@@ -1700,6 +1738,7 @@ good guess if you wanted to minimize error.  If you played this
 guessing game over and over, using the mean of the posterior as your
 estimate would minimize the total squared error over the long run (see
 \url{http://en.wikipedia.org/wiki/Minimum_mean_square_error}).
+\index{mean squared error}
 
 You can download this example from \url{http://thinkbayes.com/train.py}.
 
@@ -1711,6 +1750,7 @@ some assumptions, and some of them were pretty arbitrary.  In
 particular, we chose a uniform prior from 1 to 1000, without
 much justification for choosing 1000, or for choosing a uniform
 distribution.
+\index{prior distribution}
 
 It is not crazy to believe that a railroad company might operate
 1000 locomotives, but a reasonable person might guess more or fewer.
@@ -1785,6 +1825,8 @@ companies, fewer medium-sized companies, and only one or two very
 large companies.  In fact, the distribution of company sizes tends to
 follow a power law, as Robert Axtell reports in {\it Science} (see
 \url{http://www.sciencemag.org/content/293/5536/1818.full.pdf}).
+\index{power law}
+\index{Axtell, Robert}
 
 This law suggests that if there are 1000 companies with fewer than
 10 locomotives, there might be 100 companies with 100 locomotives,
@@ -1858,6 +1900,7 @@ Once you have computed a posterior distribution, it is often useful
 to summarize the results with a single point estimate or an interval.
 For point estimates it is common to use the mean, median, or the
 value with maximum likelihood.
+\index{credible interval}
 
 For intervals we usually report two values computed
 so that there is a 90\% chance that the unknown value falls
@@ -1868,6 +1911,7 @@ A simple way to compute a credible interval is to add up the
 probabilities in the posterior distribution and record the values
 that correspond to probabilities 5\% and 95\%.  In other words,
 the 5th and 95th percentiles.
+\index{percentile}
 
 \verb"thinkbayes" provides a function that computes percentiles:
 
@@ -1900,6 +1944,8 @@ In the previous section we computed percentiles by iterating through
 the values and probabilities in a Pmf.  If we need to compute more
 than a few percentiles, it is more efficient to use a cumulative
 distribution function, or Cdf.
+\index{cumulative distribution function}
+\index{CDF}
 
 Cdfs and Pmfs are equivalent in the sense that they contain the
 same information about the distribution, and you can always convert
@@ -1907,12 +1953,11 @@ from one to the other.  The advantage of the Cdf is that you can
 compute percentiles more efficiently.
 
 {\tt thinkbayes} provides a {\tt Cdf} class that represents a
-cumulative distribution function.  It also provides functions for
-converting from a Pmf to a Cdf (and back). 
+cumulative distribution function.  {\tt Pmf} provides a method
+that makes the corresponding Cdf:
 
 \begin{verbatim}
-import thinkbayes
-cdf = thinkbayes.MakeCdfFromPmf(suite)
+cdf = suite.MakeCdf()
 \end{verbatim}
 
 And Cdf provides a function named \verb"Percentile"
@@ -1961,6 +2006,8 @@ of the Locomotive problem, and compare the results.
 \section{The Euro coin problem}
 \label{euro}
 
+\index{Euro problem}
+\index{MacKay David}
 In {\it Information Theory, Inference, and Learning Algorithms}, David MacKay
 poses this question:
 
@@ -1983,19 +2030,23 @@ is to estimate the probability that the coin lands face up.  The second
 is to evaluate whether the data support the hypothesis that the
 coin is biased.
 
+You can download the code in this section from
+\url{http://thinkbayes.com/euro.py}.
+
 Any given coin has some probability, $x$, of landing heads up when spun
 on edge.  It seems reasonable to believe that the value of $x$ depends
 on some physical characteristics of the coin, primarily the distribution
 of weight.
 
 If a coin is perfectly balanced, we expect $x$ to be close to 50\%, but
-for a lop-sided coin $x$ might be substantially different.  We can use
+for a lopsided coin $x$ might be substantially different.  We can use
 Bayes's Theorem and the observed data to estimate $x$.
 
 Let's define 101 hypotheses, where $H_i$ is the hypothesis that
 $x$ is $i$\%, for values of $i$ from 0 to 100.  I'll start with a uniform
 prior where the probability of $H_i$ is the same for all $i$.  We'll
 come back later to consider other priors.
+\index{uniform distribution}
 
 \begin{figure}
 % euro.py
@@ -2012,7 +2063,7 @@ heads is $i/100$; the probability of tails is $1- i/100$.
 \begin{verbatim}
 class Euro(Suite):
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         x = hypo / 100.0
         if data == 'H':
             return x
@@ -2046,6 +2097,8 @@ Again, there are several ways to summarize the posterior distribution.
 One option is to find the most likely value in the posterior
 distribution.  \verb"thinkbayes" provides a function that does 
 that:
+\index{posterior distribution}
+\index{maximum likelihood}
 
 \begin{verbatim}
 def MaximumLikelihood(pmf):
@@ -2061,6 +2114,7 @@ for the population.
 
 We might also summarize the posterior by computing the mean
 and median:
+\index{median}
 
 \begin{verbatim}
     print 'Mean', suite.Mean()
@@ -2086,8 +2140,9 @@ But that is not exactly the question we started with.  MacKay asked,
 fair?''  To answer that question, we will have to be more precise
 about what it means to say that data constitute evidence for
 a hypothesis.  And that is the subject of the next chapter.
+\index{evidence}
 
-But before we go, I want to address one possible source of confusion.
+But before we go on, I want to address one possible source of confusion.
 Since we want to know whether the coin is fair, it might be tempting
 to ask for the probability that {\tt x} is 50\%:
 
@@ -2121,7 +2176,7 @@ Euro problem.}
 
 Again we started with a uniform prior, and again we have to
 acknowledge that it was not a very good choice. I can believe
-that if a coin is lop-sided, $x$ might deviate substantially from
+that if a coin is lopsided, $x$ might deviate substantially from
 50\%, but it seems unlikely that the Belgian Euro coin is so
 imbalanced that $x$ is 10\% or 90\%.
 
@@ -2144,9 +2199,7 @@ def TrianglePrior():
 
 Figure~\ref{fig.euro2} shows the result.  Updating this prior
 with the same dataset yields the posterior distribution shown
-in Figure~\ref{fig.euro3}.
-
-The point of this example is that even with substantially different
+in Figure~\ref{fig.euro3}.  Even with substantially different
 priors, the posterior distributions are very similar.  The medians
 and the credible intervals are identical; the means differ by
 less than 0.5\%.
@@ -2154,6 +2207,8 @@ less than 0.5\%.
 This is an example of ``swamping the priors:'' with enough
 data, people who start with different priors will tend to
 converge on the same posterior.
+\index{swamping the priors}
+\index{convergence}
 
 
 \section{Optimization}
@@ -2164,6 +2219,7 @@ is demonstrably correct, then check whether it is fast enough for
 my purposes.  If so, there is no need to optimize.
 For this example, if we care about run time,
 there are several ways we can speed it up.
+\index{optimization}
 
 The first opportunity is to reduce the number of times we
 normalize the suite.
@@ -2181,7 +2237,7 @@ And here's what \verb"Update" looks like:
 \begin{verbatim}
     def Update(self, data):
         for hypo in self.Values():
-            like = self.Likelihood(hypo, data)
+            like = self.Likelihood(data, hypo)
             self.Mult(hypo, like)
         return self.Normalize()
 \end{verbatim}
@@ -2197,7 +2253,7 @@ exactly that.  Here it is:
     def UpdateSet(self, dataset):
         for data in dataset:
             for hypo in self.Values():
-                like = self.Likelihood(hypo, data)
+                like = self.Likelihood(data, hypo)
                 self.Mult(hypo, like)
         return self.Normalize()
 \end{verbatim}
@@ -2218,7 +2274,7 @@ In the original version,
 \verb"data" is a string that encodes either heads or tails:
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         x = hypo / 100.0
         if data == 'H':
             return x
@@ -2229,9 +2285,10 @@ In the original version,
 As an alternative, we could encode the dataset as a tuple of 
 two integers: the number of heads and tails.
 In that case \verb"Likelihood" looks like this:
+\index{tuple}
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         x = hypo / 100.0
         heads, tails = data
         like = x**heads * (1-x)**tails
@@ -2252,6 +2309,7 @@ this version takes the same time for any number of spins.
 \section{The beta distribution}
 \label{beta}
 
+\index{beta distribution}
 There is one more optimization that solves this problem
 even faster.
 
@@ -2259,6 +2317,7 @@ So far we have used a Pmf object to represent a discrete set of
 possible values for {\tt x}.  Now we will use a continuous
 distribution, specifically the beta distribution (see
 \url{http://en.wikipedia.org/wiki/Beta_distribution}).
+\index{continuous distribution}
 
 The beta distribution is defined on the interval from 0 to 1
 (including both), so it is a natural choice for describing
@@ -2269,6 +2328,8 @@ likelihood function, as we did in the previous section, the beta
 distribution is a ``conjugate prior.''  That means that if the prior
 distribution for {\tt x} is a beta distribution, the posterior is also
 a beta distribution.  But wait, it gets even better.
+\index{binomial likelihood function}
+\index{conjugate prior}
 
 The shape of the beta distribution depends on two parameters, written
 $\alpha$ and $\beta$, or {\tt alpha} and {\tt beta}.  If the prior
@@ -2276,16 +2337,18 @@ is a beta distribution with parameters {\tt alpha} and {\tt beta}, and
 we see data with {\tt h} heads and {\tt t} tails, the posterior is a
 beta distribution with parameters {\tt alpha+h} and {\tt beta+t}.  In
 other words, we can do an update with two additions.
+\index{parameter}
 
-So that's great, but it only works if the prior is beta.  If beta
-distributions were unrealistic priors, they would not be very useful.
-But for many realistic priors there is a beta distribution that is at
-least a good approximation, and for a uniform prior there is a perfect
-match.  The beta distribution with {\tt alpha=1} and {\tt beta=1} is
-uniform from 0 to 1.
+So that's great, but it only works if we can find a beta distribution
+that is a good choice for a prior.  Fortunately, for many realistic
+priors there is a beta distribution that is at least a good
+approximation, and for a uniform prior there is a perfect match.  The
+beta distribution with {\tt alpha=1} and {\tt beta=1} is uniform from
+0 to 1.
 
 Let's see how we can take advantage of all this.  Here's
 a class that represents a beta distribution:
+\index{Beta class}
 
 \begin{verbatim}
 class Beta(object):
@@ -2308,6 +2371,7 @@ By default \verb"__init__" makes a uniform distribution.
 {\tt data} is a pair of integers representing the number of
 heads and tails, or in the language of Bernoulli trials: successes
 and failures.
+\index{Bernoulli trials}
 
 The mean of a beta distribution is a simple function of {\tt alpha}
 and {\tt beta}:
@@ -2347,6 +2411,7 @@ random variable and {\tt alpha} and {\tt beta} as parameters; in {\tt
   EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and {\tt
   no} are random variables.  Distributions like these that share the
 same PDF are called ``conjugate distributions.''
+\index{conjugate distribution}
 
 {\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
 
@@ -2410,6 +2475,7 @@ One way to represent a probability is with a number between
 0 and 1, but that's not the only way.  If you have ever bet
 on a football game or a horse race, you have probably encountered
 another representation of probability, called ``odds.''
+\index{odds}
 
 You might have heard expressions like ``the odds are
 three to one against,'' but you might not know what they mean.  
@@ -2462,10 +2528,12 @@ $1:4$.
 If the odds are $5:1$ against my horse, then five out of six
 people think she will lose, so the probability of winning
 is $1/6$.
+\index{horse racing}
 
 
 \section{The odds form of Bayes's Theorem}
 
+\index{Bayes's theorem!odds form}
 In Chapter~\ref{intro} I wrote Bayes's Theorem in the ``probability
 form'':
 %
@@ -2485,8 +2553,9 @@ In words, this says that the posterior odds are the prior odds times
 the likelihood ratio.  This is the ``odds form'' of Bayes's Theorem.
 
 This form is most convenient for computing a Bayesian update on
-paper, or in your head.  For example, let's go back to the
+paper or in your head.  For example, let's go back to the
 cookie problem:
+\index{cookie problem}
 
 \begin{quote}
 Suppose there are two bowls of cookies.  Bowl 1 contains
@@ -2507,6 +2576,8 @@ $3/5$.
 \section{Oliver's blood}
 \label{oliver}
 
+\index{Oliver's blood problem}
+\index{MacKay, David}
 Here is another problem from MacKay's {\it Information Theory,
   Inference, and Learning Algorithms}:
 
@@ -2525,6 +2596,7 @@ To answer this question, we need to think about what it means
 for data to give evidence in favor of (or against) a hypothesis.
 Intuitively, we might say that data favor a hypothesis if the
 hypothesis is more likely in light of the data than it was before.
+\index{evidence}
 
 In the cookie problem, the prior odds are $1:1$, or probability 50\%.
 The posterior odds are $3:2$, or probability 60\%.  So we could say
@@ -2542,6 +2614,8 @@ Or dividing through by \o{H}:
 The term on the left is the ratio of the posterior and prior odds.
 The term on the right is the likelihood ratio, also called the ``Bayes
 factor''.
+\index{likelihood ratio}
+\index{Bayes factor}
 
 If the Bayes factor value is greater than $1$, that means that the
 data were more likely under $H$ than under $\bar{H}$.  And since the
@@ -2597,19 +2671,23 @@ of data, and produces a posterior distribution.  But solving
 real problems usually involves a number of other operations,
 including scaling, addition and other arithmetic operations,
 max and min, and mixtures.
+\index{distribution!operations}
 
 This chapter presents addition and max; I will present
 other operations as we need them.
 
-Dungeons and Dragons is a role-playing game where the results
+{\it Dungeons~\&~Dragons} is a role-playing game where the results
 of players' decisions are usually determined by rolling dice.
 In fact, before game play starts, players generate each
 attribute of their characters---strength, intelligence, wisdom,
 dexterity, constitution, and charisma---by rolling three
 six-sided dice and adding them up.
+\index{Dungeons\&Dragons}
 
 So you might be curious to know the distribution of this sum.
 There are two ways you might compute it:
+\index{simulation}
+\index{enumeration}
 
 \begin{description}
 
@@ -2628,6 +2706,7 @@ a single die as a Pmf:
 
 \begin{verbatim}
 class Die(thinkbayes.Pmf):
+
     def __init__(self, sides):
         d = dict((i, 1) for i in xrange(1, sides+1))
         thinkbayes.Pmf.__init__(self, d)
@@ -2637,33 +2716,30 @@ class Die(thinkbayes.Pmf):
 Now I can create a six-sided die:
 
 \begin{verbatim}
-    d6 = Die(6)
+d6 = Die(6)
 \end{verbatim}
 
 And use \verb"SampleSum" to generate a sample of 1000 rolls.
 
 \begin{verbatim}
-    dice = [d6] * 3
-    three = thinkbayes.SampleSum(dice, 1000)
+def SampleSum(dists, n):
+    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
+    return pmf
+
+dice = [d6] * 3
+three = thinkbayes.SampleSum(dice, 1000)
 \end{verbatim}
 
-\verb"SampleSum" is based on another function, \verb"RandomSum",
-also in \verb"thinkbayes.py":
+\verb"SampleSum" takes list of distributions (either Pmf or Cdf
+objects) and the sample size, {\tt n}.  It generates {\tt n} random
+sums and returns their distribution as a Pmf object.  \verb"SampleSum"
+uses \verb"RandomSum", also in \verb"thinkbayes.py":
 
 \begin{verbatim}
 def RandomSum(dists):
     total = sum(dist.Random() for dist in dists)
     return total
-
-
-def SampleSum(dists, n):
-    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
-    return pmf
 \end{verbatim}
-
-\verb"dists" is a list of objects that can be either
-Pmfs or Cdfs (or anything else that provides an appropriate
-\verb"Random" method); \verb"n" is the number of rolls to simulate.
 
 The drawback of estimating this distribution by simulation is that
 it is only approximately correct.  As \verb"n" gets larger, it gets
@@ -2671,9 +2747,11 @@ more accurate, but of course the run time increases as well.
 
 The other approach is to enumerate all pairs of values and
 compute the sum and probability of each pair.  This is implemented
-in the \verb"Pmf.__add__" method:
+in \verb"Pmf.__add__":
 
 \begin{verbatim}
+# class Pmf
+
     def __add__(self, other):
         pmf = Pmf()
         for v1, p1 in self.Items():
@@ -2682,8 +2760,10 @@ in the \verb"Pmf.__add__" method:
         return pmf
 \end{verbatim}
 
-{\tt self} and {\tt other} can be Pmfs, or anything else that
-provides {\tt Items}.  The result is a new Pmf.
+{\tt self} is a Pmf, of course; {\tt other} can be a Pmf or anything
+else that provides {\tt Items}.  The result is a new Pmf.  The time to
+run \verb"__add__" depends on the number of items in {\tt self} and
+other; it is proportional to {\tt len(self) * len(other)}.
 
 And here's how it's used:
 
@@ -2694,8 +2774,8 @@ And here's how it's used:
 When you apply the {\tt +} operator to a Pmf, Python invokes
 \verb"__add__".  In this example, \verb"__add__" is invoked twice.
 
-The approximate and exact distributions are shown in
-Figure~\ref{fig.dungeons1}.
+Figure~\ref{fig.dungeons1} shows an approximate result generated
+by simulation and the exact result computed by enumeration.
 
 \begin{figure}
 % dungeons.py
@@ -2708,7 +2788,8 @@ three six-sided dice.}
 \verb"Pmf.__add__" is based on the assumption that the random
 selections from each Pmf are independent.  In the example of rolling
 several dice, this assumption is pretty good.  In other cases, we
-might have to extend this method to use conditional probabilities.
+would have to extend this method to use conditional probabilities.
+\index{independence}
 
 The code from this section is available from
 \url{http://thinkbayes.com/dungeons.py}.
@@ -2723,25 +2804,28 @@ The code from this section is available from
 \label{fig.dungeons2}
 \end{figure}
 
-Having generated a Dungeons and Dragons character, I would be
+When you generate a Dungeons~\&~Dragons character, you are
 particularly interested in the character's best attributes, so
-I might wonder what is the chance of getting an 18 in one or
-more attributes, or more generally what is the
-distribution of the best attribute.
+you might like to know the
+distribution of the maximum attribute.
 
 There are three ways to compute the distribution of a maximum:
+\index{maximum}
+\index{simulation}
+\index{enumeration}
+\index{exponentiation}
 
 \begin{description}
 
 \item[Simulation:] Given a Pmf that represents the distribution
-for a single selection, you can a random samples, find the maximum,
+for a single selection, you can generate random samples, find the maximum,
 and accumulate the distribution of simulated maxima.
 
 \item[Enumeration:] Given two Pmfs, you can enumerate all possible
-pairs of values and compute the distribution of the maxima.
+pairs of values and compute the distribution of the maximum.
 
 \item[Exponentiation:] If we convert a Pmf to a Cdf, there is a simple
-and efficient algorithm for finding the Cdf of the maxima.
+and efficient algorithm for finding the Cdf of the maximum.
 
 \end{description}
 
@@ -2752,7 +2836,6 @@ simulating sums:
 def RandomMax(dists):
     total = max(dist.Random() for dist in dists)
     return total
-
 
 def SampleMax(dists, n):
     pmf = MakePmfFromList(RandomMax(dists) for i in xrange(n))
@@ -2772,13 +2855,15 @@ def PmfMax(pmf1, pmf2):
 \end{verbatim}
 
 In fact, you could generalize this function by taking the
-appropriate operator as a parameter.
+appropriate function as a parameter.
 
 The only problem with this algorithm is that if each Pmf
-has $n$ values, the run time is proportional to $n^2$.
+has $m$ values, the run time is proportional to $m^2$.
+And if we want to maximum of {\tt k} selections, it takes
+time proportional to $k m^2$
 
 If we convert the Pmfs to Cdfs, we can do the same calculation
-in linear time!  The key is to remember the definition of the
+much faster!  The key is to remember the definition of the
 cumulative distribution function:
 %
 \[ CDF(x) = \p{X \le x} \]
@@ -2803,34 +2888,36 @@ can generalize for any value of $z$:
 %
 \[ CDF_3(z) = CDF_1(z) CDF_2(z) \]
 %
-In the special case where we draw $n$ values from the same
+In the special case where we draw $k$ values from the same
 distribution, 
 %
-\[ CDF_n(z) = CDF_1(z)^n \]
+\[ CDF_k(z) = CDF_1(z)^k \]
 %
-So to find the distribution of the maximum of $n$ values,
+So to find the distribution of the maximum of $k$ values,
 we can enumerate the probabilities in the given Cdf
-and raise them to the $n$th power.
+and raise them to the $k$th power.
 \verb"Cdf" provides a method that does just that:
 
 \begin{verbatim}
-    def Max(self, n):
+# class Cdf
+
+    def Max(self, k):
         cdf = self.Copy()
-        cdf.ps = [p**n for p in cdf.ps]
+        cdf.ps = [p**k for p in cdf.ps]
         return cdf
 \end{verbatim}
 
-\verb"Max" takes the sample size, {\tt n}, and returns a new
-Cdf that represents the distribution of the maximum of {\tt n}
-values.
+\verb"Max" takes the number of selections, {\tt k}, and returns a new
+Cdf that represents the distribution of the maximum of {\tt k}
+selections.  The run time for this method is proportional to 
+$m$, the number of items in the Cdf.
 
-\verb"Pmf.Max" does the same thing for Pmfs.  It has to
-do a little more work to convert the Pmf to a Cdf, so the
-run time is proportional to $n \log n$, but that's still
-better than quadratic.
+\verb"Pmf.Max" does the same thing for Pmfs.  It has to do a little
+more work to convert the Pmf to a Cdf, so the run time is proportional
+to $m \log m$, but that's still better than quadratic.
 
 Finally, here's an example that computes the distribution of
-your character's best attribute:
+a character's best attribute:
 
 \begin{verbatim}
     best_attr_cdf = three_exact.Max(6)
@@ -2841,6 +2928,14 @@ Where \verb"three_exact" is defined in the previous section.
 If we print the results, we see that the chance of generating
 a character with at least one attribute of 18 is about 3\%.
 Figure~\ref{fig.dungeons2} shows the distribution.
+
+
+\section{Discussion}
+
+Other than the odds form of Bayes's Theorem, this chapter
+is not very Bayesian.  But Bayesian analysis is all about distributions,
+so I wanted to take some time to ...
+
 
 
 \chapter{Optimization}
@@ -3235,7 +3330,7 @@ section.
 And here's {\tt Likelihood}:
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         price = hypo
         guess = data
 
@@ -3573,7 +3668,7 @@ of each possible outcome.
 To choose a prior distribution, I got some statistics from
 \url{http://www.nhl.com}, specifically the average goals per game
 for each team in the 2010-11 season.  The distribution is roughly
-normal (Gaussian) with mean 2.8 and standard deviation 0.3.
+Gaussian with mean 2.8 and standard deviation 0.3.
 
 The Gaussian distribution is continuous, but we'll approximate it with
 a discrete Pmf.  \verb"thinkbayes" provides \verb"MakeGaussianPmf" to
@@ -3705,7 +3800,7 @@ value of {\tt lam} score {\tt k} goals in a game:
 \begin{verbatim}
 # class Hockey
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         lam = hypo
         k = data
         like = thinkbayes.EvalPoissonPmf(lam, k)
@@ -4090,7 +4185,7 @@ light bulb survival curves.
 
 \section{The Red Line problem}
 
-In Boston, the Red Line is a subway that runs north-south from
+In Massachusetts, the Red Line is a subway that runs north-south from
 Cambridge to Boston.  When I was working in Cambridge I took the Red
 Line from Kendall Square to South Station and caught the commuter rail
 to Needham.  During rush hour Red Line trains run every 7--8
@@ -4415,7 +4510,7 @@ Here's the definition of {\tt Elapsed}:
 \begin{verbatim}
 class Elapsed(thinkbayes.Suite):
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         x = hypo
         lam, k = data
         like = thinkbayes.EvalPoissonPmf(lam * x, k)
@@ -4537,7 +4632,7 @@ number of passengers that arrived.
 \begin{verbatim}
 class ArrivalRate(thinkbayes.Suite):
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         lam = hypo
         y, k = data
         like = thinkbayes.EvalPoissonPmf(lam * y, k)
@@ -4591,8 +4686,8 @@ uncertainty about $\lambda$ based on a small sample.
 % redline.py
 \centerline{\includegraphics[height=2.5in]{figs/redline4.pdf}}
 \caption{Predictive distribution of {\tt y} based on a single
-point estimate for {\tt lam} or on a mixture of distributions
-for possible values of {\tt lam}. }
+point estimate for {\tt lam} or on a distribution
+of possible values of {\tt lam}. }
 \label{fig.redline4}
 \end{figure}
 
@@ -4740,7 +4835,7 @@ KDE, and then convert the Pdf to a Pmf:
 \end{verbatim}
 
 Finally I unbias the distribution of {\tt zb} to get the
-distribution of {\tt z}, which I used to create the
+distribution of {\tt z}, which I use to create the
 {\tt WaitTimeCalculator}:
 
 \begin{verbatim}
@@ -4820,8 +4915,9 @@ to the distribution of {\tt z}.
 
 I leave the implementation of this analysis as an exercise for the
 reader.  One suggestion: you should read Chapter~\ref{species} first.
-A Dirichlet distribution might help.
- 
+You can find the outline of
+a solution in \url{http://thinkbayes.com/redline.py}.
+
 
 \chapter{Two dimensions}
 \label{paintball}
@@ -4862,13 +4958,16 @@ of the lighthouse problem, a common example of Bayesian analysis.  My
 notation follows the presentation of the problem in Sivia, {\it Data
   Analysis: a Bayesian Tutorial, Second Edition}.
 
+You can download the code in this chapter from
+\url{http://thinkbayes.com/paintball.py}.
 
 \section{Trigonometry}
 
 \begin{figure}
 % paintball.py
 \centerline{\includegraphics[height=2.5in]{figs/paintball1.pdf}}
-\caption{PMF of location given {\tt alpha} for several values of {\tt beta}.}
+\caption{PMF of location given {\tt alpha=10}, for several values of
+  {\tt beta}.}
 \label{fig.paintball1}
 \end{figure}
 
@@ -4932,14 +5031,15 @@ def MakeLocationPmf(alpha, beta, locations):
     return pmf
 \end{verbatim}
 
-For each location, the probability is inversely related to
+{\tt MakeLocationPmf} computes the probability of hitting
+each location, which is inversely related to
 strafing speed.  The result is a Pmf of locations and their
 probabilities.
 
-Figure~\ref{fig.paintball1} shows the Pmf of location with
-{\tt alpha = 10} and a range of values for {\tt beta}.  As
-expected, the most likely impact location is {\tt x = 10},
-and as {\tt beta} increases, so does the spread of the Pmf.
+Figure~\ref{fig.paintball1} shows the Pmf of location with {\tt alpha
+  = 10} and a range of values for {\tt beta}.  For all values of beta
+the most likely impact location is {\tt x = 10}; as {\tt beta}
+increases, so does the spread of the Pmf.
 
 
 \section{The suite}
@@ -4999,7 +5099,7 @@ detailed prior, but we'll start simple.
 All we need now is a likelihood function:
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         alpha, beta = hypo
         x = data
         pmf = MakeLocationPmf(alpha, beta, self.locations)
@@ -5083,7 +5183,7 @@ evidence.  The 90\% credible interval covers most of the room!
 \begin{figure}
 % paintball.py
 \centerline{\includegraphics[height=2.5in]{figs/paintball3.pdf}}
-\caption{Distributions for {\tt alpha} conditioned on several values
+\caption{Posterior distributions for {\tt alpha} conditioned on several values
 of {\tt beta}.}
 \label{fig.paintball3}
 \end{figure}
@@ -5156,7 +5256,7 @@ credible interval contains all values between the 25th and 75th
 percentiles.
 
 In multiple dimensions it is less obvious what the right credible
-interval should be.  The best choice might depend on context.  But
+interval should be.  The best choice might depend on context, but
 one common choice is the maximum likelihood credible interval, which
 contains the most likely values that add up to 50\% (or some other
 percentage).
@@ -5299,7 +5399,7 @@ You can download the code in this chapter from
 
 In Chapter~\ref{paintball} we estimated two parameters simultaneously
 using a joint distribution.  In this chapter we use the same
-method to estimate the parameters of a normal distribution:
+method to estimate the parameters of a Gaussian distribution:
 the mean, {\tt mu}, and the standard deviation, {\tt sigma}.
 
 For this problem, I defined a Suite called {\tt Height} that
@@ -5333,7 +5433,7 @@ does, so all we have to do is use it:
 \begin{verbatim}
 # class Height
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         x = data
         mu, sigma = hypo
 
@@ -5386,17 +5486,17 @@ Here's the code to compute all that:
 \begin{verbatim}
 def FindPriorRanges(xs, num_points, num_stderrs=3.0):
 
-    # compute xbar and S
+    # compute xbar and s
     n = len(xs)
-    xbar, S2 = thinkstats.MeanVar(xs)
-    S = math.sqrt(S2)
+    xbar, s2 = thinkstats.MeanVar(xs)
+    s = math.sqrt(s2)
 
-    # compute ranges for xbar and S
-    stderr_xbar = S / math.sqrt(n)
+    # compute ranges for xbar and s
+    stderr_xbar = s / math.sqrt(n)
     mus = MakeRange(xbar, stderr_xbar)
 
-    stderr_S = S / math.sqrt(2 * (n-1))
-    sigmas = MakeRange(S, stderr_S)
+    stderr_s = s / math.sqrt(2 * (n-1))
+    sigmas = MakeRange(s, stderr_s)
 
     return mus, sigmas
 \end{verbatim}
@@ -5575,7 +5675,7 @@ instead of {\tt Mult}:
 
     def LogUpdate(self, data):
         for hypo in self.Values():
-            like = self.LogLikelihood(hypo, data)
+            like = self.LogLikelihood(data, hypo)
             self.Incr(hypo, like)
 \end{verbatim}
 
@@ -5592,7 +5692,7 @@ and translate into Python:
 \begin{verbatim}
 # class Height
 
-    def LogLikelihood(self, hypo, data):
+    def LogLikelihood(self, data, hypo):
         x = data
         mu, sigma = hypo
         loglike = EvalGaussianLogPdf(mu, sigma, x)
@@ -5690,16 +5790,15 @@ it is not a hashable type.  That's why {\tt LogUpdateSetFast} converts
 the dataset to a tuple.
 
 Together, these optimizations speed up the computation by about a
-factor of 100, processing the entire dataset (154
-407 men and 254 722 women) in less than a minute on my not-very-fast
-computer.
+factor of 100, processing the entire dataset (154~407 men and 254~722
+women) in less than a minute on my not-very-fast computer.
 
 
 \section{ABC}
 
 But maybe you don't have that kind of time.  In that case, Approximate
 Bayesian Computation (ABC) might be the way to go.  The motivation
-behind ABC is that the likelihood of a particular dataset is:
+behind ABC is that the likelihood of any particular dataset is:
 
 \begin{enumerate}
 
@@ -5726,26 +5825,26 @@ Similarly, in the BRFSS sample, we don't really want to know the
 probability of seeing one particular set of values (especially since
 there are hundreds of thousands of them).  It is more
 relevant to ask, ``If we sample 100,000 people from a population
-with hypothetical values of $\mu$ and $sigma$, what would be
+with hypothetical values of $\mu$ and $\sigma$, what would be
 the chance of collecting a sample with the observed mean and
 variance?''
 
-For samples from a normal distribution, we can answer this question
+For samples from a Gaussian distribution, we can answer this question
 efficiently because we can find the distribution of the sample
 statistics analytically.  In fact, we already did it when we computed
 the range of the prior.
 
-If you draw $n$ values from a normal distribution with parameters
-$\mu$ and $sigma$, and compute the sample mean, $\bar{x}$, you can
-think of $\bar{x}$ as a random variable, and its distribution is
-normal with parameters $\mu$ and $\sigma / \sqrt{n}$.
+If you draw $n$ values from a Gaussian distribution with parameters
+$\mu$ and $\sigma$, and compute the sample mean, $\bar{x}$, you can
+think of $\bar{x}$ as a random variable with a Gaussian distribution
+with parameters $\mu$ and $\sigma / \sqrt{n}$.
 
 Similarly, the distribution of the sample standard deviation, $S$, is
-normal with parameters $\sigma$ and $\sigma / \sqrt{2 (n-1)}$.
+Gaussian with parameters $\sigma$ and $\sigma / \sqrt{2 (n-1)}$.
 
 We can use these sample distributions to compute the likelihood of the
 sample statistics, $\bar{x}$ and $S$, given hypothetical values
-for $\mu$ and $sigma$.  Here's a new version of \verb"LogUpdateSet"
+for $\mu$ and $\sigma$.  Here's a new version of \verb"LogUpdateSet"
 that does it:
 
 \begin{verbatim}
@@ -5754,8 +5853,8 @@ that does it:
         n = len(xs)
 
         # compute sample stats
-        xbar, S2 = thinkstats.MeanVar(xs)
-        S = math.sqrt(S2)
+        xbar, s2 = thinkstats.MeanVar(xs)
+        s = math.sqrt(s2)
 
         for hypo in sorted(self.Values()):
             mu, sigma = hypo
@@ -5767,12 +5866,12 @@ that does it:
                                          sample_sigma,
                                          xbar)
 
-            #compute log likelihood of S, given hypo
+            #compute log likelihood of s, given hypo
             sample_mu = sigma
             sample_sigma = sigma / math.sqrt(2 * (n-1))
             loglike += EvalGaussianLogPdf(sample_mu, 
                                           sample_sigma,
-                                          S)
+                                          s)
 
             self.Incr(hypo, loglike)
 \end{verbatim}
@@ -5815,9 +5914,9 @@ At the other end, there are four women with reported height
 
 It is not impossible that these values are correct, but it is
 unlikely, which makes it hard to know how to deal with them.
-But since we are trying to estimate variability, we have to get
-it right, since these extreme values have a disproportionate
-effect on the estimates.
+And we have to get
+it right, because these extreme values have a disproportionate
+effect on the estimated variability.
 
 Because ABC is based on summary statistics, rather than the entire
 data set, we can make it more robust by choosing summary statistics
@@ -5830,7 +5929,7 @@ More generally, we can compute an inter-percentile range that
 spans a given fraction of the distribution, {\tt p}:
 
 \begin{verbatim}
-def MedianIPR(xs, p=0.6827):
+def MedianIPR(xs, p):
     cdf = thinkbayes.MakeCdfFromList(xs)
     median = cdf.Percentile(50)
 
@@ -5839,18 +5938,25 @@ def MedianIPR(xs, p=0.6827):
     return median, ipr
 \end{verbatim}
 
-The result is the median and the inter-percentile range.  We can
-convert from {\tt ipr} to an estimate of {\tt sigma} using the
+{\tt xs} is a sequence of values.  {\tt p} is the desired range;
+for example, {\tt p=0.5} yields the inter-quartile range.
+
+{\tt MedianIPR} works by computing the CDF of the given values,
+then extracting the median and the difference between two
+percentiles.
+
+We can convert from {\tt ipr} to an estimate of {\tt sigma} using the
 Gaussian CDF to compute the fraction of the distribution covered by a
 given number of standard deviations.  For example, it is a well-known
 rule of thumb that 68\% of a Gaussian distribution falls within one
-standard deviation of the mean, which leaves 16\% in each tail.  If
-we compute the range between the 16th and 84th percentiles, we expect
-the result to be {\tt 2 * sigma}.  So we can estimate {\tt sigma}
-by computing the 68\% IPR and dividing by 2.
+standard deviation of the mean, which leaves 16\% in each tail.  If we
+compute the range between the 16th and 84th percentiles, we expect the
+result to be {\tt 2 * sigma}.  So we can estimate {\tt sigma} by
+computing the 68\% IPR and dividing by 2.
 
-The following function does the same computation for any number of
-sigmas:
+Or more generally we can use any number of {\tt sigmas}.
+{\tt MedianSighat} performs the more general version of this
+computation:
 
 \begin{verbatim}
 def MedianSighat(xs, num_sigmas):
@@ -5862,11 +5968,14 @@ def MedianSighat(xs, num_sigmas):
     return median, sighat
 \end{verbatim}
 
-The result is an estimate of {\tt sigma}, which I call {\tt sighat}
+Again, {\tt xs} is the sequence of values; \verb"num_sigmas" is
+the number of standard deviations the results should be based on.
+
+The result is an estimate of {\tt sigma}, which is called {\tt sighat}
 because ``hat'' is the conventional symbol that indicates an
 estimate.
 
-Then in {\tt LogUpdateSetABC} we can replace the
+Finally, in {\tt LogUpdateSetABC} we can replace the
 conventional estimators, {\tt xbar} and {\tt S}, with {\tt median}
 and {\tt sighat}.  And that pretty much does it.
 
@@ -5952,7 +6061,7 @@ think the results would mean very much.
 I hope you agree that this example is interesting, and it helped
 me demonstrate several new ideas, but at this point we have probably
 given the Variability Hypothesis more energy than it deserves, so
-let's stop there.
+I'll stop here.
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/variability.py}.
@@ -6026,7 +6135,7 @@ data, \p{D|F}.  In fact, we already wrote the {\tt Likelihood}
 that does it.
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         x = hypo / 100.0
         head, tails = data
         like = x**heads * (1-x)**tails
@@ -6038,7 +6147,7 @@ All we have to do is create a {\tt Euro} suite and use its
 
 \begin{verbatim}
     suite = Euro()
-    likelihood = suite.Likelihood(50, data)
+    likelihood = suite.Likelihood(data, 50)
 \end{verbatim}
 
 \p{D|F} is $5.5 \cdot 10^{-76}$, which doesn't tell us much except
@@ -6055,7 +6164,7 @@ the probability of heads is 140/250.
 
 \begin{verbatim}
     actual_percent = 100.0 * 140 / 250
-    likelihood = suite.Likelihood(actual_percent, data)
+    likelihood = suite.Likelihood(data, actual_percent)
 \end{verbatim}
 
 This version of $B$ I call \verb"B_cheat"; the likelihood of
@@ -6085,8 +6194,8 @@ sub-hypotheses.  We can compute the likelihood for each
 sub-hypothesis and then compute the average likelihood.
 
 \begin{verbatim}
-    like40 = suite.Likelihood(40, data)
-    like60 = suite.Likelihood(60, data)
+    like40 = suite.Likelihood(data, 40)
+    like60 = suite.Likelihood(data, 60)
     likelihood = 0.5 * like40 + 0.5 * like60
 \end{verbatim}
 
@@ -6112,7 +6221,7 @@ and compute a weighted average.
 def SuiteLikelihood(suite, data):
     total = 0
     for hypo, prob in suite.Items():
-        like = suite.Likelihood(hypo, data)
+        like = suite.Likelihood(data, hypo)
         total += prob * like
     return total
 \end{verbatim}
@@ -6128,7 +6237,7 @@ update.  To refresh your memory, here's the {\tt Update} function:
 \begin{verbatim}
     def Update(self, data):
         for hypo in self.Values():
-            like = self.Likelihood(hypo, data)
+            like = self.Likelihood(data, hypo)
             self.Mult(hypo, like)
         return self.Normalize()
 \end{verbatim}
@@ -6388,7 +6497,7 @@ scaled scores.   {\tt raw} is the Pmf of raw scores, and
 \end{figure}
 
 Figure~\ref{fig.satprior} shows the prior distribution of
-\verb"p_correct".  This distribution is approximately normal, but it
+\verb"p_correct".  This distribution is approximately Gaussian, but it
 is compressed at the extremes.  By design, the SAT has the most power
 to discriminate between test-takers within two standard deviations of
 the mean, and less power outside that range.
@@ -6421,7 +6530,7 @@ As usual, we inherit {\tt Update} from {\tt Suite} and provide
 {\tt Likelihood}:
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         p_correct = hypo
         score = data
 
@@ -6473,9 +6582,9 @@ I define two hypotheses:
 \end{itemize}
 
 To compute the likelihood of A, we can enumerate all pairs of values
-from the posterior distributions, and add up the total probability of
+from the posterior distributions and add up the total probability of
 the cases where \verb"p_correct" is higher for Alice than for Bob.
-And we already have a function, \verb"thinkbayes.PmfProbGreater"
+And we already have a function, \verb"thinkbayes.PmfProbGreater",
 that does that.
 
 So we can define a Suite that computes the posterior probabilities
@@ -6762,7 +6871,7 @@ hypotheses spans 3 standard deviations in each direction).
 for a hypothetical level of efficacy.
 
 \begin{verbatim}
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         efficacy = hypo
         score = data
         raw = self.exam.Reverse(score)
@@ -6846,7 +6955,7 @@ Alice's efficacy is higher, but only 2:1 that Alice will do better on
 the next exam.
 
 
-\section{Nuisance parameters}
+\section{Discussion}
 
 \begin{figure}
 % sat.py
@@ -6855,9 +6964,7 @@ the next exam.
 \label{fig.satjoint}
 \end{figure}
 
-% TODO: make this figure equal aspect.
-
-In this chapter we started with the question,
+We started this chapter with the question,
 ``How strong is the evidence that Alice is better prepared
 than Bob?''  On the face of it, that sounds like we want to
 test two hypotheses: either Alice is more prepared or Bob is.
@@ -6867,22 +6974,22 @@ have to solve an estimation problem.  For each test-taker
 we have to find the posterior distribution of either
 \verb"p_correct" or \verb"efficacy".
 
-We don't really care about these values, but we have
-to estimate them to solve the problem we care about.  Which
-is why values like this are called ``nuisance parameters.''
+Values like this are called ``nuisance parameters'' because
+we don't care what they are, but we have
+to estimate them to answer the question we care about.
 
 One way to visualize the analysis we did in this chapter is
-to plot the space of these parameters.  \verb"thinkbayes.JointPmf"
+to plot the space of these parameters.  \verb"thinkbayes.MakeJoint"
 takes two Pmfs, computes their joint distribution, and returns
-a Pmf of each possible pair of values and its probability.
+a joint pmf of each possible pair of values and its probability.
 
 \begin{verbatim}
-def JointPmf(pmf1, pmf2):
-    pmf = Pmf()
+def MakeJoint(pmf1, pmf2):
+    joint = Joint()
     for v1, p1 in pmf1.Items():
         for v2, p2 in pmf2.Items():
-            pmf.Set((v1, v2), p1 * p2)
-    return pmf
+            joint.Set((v1, v2), p1 * p2)
+    return joint
 \end{verbatim}
 
 This function assumes that the two distributions are independent.
@@ -7210,17 +7317,19 @@ Here's how the cache works.
 class Cache(object):
 
     def __init__(self):
-        self.joint = thinkbayes.Pmf()
+        self.joint = thinkbayes.Joint()
 \end{verbatim}
 
-{\tt joint} is a Pmf that records 
+{\tt joint} is a joint Pmf that records 
 frequency of each age-size pair, which approximates the
 joint distribution of age and size.
 
 At the end of each simulated interval, {\tt ExtendSequence} calls
-{\tt Cache.Add}:
+{\tt Add}:
 
 \begin{verbatim}
+# class Cache
+
     def Add(self, age, seq):
         final = seq[-1]
         cm = Diameter(final)
@@ -7230,6 +7339,13 @@ At the end of each simulated interval, {\tt ExtendSequence} calls
 
 Again, {\tt age} is the age of the tumor, and {\tt seq} is the
 sequence of volumes so far.
+
+\begin{figure}
+% kidney.py
+\centerline{\includegraphics[height=2.5in]{figs/kidney6.pdf}}
+\caption{Distributions of age, conditioned on size.}
+\label{fig.kidney6}
+\end{figure}
 
 Before adding the new data to the joint distribution, we use {\tt
   Diameter} to convert from volume to diameter in centimeters, and
@@ -7253,14 +7369,8 @@ Figure~\ref{fig.kidney8} shows the joint distribution after 1000
 simulations.  As expected, the size of tumors typically increases
 with age.
 
-\section{Conditional distributions}
 
-\begin{figure}
-% kidney.py
-\centerline{\includegraphics[height=2.5in]{figs/kidney6.pdf}}
-\caption{Distributions of age, conditioned on size.}
-\label{fig.kidney6}
-\end{figure}
+\section{Conditional distributions}
 
 \begin{figure}
 % kidney.py
@@ -7273,27 +7383,22 @@ By taking a vertical slice from the joint distribution, we can get the
 distribution of sizes for any given age.  By taking a horizontal
 slice, we can get the distribution of ages conditioned on size.
 
-% TODO: Rewrite this using the Joint distribution?
-
 Here's the code that reads the joint distribution and builds
 the conditional distribution for a given size bucket.
 
 \begin{verbatim}
-def ConditionalCdf(size_bucket):
-    pmf = thinkbayes.Pmf()
-    for val, prob in cache.GetItems():
-        age, bucket = val
-        if bucket == size_bucket:
-            pmf.Set(age, prob)
+# class Cache
 
-    pmf.Normalize()
-    cdf = thinkbayes.MakeCdfFromPmf(pmf)
-    return cdf
+    def ConditionalCdf(self, bucket):
+        pmf = self.joint.Conditional(0, 1, bucket)
+        cdf = pmf.MakeCdf()
+        return cdf
 \end{verbatim}
 
-\verb"size_bucket" is the integer bucket number corresponding to a
-particular size.  The return value is the CDF of age, conditioned
-on the given size.
+\verb"bucket" is the integer bucket number corresponding to a
+particular size.  {\tt Conditional} computes the
+PMF of age conditioned on {\tt bucket}.
+The return value is the CDF of age conditioned on {\tt bucket}.
 
 Figure~\ref{fig.kidney6} shows several of these CDFs, for
 a range of sizes.  To summarize these distributions, we can
@@ -7459,15 +7564,21 @@ we started with: given a tumor with a linear dimension of
 Here's the code:
 
 \begin{verbatim}
-def ProbOlder(cm, age):
-    bucket = CmToBucket(cm)
-    cdf = ConditionalCdf(bucket)
-    p = cdf.Prob(age)
-    return 1-p
+# class Cache
+
+    def ProbOlder(self, cm, age):
+        bucket = CmToBucket(cm)
+        cdf = self.ConditionalCdf(bucket)
+        p = cdf.Prob(age)
+        return 1-p
 \end{verbatim}
 
 {\tt cm} is the size of the tumor; {\tt age} is the age threshold
-in years.  With no serial correlation, the probability that a
+in years.  {\tt ProbOlder} converts size to a bucket number,
+gets the CDF of age conditioned on bucket, and computes the
+probability that age exceeds the given value.
+
+With no serial correlation, the probability that a
 15.5 cm tumor is older than 8 years is 0.999, or almost certain.
 With correlation 0.4, faster-growing tumors are more likely, but
 the probability is still 0.995.  Even with correlation 0.8, the
@@ -7476,8 +7587,8 @@ probability is 0.978.
 Another likely source of error is the assumption that tumors are
 approximately spherical.  For a tumor with linear dimensions 15.5 x 15
 cm, this assumption is probably not valid.  If, as seems likely, it
-were relatively flat, it might have the same volume as a 6 cm sphere.
-But with this smaller volume and correlation 0.8, the probability of age
+is relatively flat, it might have the same volume as a 6 cm sphere.
+With this smaller volume and correlation 0.8, the probability of age
 greater than 8 is still 95\%.
 
 So even taking into account modeling errors, it is unlikely that such
@@ -7764,7 +7875,7 @@ Now all we need is a likelihood function.  As usual,
 \begin{verbatim}
 # class Species
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         dirichlet = hypo
         like = 0
         for i in range(1000):
@@ -8125,7 +8236,7 @@ So here's the new version of {\tt Likelihood}:
 \begin{verbatim}
 # class Species4
 
-    def Likelihood(self, hypo, data):
+    def Likelihood(self, data, hypo):
         dirichlet = hypo
         like = 0
         for i in range(self.iterations):
@@ -8610,7 +8721,7 @@ def MakeConditionals(curves, ks):
     for k in ks:
         pmf = joint.Conditional(1, 0, k)
         pmf.name = 'k=%d' % k
-        cdf = thinkbayes.MakeCdfFromPmf(pmf)
+        cdf = pmf.MakeCdf()
         cdfs.append(cdf)
 
     return cdfs
