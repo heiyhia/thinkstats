@@ -340,9 +340,12 @@ which is part of {\tt matplotlib}.  If you don't have {\tt matplotlib}
 installed, check your package manager to see if it is available.
 Otherwise you can get download instructions
 from \url{http://matplotlib.org}.
+\index{thinkplot}
 
 In addition, some programs in this book use NumPy and SciPy, which are
 available from \url{http://numpy.org} and \url{http://scipy.org}.
+\index{numpy}
+\index{scipy}
 
 
 \subsection*{Code style}
@@ -1699,6 +1702,7 @@ Here's the update:
 
 Since there are 1000 hypotheses, I didn't print the results.
 Instead I used {\tt thinkplot.Pmf}:
+\index{thinkplot}
 
 \begin{verbatim}
     thinkplot.Pmf(suite)
@@ -2082,6 +2086,7 @@ Here's the code that makes the suite and updates it:
 \end{verbatim}
 
 And then we can plot the posterior.
+\index{thinkplot}
 
 \begin{verbatim}
     thinkplot.Pmf(suite)
@@ -2934,7 +2939,24 @@ Figure~\ref{fig.dungeons2} shows the distribution.
 
 Other than the odds form of Bayes's Theorem, this chapter
 is not very Bayesian.  But Bayesian analysis is all about distributions,
-so I wanted to take some time to ...
+so it is important to understand the concept of a distribution well.
+From a computational point of view, a distribution is any data
+structure that represents a set of values (possible outcomes of
+a random process) and their probabilities.
+\index{distribution}
+
+We have seen two common representations of distributions: Pmfs
+and Cdfs.  These representations are equivalent in the sense that
+they contain the same information, so you can convert from one
+to the other.  The difference between them is performance: some
+operations are faster and easier with a Pmf; others are faster
+with a Cdf.
+
+The other goal of this chapter is to introduce operations that
+act on distributions, like \verb"Pmf.__add__".  We will use
+these operations later, but I introduced them now to encourage
+you to think of a distribution as a fundamental unit of computation,
+not just a container for values and probabilities.
 
 
 
@@ -2945,9 +2967,11 @@ so I wanted to take some time to ...
 
 On November 1, 2007, contestants named Letia and Nathaniel appeared
 on {\it The Price is Right}, an American game show.  They competed in
-a game called the Showcase, where the objective is to guess the price
+a game called {\it The Showcase}, where the objective is to guess the price
 of a showcase of prizes.  The contestant who comes closest to the
 actual price of the showcase, without going over, wins the prizes.
+\index{Price is Right}
+\index{Showcase}
 
 Nathaniel went first.  His showcase included a dishwasher, a wine
 cabinet, a laptop computer, and a car.  He bid \$26,000.
@@ -2981,6 +3005,7 @@ For a Bayesian thinker, this scenario suggests several questions:
 The third question demonstrates a common use of Bayesian analysis:
 optimization.  Given a posterior distribution, we can choose
 the bid that maximizes the contestant's expected return.
+\index{optimization}
 
 This problem is inspired by an example in Cameron Davidson-Pilon's
 book, {\it Bayesian Methods for Hackers}.  The code I wrote for this
@@ -2988,6 +3013,7 @@ chapter is available from \url{http://thinkbayes.com/price.py}; it
 reads data you can download from
 \url{http://thinkbayes.com/showcases.2011.csv} and
 \url{http://thinkbayes.com/showcases.2012.csv}.
+\index{Davidson-Pilon, Cameron}
 
 
 \section{The prior}
@@ -3007,6 +3033,7 @@ about his book, he sent me data collected by Steve Gee at
 \url{http://tpirsummaries.8m.com}.  It includes the price of
 each showcase from the 2011 and 2012 seasons, and the bids
 offered by the contestants.
+\index{Gee, Steve}
 
 Figure~\ref{fig.price1} shows the distribution of prices for these
 showcases.  The most common value for both showcases is around
@@ -3026,6 +3053,9 @@ A PMF is a mapping from each possible value to its probability.  In my
 implementation, a {\tt Pmf} object provides a method named {\tt Prob} that
 takes a value and returns a probability, also known as a ``probability
 mass.''
+\index{probability density function}
+\index{Pdf}
+\index{Pmf}
 
 A probability density function, or PDF, is the continuous version of a
 PMF, where the possible values make up a continuous range rather than
@@ -3052,6 +3082,9 @@ density evaluated at {\tt x}.
 A probability density is similar
 to a probability mass in one way: higher density indicates that a
 value is more likely.
+\index{density}
+\index{probability density}
+\index{probability}
 
 But a density is not a probability.  If you integrate a density
 over a continuous range, the result is a probability.  But 
@@ -3065,6 +3098,7 @@ of a likelihood function.  We will see an example soon.
 
 Before we get back to {\it The Price is Right}, I want to
 present a more general way to represent PDFs.
+\index{Pdf object}
 
 {\tt thinkbayes.py} provides a class named {\tt Pdf} that defines
 two functions, {\tt Density} and {\tt MakePmf}:
@@ -3085,9 +3119,15 @@ class Pdf(object):
 
 {\tt Pdf} is an {\bf abstract type}, which means that it defines
 the interface a Pdf is supposed to have, but does not provide
-a complete implementation.  {\tt Pdf} provides
+a complete implementation.  The {\tt Pdf} interface includes
+{\tt Density} and
 {\tt MakePmf}, which makes a discrete approximation to the
-PDF, but does not provide {\tt Density}.
+PDF.  But the {\tt Pdf} class only provides an implementation
+of {\tt MakePmf}, not {\tt Density}.
+\index{abstract type}
+\index{concrete type}
+\index{interface}
+\index{implementation}
 
 A {\bf concrete type} is a class that extends an abstract parent
 class and provides an implementation of the missing methods.
@@ -3114,15 +3154,18 @@ the mean and standard deviation of the distribution.
 
 {\tt Density} uses a function from {\tt scipy} to evaluate the
 Gaussian PDF.
+\index{scipy}
 
 The Gaussian PDF is defined by a simple mathematical function,
 so it is easy to evaluate.  And it is useful because many
 quantities in the real world have distributions that are
 approximately Gaussian.
+\index{Gaussian distribution}
+\index{Gaussian PDF}
 
 But with real data, there is no guarantee that the PDF
-is Gaussian, or any other simple mathematical function.  In
-that case we can use a data sample to estimate the PDF of
+is Gaussian or any other simple mathematical function.  In
+that case we can use a sample to estimate the PDF of
 the whole population.
 
 For example, in {\it The Price Is Right} data, we have
@@ -3130,13 +3173,13 @@ For example, in {\it The Price Is Right} data, we have
 values as a sample from the population of all possible showcase
 prices.
 
-Near the middle of the distribution, we see the following values:
+This sample includes the following values (in order):
 %
 \[ 28800, 28868, 28941, 28957, 28958 \]
 %
 In the sample, no values appear between 28801 and 28867, but
 there is no reason to think that these values are impossible.
-Based on our background information, we would expect all
+Based on our background information, we expect all
 values in this range to be equally likely.  In other words,
 we expect the PDF to be reasonably smooth.
 
@@ -3144,44 +3187,60 @@ Kernel density estimation (KDE) is an algorithm that takes
 a sample of values and finds an appropriately-smooth PDF that fits 
 the data.  You can read about the details at
 \url{http://en.wikipedia.org/wiki/Kernel_density_estimation}.
+\index{KDE}
+\index{kernel density estimation}
 
 {\tt scipy} provides an implementation of KDE.  {\tt thinkbayes}
 provides a class called {\tt EstimatedPdf} that extends {\tt Pdf}
 and uses KDE:
+\index{scipy}
+\index{numpy}
 
 \begin{verbatim}
 class EstimatedPdf(Pdf):
 
     def __init__(self, sample):
-        xs = numpy.array(sample, dtype=numpy.double)
-        self.kde = scipy.stats.gaussian_kde(xs)
+        self.kde = scipy.stats.gaussian_kde(sample)
 
     def Density(self, x):
         return self.kde.evaluate(x)
 \end{verbatim}
 
-\verb"__init__" takes a sample, converts it to a NumPy array,
+\verb"__init__" takes a sample
 and computes a kernel density estimate.  The result is a
 \verb"gaussian_kde" object that provides an {\tt evaluate}
 method.
 
 {\tt Density} takes a value, calls \verb"gaussian_kde.evaluate",
 and returns the resulting density.
+\index{density}
 
 Finally, here's an outline of the code I used to generate
 Figure~\ref{fig.price1}:
+\index{thinkplot}
+\index{numpy}
 
 \begin{verbatim}
     prices = ReadData()
-    kde = thinkbayes.EstimatedPdf(prices)
+    pdf = thinkbayes.EstimatedPdf(prices)
 
     low, high = 0, 75000
     n = 101
     xs = numpy.linspace(low, high, n) 
-    pmf = kde.MakePmf(xs)
+    pmf = pdf.MakePmf(xs)
 
     thinkplot.Pmf(pmf)
 \end{verbatim}
+
+{\tt pdf} is a {\tt Pdf} object, estimated by KDE.  {\tt pmf}
+is a Pmf object that approximates the Pdf by evaluating the density
+for a sequence of equally-spaced values.
+
+{\tt linspace} stands for
+``linear space.''  It takes a range, {\tt low} and {\tt high}, and
+the number of points, {\tt n}, and returns a new {\tt numpy}
+array with {\tt n} elements equally spaced between {\tt low} and
+{\tt high}, including both.
 
 And now back to {\it The Price is Right}.
 
@@ -3201,7 +3260,7 @@ possible prices for each showcase.  If you were a contestant on the
 show, you could use this distribution to quantify your prior belief
 about the price of the showcases (before you see the prizes).
 
-To update these priors, you have to answer these questions:
+To update these priors, we have to answer these questions:
 
 \begin{enumerate}
 
@@ -3219,10 +3278,12 @@ In other words, when the contestant sees the prizes, he or she
 guesses the price of each prize---ideally without taking into
 consideration the fact that the prize is part of a showcase---and
 adds up the prices.  Let's call this total {\tt guess}.
+\index{error}
 
 Under this model, the question we have to answer is, ``If the
 actual price is {\tt price}, what is the likelihood that the
 contestant's total estimate would be {\tt guess}?''
+\index{likelihood}
 
 Or if we define
 %
@@ -3237,6 +3298,7 @@ To answer this question, we can use the historical data again.
 Figure~\ref{fig.price2} shows the cumulative distribution of {\tt diff},
 the difference between the contestant's bid and the actual price
 of the showcase.
+\index{CDF}
 
 The definition of diff is
 %
@@ -3249,20 +3311,21 @@ aside, we can use this CDF to compute the probability that the
 contestants overbid: the first contestant overbids 25\% of the
 time; the second contestant overbids 29\% of the time.
 
-We can also use this distribution to estimate the reliability of
+We can also see that the bids are biased;
+that is, they are more likely to be too low than too high.  And
+that makes sense, given the rules of the game.
+
+We can use this distribution to estimate the reliability of
 the contestants' guesses.  This step is a little tricky because
 we don't actually know the contestant's guesses; we only know
 what they bid.
 
-In Figure~\ref{fig.price2} we can see that the bids are biased;
-that is, they are more likely to be too low than too high.  And
-that makes sense, given the rules of the game.
-
-So we'll have to make some assumptions.  Specifically, I assume
-that the distribution of {\tt error} is Gaussian with mean 0
+So we'll have to make some assumptions.  Specifically, I
+assume that the distribution of {\tt error} is Gaussian with mean 0
 and the same variance as {\tt diff}.
 
 The {\tt Player} class implements this model:
+\index{numpy}
 
 \begin{verbatim}
 class Player(object):
@@ -3291,7 +3354,7 @@ is the PDF that characterizes the distribution of errors; where
 {\tt error = price - guess}.
 
 Again, we use the variance of {\tt diff} to estimate the variance of
-{\tt error}.  But contestant's bids are sometimes strategic; for
+{\tt error}.  But contestants' bids are sometimes strategic; for
 example, if Player 2 thinks that Player 1 has overbid, Player 2 might
 make a very low bid.  In that case {\tt diff} does not reflect {\tt
   error}.  If this strategy is common, the observed variance in {\tt
@@ -3307,23 +3370,17 @@ and recording their guesses and the actual prices.
 
 Now we are ready to write the likelihood function.  As usual,
 I define a new class that extends {\tt thinkbayes.Suite}:
+\index{likelihood}
 
 \begin{verbatim}
 class Price(thinkbayes.Suite):
 
     def __init__(self, pmf, player):
-        thinkbayes.Suite.__init__(self)
-
-        for price, prob in pmf.Items():
-            self.Set(price, prob)
-
+        thinkbayes.Suite.__init__(self, pmf)
         self.player = player
 \end{verbatim}
 
-{\tt pmf} represents the prior distribution.  The {\tt for}
-loop copies the values and probabilities from {\tt pmf} into
-the new {\tt Suite}.
-
+{\tt pmf} represents the prior distribution, and
 {\tt player} is a Player object as described in the previous
 section.
 
@@ -3357,12 +3414,14 @@ given the hypothesis.
 {\tt ErrorDensity} works by evaluating \verb"pdf_error" at
 the given value of {\tt error}.
 
-The result is a probability density, which means we can't treat it as
-a probability.  But remember that {\tt Likelihood} does not really
+The result is a probability density, so it is not really a probability.
+But remember that {\tt Likelihood} doesn't
 need to compute a probability; it only has to compute something {\em
   proportional} to a probability.  As long as the constant of
 proportionality is the same for all likelihoods, it gets cancelled out
 when we normalize the posterior distribution.
+\index{density}
+\index{likelihood}
 
 And therefore, a probability density is a perfectly good likelihood.
 
@@ -3382,6 +3441,8 @@ And therefore, a probability density is a perfectly good likelihood.
 guess and computes the posterior distribution:
 
 \begin{verbatim}
+# class Player
+
     def MakeBeliefs(self, guess):
         pmf = self.PmfPrice()
         self.prior = Price(pmf, self)
@@ -3393,10 +3454,14 @@ guess and computes the posterior distribution:
 to the PDF of price, which we use to construct the prior.
 
 {\tt PmfPrice} uses {\tt MakePmf}, which
-evaluates \verb"pdf_price" at an equally-spaced
-series of values:
+evaluates \verb"pdf_price" at a sequence of values:
 
 \begin{verbatim}
+# class Player
+
+    n = 101
+    price_xs = numpy.linspace(0, 75000, n)
+
     def PmfPrice(self):
         return self.pdf_price.MakePmf(self.price_xs)
 \end{verbatim}
@@ -3404,7 +3469,8 @@ series of values:
 To construct the posterior, we make a copy of the
 prior and then invoke {\tt Update}, which invokes {\tt Likelihood}
 for each hypothesis, multiplies the priors by the likelihoods,
-and then renormalizes.
+and  renormalizes.
+\index{normalize}
 
 So let's get back to the original scenario.  Suppose you are
 Player 1 and when you see your showcase, your best guess is
@@ -3412,6 +3478,7 @@ that the total price of the prizes is \$20,000.
 
 The following code constructs and plots your prior and
 posterior beliefs about the actual price:
+\index{thinkplot}
 
 \begin{verbatim}
     player1.MakeBeliefs(20000)
@@ -3419,7 +3486,7 @@ posterior beliefs about the actual price:
     thinkplot.Pmf(player2.prior)
 \end{verbatim}
 
-Figure~\ref{fig.price3} shows the results.  Your guess (\$20,000)
+Figure~\ref{fig.price3} shows the results.  Your guess 
 is on the low end of the prior range, so the posterior is shifted
 to the left.  The mean of the posterior is \$25,096; the most
 likely value is \$24,000.
@@ -3449,10 +3516,11 @@ most likely value in the posterior is not your original guess.
 Now that we have a posterior distribution, we can use it to
 compute the optimal bid, which I define as the bid that maximizes
 expected gain.
+\index{optimization}
 
 I'm going to present the methods in this section top-down, which
 means I will show you how they are used before I show you how they
-work.  So if you see an unfamiliar method, don't panic; the definition
+work.  If you see an unfamiliar method, don't panic; the definition
 will be along shortly.
 
 To compute optimal bids, I wrote a class called {\tt GainCalculator}:
@@ -3470,6 +3538,7 @@ class GainCalculator(object):
 {\tt GainCalculator} provides {\tt ExpectedGains}, which
 computes a sequence of bids and the expected gain for each
 bid:
+\index{numpy}
 
 \begin{verbatim}
     def ExpectedGains(self, low=0, high=75000, n=101):
@@ -3673,6 +3742,7 @@ Gaussian with mean 2.8 and standard deviation 0.3.
 The Gaussian distribution is continuous, but we'll approximate it with
 a discrete Pmf.  \verb"thinkbayes" provides \verb"MakeGaussianPmf" to
 do exactly that:
+\index{numpy}
 
 \begin{verbatim}
 def MakeGaussianPmf(mu, sigma, num_sigmas, n=101):
@@ -3692,11 +3762,9 @@ Gaussian distribution.  \verb"num_sigmas" is the number of standard
 deviations above and below the mean that the Pmf will span, and {\tt
   n} is the number of values in the Pmf.
 
-This is our first use of {\tt numpy}.  {\tt linspace} stands for
-``linear space.''  It takes a range, {\tt low} and {\tt high}, and
-the number of points, {\tt n}, and returns a new {\tt numpy}
-array with {\tt n} elements equally spaced between {\tt low} and
-{\tt high}, including both.
+Again we use {\tt numpy.linspace} to make an array of {\tt n}
+equally-spaced values between {\tt low} and {\tt high}, including
+both.
 
 \verb"EvalGaussianPdf" does what it says; it evaluates the
 Gaussian probability density function (PDF).
@@ -4650,6 +4718,7 @@ rate.  But in both cases the likelihood is the probability of seeing
 {\tt ArrivalRateEstimator} encapsulates the process of estimating
 $\lambda$.  The parameter, \verb"passenger_data", is a list
 of {\tt k1, y, k2} tuples, as in the table above.
+\index{numpy}
 
 \begin{verbatim}
 class ArrivalRateEstimator(object):
@@ -5216,6 +5285,7 @@ condition that the $j$th variable is {\tt val}.
 
 For example, the following code computes the conditional distributions
 of {\tt alpha} for a range of values of {\tt beta}:
+\index{thinkplot}
 
 \begin{verbatim}
     betas = [10, 20, 40]
@@ -5291,6 +5361,7 @@ of values from the suite.
 
 To visualize these intervals, I wrote a function that ``colors''
 each value according to how many intervals it appears in:
+\index{thinkplot}
 
 \begin{verbatim}
 def MakeCrediblePlot(suite):
@@ -5507,6 +5578,7 @@ each side of the estimate, in number of standard errors.  The return
 value is a pair of sequences, {\tt mus} and {\tt sigmas}.
 
 Here's {\tt MakeRange}:
+\index{numpy}
 
 \begin{verbatim}
     def MakeRange(estimate, stderr):
@@ -6790,6 +6862,7 @@ difficulty.
 I assume that the distribution of difficulty is uniform with
 parameters {\tt center} and {\tt width}.  {\tt MakeDifficulties}
 makes a list of difficulties with these parameters.
+\index{numpy}
 
 \begin{verbatim}
 def MakeDifficulties(center, width, n):
@@ -7731,6 +7804,7 @@ described by {\tt n} parameters, written $\alpha_1$ through $\alpha_n$.
 
 Here's the definition, from {\tt thinkbayes.py}, of a class that
 represents a Dirichlet distribution:
+\index{numpy}
 
 \begin{verbatim}
 class Dirichlet(object):
@@ -7941,6 +8015,7 @@ add up to 1 (see
 A less obvious, but faster, way is to select values from {\tt n} gamma
 distributions, then normalize by dividing through by the total. 
 Here's the code:
+\index{numpy}
 
 \begin{verbatim}
 # class Dirichlet
@@ -8031,6 +8106,7 @@ a road map.
 
 \item Finally, {\tt Species5} combines the sub-hypotheses into the top
   level and uses {\tt numpy} array operations to speed things up.
+\index{numpy}
 
 \end{itemize}
 
@@ -8049,6 +8125,7 @@ all of them.
 Since the bottom-level Dirichlet distributions all contain the same
 information, we can eliminate them and merge the parameters into
 the top-level suite.  {\tt Species2} implements this optimization:
+\index{numpy}
 
 \begin{verbatim}
 class Species2(object):
@@ -8067,6 +8144,7 @@ all 1.
 Here's the {\tt Update} function that updates both levels of
 the hierarchy: first the probability for each value of {\tt n},
 then the Dirichlet parameters:
+\index{numpy}
 
 \begin{verbatim}
 # class Species2
@@ -8114,6 +8192,7 @@ So the log-likelihood is
 \[ log(c(x)) + \sum_i \log(p_i) * x_i \]
 %
 which is fast and easy to compute.  Here's the code:
+\index{numpy}
 
 \begin{verbatim}
 # class Species2
@@ -8204,6 +8283,7 @@ one of them affects the computed likelihood, so the chance of choosing
 a good one is much better.
 
 Here's a new version that updates one species at a time:
+\index{numpy}
 
 \begin{verbatim}
 class Species4(Species):
@@ -8299,6 +8379,7 @@ of species counts; it just gets the index (which species was
 observed) and the count (how many of them there were).
 
 Now here's {\tt UpdateOne}:
+\index{numpy}
 
 \begin{verbatim}
 # class Species5
@@ -8331,6 +8412,7 @@ This function is similar to {\tt Species2.Update}, with two changes:
 \end{itemize}
 
 Finally, here's {\tt SampleLikelihood}:
+\index{numpy}
 
 \begin{verbatim}
 # class Species5
@@ -8634,6 +8716,7 @@ Finally, here is {\tt Species2.SamplePosterior}:
 
 And {\tt SamplePrevalences}, which generates a sample of
 prevalences conditioned on {\tt n}:
+\index{numpy}
 
 \begin{verbatim}
 # class Species2
