@@ -166,6 +166,7 @@ bayes_run:
 	python hockey.py
 	python redline.py
 	python variability.py
+	python paintball.py
 	python euro.py
 	python euro3.py
 	python sat.py

@@ -472,15 +472,15 @@ class Pmf(_DictWrapper):
                 pmf.Incr(v1 - v2, p1 * p2)
         return pmf
 
-    def Max(self, n):
-        """Computes the CDF of the maximum of n selections from this dist.
+    def Max(self, k):
+        """Computes the CDF of the maximum of k selections from this dist.
 
-        n: int
+        k: int
 
         returns: new Cdf
         """
         cdf = self.MakeCdf()
-        cdf.ps = [p ** n for p in cdf.ps]
+        cdf.ps = [p ** k for p in cdf.ps]
         return cdf
 
 
@@ -544,6 +544,23 @@ class Joint(Pmf):
                 break
 
         return interval
+
+
+def MakeJoint(pmf1, pmf2):
+    """Joint distribution of values from pmf1 and pmf2.
+
+    Args:
+        pmf1: Pmf object
+        pmf2: Pmf object
+
+    Returns:
+        Joint pmf of value pairs
+    """
+    joint = Joint()
+    for v1, p1 in pmf1.Items():
+        for v2, p2 in pmf2.Items():
+            joint.Set((v1, v2), p1 * p2)
+    return joint
 
 
 def MakeHistFromList(t, name=''):
@@ -880,15 +897,15 @@ class Cdf(object):
                 pass
         return xs, ps
 
-    def Max(self, n):
-        """Computes the CDF of the maximum of n selections from this dist.
+    def Max(self, k):
+        """Computes the CDF of the maximum of k selections from this dist.
 
-        n: int
+        k: int
 
         returns: new Cdf
         """
         cdf = self.Copy()
-        cdf.ps = [p ** n for p in cdf.ps]
+        cdf.ps = [p ** k for p in cdf.ps]
         return cdf
 
 
@@ -1005,18 +1022,31 @@ class Suite(Pmf):
             self.Normalize()
 
     def InitSequence(self, hypos):
+        """Initializes with a sequence of equally-likely hypotheses.
+
+        hypos: sequence of hypotheses
+        """
         for hypo in hypos:
             self.Set(hypo, 1)
 
     def InitMapping(self, hypos):
+        """Initializes with a map from hypothesis to probability.
+
+        hypos: map from hypothesis to probability
+        """
         for hypo, prob in hypos.iteritems():
             self.Set(hypo, prob)
 
     def InitPmf(self, hypos):
+        """Initializes with a Pmf.
+
+        hypos: Pmf object
+        """
         for hypo, prob in hypos.Items():
             self.Set(hypo, prob)
 
     def InitFailure(self, hypos):
+        """Raises an error."""
         raise ValueError('None of the initialization methods worked.')
 
     def Update(self, data):
@@ -1239,8 +1269,7 @@ class EstimatedPdf(Pdf):
 
         sample: sequence of data
         """
-        xs = numpy.array(sample, dtype=numpy.float)
-        self.kde = scipy.stats.gaussian_kde(xs)
+        self.kde = scipy.stats.gaussian_kde(sample)
 
     def Density(self, x):
         """Evaluates this Pdf at x.
@@ -1338,23 +1367,6 @@ def PmfProbEqual(pmf1, pmf2):
             if v1 == v2:
                 total += p1 * p2
     return total
-
-
-def JointPmf(pmf1, pmf2):
-    """Joint distribution of values from pmf1 and pmf2.
-
-    Args:
-        pmf1: Pmf object
-        pmf2: Pmf object
-
-    Returns:
-        Pmf of value pairs
-    """
-    pmf = Pmf()
-    for v1, p1 in pmf1.Items():
-        for v2, p2 in pmf2.Items():
-            pmf.Set((v1, v2), p1 * p2)
-    return pmf
 
 
 def RandomSum(dists):
