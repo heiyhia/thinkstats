@@ -52,12 +52,7 @@ class Price(thinkbayes.Suite):
         player: Player object
         name: string
         """
-        thinkbayes.Suite.__init__(self, name=name)
-
-        # copy items from pmf to self
-        for price, prob in pmf.Items():
-            self.Set(price, prob)
-
+        thinkbayes.Suite.__init__(self, pmf, name=name)
         self.player = player
 
     def Likelihood(self, data, hypo):
@@ -279,8 +274,6 @@ def MakePlots(player1, player2):
                 xlabel='diff ($)',
                 ylabel='CDF',
                 formats=FORMATS)
-
-
 
 
 def MakePlayers():

@@ -23,39 +23,89 @@ matplotlib.rc('font', size=14.0)
 #matplotlib.rc('ytick.major', size=6.0)
 #matplotlib.rc('ytick.minor', size=3.0)
 
-# Nine sequential colors from http://colorbrewer2.org/
 
-color_brewer9 = ['#081D58',
-                 '#253494',
-                 '#225EA8',
-                 '#1D91C0',
-                 '#41B6C4',
-                 '#7FCDBB',
-                 '#C7E9B4',
-                 '#EDF8B1',
-                 '#FFFFD9']
+class Brewer(object):
+    """Encapsulates a nice sequence of colors.
 
-which_colors = [[],
-                [1],
-                [1, 3],
-                [0, 2, 4],
-                [0, 2, 4, 6],
-                [0, 2, 3, 5, 6],
-                [0, 2, 3, 4, 5, 6],
-                [0, 1, 2, 3, 4, 5, 6],
-                ]
+    Shades of blue that look good in color and can be distinguished
+    in grayscale (up to a point).
+    
+    Borrowed from http://colorbrewer2.org/
+    """
+    color_iter = None
+
+    colors = ['#081D58',
+              '#253494',
+              '#225EA8',
+              '#1D91C0',
+              '#41B6C4',
+              '#7FCDBB',
+              '#C7E9B4',
+              '#EDF8B1',
+              '#FFFFD9']
+
+    # lists that indicate which colors to use depending on how many are used
+    which_colors = [[],
+                    [1],
+                    [1, 3],
+                    [0, 2, 4],
+                    [0, 2, 4, 6],
+                    [0, 2, 3, 5, 6],
+                    [0, 2, 3, 4, 5, 6],
+                    [0, 1, 2, 3, 4, 5, 6],
+                    ]
+
+    @classmethod
+    def ColorGenerator(cls, n):
+        """Returns an iterator of color strings.
+
+        n: how many colors will be used
+        """
+        for i in cls.which_colors[n]:
+            yield cls.colors[i]
+        raise StopIteration('Ran out of colors in Brewer.ColorGenerator')
+
+    @classmethod
+    def InitializeIter(cls, num):
+        """Initializes the color iterator with the given number of colors."""
+        cls.color_iter = cls.ColorGenerator(num)
+
+    @classmethod
+    def ClearIter(cls):
+        """Sets the color iterator to None."""
+        cls.color_iter = None
+
+    @classmethod
+    def GetIter(cls):
+        """Gets the color iterator."""
+        return cls.color_iter
 
 
-def ColorGenerator(n):
-    for i in which_colors[n]:
-        yield color_brewer9[i]
+def PrePlot(num=None):
+    """Takes hints about what's coming.
 
+    num: number of lines that will be plotted
+    """
+    Brewer.InitializeIter(num)
+    
 
 class InfiniteList(list):
+    """A list that returns the same value for all indices."""
     def __init__(self, val):
+        """Initializes the list.
+
+        val: value to be stored
+        """
+        list.__init__(self)
         self.val = val
 
     def __getitem__(self, index):
+        """Gets the item with the given index.
+
+        index: int
+
+        returns: the stored value
+        """
         return self.val
 
 
@@ -76,30 +126,16 @@ def Underride(d, **options):
     return d
 
 
-color_iter = None
-
-
-def PrePlot(num=None):
-    """Takes hints about what's coming.
-
-    num: number of lines that will be plotted
-    """
-    global color_iter
-
-    if num is None:
-        color_iter = None
-    else:
-        color_iter = ColorGenerator(num)
-    
-    # I think we don't want to clear the figure
-    # pyplot.clf()
-    
-
 def Clf():
     """Clears the figure and any hints that have been set."""
-    global color_iter
-    color_iter = None
+    Brewer.ClearIter()
     pyplot.clf()
+    
+
+def Figure(**options):
+    """Sets options for the current figure."""
+    Underride(options, figsize=(6, 8))
+    pyplot.figure(**options)
     
 
 def Plot(xs, ys, style='', **options):
@@ -111,20 +147,26 @@ def Plot(xs, ys, style='', **options):
       style: style string passed along to pyplot.plot
       options: keyword args passed to pyplot.plot
     """
-    global color_iter
+    color_iter = Brewer.GetIter()
 
     if color_iter:
         try:
             options = Underride(options, color=color_iter.next())
         except StopIteration:
-            print 'Warning: color_iter ran out of colors.'
-            color_iter = None
+            print 'Warning: Brewer ran out of colors.'
+            Brewer.ClearIter()
         
     options = Underride(options, linewidth=3, alpha=0.8)
     pyplot.plot(xs, ys, style, **options)
 
 
 def Scatter(xs, ys, **options):
+    """Makes a scatter plot.
+
+    xs: x values
+    ys: y values
+    options: options passed to pyplot.scatter
+    """
     options = Underride(options, color='blue', alpha=0.2, 
                         s=30, edgecolors='none')
     pyplot.scatter(xs, ys, **options)
@@ -153,7 +195,7 @@ def Pmfs(pmfs, **options):
       pmfs: sequence of PMF objects
       options: keyword args passed to pyplot.plot
     """
-    for i, pmf in enumerate(pmfs):
+    for pmf in pmfs:
         Pmf(pmf, **options)
 
 
@@ -250,44 +292,41 @@ def Cdf(cdf, complement=False, transform=None, **options):
     if cdf.name:
         options = Underride(options, label=cdf.name)
 
-    line = Plot(xs, ps, **options)
+    Plot(xs, ps, **options)
     return scale
 
 
 def Cdfs(cdfs, complement=False, transform=None, **options):
     """Plots a sequence of CDFs.
     
-    Args:
-      cdfs: sequence of CDF objects
-      complement: boolean, whether to plot the complementary CDF
-      transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
-      options: keyword args passed to pyplot.plot
+    cdfs: sequence of CDF objects
+    complement: boolean, whether to plot the complementary CDF
+    transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
+    options: keyword args passed to pyplot.plot
     """
-    for i, cdf in enumerate(cdfs):
+    for cdf in cdfs:
         Cdf(cdf, complement, transform, **options)
 
 
-def Contour(d, pcolor=False, contour=True, imshow=False, **options):
+def Contour(obj, pcolor=False, contour=True, imshow=False, **options):
     """Makes a contour plot.
     
     d: map from (x, y) to z, or object that provides GetDict
     pcolor: boolean, whether to make a pseudocolor plot
     contour: boolean, whether to make a contour plot
+    imshow: boolean, whether to use pyplot.imshow
     options: keyword args passed to pyplot.pcolor and/or pyplot.contour
     """
     try:
-        d = d.GetDict()
+        d = obj.GetDict()
     except AttributeError:
-        pass
+        d = obj
 
     Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
     xs, ys = zip(*d.iterkeys())
     xs = sorted(set(xs))
     ys = sorted(set(ys))
-
-    # print 'xs', len(xs), min(xs), max(xs)
-    # print 'ys', len(ys), min(ys), max(ys)
 
     X, Y = np.meshgrid(xs, ys)
     func = lambda x, y: d.get((x, y), 0)
@@ -374,20 +413,27 @@ def Save(root=None, formats=None, **options):
         formats = ['pdf', 'eps']
 
     if root:
-        for format in formats:
-            SaveFormat(root, format)
-
+        for fmt in formats:
+            SaveFormat(root, fmt)
     Clf()
 
-def SaveFormat(root, format='eps'):
+
+def SaveFormat(root, fmt='eps'):
     """Writes the current figure to a file in the given format.
 
     Args:
       root: string filename root
-      format: string format
+      fmt: string format
     """
-    filename = '%s.%s' % (root, format)
+    filename = '%s.%s' % (root, fmt)
     print 'Writing', filename
-    pyplot.savefig(filename, format=format, dpi=300)
+    pyplot.savefig(filename, format=fmt, dpi=300)
 
 
+def main():
+    color_iter = Brewer.ColorGenerator(7)
+    for color in color_iter:
+        print color
+
+if __name__ == '__main__':
+    main()

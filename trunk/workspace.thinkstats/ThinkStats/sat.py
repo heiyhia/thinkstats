@@ -11,6 +11,7 @@ import numpy
 import sys
 
 import matplotlib
+import matplotlib.pyplot as pyplot
 
 import thinkbayes
 import thinkplot
@@ -312,22 +313,21 @@ def PlotJointDist(pmf1, pmf2, thresh=0.8):
         vals = [val for val in pmf.Values() if val < thresh]
         [pmf.Remove(val) for val in vals]
 
-    thinkplot.Clf()
-    thinkplot.PrePlot(num=2)
     Clean(pmf1)
     Clean(pmf2)
-    pmf = thinkbayes.JointPmf(pmf1, pmf2)
+    pmf = thinkbayes.MakeJoint(pmf1, pmf2)
 
-    thinkplot.Contour(pmf.GetDict(), contour=False, pcolor=True)
+    thinkplot.Figure(figsize=(6, 6))    
+    thinkplot.Contour(pmf, contour=False, pcolor=True)
 
     thinkplot.Plot([thresh, 1.0], [thresh, 1.0],
                 color='gray', alpha=0.2, linewidth=4)
 
     thinkplot.Save(root='sat_joint',
-                xlabel='p_correct Alice', 
-                ylabel='p_correct Bob',
-                axis=[thresh, 1.0, thresh, 1.0],
-                formats=['pdf', 'eps'])
+                   xlabel='p_correct Alice', 
+                   ylabel='p_correct Bob',
+                   axis=[thresh, 1.0, thresh, 1.0],
+                   formats=['pdf', 'eps'])
 
 
 def ComparePosteriorPredictive(a_sat, b_sat):

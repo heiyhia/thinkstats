@@ -801,7 +801,7 @@ def RunLoop(gap_times, nums, lam=0.0333):
                    )
 
 
-def main():
+def main(script):
     RunLoop(OBSERVED_GAP_TIMES, nums=[0, 5, 10, 15, 20, 25, 30, 35])
     RunMixProcess(OBSERVED_GAP_TIMES)
     
