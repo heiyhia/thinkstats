@@ -2935,14 +2935,126 @@ a character with at least one attribute of 18 is about 3\%.
 Figure~\ref{fig.dungeons2} shows the distribution.
 
 
+\section{Mixtures}
+
+\begin{figure}
+% dungeons.py
+\centerline{\includegraphics[height=2.5in]{figs/dungeons3.pdf}}
+\caption{Distribution outcome for random die from a box.}
+\label{fig.dungeons3}
+\end{figure}
+
+Let's do one more example from Dungeons~\&~Dragons.  Suppose
+I have a box of dice with the following inventory:
+
+\begin{verbatim}
+5   4-sided dice
+4   6-sided dice
+3   8-sided dice
+2  12-sided dice
+1  20-sided die
+\end{verbatim}
+
+I choose a die from the box and roll it.  What is the distribution
+of the outcome?
+
+If you know which die it was, the answer is easy.  A die with {\tt n}
+sides yields a uniform distribution from 1 to {\tt n}, including both.
+\index{uniform distribution}
+
+But if we don't know which die it was, the resulting distribution is
+a {\bf mixture} of uniform distributions with different bounds.
+In general, this kind of mixture does not fit any simple mathematical
+model, but we it is straightforward to compute the distribution in
+the form of a PMF.
+\index{mixture}
+
+As always, one option is to simulate the scenario, generate a random
+sample, and compute the PMF of the sample.  This approach is simple
+and it generates an approximate solution quickly.  But if we want an
+exact solution, we need a different approach.
+\index{simulation}
+
+Let's start with a simple version of the problem where there are
+only two dice, one with 6 sides and one with 8.  We can make Pmfs to
+represent each die:
+
+\begin{verbatim}
+    d6 = Die(6)
+    d8 = Die(8)
+\end{verbatim}
+
+Then we create a Pmf to represent the mixture and use {\tt Pmf.Incr}
+to add in the outcomes from the two distributions.
+
+\begin{verbatim}
+    mix = thinkbayes.Pmf()
+    for die in [d6, d8]:
+        for outcome, prob in die.Items():
+            mix.Incr(outcome, prob)
+    mix.Normalize()
+\end{verbatim}
+
+This code assumes that the two dice are equally likely.  More
+generally, we need to know the probability of each die so we can
+weight the outcomes accordingly.
+
+First we create a Pmf that maps from each die to the probability it is
+selected:
+
+\begin{verbatim}
+    pmf_dice = thinkbayes.Pmf()
+    pmf_dice.Set(Die(4), 2)
+    pmf_dice.Set(Die(6), 3)
+    pmf_dice.Set(Die(8), 2)
+    pmf_dice.Set(Die(12), 1)
+    pmf_dice.Set(Die(20), 1)
+    pmf_dice.Normalize()
+\end{verbatim}
+
+Next we need a more general version of the mixture algorithm:
+
+\begin{verbatim}
+    mix = thinkbayes.Pmf()
+    for die, weight in pmf_dice.Items():
+        for outcome, prob in die.Items():
+            mix.Incr(outcome, weight*prob)
+\end{verbatim}
+
+Now each die has a weight associated with it (which makes it a
+weighted die, I suppose).  When we add each outcome to the mixture,
+its probability is multiplied by {\tt weight}.
+
+Figure~\ref{fig.dungeons3} shows the result.  As expected, values 1
+through 4 are the most likely because any die can produce them.
+Values above 12 are unlikely because there is only one die in the box
+that can produce them (and it does so less than half the time).
+
+The way I drew this Pmf is a little misleading.  The figure connects
+discrete points with a line, which suggests (incorrectly) that the
+values in between are possible.  It would be more precise to render a
+Pmf with a row of vertical lines, but that can be hard to read.  This
+difficulty is another reason I generally prefer to work with Cdfs.
+
+{\tt thinkbayes} provides a function named {\tt MakeMixture}
+that encapsulates this algorithm, so we could have written:
+
+\begin{verbatim}
+    mix = thinkbayes.MakeMixture(pmf_dice)
+\end{verbatim}
+
+We'll use {\tt MakeMixture} again in Chapters~\ref{prediction} and
+~\ref{observer}.
+
+
 \section{Discussion}
 
-Other than the odds form of Bayes's Theorem, this chapter
-is not very Bayesian.  But Bayesian analysis is all about distributions,
-so it is important to understand the concept of a distribution well.
-From a computational point of view, a distribution is any data
-structure that represents a set of values (possible outcomes of
-a random process) and their probabilities.
+Other than the odds form of Bayes's Theorem, this chapter is not
+specifically Bayesian.  But Bayesian analysis is all about
+distributions, so it is important to understand the concept of a
+distribution well.  From a computational point of view, a distribution
+is any data structure that represents a set of values (possible
+outcomes of a random process) and their probabilities.
 \index{distribution}
 
 We have seen two common representations of distributions: Pmfs
@@ -2952,11 +3064,12 @@ to the other.  The difference between them is performance: some
 operations are faster and easier with a Pmf; others are faster
 with a Cdf.
 
-The other goal of this chapter is to introduce operations that
-act on distributions, like \verb"Pmf.__add__".  We will use
-these operations later, but I introduced them now to encourage
-you to think of a distribution as a fundamental unit of computation,
-not just a container for values and probabilities.
+The other goal of this chapter is to introduce operations that act on
+distributions, like \verb"Pmf.__add__", {\tt Cdf.Max} and {\tt
+  thinkbayes.MakeMixture}.  We will use these operations later, but I
+introduce them now to encourage you to think of a distribution as a
+fundamental unit of computation, not just a container for values and
+probabilities.
 
 
 
@@ -3573,7 +3686,8 @@ probability and returns the total.
 \begin{figure}
 % price.py
 \centerline{\includegraphics[height=2.5in]{figs/price5.pdf}}
-\caption{Expected gain versus bid in a scenario where Player 1's best guess is \$20,000 and Player 2's best guess is \$40,000.}
+\caption{Expected gain versus bid in a scenario where Player 1's best 
+guess is \$20,000 and Player 2's best guess is \$40,000.}
 \label{fig.price5}
 \end{figure}
 
@@ -3631,8 +3745,8 @@ the point of view of the opponent, who is computing, ``What is
 the probability that I overbid?'' and ``What is the probability
 that my bid is off by more than {\tt diff}?''
 
-Both answers are based on the CDF of {\tt diff}.  If your opponent's
-{\tt diff} is less than or equal to -1, you win.  If your opponent's
+Both answers are based on the CDF of {\tt diff}.  If the opponent's
+{\tt diff} is less than or equal to -1, you win.  If the opponent's
 {\tt diff} is worse than yours, you win.  Otherwise you lose.
 
 Finally, here's the code that computes optimal bids:
@@ -3676,12 +3790,14 @@ interval, which is sufficient if estimation is the last step in the
 process, but if you want to use an estimate as an input to a
 subsequent analysis, point estimates and intervals are often not much
 help.
+\index{distribution}
 
 In this example, the Bayesian analysis yields a posterior distribution
 we can use to compute an optimal bid.  The gain function is asymmetric
 and discontinuous (if you overbid, you lose), so it would be hard to
 solve this problem analytically.  But it is relatively simple to do
 computationally.
+\index{optimization}
 
 Newcomers to Bayesian thinking are often tempted to summarize the
 posterior distribution by computing the mean or the maximum
@@ -3690,7 +3806,7 @@ all you need, then you probably don't need Bayesian methods in the
 first place.
 
 Bayesian methods are most useful when you can carry the posterior
-distribution into the next step of the process to perform some
+distribution into the next step of the analysis to perform some
 kind of optimization, as we did in this chapter, or some kind of
 prediction, as we will see in the next chapter.
 
@@ -3707,6 +3823,9 @@ Vancouver Canucks.  Boston lost the first two games 0-1 and 2-3, then
 won the next two games 8-1 and 4-0.  At this point in the series, what
 is the probability that Boston will win the next game, and what is
 their probability of winning the championship?
+\index{hockey}
+\index{Boston Bruins}
+\index{Vancouver Canucks}
 
 As always, to answer a question like this, we need to make some
 assumptions.  First, it is reasonable to believe that goal scoring in
@@ -3714,6 +3833,7 @@ hockey is at least approximately a Poisson process, which means that
 it is equally likely for a goal to be scored at any time during a
 game.  Second, we can assume that when team A plays team B, each team
 has some long-term average goals per game, denoted $\lambda$.
+\index{Poisson process}
 
 Given these assumptions, my strategy for answering this question is
 
@@ -3731,6 +3851,7 @@ goal differential, and the probability that each team wins.
 
 \item Simulate the rest of the series to estimate the probability
 of each possible outcome.
+\index{simulation}
 
 \end{enumerate}
 
@@ -3738,11 +3859,14 @@ To choose a prior distribution, I got some statistics from
 \url{http://www.nhl.com}, specifically the average goals per game
 for each team in the 2010-11 season.  The distribution is roughly
 Gaussian with mean 2.8 and standard deviation 0.3.
+\index{National Hockey League}
+\index{NHL}
 
 The Gaussian distribution is continuous, but we'll approximate it with
 a discrete Pmf.  \verb"thinkbayes" provides \verb"MakeGaussianPmf" to
 do exactly that:
 \index{numpy}
+\index{Gaussian distribution}
 
 \begin{verbatim}
 def MakeGaussianPmf(mu, sigma, num_sigmas, n=101):
@@ -3780,6 +3904,8 @@ If you look up the Gaussian PDF, you'll see that I left out a
 normalizing constant, so this function actually computes
 a likelihood that is proportional to the Gaussian PDF.  But
 that's fine, because I have to normalize the Pmf anyway.
+\index{PDF}
+\index{probability density function}
 
 Getting back to the hockey problem, here's the definition for a suite
 of hypotheses about the value of $\lambda$.
@@ -3805,17 +3931,19 @@ floating-point value {\tt x}.
 
 \section{Poisson processes}
 
-In mathematical statistics, a ``process'' is a stochastic, or random,
-model of a physical system.  For example, a Bernoulli process is a model
-of a sequence of events, called trials, in which each trial has
-two possible outcomes, like success and failure.  So a Bernoulli
-process is a natural model for a series of coin flips, or a series
-of shots on goal.
+In mathematical statistics, a ``process'' is a stochastic model of a
+physical system, which means that the model has some kind of
+randomness in it.  For example, a Bernoulli process is a model of a
+sequence of events, called trials, in which each trial has two
+possible outcomes, like success and failure.  So a Bernoulli process
+is a natural model for a series of coin flips, or a series of shots on
+goal.  \index{process} \index{Poisson process}
 
 A Poisson process is the continuous version of a Bernoulli process,
 where an event can occur at any point in time with equal probability.
 Poisson processes can be used to model customers arriving in a store,
 buses arriving at a bus stop, or goals scored in a hockey game.
+\index{Bernoulli process}
 
 In many real systems the probability of an event changes over time.
 Customers are more likely to go to a store at certain times of day,
@@ -3827,6 +3955,7 @@ a hockey game with a Poisson process is a reasonable choice.  Heuer
 et al.~analyze scoring in a German soccer league and come to the same
 conclusion; see
 \url{http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf}.
+\index{Heuer, Andreas}
 
 The benefit of using this model is that we can compute the distribution
 of goals per game efficiently, as well as the distribution of time
@@ -3841,6 +3970,7 @@ def EvalPoissonPmf(lam, k):
 
 And the distribution of time between goals is given by the
 exponential PDF:
+\index{exponential distribution}
 
 \begin{verbatim}
 def EvalExponentialPdf(lam, x):
@@ -3862,8 +3992,8 @@ goals per game.}
 \label{fig.hockey1}
 \end{figure}
 
-Now we can compute the likelihood of seeing a team with a hypothetical
-value of {\tt lam} score {\tt k} goals in a game:
+Now we can compute the likelihood that a team with a hypothetical
+value of {\tt lam} scores {\tt k} goals in a game:
 
 \begin{verbatim}
 # class Hockey
@@ -3941,6 +4071,7 @@ For each value of {\tt lam}, the distribution of goals is Poisson.
 So the overall distribution of goals is a mixture of these
 Poisson distributions, weighted according to the probabilities
 in the distribution of {\tt lam}.
+\index{mixture}
 
 \verb"thinkbayes" provides a method that computes mixtures
 of distributions:
@@ -3960,6 +4091,8 @@ help to think about how you would generate a random value from
 a Meta-Pmf.  First you would choose a Pmf according to the
 probabilities in the Meta-Pmf.  Then you would choose a value
 according to the probabilities in the chosen Pmf.
+\index{Meta-Pmf}
+\index{mixture}
 
 \verb"MakeMixture" computes the distribution of the resulting
 values.
@@ -4009,9 +4142,10 @@ distribution of the goal differential:
     diff = goal_dist1 - goal_dist2
 \end{verbatim}  
 
-The subtraction operator invokes the \verb"__sub__" method
-in {\tt Pmf}, which enumerates pairs of values and computes
-the difference.
+The subtraction operator invokes \verb"Pmf.__sub__", which enumerates
+pairs of values and computes the difference.  Subtracting two
+distributions is almost the same as adding, which we saw in
+Section~\ref{addends}.
 
 If the goal differential is positive, the Bruins win; if negative, the
 Canucks win; if 0, it's a tie:
@@ -4029,6 +4163,8 @@ In the event of a tie at the end of regulation play, the teams play
 overtime periods until one team scores.  Since the game ends
 immediately when the first goal is scored, this overtime format
 is known as ``sudden death.''
+\index{overtime}
+\index{sudden death}
 
 
 \section{Sudden death}
@@ -4038,6 +4174,8 @@ the important statistic is not goals per game, but time until the
 first goal.  The assumption that goal-scoring is a Poisson process
 is helpful here, because it implies that the time between goals
 is exponentially distributed.
+\index{exponential distribution}
+\index{sudden death}
 
 Given {\tt lam}, we can compute the time between goals like this: 
 
@@ -4054,8 +4192,9 @@ the Pmf.
 If we know {\tt lam} exactly, that's all there is to it.
 But we don't; instead we have a posterior
 distribution of possible values.  So as we did with the distribution
-of goals, we have to make a Meta-Pmf and compute a mixture of
+of goals, we make a Meta-Pmf and compute a mixture of
 Pmfs.
+\index{MakeMixture}
 
 \begin{verbatim}
 def MakeGoalTimePmf(suite):
@@ -4074,11 +4213,11 @@ time values less than one period (one third of a game), the Bruins
 are more likely to score.  The time until the Canucks score is
 more likely to be longer.
 
-I set the number of values, {\tt n},
-fairly high in order to minimize the number of ties, since it is not
-actually possible for both teams to score simultaneously.
+I set the number of values, {\tt n}, fairly high in order to minimize
+the number of ties, since it is not possible for both teams
+to score simultaneously.
 
-Now we can compute the probability that the Bruins score first:
+Now we compute the probability that the Bruins score first:
 
 \begin{verbatim}
     time_dist1 = MakeGoalTimePmf(suite1)
@@ -4087,16 +4226,20 @@ Now we can compute the probability that the Bruins score first:
 \end{verbatim}  
 
 For the Bruins, the probability of winning in overtime is 52\%.
-Finally, we can compute the total probability of winning:
+
+Finally, the total probability of winning is the chance of
+winning at the end of ``regulation play'' plus the probability
+of winning in overtime.
 
 \begin{verbatim}
     p_tie = diff.Prob(0)
     p_overtime = thinkbayes.PmfProbLess(time_dist1, time_dist2)
 
-    p_win = diff.ProbGreater(0) + p_overtime * p_tie
+    p_win = diff.ProbGreater(0) + p_tie * p_overtime
 \end{verbatim}  
 
-So the overall chance of winning the next game is 55\%.
+For the Bruins, the overall chance of winning the next game is 55\%.
+
 To win the series, the Bruins can either win the next two games
 or split the next two and win the third.  Again, we can compute
 the total probability:
@@ -4118,6 +4261,7 @@ they did.
 Solving problems like this is almost always iterative.  In general,
 you want to start with something simple that yields an approximate
 answer, then look for opportunities to improve.
+\index{iterative modeling}
 
 In this example, I would consider these options:
 
@@ -4142,7 +4286,6 @@ In this example, I would consider these options:
   goal scoring rate, possibly adjusted by estimating
   an additional factor for each pairwise match-up.  This approach
   would be more complicated, but it is still feasible.
-  [[Forward reference to chess example]]
 
 \end{itemize}
 
@@ -4151,6 +4294,7 @@ to estimate the variability across all pairwise match-ups.  Thanks to
 Dirk Hoag at \url{http://forechecker.blogspot.com/}, I was able to get
 the number of goals scored during regulation play (not overtime) for
 each game in the regular season.
+\index{Hoag, Dirk}
 
 Teams in different conferences only play each other one or two
 times in the regular season, so I focused on pairs that played
@@ -4185,6 +4329,7 @@ The code and data for this chapter are available from
 If buses arrive at a bus stop every 20 minutes, and you
 arrive at the bus stop at a random time, your wait time until
 the bus arrives is uniformly distributed from 0 to 20 minutes.
+\index{bus stop problem}
 
 But in reality, there is variability in the time between
 buses.  Suppose you are waiting for a bus, and you know the historical
@@ -4195,6 +4340,8 @@ Hint: Suppose that the time between buses is either
 10 or 20 minutes with equal probability.  What is the probability
 that you arrive during one of the 20 minute intervals?
 
+I solve a version of this problem in the next chapter.
+
 \end{exercise}
 
 
@@ -4204,6 +4351,9 @@ Suppose that passengers arriving at the bus stop are well-modeled
 by a Poisson process with parameter $\mu$.  If you arrive at the
 stop and find 3 people waiting, what is your posterior distribution
 for the time since the last bus arrived.
+\index{bus stop problem}
+
+I solve a version of this problem in the next chapter.
 
 \end{exercise}
 
@@ -4215,6 +4365,7 @@ a new environment.  You deploy 100 traps in a test area and come back
 the next day to check on them.  You find that 37 traps have been
 triggered, trapping an insect inside.  Once a trap triggers, it
 cannot trap another insect until it has been reset.
+\index{insect sampling problem}
 
 If you reset the traps and come back in two days, how many traps
 do you expect to find triggered?  Compute a posterior predictive
@@ -4228,6 +4379,7 @@ distribution for the number of traps.
 Suppose you are the manager of an apartment building with
 100 light bulbs in common areas.  It is your responsibility
 to replace light bulbs when they break.
+\index{light bulb problem}
 
 On January 1, all 100 bulbs are working.  When you inspect
 them on February 1, you find 3 light bulbs out.  If you
@@ -4245,11 +4397,13 @@ distribution
 (\url{http://en.wikipedia.org/wiki/Weibull_distribution}).
 Or you might want to look around for information about
 light bulb survival curves.
+\index{Weibull distribution}
 
 \end{exercise}
 
 
 \chapter{Observer bias}
+\label{observer}
 
 \section{The Red Line problem}
 
