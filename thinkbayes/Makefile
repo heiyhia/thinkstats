@@ -59,12 +59,21 @@ plastex:
 	rm -rf /home/downey/thinkbayes/trunk/book/.svn
 
 xxe:
-	~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+	xmlcopyeditor ~/thinkstats/trunk/thinkbayes/book/book.xml &
+	#~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+
+lint:
+	xmllint -noout book/book.xml
+
+OREILLY = ~/oreilly/thinkbayes
 
 oreilly:
-	rsync -a book/ ~/oreilly
-	rsync -a figs/* ~/oreilly/figs
-	cp thinkbayes.pdf ~/oreilly/pdf
+	rsync -a book/ $(OREILLY)
+	rsync -a figs/* $(OREILLY)/figs/
+	cd $(OREILLY); git add .
+	cd $(OREILLY); git commit -m "Automated check in."
+	cd $(OREILLY); git push origin master
+	#cp thinkbayes.pdf ~/oreilly/1234000001745/pdf
 
 clean:
 	rm -f *~ *.aux *.log *.dvi *.idx *.ilg *.ind *.toc
