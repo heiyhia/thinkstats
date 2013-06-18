@@ -809,14 +809,12 @@ bowls.
 \MM's are small candy-coated chocolates that come in a variety of
 colors.  Mars, Inc., which makes \MM's, changes the mixture of
 colors from time to time.
-\index{M\&M problem}
+\index{M"&M problem}
 
 In 1995, they introduced blue \MM's.  Before then, the color mix in
 a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
 Green, 10\% Orange, 10\% Tan).  Afterward it was (24\% Blue , 20\%
 Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown).
-
-%\index{M\&M}
 
 Suppose a friend of mine has two bags of \MM's, and he tells me
 that one is from 1994 and one from 1996.  He won't tell me which is
@@ -1438,7 +1436,7 @@ function.  You can read about this pattern at
 
 \section{The \MM~problem}
 
-\index{\MM problem}
+\index{M"&M problem}
 
 We can use the \verb"Suite" framework to solve the \MM~problem.
 Writing the \verb"Likelihood" function is tricky, but everything
@@ -1532,7 +1530,7 @@ Bayesian inference.  You can download the code in this section from
 Suppose I have a box of dice that contains a 4-sided die, a 6-sided
 die, an 8-sided die, a 12-sided die and a 20-sided die.  If you
 have ever played {\it Dungeons~\&~Dragons}, you know what I am talking about.
-\index{Dungeons\&Dragons}
+\index{Dungeons"&Dragons}
 
 Suppose I select a die from the box at random, roll it, and get a 6.
 What is the probability that I rolled each die?
@@ -2687,7 +2685,7 @@ In fact, before game play starts, players generate each
 attribute of their characters---strength, intelligence, wisdom,
 dexterity, constitution, and charisma---by rolling three
 six-sided dice and adding them up.
-\index{Dungeons\&Dragons}
+\index{Dungeons"&Dragons}
 
 So you might be curious to know the distribution of this sum.
 There are two ways you might compute it:
@@ -4114,9 +4112,7 @@ def MakeGoalPmf(suite):
 \end{verbatim}  
 
 For each value of {\tt lam} we make a Poisson Pmf and add it to the
-Meta-Pmf.  Then we use \verb"MakeMixture" to compute the mixture.  If
-the Meta-Pmf makes your head hurt, don't panic.  We are past the hard
-part of the problem now; everything else is easy.
+Meta-Pmf.  Then we use \verb"MakeMixture" to compute the mixture.
 
 Figure~\ref{fig.hockey2} shows the resulting distribution of goals for
 the Bruins and Canucks.  As expected, the Bruins are less likely to
@@ -4412,6 +4408,8 @@ Cambridge to Boston.  When I was working in Cambridge I took the Red
 Line from Kendall Square to South Station and caught the commuter rail
 to Needham.  During rush hour Red Line trains run every 7--8
 minutes, on average.
+\index{Red Line problem}
+\index{Boston}
 
 When I arrived at the station, I could estimate the time until
 the next train based on the number of passengers on the platform.
@@ -4427,11 +4425,12 @@ estimation could help predict my wait time and decide when I
 should give up and take a taxi.  This chapter presents the
 analysis I came up with.
 
-This case study is based on a project by Brendan Ritter and
+This chapter is based on a project by Brendan Ritter and
 Kai Austin, who took a class with me at Olin College.
 The code in this chapter is available from
 \url{http://thinkbayes.com/redline.py}.  The code I used
 to collect data is in \url{http://thinkbayes.com/redline_data.py}.
+\index{Olin College}
 
 
 \section{The model}
@@ -4452,6 +4451,7 @@ likely to arrive at any time, and that they arrive at an unknown
 rate, $lambda$, measured in passengers per minute.  Since I
 observe passengers during a short period of time, and at the same
 time every day, I assume that $lambda$ is constant.
+\index{Poisson process}
 
 On the other hand, the arrival process for trains is not Poisson.
 Trains to Boston are supposed to leave from the end of the line
@@ -4493,6 +4493,7 @@ This kind of ``observer bias'' appears in many contexts.  Students
 think that classes are bigger than they are, because more of them are
 in the big classes.  Airline passengers think that planes are fuller
 than they are, because more of them are on full flights.
+\index{observer bias}
 
 In each case, values from the actual distribution are
 oversampled in proportion to their value.  In the Red Line example,
@@ -4550,6 +4551,7 @@ of {\tt y} is uniform from 0 to 5 minutes.  If we arrive during a 10
 minute gap, {\tt y} is uniform from 0 to 10.  So the overall
 distribution is a mixture of uniform distributions weighted
 according to the probability of each gap.
+\index{uniform distribution}
 
 To encapsulate the process of computing these distributions, I
 created a class called {\tt WaitTimeCalculator}:
@@ -4598,6 +4600,8 @@ def PmfOfWaitTime(pmf_zb):
 {\tt PmfOfWaitTime} makes a Meta-Pmf that maps from each uniform
 distribution to its probability.  Then it uses {\tt MakeMixture},
 which we saw in Section~\ref{meta-pmf}, to compute the mixture.
+\index{mixture}
+\index{MakeMixture}
 
 It also uses {\tt MakeUniformPmf}, defined here:
 
@@ -4630,6 +4634,8 @@ To present these distributions, I am switching from Pmfs to Cdfs.
 Most people are more familiar with Pmfs, but I think Cdfs are easier
 to interpret, once you get used to them.  And if you want to plot
 several distributions on the same axes, Cdfs are the way to go.
+\index{Cdf}
+\index{cumulative distribution function}
 
 The mean of {\tt z} is 7.8 minutes.  The mean of {\tt zb} is 8.8
 minutes, about 13\% higher.  The mean of {\tt y} is 4.4, half
@@ -4664,15 +4670,21 @@ and work our way up.  Suppose we are given the actual distribution of
 {\tt z}, and we know that the passenger arrival rate,
 $\lambda$, is 2 passengers per minute.
 
-In that case we can use the distribution of {\tt z} to compute
+In that case we can:
+
+\begin{enumerate}
+
+\item Use the distribution of {\tt z} to compute
 the prior distribution of {\tt zp}, the time between trains
 as seen by a passenger.
 
-Then we can use the number of passengers to estimate the distribution
+\item Then we can use the number of passengers to estimate the distribution
 of {\tt x}, the elapsed time since the last train.
 
-Finally, we use the relation {\tt y = zp - x} to get the
+\item Finally, we use the relation {\tt y = zp - x} to get the
 distribution of {\tt y}.
+
+\end{enumerate}
 
 The first step is to create a {\tt WaitTimeCalculator} that
 encapsulates the distributions of {\tt zp}, {\tt x},
@@ -4685,9 +4697,8 @@ passengers.
 
 \verb"pmf_z" is the given distribution of gap times.
 
-The next
-step is to make an {\tt ElapsedTimeEstimator}, which encapsulates
-the posterior distribution of {\tt x} and
+The next step is to make an {\tt ElapsedTimeEstimator} (defined
+below), which encapsulates the posterior distribution of {\tt x} and
 the predictive distribution of {\tt y}.
 
 \begin{verbatim}
@@ -4788,12 +4799,11 @@ def RemoveNegatives(pmf):
 
 Figure~\ref{fig.redline3} shows the results.  The prior distribution
 of {\tt x} is the same as the distribution of {\tt y} in
-Figure~\ref{fig.redline2}.  The posterior distribution of {\tt x} shows that,
-after seeing 15 passengers on the platform, we believe that the time
-since the last train is probably 5-10 minutes.  
-The predictive distribution of {\tt y} indicates that
-we expect the next train in less than 5 minutes,
-with about 80\% confidence.
+Figure~\ref{fig.redline2}.  The posterior distribution of {\tt x}
+shows that, after seeing 15 passengers on the platform, we believe
+that the time since the last train is probably 5-10 minutes.  The
+predictive distribution of {\tt y} indicates that we expect the next
+train in less than 5 minutes, with about 80\% confidence.
 
 
 \section{Estimating the arrival rate}
@@ -4814,6 +4824,7 @@ Suppose that you just moved to Boston, so you don't know much about
 the passenger arrival rate on the Red Line.  After a few days of
 commuting, you could make a guess, at least qualitatively.  With
 a little more effort, you could estimate $\lambda$ quantitatively.
+\index{arrival rate}
 
 Each day when you arrive at the platform, you should note the
 time and the number of passengers waiting (if the platform is too
@@ -4833,8 +4844,8 @@ k1      y     k2
 \end{verbatim}
 %
 where {\tt k1} is the number of passengers waiting when you arrive,
-{\tt y} is your wait time, and {\tt k2} is the number of passengers
-who arrive while you are waiting.
+{\tt y} is your wait time in minutes, and {\tt k2} is the number of
+passengers who arrive while you are waiting.
 
 Over the course of one week, you waited 18 minutes and saw 36
 passengers arrive, so you would estimate that the arrival rate is
@@ -5969,7 +5980,7 @@ the total log-likelihood is
 %
 Pulling out the terms that don't depend on $i$, we get
 %
-\[ -n \log \sigma - \frac{1}{2 \sigma^2} \sum_i \left( x_i-\mu \right)^2 \]
+\[ -n \log \sigma - \frac{1}{2 \sigma^2} \sum_i \left( x_i - \mu \right)^2 \]
 %
 and translate into Python:
 
