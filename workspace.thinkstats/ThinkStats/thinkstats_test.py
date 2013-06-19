@@ -6,6 +6,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import unittest
+import random
 import thinkstats
 
 class Test(unittest.TestCase):
@@ -69,6 +70,13 @@ class Test(unittest.TestCase):
 
         x = interp.Reverse(5.75)
         self.assertAlmostEquals(x, 2.75)
+
+    def testTrim(self):
+        t = range(100)
+        random.shuffle(t)
+        trimmed = thinkstats.Trim(t, p=0.05)
+        n = len(trimmed)
+        self.assertEquals(n, 90)
 
 if __name__ == "__main__":
     unittest.main()

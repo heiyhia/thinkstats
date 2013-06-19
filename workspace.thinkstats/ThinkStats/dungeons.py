@@ -10,6 +10,9 @@ import random
 import thinkbayes
 import thinkplot
 
+FORMATS = ['pdf', 'eps', 'png']
+
+
 class Die(thinkbayes.Pmf):
     """Represents the PMF of outcomes for a die."""
 
@@ -39,6 +42,27 @@ def PmfMax(pmf1, pmf2):
     
 
 def main():
+    pmf_dice = thinkbayes.Pmf()
+    pmf_dice.Set(Die(4), 5)
+    pmf_dice.Set(Die(6), 4)
+    pmf_dice.Set(Die(8), 3)
+    pmf_dice.Set(Die(12), 2)
+    pmf_dice.Set(Die(20), 1)
+    pmf_dice.Normalize()
+
+    mix = thinkbayes.Pmf()
+    for die, weight in pmf_dice.Items():
+        for outcome, prob in die.Items():
+            mix.Incr(outcome, weight*prob)
+
+    mix = thinkbayes.MakeMixture(pmf_dice)
+
+    thinkplot.Pmf(mix)
+    thinkplot.Save(root='dungeons3',
+                xlabel='Outcome',
+                ylabel='Probability',
+                formats=FORMATS)
+
     random.seed(17)
 
     d6 = Die(6, 'd6')
@@ -59,7 +83,7 @@ def main():
                 xlabel='Sum of three d6',
                 ylabel='Probability',
                 axis=[2, 19, 0, 0.15],
-                formats=['pdf', 'eps'])
+                formats=FORMATS)
 
     thinkplot.Clf()
     thinkplot.PrePlot(num=1)
@@ -81,8 +105,9 @@ def main():
                 xlabel='Sum of three d6',
                 ylabel='Probability',
                 axis=[2, 19, 0, 0.23],
-                formats=['pdf', 'eps'])
+                formats=FORMATS)
     
+
 
 if __name__ == '__main__':
     main()
