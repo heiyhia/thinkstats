@@ -44,9 +44,8 @@ def Trim(t, p=0.01):
     Returns:
         sequence of values
     """
-    t.sort()
     n = int(p * len(t))
-    t = t[n:-n]
+    t = sorted(t)[n:-n]
     return t
 
 
