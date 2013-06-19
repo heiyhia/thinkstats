@@ -246,12 +246,14 @@ can apply Bayesian methods (or any other analysis), we have to
 make decisions about which parts of the real-world system we
 have to include in the model, and which details we can abstract
 away.
+\index{modeling}
 
 For example, in Chapter~\ref{prediction}, the motivating problem is to
 predict the winner of a hockey game.  I model goal-scoring as a
 Poisson process, which implies that a goal is equally likely at any
 point in the game.  That is not exactly true, but it is probably a
 good enough model for most purposes.
+\index{Poisson process}
 
 In Chapter~\ref{evidence} the motivating problem is interpreting SAT
 scores (the SAT is a standardized test used for college admissions in
@@ -284,24 +286,22 @@ So I recommend a general process with these steps:
 
 \begin{enumerate}
 
-\item While you are exploring a problem, start with simple models
-and implement them in code that is clear, readable, and demonstrably
-correct.  Focus your attention on good modeling decisions, not
-optimization.
+\item While you are exploring a problem, start with simple models and
+  implement them in code that is clear, readable, and demonstrably
+  correct.  Focus your attention on good modeling decisions, not
+  optimization.
 
 \item Once you have a simple model working, try to identify the
-biggest sources of error.  You might need to increase the number
-of values in a discrete approximation, or increase
-the number of iterations in a Monte Carlo simulation, or add
-details to the model.
+  biggest sources of error.  You might need to increase the number of
+  values in a discrete approximation, or increase the number of
+  iterations in a Monte Carlo simulation, or add details to the model.
 
 \item If the performance of your solution is good enough for your
-application, you might not have to do any optimization.  But if
-you do, there are two approaches
-to consider.  You can review your code and look for optimizations; for
-example, caching previously computed results to avoid redundant
-computation.  Or you can look for analytic methods that
-yield computational short-cuts.  
+  application, you might not have to do any optimization.  But if you
+  do, there are two approaches to consider.  You can review your code
+  and look for optimizations; for example, caching previously computed
+  results to avoid redundant computation.  Or you can look for
+  analytic methods that yield computational short-cuts.
 
 \end{enumerate}
 
@@ -313,6 +313,7 @@ Another benefit is that if you get to Step 3, you will be starting
 with a reference implementation that is likely to be correct,
 which you can use for regression testing (that is, checking that the
 optimized code yields the same answer, at least approximately).
+\index{regression testing}
 
 
 \subsection*{Working with the code}
@@ -353,8 +354,9 @@ available from \url{http://numpy.org} and \url{http://scipy.org}.
 Experienced Python programmers will notice that the code in this
 book does not comply with PEP 8, which is the most common
 style guide for Python (\url{http://www.python.org/dev/peps/pep-0008/}).
+\index{PEP 8}
 
-Specifially, PEP 8 calls for lowercase function names with
+Specifically, PEP 8 calls for lowercase function names with
 underscores between words, \verb"like_this".  In this book and
 the accompanying code, function and method names begin with
 a capital letter and use camel case, \verb"LikeThis".
@@ -577,8 +579,8 @@ face up, and $B$ means the second coin lands face up, then $\p{A} =
 But this formula only works because in this case $A$ and $B$ are
 independent; that is, the second event does not depend on the first.
 If you tell me the first coin is heads, that does not change \p{B}.
-\index{independent}
-\index{dependent}
+\index{independence}
+\index{dependence}
 
 Here is a different example where the events are not independent.
 Suppose again that $A$ means the first coin lands face up, but let's
@@ -698,6 +700,7 @@ Putting it together, we have
 which reduces to 3/5.  So the vanilla cookie is evidence in favor of
 the hypothesis that we chose Bowl 1, because vanilla cookies are more
 likely to come from Bowl 1.
+\index{evidence}
 
 This example demonstrates one use of Bayes's Theorem: it provides
 a process to get from \p{B|A} to \p{A|B}.  This strategy is useful
@@ -863,6 +866,7 @@ information in the problem.  If $A$ is true, the yellow \MM~came from
 the 1994 bag with probability 20\%, and the green came from the 1996
 bag with probability 20\%.  Because the selections are independent, we
 get the conjoint probability by multiplying.
+\index{independence}
 
 The third column is just the product of the previous two.
 The sum of this column, 270, is the normalizing constant.
@@ -2206,6 +2210,7 @@ in Figure~\ref{fig.euro3}.  Even with substantially different
 priors, the posterior distributions are very similar.  The medians
 and the credible intervals are identical; the means differ by
 less than 0.5\%.
+\index{triangle distribution}
 
 This is an example of ``swamping the priors:'' with enough
 data, people who start with different priors will tend to
@@ -2351,7 +2356,7 @@ beta distribution with {\tt alpha=1} and {\tt beta=1} is uniform from
 
 Let's see how we can take advantage of all this.  Here's
 a class that represents a beta distribution:
-\index{Beta class}
+\index{Beta object}
 
 \begin{verbatim}
 class Beta(object):
@@ -2417,6 +2422,7 @@ same PDF are called ``conjugate distributions.''
 \index{conjugate distribution}
 
 {\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
+\index{Beta object}
 
 
 \section{Exercises}
@@ -2439,6 +2445,7 @@ How does the spread of the posterior distribution depend on
 
 \begin{exercise}
 
+\index{Reddit}
 This exercise is inspired by a question posted by a
 ``redditor'' named dominosci on Reddit's statistics ``subreddit'' at
 \url{http://reddit.com/r/statistics}.
@@ -2649,6 +2656,7 @@ $2 (0.6) (0.01)\ = 1.2\%$.
 The likelihood of the data is slightly higher if Oliver is
 {\it not} one of the people who left blood at the scene, so
 the blood data is actually evidence against Oliver's guilt.
+\index{evidence}
 
 This example is a little contrived, but it is an example of
 the counterintuitive result that data {\it consistent} with
@@ -2881,6 +2889,7 @@ the maximum $Z = max(X, Y)$, what is the chance that $Z$ is
 less than or equal to 5?  Well, in that case both $X$ and $Y$
 must be less than or equal to 5.
 
+\index{independence}
 If the selections of $X$ and $Y$ are independent,
 %
 \[ CDF_3(5) = CDF_1(5) CDF_2(5) \] 
@@ -3155,6 +3164,8 @@ These distributions are based on actual data, but they
 have been smoothed by Gaussian kernel density estimation (KDE).
 So before we go on, I want to take a detour to talk about 
 probability density functions and KDE.
+\index{kernel density estimation}
+\index{KDE}
 
 
 \section{Probability density functions}
@@ -3172,6 +3183,7 @@ A probability density function, or PDF, is the continuous version of a
 PMF, where the possible values make up a continuous range rather than
 a discrete set.  
 
+\index{Gaussian distribution}
 In mathematical notation, PDFs are usually written as functions; for
 example, here is the PDF of a Gaussian distribution with
 mean 0 and standard deviation 1:
@@ -3243,6 +3255,7 @@ of {\tt MakePmf}, not {\tt Density}.
 A {\bf concrete type} is a class that extends an abstract parent
 class and provides an implementation of the missing methods.
 
+\index{Gaussian distribution}
 For example, {\tt GaussianPdf} extends {\tt Pdf} and provides
 {\tt Density}:
 
@@ -3434,6 +3447,7 @@ what they bid.
 So we'll have to make some assumptions.  Specifically, I
 assume that the distribution of {\tt error} is Gaussian with mean 0
 and the same variance as {\tt diff}.
+\index{Gaussian distribution}
 
 The {\tt Player} class implements this model:
 \index{numpy}
@@ -3529,7 +3543,7 @@ The result is a probability density, so it is not really a probability.
 But remember that {\tt Likelihood} doesn't
 need to compute a probability; it only has to compute something {\em
   proportional} to a probability.  As long as the constant of
-proportionality is the same for all likelihoods, it gets cancelled out
+proportionality is the same for all likelihoods, it gets canceled out
 when we normalize the posterior distribution.
 \index{density}
 \index{likelihood}
@@ -3960,6 +3974,7 @@ of goals per game efficiently, as well as the distribution of time
 between goals.  Specifically, if the average number of goals
 in a game is {\tt lam}, the distribution of goals per game is
 given by the Poisson PMF:
+\index{Poisson distribution}
 
 \begin{verbatim}
 def EvalPoissonPmf(lam, k):
@@ -4039,6 +4054,7 @@ If we knew the value of {\tt lam} exactly, we could use the
 Poisson distribution again.  \verb"thinkbayes" provides a
 method that computes a truncated approximation of a Poisson
 distribution:
+\index{Poisson distribution}
 
 \begin{verbatim}
 def MakePoissonPmf(lam, high):
@@ -4070,6 +4086,7 @@ So the overall distribution of goals is a mixture of these
 Poisson distributions, weighted according to the probabilities
 in the distribution of {\tt lam}.
 \index{mixture}
+\index{Poisson distribution}
 
 \verb"thinkbayes" provides a method that computes mixtures
 of distributions:
@@ -4170,6 +4187,7 @@ the important statistic is not goals per game, but time until the
 first goal.  The assumption that goal-scoring is a Poisson process
 is helpful here, because it implies that the time between goals
 is exponentially distributed.
+\index{Poisson process}
 \index{exponential distribution}
 \index{sudden death}
 
@@ -4347,6 +4365,7 @@ Suppose that passengers arriving at the bus stop are well-modeled
 by a Poisson process with parameter $\mu$.  If you arrive at the
 stop and find 3 people waiting, what is your posterior distribution
 for the time since the last bus arrived.
+\index{Poisson process}
 \index{bus stop problem}
 
 I solve a version of this problem in the next chapter.
@@ -4760,6 +4779,7 @@ So the likelihood of the data is the probability of getting
 {\tt k} arrivals in {\tt x} time, given arrival rate
 {\tt lam}.  We compute that using the PMF of the Poisson
 distribution.
+\index{Poisson distribution}
 
 Finally, we use the posterior distribution of {\tt x}
 to predict the distribution of {\tt y}.
@@ -4927,6 +4947,7 @@ of possible values of {\tt lam}. }
 
 Whenever there is uncertainty about one of the inputs to an analysis,
 we can take it into account by a process like this:
+\index{uncertainty}
 
 \begin{enumerate}
 
@@ -4940,6 +4961,7 @@ we can take it into account by a process like this:
 
 \item Compute a mixture of the predictive distributions, using the
   weights from the distribution of the parameter.
+\index{mixture}
 
 \end{enumerate}
 
@@ -4969,6 +4991,7 @@ of {\tt lam}, we use {\tt ElapsedTimeEstimator} to
 compute the corresponding distribution of
 {\tt y} and store it in the Meta-Pmf.  Then
 we use {\tt thinkbayes.MakeMixture} to compute the mixture.
+\index{MakeMixture}
 
 %For purposes of comparison, I also compute the distribution of
 %{\tt y} based on a single point estimate of {\tt lam}, which is
@@ -4988,6 +5011,7 @@ response is non-linear; that is, if small changes in the input can
 cause big changes in the output.  In this case, posterior variability
 in {\tt lam} is small and the system response is approximately
 linear for small perturbations.
+\index{non-linear}
 
 
 \section{Decision analysis}
@@ -5004,6 +5028,7 @@ At this point we can use the number of passengers on the platform
 to predict the distribution of wait times.  Now
 let's get to the second part of the question: when should I stop
 waiting for the train and go catch a taxi?
+\index{decision analysis}
 
 Remember that in the original scenario, I am trying to get to
 South Station to catch the commuter rail.  Suppose I leave
@@ -5035,6 +5060,7 @@ But remember that my observations are biased.  I am more likely
 to observe long delays because they affect a large number
 of passengers.  So we should treat my observations as a sample
 of {\tt zb} rather than {\tt z}.  Here's how we can do that.
+\index{observer bias}
 
 During my year of commuting, I took the Red Line home about 220
 times.  So I take the observed gap times, \verb"gap_times",
@@ -5170,6 +5196,7 @@ with guns that fire paint-filled pellets that break on impact, leaving
 a colorful mark on the target.  It is usually played in an
 arena decorated with barriers and other objects that can be
 used as cover.
+\index{Paintball problem}
 
 Suppose you are playing paintball in an indoor arena 30 feet
 wide and 50 feet long.  You are standing near one of the 30 foot
@@ -5191,6 +5218,7 @@ The paintball problem in this chapter is a slightly modified version
 of the lighthouse problem, a common example of Bayesian analysis.  My
 notation follows the presentation of the problem in Sivia, {\it Data
   Analysis: a Bayesian Tutorial, Second Edition}.
+\index{Sivia, D.~S.}
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/paintball.py}.
@@ -5209,6 +5237,7 @@ At least initially, let's assume that the opponent is equally likely
 to shoot at any angle.  If that's the case, he is most likely to hit
 the wall at location {\tt alpha}, and less likely to hit the wall far
 away from {\tt alpha}.
+\index{trigonometry}
 
 With a little trigonometry, we can compute the probability of hitting
 any spot along the wall.  Imagine that the shooter fires a shot at
@@ -5227,6 +5256,7 @@ The derivative $dx/d\theta$ is what I'll call the ``strafing speed'',
 which is the speed of the target location along the wall as $\theta$
 increases.  The probability of hitting a given point on the wall is
 inversely related to strafing speed.
+\index{strafing speed}
 
 Taking the derivative of the first equation yields
 %
@@ -5304,6 +5334,7 @@ class Paintball(thinkbayes.Suite, thinkbayes.Joint):
 
 {\tt Paintball} inherits from {\tt Suite}, which we have seen before,
 and {\tt Joint}, which I will explain soon.
+\index{Joint pmf}
 
 {\tt alphas} is the list of possible values for {\tt alpha}; {\tt
   betas} is the list of values for {\tt beta}.  {\tt pairs} is a list
@@ -5343,6 +5374,7 @@ All we need now is a likelihood function:
 
 {\tt hypo} contains the hypothetical coordinates of the shooter.
 {\tt data} contains an impact location along the wall.
+\index{likelihood}
 
 {\tt pmf} contains the probability of each location, given the
 coordinates of the shooter.  From this Pmf, we select the probability
@@ -5359,6 +5391,7 @@ The result is a distribution that maps each {\tt (alpha, beta)} pair
 to a posterior probability.  Since each value in the posterior
 distribution is a pair of variables, this distribution is called a
 ``joint distribution'' of the two variables.
+\index{joint distribution}
 
 
 \section{Joint distributions}
@@ -5366,6 +5399,7 @@ distribution is a pair of variables, this distribution is called a
 Given the joint distribution, we can compute the distributions
 of each variable independently, which are called the ``marginal
 distributions.''
+\index{marginal distribution}
 
 {\tt thinkbayes.Joint} provides a method that computes marginal
 distributions:
@@ -5400,6 +5434,7 @@ between these possible locations.
 
 Given the posterior marginals, we can compute credible intervals
 for each coordinate independently:
+\index{credible interval}
 
 \begin{verbatim}
     print 'alpha CI', marginal_alpha.CredibleInterval(50)
@@ -5410,6 +5445,7 @@ The 50\% credible intervals are {\tt (14, 21)} for {\tt alpha} and
 {\tt (5, 31)} for {\tt beta}.  So the data provide evidence that the
 shooter is in the near side of the room.  But it is not strong
 evidence.  The 90\% credible interval covers most of the room!
+\index{evidence}
 
 
 \section{Conditional distributions}
@@ -5425,10 +5461,13 @@ of {\tt beta}.}
 The marginal distributions contain information about the variables
 independently, but they do not capture the dependence between
 variables, if any.
+\index{independence}
+\index{dependence}
 
 One way to visualize dependence is by computing conditional
 distributions.  {\tt thinkbayes.Joint} provides a method that
 does just that:
+\index{conditional distribution}
 
 \begin{verbatim}
     def Conditional(self, i, j, val):
@@ -5467,6 +5506,7 @@ The shapes of these distributions are different, which indicates
 that the variables are not independent.  If we know somehow that
 {\tt beta = 10}, then we can be fairly confident about {\tt alpha}.
 But as {\tt beta} increases, so does the spread in {\tt alpha}.
+\index{independence}
 
 
 \section{Credible intervals}
@@ -5489,6 +5529,7 @@ When the values are one-dimensional, it is most common to choose
 the ``central credible interval;'' for example, the central 50\%
 credible interval contains all values between the 25th and 75th
 percentiles.
+\index{central credible interval}
 
 In multiple dimensions it is less obvious what the right credible
 interval should be.  The best choice might depend on context, but
@@ -5554,8 +5595,6 @@ toward the right side of the room.
 
 
 
-
-
 \chapter{Approximate Bayesian Computation}
 
 \section{The Variability Hypothesis}
@@ -5564,8 +5603,12 @@ I have a soft spot for crank science.  Recently I visited Norumbega
 Tower, which is an enduring monument to the crackpot theories of Eben
 Norton Horsford, inventor of double-acting baking powder and fake
 history.  But that's not what this chapter is about.
+\index{crank science}
+\index{Horsford, Eben Norton}
 
 This article is about the Variability Hypothesis, which
+\index{Variability Hypothesis}
+\index{Meckel, Johann}
 
 \begin{quote}
 "originated in the early nineteenth century with Johann Meckel, who
@@ -5582,12 +5625,17 @@ I particularly like that last part, because I suspect that if it turns
 out that women are actually more variable, Meckel would take that as a
 sign of inferiority, too.  Anyway, you will not be surprised to hear
 that evidence for the Variability Hypothesis is not strong.
+\index{evidence}
 
 Nevertheless, it came up in my class recently when we looked at data
 from the CDC's Behavioral Risk Factor Surveillance System (BRFSS),
 specifically the self-reported heights of adult American men and women.
 The dataset includes responses from 154407 men and 254722 women.
 Here's what we found:
+\index{Centers for Disease Control}
+\index{CDC}
+\index{BRFSS}
+\index{Behavioral Risk Factor Surveillance System}
 
 \begin{itemize}
 
@@ -5603,6 +5651,7 @@ Here's what we found:
   deviation divided by the mean.  It is a dimensionless measure of
   variability relative to scale.  For men CV is 0.0433; for women it
   is 0.0444.
+\index{coefficient of variation}
 
 \end{itemize}
 
@@ -5611,6 +5660,7 @@ little support for the Variability Hypothesis.  But we can use
 Bayesian methods to make that conclusion more precise.  And answering
 this question gives me a chance to demonstrate some techniques
 for working with large datasets.
+\index{height}
 
 I will proceed in a few steps:
 
@@ -5637,6 +5687,7 @@ In Chapter~\ref{paintball} we estimated two parameters simultaneously
 using a joint distribution.  In this chapter we use the same
 method to estimate the parameters of a Gaussian distribution:
 the mean, {\tt mu}, and the standard deviation, {\tt sigma}.
+\index{Gaussian distribution}
 
 For this problem, I defined a Suite called {\tt Height} that
 represents a map from each {\tt mu, sigma} pair to its probability:
@@ -5660,11 +5711,14 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
 {\tt mus} is a sequence of possible values for {\tt mu}; {\tt sigmas}
 is a sequence of values for {\tt sigma}.  The prior distribution
 is uniform over all {\tt mu, sigma} pairs.
+\index{Joint}
+\index{joint distribution}
 
 The likelihood function is easy.  Given hypothetical values
 of {\tt mu} and {\tt sigma}, we compute the likelihood
 of a particular value, {\tt x}.  That's what {\tt EvalGaussianPdf}
 does, so all we have to do is use it:
+\index{likelihood}
 
 \begin{verbatim}
 # class Height
@@ -5681,6 +5735,7 @@ If you have studied statistics from a mathematical perspective,
 you know that when you evaluate a PDF, you get a probability
 density.  In order to get a probability, you have to integrate
 probability densities over some range.
+\index{density}
 
 But for our purposes, we don't need a probability; we just
 need something proportional to the probability we want.
@@ -5698,6 +5753,7 @@ make Bayesian techniques more efficient.  Specifically, we can use
 classical estimators to find a likely location for {\tt mu} and {\tt
   sigma}, and use the standard errors of those estimates to choose a
 likely spread.
+\index{classical estimation}
 
 If the true parameters of the distribution are $\mu$ and
 $\sigma$, and we take a sample of $n$ values, an estimator
@@ -5758,6 +5814,7 @@ Again, we're using {\tt numpy.linspace} to make an array with
 \verb"num_points" elements equally spaced between
 {\tt estimate-spread} and {\tt estimate+spread}, including
 both.
+\index{linspace}
 
 
 \section{Update}
@@ -5774,6 +5831,7 @@ Finally here's the code to make and update the suite:
 This process might seem bogus, because we use the data to choose the
 range of the prior distribution, and then use the data again to do the
 update.  In general, using the same data twice is, in fact, bogus.
+\index{bogus}
 
 But in this case it is ok.  Really.  We use the data to choose the
 range for the prior, but only to avoid computing a lot of
@@ -5829,6 +5887,7 @@ But there are a few problems we have to solve first:
 We'll deal with the first two problems in this chapter and come
 back to the third in the next chapter, which is about
 Bayesian hypothesis testing.
+\index{hypothesis testing}
 
 
 \section{Big data, small likelihood}
@@ -5852,6 +5911,7 @@ it can't be represented by a floating-point number, so it gets rounded
 down to zero, which is called ``underflow.''  And if all
 probabilities in the distribution are 0, it's not a distribution any
 more.
+\index{underflow}
 
 A possible solution is to renormalize the Pmf after each update,
 or after each batch of 100.  That would work, but it would be slow.
@@ -5860,6 +5920,8 @@ A better alternative is to compute likelihoods under a log
 transform.  That way, instead of multiplying small values, we can add
 up log likelihoods.  {\tt Pmf} provides methods {\tt Log}, {\tt
   LogUpdateSet} and {\tt Exp} to make this process easy.
+\index{logarithm}
+\index{log transform}
 
 Here's what the update looks like:
 
@@ -5916,6 +5978,7 @@ instead of {\tt Mult}:
             self.Incr(hypo, like)
 \end{verbatim}
 
+\index{Gaussian distribution}
 To compute the log-likelihood, we look up the Gaussian PDF again:
 %
 \[ \frac{1}{\sigma \sqrt{2 \pi}} \exp \left[ -\frac{1}{2} \left( \frac{x-\mu}{\sigma} \right)^2 \right] \]
@@ -5945,6 +6008,7 @@ def EvalGaussianLogPdf(mu, sigma, x):
 One advantage of this approach is that for many analytic
 distributions, it is easier to compute the log-likelihood than the
 likelihood.
+\index{log-likelihood}
 
 Finally, here's how {\tt Exp} inverts the transform:
 
@@ -6002,10 +6066,12 @@ By itself, this optimization would be a small improvement, but it
 creates an opportunity for a bigger improvement.  Notice that the
 summation only depends on {\tt mu}, not {\tt sigma}, so we only
 have to evaluate it once for each value of {\tt mu}.
+\index{optimization}
 
 To avoid recomputing, we factor out a function that computes
 the summation, and memoize it so it stores previously-computed
 results in a dictionary (see \url{http://en.wikipedia.org/wiki/Memoization}):
+\index{memoization}
 
 \begin{verbatim}
 def Summation(xs, mu, cache={}):
@@ -6021,6 +6087,7 @@ def Summation(xs, mu, cache={}):
 {\tt cache} stores previously-computed sums.  The {\tt try} statement
 returns a result from the cache if possible; otherwise it computes
 the summation, then caches and returns the result.
+\index{cache}
 
 The only catch is that we can't use a list as a key in the cache, because
 it is not a hashable type.  That's why {\tt LogUpdateSetFast} converts
@@ -6036,6 +6103,8 @@ women) in less than a minute on my not-very-fast computer.
 But maybe you don't have that kind of time.  In that case, Approximate
 Bayesian Computation (ABC) might be the way to go.  The motivation
 behind ABC is that the likelihood of any particular dataset is:
+\index{ABC}
+\index{Approximate Bayesian Computation}
 
 \begin{enumerate}
 
@@ -6070,6 +6139,7 @@ For samples from a Gaussian distribution, we can answer this question
 efficiently because we can find the distribution of the sample
 statistics analytically.  In fact, we already did it when we computed
 the range of the prior.
+\index{Gaussian distribution}
 
 If you draw $n$ values from a Gaussian distribution with parameters
 $\mu$ and $\sigma$, and compute the sample mean, $\bar{x}$, you can
@@ -6113,7 +6183,7 @@ that does it:
             self.Incr(hypo, loglike)
 \end{verbatim}
 
-On my not-very-fast computer, this computation takes only a few seconds,
+On my computer, this computation takes only a few seconds,
 and the result agrees with the ``exact'' result with about 5 digits of
 precision.
 
@@ -6161,6 +6231,10 @@ that are robust in the presence of outliers.  Specifically, rather
 than use the sample mean and standard deviation, we can use the median
 and an inter-percentile range.  For example, the inter-quartile range
 (IQR) is the difference between the 25th and 75th percentiles.
+\index{summary statistic}
+\index{robust estimation}
+\index{inter-quartile range}
+\index{IQR}
 
 More generally, we can compute an inter-percentile range that
 spans a given fraction of the distribution, {\tt p}:
@@ -6190,6 +6264,7 @@ standard deviation of the mean, which leaves 16\% in each tail.  If we
 compute the range between the 16th and 84th percentiles, we expect the
 result to be {\tt 2 * sigma}.  So we can estimate {\tt sigma} by
 computing the 68\% IPR and dividing by 2.
+\index{Gaussian distribution}
 
 Or more generally we can use any number of {\tt sigmas}.
 {\tt MedianSighat} performs the more general version of this
@@ -6211,6 +6286,7 @@ the number of standard deviations the results should be based on.
 The result is an estimate of {\tt sigma}, which is called {\tt sighat}
 because ``hat'' is the conventional symbol that indicates an
 estimate.
+\index{hat}
 
 Finally, in {\tt LogUpdateSetABC} we can replace the
 conventional estimators, {\tt xbar} and {\tt S}, with {\tt median}
@@ -6318,6 +6394,7 @@ where $\bar{x}_1$ is the sample mean of the first group, $\bar{x}_2$
 is the sample mean of the second group, and $s$ is the estimated
 pooled standard deviation for the two groups (you can look up the
 formula).
+\index{Cohen's d}
 
 Write a function that takes the posterior distributions for
 the mean and standard deviation of height and computes the
@@ -6337,6 +6414,7 @@ from the posterior distributions.
 
 In Section~\ref{euro} I presented a question from MacKay's {\it Information
   Theory, Inference, and Learning Algorithms}:
+\index{MacKay, David}
 
 \begin{quote}
 A statistical statement appeared in ``The Guardian" on Friday January 4, 2002:
@@ -6355,6 +6433,8 @@ But do these data give evidence that the coin is biased rather than fair?
 We used this data to estimate the probability that the coin would
 land face up, but we didn't really answer MacKay's question.  Let's
 get back to that now.
+\index{Euro problem}
+\index{evidence}
 
 \section{Bayesian hypothesis testing}
 
@@ -6362,10 +6442,14 @@ In Section~\ref{oliver} I proposed that data are in favor of
 a hypothesis if the data are more likely under the hypothesis than
 under the alternative or, equivalently, if the Bayes factor is greater
 than 1.
+\index{hypothesis testing}
+\index{Bayes factor}
 
 In the Euro example, we have two hypotheses to consider: I'll use
 $F$ for the hypothesis that the coin is fair and $B$ for the hypothesis
 that it is biased.
+\index{fair coin}
+\index{biased coin}
 
 If the coin is fair, it is easy to compute the likelihood of the
 data, \p{D|F}.  In fact, we already wrote the {\tt Likelihood}
@@ -6408,11 +6492,13 @@ This version of $B$ I call \verb"B_cheat"; the likelihood of
 \verb"b_cheat" is $34 \cdot 10^{-76}$ and the likelihood ratio is
 6.1.  So we would say that the data are evidence in favor of this
 version of $B$.
+\index{evidence}
 
 But using the data to formulate the hypothesis
 is obviously bogus.  By that definition, any dataset would
 be evidence in favor of $B$, unless the observed percentage of heads
 is exactly 50\%.
+\index{bogus}
 
 \section{Making a fair comparison}
 
@@ -6438,6 +6524,9 @@ sub-hypothesis and then compute the average likelihood.
 
 The likelihood ratio (or Bayes factor) for \verb"b_two" is 1.3, which
 means the data provide weak evidence in favor of \verb"b_two".
+\index{evidence}
+\index{likelihood ratio}
+\index{Bayes factor}
 
 More generally, suppose you suspect that the coin is biased,
 but you have no clue about the value of $x$.  In that case you
@@ -6466,6 +6555,7 @@ def SuiteLikelihood(suite, data):
 The likelihood ratio for \verb"b_uniform" is 0.47, which means
 that the data are weak evidence against \verb"b_uniform" at
 least compared to $F$.
+\index{likelihood}
 
 If you think about the computation performed by
 \verb"SuiteLikelihood", you might notice that it is similar to an
@@ -6510,6 +6600,7 @@ In Chapter~\ref{euro} we also considered a triangle-shaped prior that
 gives higher probability to values of $x$ near 50\%.  If we think of
 this prior as a suite of sub-hypotheses, we can compute its likelihood
 like this:
+\index{triangle distribution}
 
 \begin{verbatim}
     b_triangle = TrianglePrior()
@@ -6521,10 +6612,13 @@ shown in Figure~\ref{fig.euro2}.
 
 The likelihood ratio for \verb"b_triangle" is 0.84, compared to $F$, so
 again we would say that the data are weak evidence against $B$.
+\index{evidence}
 
 The following table shows the different priors we have considered, the
 likelihood of each, and the likelihood ratio (or Bayes factor)
 relative to $F$.
+\index{likelihood ratio}
+\index{Bayes factor}
 
 \begin{tabular}{|l|r|r|}
 \hline
@@ -6562,6 +6656,7 @@ The Bayes factor for \verb"B_uniform" is 0.47, which means
 that the data provide evidence against this hypothesis (compared
 to $F$).  In the previous section I characterized this evidence
 as ``weak,'' but I didn't say why.
+\index{evidence}
 
 Part of the answer is historical.  Harold Jeffreys, an early
 proponent of Bayesian statistics, suggested a scale for
@@ -6603,6 +6698,8 @@ Some people believe in the existence of extra-sensory
 perception (ESP); for example, the ability of some people to guess
 the value of an unseen playing card with probability better
 than chance.
+\index{ESP}
+\index{extra-sensory perception}
 
 What is your prior degree of belief in this kind of ESP?
 Do you think it is as likely to exist as not?  Or are you
@@ -6627,6 +6724,8 @@ favor of ESP.  Would that change your mind?
 If not, how do you resolve the apparent contradiction?
 You might find it helpful to read about David Hume's article, ``Of
 Miracles,'' at \url{http://en.wikipedia.org/wiki/Of_Miracles}.
+\index{Hume, David}
+
 \end{exercise}
 
 
@@ -6642,10 +6741,13 @@ Alice and Bob, whose qualifications are similar in many ways,
 with the exception that Alice got a higher score on the Math
 portion of the SAT, a standardized test intended to measure
 preparation for college-level work in mathematics.
+\index{SAT}
+\index{standardized test}
 
 If Alice got 780 and Bob got a 740 (out of a possible 800), you might
 want to know whether that difference is evidence that Alice is better
 prepared than Bob, and what the strength of that evidence is.
+\index{evidence}
 
 Now in reality, both scores are very good, and both 
 candidates are probably well prepared for college math.  So
@@ -6663,6 +6765,7 @@ all SAT questions are equally difficult.  In reality, the designers of
 the SAT choose questions with a range of difficulty, because that
 improves the ability to measure statistical differences between
 test-takers.
+\index{modeling}
 
 But if we choose a model where all questions are equally difficult, we
 can define a characteristic, \verb"p_correct", for each test-taker,
@@ -6677,6 +6780,7 @@ In order to understand SAT scores, we have to understand the scoring
 and scaling process.  Each test-taker gets a raw score based on the
 number of correct and incorrect questions.  The raw score is converted
 to a scaled score in the range 200--800.
+\index{scaled score}
 
 In 2009, there were 54 questions on the math SAT.  The raw score
 for each test-taker is the number of questions answered correctly
@@ -6687,6 +6791,7 @@ mapping from raw scores to scaled scores.  I have downloaded that
 data and wrapped it in an Interpolator object that provides a forward
 lookup (from raw score to scaled) and a reverse lookup (from scaled
 score to raw).
+\index{College Board}
 
 You can download the code for this example from
 \url{http://thinkbayes.com/sat.py}.
@@ -6738,6 +6843,7 @@ Figure~\ref{fig.satprior} shows the prior distribution of
 is compressed at the extremes.  By design, the SAT has the most power
 to discriminate between test-takers within two standard deviations of
 the mean, and less power outside that range.
+\index{Gaussian distribution}
 
 For each test-taker, I define a Suite called {\tt Sat} that
 represents the distribution of \verb"p_correct".  Here's the definition:
@@ -6787,6 +6893,8 @@ correct answers, ignoring the penalty for wrong answers.  With
 this simplification, the likelihood is given by the binomial
 distribution, which computes the probability of {\tt yes} correct
 answers and {\tt no} incorrect.
+\index{binomial distribution}
+\index{raw score}
 
 
 \section{Posterior}
@@ -6885,6 +6993,8 @@ questions.  If we believed, before seeing the test scores, that $A$
 and $B$ were equally likely, then after seeing the scores we should
 believe that the probability of $A$ is 79\%, which means there is
 still an 21\% chance that Bob is actually better prepared.
+\index{likelihood ratio}
+\index{Bayes factor}
 
 
 \section{A better model}
@@ -6904,6 +7014,7 @@ But how big is the modeling error?  If it is small, we conclude
 that the first model---based on the simplification that all questions
 are equally difficult---is good enough.  If it's large,
 we need a better model.
+\index{modeling error}
 
 In the next few sections, I develop a better model and we will
 discover (spoiler alert!) that the modeling error is small.  So if
@@ -6916,6 +7027,7 @@ read on...
 \item First, let's assume that each test-taker has some 
   degree of {\tt efficacy}, that measures their
   ability to answer SAT questions.
+\index{efficacy}
 
 \item Second, assume that each question has some level of
   {\tt difficulty}.
@@ -6937,6 +7049,7 @@ response theory, which you can read about at
   efficacy} and {\tt difficulty} are considered to be on the same
 scale, and the probability of getting a question right depends only on
 the difference between them.
+\index{item response theory}
 
 When {\tt efficacy} and {\tt difficulty} are equal, the
 probability of getting the question right is 50\%.  As
@@ -7002,6 +7115,7 @@ standard deviation 1.5.  This choice is mostly arbitrary.  The
 probability of getting a question correct depends on the difference
 between efficacy and difficulty, so we can choose the units of
 efficacy and then calibrate the units of difficulty accordingly.
+\index{Gaussian distribution}
 
 {\tt pmfs} is a Meta-Pmf that contains one Pmf for each level of
 efficacy, and maps to the fraction of test-takers at that level.  {\tt
@@ -7040,11 +7154,13 @@ the values {\tt center=-0.05} and {\tt width=1.8} yield a distribution
 of raw scores similar to the actual data.
 Figure~\ref{fig.satcalibrate} shows the actual data and the results
 from this model.
+\index{calibration}
 
 So, assuming that the distribution of difficulty is uniform,
 the range is approximately
 {\tt -1.85} to {\tt 1.75}, on a scale with a distribution of
 efficacy that is Gaussian with mean 0 and standard deviation 1.5.
+\index{Gaussian distribution}
 
 The following table shows the range of {\tt ProbCorrect} for
 test-takers at different levels of efficacy:
@@ -7104,6 +7220,7 @@ class Sat2(thinkbayes.Suite):
 The prior distribution of efficacy is
 Gaussian with mean 0 and standard deviation 1.5 (and the suite of
 hypotheses spans 3 standard deviations in each direction).
+\index{Gaussian distribution}
 
 \verb"Sat2.Likelihood" computes the likelihood of a given test score
 for a hypothetical level of efficacy.
@@ -7146,6 +7263,7 @@ is higher.
 The analysis we have done so far generates estimates for
 Alice and Bob's efficacy, but since efficacy is not directly
 observable, it is hard to validate the results.
+\index{predictive distribution}
 
 To give the model predictive power, we can use it to answer
 another related question: ``If Alice and Bob take the math SAT
@@ -7215,6 +7333,7 @@ we have to find the posterior distribution of either
 Values like this are called ``nuisance parameters'' because
 we don't care what they are, but we have
 to estimate them to answer the question we care about.
+\index{nuisance parameter}
 
 One way to visualize the analysis we did in this chapter is
 to plot the space of these parameters.  \verb"thinkbayes.MakeJoint"
@@ -7231,9 +7350,11 @@ def MakeJoint(pmf1, pmf2):
 \end{verbatim}
 
 This function assumes that the two distributions are independent.
+\index{joint distribution}
+\index{independence}
 
 Figure~\ref{fig.satjoint} shows the joint posterior distribution of
-\verb"p_correct" for Alice and Bob.  The diagonal like indicates the
+\verb"p_correct" for Alice and Bob.  The diagonal line indicates the
 part of the space where \verb"p_correct" is the same for Alice and
 Bob.  To the right of this line, Alice is more prepared; to the left
 Bob is more prepared.
@@ -7268,6 +7389,8 @@ read my paper on this work at \url{http://arxiv.org/abs/1203.6890}.
 
 \section{The Kidney Tumor problem}
 
+\index{Kidney tumor problem}
+\index{Reddit}
 I am a frequent reader and occasional contributor to the online statistics
 forum at \url{http://reddit.com/r/statistics}.  In November 2011, I read
 the following message:
@@ -7312,10 +7435,14 @@ which is in units of doublings per year.  So a tumor with $RDT=1$
 doubles in volume each year; with $RDT=2$ it quadruples in the same
 time, and with $RDT=-1$, it halves.  Figure~\ref{fig.kidney2} shows the
 distribution of RDT for 53 patients.
+\index{doubling time}
 
 The squares are the data points from the paper; the line is a model I
 fit to the data.  The positive tail fits an exponential distribution
 well, so I used a mixture of two exponentials.
+\index{exponential distribution}
+\index{mixture}
+
 
 
 \section{A simple model}
@@ -7324,6 +7451,7 @@ It is usually a good idea to start with a simple model before
 trying something more challenging.  Sometimes the simple model is
 sufficient for the problem at hand, and if not, you can use it
 to validate the more complex model.
+\index{modeling}
 
 For my simple model, I assume that tumors grow with a constant
 doubling time, and that they are three-dimensional in the sense that
@@ -7356,8 +7484,9 @@ measure is three times longer.
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/kidney.py}.  It depends on several other
-modules in the same directory.  You can download them separately,
-or check out the whole repository from \url{}.
+modules in the same directory.  You can download them separately, or
+check out the whole repository from
+\url{http://thinkbayes.com/thinkbayes_code.zip}.
 
 The result, {\tt d0}, is about 6 cm.  So if this tumor formed after
 the date of discharge, it must have grown substantially faster than
@@ -7398,6 +7527,7 @@ formed prior to the date of discharge.
 These calculations are sufficient to answer the question as
 posed, and on behalf of my correspondent, I wrote a letter explaining
 my conclusions to the Veterans' Benefit Administration.
+\index{Veterans' Benefit Administration}
 
 Later I told a friend, who is an oncologist, about my results.  He was
 surprised by the growth rates observed by Zhang et al, and by what
@@ -7413,11 +7543,14 @@ of the relationship between age and size.
 Given the size of a tumor at time of diagnosis, it would be most
 useful to know the probability that the tumor formed before
 any given date; in other words, the distribution of ages.
+\index{modeling}
+\index{simulation}
 
 To find it, I run simulations of tumor growth to get the
 distribution of size conditioned on age.  Then we can use
 a Bayesian approach to get the
 distribution of age conditioned on size.
+\index{conditional distribution}
 
 The simulation starts with a small tumor and runs these steps:
 
@@ -7457,6 +7590,7 @@ The simulation is based on one big simplification:
 the growth rate is chosen independently during each interval,
 so it does not depend on age, size, or growth rate during
 previous intervals.
+\index{independence}
 
 In Section~\ref{serial} I will review these assumptions and
 consider more detailed models.  But first let's look at some
@@ -7548,7 +7682,6 @@ of each interval.
 \label{fig.kidney8}
 \end{figure}
 
-
 Here's how the cache works.  
 
 \begin{verbatim}
@@ -7558,8 +7691,8 @@ class Cache(object):
         self.joint = thinkbayes.Joint()
 \end{verbatim}
 
-{\tt joint} is a joint Pmf that records 
-frequency of each age-size pair, which approximates the
+{\tt joint} is a joint Pmf that records the
+frequency of each age-size pair, so it approximates the
 joint distribution of age and size.
 
 At the end of each simulated interval, {\tt ExtendSequence} calls
@@ -7620,6 +7753,7 @@ with age.
 By taking a vertical slice from the joint distribution, we can get the
 distribution of sizes for any given age.  By taking a horizontal
 slice, we can get the distribution of ages conditioned on size.
+\index{conditional distribution}
 
 Here's the code that reads the joint distribution and builds
 the conditional distribution for a given size bucket.
@@ -7663,6 +7797,7 @@ each sequence of percentiles.
 The results so far are based on a number of modeling decisions;
 let's review them and consider which ones are the most
 likely sources of error:
+\index{modeling error}
 
 \begin{itemize}
 
@@ -7697,6 +7832,7 @@ likely sources of error:
   reality, tumors that have grown quickly in the past are more likely
   to grow quickly.  In other words, there is probably
   a serial correlation in growth rate.
+  \index{serial correlation}
 
 \end{itemize}
 
@@ -7714,6 +7850,7 @@ correlated series from a given CDF.  Here's how the algorithm works:
 \item Generate correlated values from a Gaussian distribution.
   This is easy to do because we can compute the distribution
   of the next value conditioned on the previous value.
+  \index{Gaussian distribution}
 
 \item Transform each value to its cumulative probability, using
   the Gaussian CDF.
@@ -7949,6 +8086,7 @@ But there are two problems:
 \item The distributions for each species are not independent, because
   the prevalences have to add up to 1.  To capture this dependence, we
   need a joint distribution for the three prevalences.
+\index{independence}
 
 \end{itemize}
 
@@ -7958,6 +8096,8 @@ the same way we used the beta distribution to describe the
 distribution of bias for a coin, we can use a Dirichlet
 distribution to describe the joint distribution of \verb"p_lion",
 \verb"p_tiger" and \verb"p_bear".
+\index{beta distribution}
+\index{Dirichlet distribution}
 
 The Dirichlet distribution is the multi-dimensional generalization
 of the beta distribution.  Instead of two possible outcomes, like
@@ -8412,6 +8552,7 @@ factor, which is the number of ways we could have observed these {\tt m}
 species, if the total number of species is {\tt n}.  The binomial
 coefficient is the fancy name for ``n choose m'', which is written
 $\binom{n}{m}$. 
+\index{binomial coefficient}
 
 As often happens, the optimized version is less readable and more
 error-prone than the original.  But that's one reason I think it is
