@@ -63,6 +63,12 @@
 \newcommand{\CDF}{\mathrm{CDF}}
 \newcommand{\ICDF}{\mathrm{ICDF}}
 
+\ifplastex
+    \usepackage{localdef}
+    \maketitle
+
+\else
+
 \newtheoremstyle{exercise}% name of the style to be used
   {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
   {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
@@ -75,13 +81,6 @@
 
 \theoremstyle{exercise}
 \newtheorem{exercise}{Exercise}[chapter]
-
-
-\ifplastex
-    \usepackage{localdef}
-    \maketitle
-
-\else
 
 \input{latexonly}
 
@@ -7570,6 +7569,7 @@ For the initial size I chose 0.3 cm, because carcinomas smaller than
 that are less likely to be invasive and less likely to have the blood
 supply needed for rapid growth (see
 \url{http://en.wikipedia.org/wiki/Carcinoma_in_situ}).  
+\index{carcinoma}
 
 I chose an interval of 245 days (about 8 months) because that is the
 median time between measurements in the data source.
@@ -7606,11 +7606,14 @@ I am presenting results in terms of linear measurements, but the
 calculations are in terms of volume.  To convert from one to the
 other, again, I use the volume of a sphere with the given
 diameter.
+\index{volume}
+\index{sphere}
 
 
 \section{Implementation}
 
 Here is the kernel of the simulation:
+\index{simulation}
 
 \begin{verbatim}
 def MakeSequence(iterator, v0=0.01, interval=0.67, vmax=Volume(20.0)):
@@ -7630,6 +7633,7 @@ def MakeSequence(iterator, v0=0.01, interval=0.67, vmax=Volume(20.0)):
 random values from the CDF of growth rate.  {\tt MakeSequence}
 takes the iterator as an argument so we can run it with
 different random number generators, as you will see soon.
+\index{iterator}
 
 {\tt v0} is the initial volume in mL.  {\tt interval} is the time step
 in years.  {\tt vmax} is the final volume corresponding to a linear
@@ -7667,10 +7671,9 @@ tumor at the end of the interval, and \verb"new_seq" a new
 tuple containing the volumes in {\tt seq} plus the new volume
 {\tt final}.
 
-I am using a tuple so I can store it in the cache without
-worrying about it being modified later.  The purpose of the
-cache is to record the size and age of each tumor at the end
-of each interval.
+{\tt Cache.Add} records the size and age of each tumor at the end
+of each interval, as explained in the next section.
+\index{cache}
 
 
 \section{Caching the joint distribution}
@@ -7694,6 +7697,7 @@ class Cache(object):
 {\tt joint} is a joint Pmf that records the
 frequency of each age-size pair, so it approximates the
 joint distribution of age and size.
+\index{joint distribution}
 
 At the end of each simulated interval, {\tt ExtendSequence} calls
 {\tt Add}:
@@ -7731,10 +7735,13 @@ def CmToBucket(x, factor=10):
 The buckets are equally spaced on a log scale.  I chose the
 factor 10 to yield a reasonable number of buckets.  For example,
 1 cm maps to bucket 0; 10 cm maps to bucket 23.
+\index{log scale}
+\index{bucket}
 
 After running the simulations, we can plot the joint distribution
 as a pseudocolor plot, where each cell represents the number of
 tumors observed at a given size-age pair.
+\index{pseudocolor plot}
 
 Figure~\ref{fig.kidney8} shows the joint distribution after 1000
 simulations.  As expected, the size of tumors typically increases
@@ -7757,6 +7764,7 @@ slice, we can get the distribution of ages conditioned on size.
 
 Here's the code that reads the joint distribution and builds
 the conditional distribution for a given size bucket.
+\index{joint distribution}
 
 \begin{verbatim}
 # class Cache
@@ -7775,6 +7783,7 @@ The return value is the CDF of age conditioned on {\tt bucket}.
 Figure~\ref{fig.kidney6} shows several of these CDFs, for
 a range of sizes.  To summarize these distributions, we can
 compute percentiles as a function of size.
+\index{percentile}
 
 \begin{verbatim}
     percentiles = [95, 75, 50, 25, 5]
@@ -7789,6 +7798,7 @@ size bucket.  The data points are computed from the estimated
 joint distribution.  There is some variability caused by making
 time and size discrete, so I also show a least squares fit for
 each sequence of percentiles.
+\index{least squares fit}
 
 
 \section{Serial Correlation}
@@ -7805,21 +7815,24 @@ likely sources of error:
   tumors are approximately spherical.  This assumption is probably
   fine for tumors up to a few centimeters, but not for very
   large tumors.
+  \index{sphere}
 
 \item The distribution of growth rates in the simulations are based on
   a continuous model we chose to fit the data reported by Zhang et al,
   which is based on 53 patients.  The fit is only approximate and, more
   importantly, a larger sample would yield a
   different distribution.
+  \index{growth rate}
 
 \item The growth model does not take into account tumor subtype or
   grade, which is consistent with the conclusion of Zhang et al:
   ``Growth rates in renal tumors of different sizes, subtypes and
   grades represent a wide range and overlap substantially.''
   But again, with a larger sample, difference might become apparent.
+  \index{tumor type}
 
 \item The distribution of growth rate does not depend on the size of
-  the tumor.  This assumption is not realistic for very
+  the tumor.  This assumption would not be realistic for very
   small and very large tumors, whose growth is limited by blood supply.
 
   But tumors observed by Zhang et al.~ranged from 1 to 12 cm, and they
@@ -7844,6 +7857,7 @@ To simulate correlated growth, I wrote a generator\footnote{If you are
   not familiar with Python generators, see
   \url{http://wiki.python.org/moin/Generators}.} that yields a
 correlated series from a given CDF.  Here's how the algorithm works:
+\index{generator}
 
 \begin{enumerate}
 
@@ -7854,8 +7868,9 @@ correlated series from a given CDF.  Here's how the algorithm works:
 
 \item Transform each value to its cumulative probability, using
   the Gaussian CDF.
+  \index{cumulative probability}
 
-\item Transform each cumulative probability to a value
+\item Transform each cumulative probability to the corresponding value
   using the given CDF.
 
 \end{enumerate}
@@ -7875,14 +7890,14 @@ def CorrelatedGenerator(cdf, rho):
 
 {\tt cdf} is the desired CDF; {\tt rho} is the desired correlation.
 
-The first value is Gaussian with mean 0 and standard deviation 1.
+The first value of {\tt x} is Gaussian with mean 0 and standard
+deviation 1.  For subsequent values, the mean and standard deviation
+depend on the previous value.  Given the previous $x$, the mean of the
+next value is $\rho x$, and the variance is $1 - \rho^2$.
+\index{correlated random value}
 
-For subsequent values, the mean and standard deviation depend on the
-previous value.  Given the previous $x$, the mean of the next value is
-$\rho x$, and the variance is $1 - \rho^2$.
-
-{\tt Transform} is the function that maps from
-a Gaussian value to a value from the given CDF.
+{\tt Transform} is the function that maps from each
+Gaussian value, {\tt x}, to a value from the given CDF, {\tt y}.
 
 \begin{verbatim}
     def Transform(x):
@@ -7915,10 +7930,17 @@ That interface allows it to work with different generators:
     seq2 = MakeSequence(iterator)
 \end{verbatim}
 
+In this example, {\tt seq1} and {\tt seq2} are
+drawn from the same distribution, but the values in {\tt seq1}
+are uncorrelated and the values in {\tt seq2} are correlated
+with a coefficient of approximately {\tt rho}.
+\index{serial correlation}
+
 Now we can see what effect serial correlation has on the results;
 the following table shows percentiles of age for a 6 cm tumor,
 using the uncorrelated generator and a correlated generator
 with target $\rho = 0.4$.
+\index{percentile}
 
 \begin{table}
 \input{kidney_table2}
@@ -7961,7 +7983,8 @@ probability is 0.978.
 
 Another likely source of error is the assumption that tumors are
 approximately spherical.  For a tumor with linear dimensions 15.5 x 15
-cm, this assumption is probably not valid.  If, as seems likely, it
+cm, this assumption is probably not valid.  If, as seems likely, a
+tumor this size
 is relatively flat, it might have the same volume as a 6 cm sphere.
 With this smaller volume and correlation 0.8, the probability of age
 greater than 8 is still 95\%.
@@ -7969,9 +7992,10 @@ greater than 8 is still 95\%.
 So even taking into account modeling errors, it is unlikely that such
 a large tumor could have formed less than 8 years prior to the date of
 diagnosis.
+\index{modeling error}
 
 
-\section{Where's Bayes?}
+\section{Discussion}
 
 Well, we got through a whole chapter without using Bayes's Theorem or
 the {\tt Suite} class that encapsulates Bayesian updates.  What
@@ -7994,10 +8018,12 @@ The reason I didn't is computational efficiency.  To estimate
 Along the way, you end up computing \p{size|age} for a lot of sizes.
 In fact, you end up computing the entire joint distribution of size
 and age, \p{size, age}.
+\index{joint distribution}
 
 And once you have the joint distribution, you don't really need
 Bayes's Theorem, you can extract \p{age|size} by taking slices from
 the joint distribution, as demonstrated in {\tt ConditionalCdf}.
+\index{conditional distribution}
 
 So we side-stepped Bayes, but he was with us in spirit.
 
