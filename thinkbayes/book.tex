@@ -212,7 +212,7 @@ all Python-based books.}}
 
 The premise of this book, and the other books in the {\it Think}
 series, is that if you know how to program, you
-can use that skill to help you learn other topics.
+can use that skill to learn other topics.
 
 Most books on Bayesian statistics use mathematical notation and
 present ideas in terms of mathematical concepts like calculus.
@@ -360,8 +360,8 @@ underscores between words, \verb"like_this".  In this book and
 the accompanying code, function and method names begin with
 a capital letter and use camel case, \verb"LikeThis".
 
-The reason I broke this rule is that I developed some of the code
-while I was a Visiting Scientist at Google in 2009-10.  So I followed
+I broke this rule because I developed some of the code
+while I was a Visiting Scientist at Google, so I followed
 the Google style guide for Python, which deviates from PEP 8 in a few
 places.  Also, once I got used to Google style, I found that I liked
 it.  And at this point, it would be too much trouble to change.
@@ -1427,15 +1427,6 @@ And here's the code that uses this class:
 You can download this example from
 \url{http://thinkbayes.com/monty2.py}.
 
-If you are familiar with
-design patterns, you might recognize this as an example of the
-Template method pattern: the parent class, \verb"Suite", defines an
-algorithm framework; the child class, \verb"Monty" provides the
-missing elements of the algorithm, in this case the likelihood
-function.  You can read about this pattern at
-\url{http://en.wikipedia.org/wiki/Template_method_pattern}.
-\index{Template method pattern}
-
 
 \section{The \MM~problem}
 
@@ -1517,6 +1508,37 @@ is what we got before.
 
 The code in this section is available from
 \url{http://thinkbayes.com/m_and_m.py}.
+
+
+\section{Discussion}
+
+This chapter presents the Suite class, which encapsulates the 
+Bayesian update framework.
+
+{\tt Suite} is an {\bf abstract type}, which means that it defines the
+interface a Suite is supposed to have, but does not provide a complete
+implementation.  The {\tt Suite} interface includes {\tt Update} and
+{\tt Likelihood}, but the {\tt Suite} class only provides an
+implementation of {\tt Update}, not {\tt Likelihood}.
+\index{abstract type} \index{concrete type} \index{interface}
+\index{implementation}
+
+A {\bf concrete type} is a class that extends an abstract parent
+class and provides an implementation of the missing methods.
+For example, {\tt Monty} extends {\tt Suite}, so it inherits
+{\tt Update} and provides {\tt Likelihood}.
+
+If you are familiar with
+design patterns, you might recognize this as an example of the
+Template method pattern.
+You can read about this pattern at
+\url{http://en.wikipedia.org/wiki/Template_method_pattern}.
+\index{Template method pattern}
+
+Most of the examples in the following chapters follow the same
+pattern; for each problem we define a new class that extends {\tt
+  Suite}, inherits {\tt Update}, and provides {\tt Likelihood}.  In a
+few cases we override {\tt Update}, usually to improve performance.
 
 
 
@@ -1906,6 +1928,7 @@ to summarize the results with a single point estimate or an interval.
 For point estimates it is common to use the mean, median, or the
 value with maximum likelihood.
 \index{credible interval}
+\index{maximum likelihood}
 
 For intervals we usually report two values computed
 so that there is a 90\% chance that the unknown value falls
@@ -2005,6 +2028,53 @@ of the Locomotive problem, and compare the results.
 \end{exercise}
 
 
+\section{Discussion}
+
+Among Bayesians, there are two approaches to choosing prior
+distributions.  Some recommend choosing the prior that best represents
+background information about the problem; in that case the prior
+is said to be ``informative''.  The problem with using an informative
+prior is that people might use different background information (or
+interpret it differently).  So informative priors tend to be subjective.
+\index{informative prior}
+
+The alternative is a so-called ``uninformative'' prior, which is
+intended to be as unrestricted as possible, in order to let the data
+speak for themselves.  In some cases you can identify a unique prior
+that has some desirable property, like representing minimal prior
+information about the estimated quantity.
+\index{uninformative prior}
+
+Uninformative priors are appealing because they seem to be more
+objective.  But I am generally in favor of using informative priors.
+Why?  First, Bayesian analysis is always based on
+modeling decisions.  Choosing the prior is one of those decisions, but
+it is not the only one, and it might not even be the most subjective.
+So even if an uninformative prior is more objective, the entire analysis
+is still subjective.
+\index{modeling}
+\index{subjective}
+\index{objective}
+
+Also, for most practical problems, you are likely to be in one of two
+regimes: either you have a lot of data or not very much.  If you have
+a lot of data, the choice of the prior doesn't matter very much;
+informative and uninformative priors yield almost the same results.
+We'll see an example like this in the next chapter.
+
+But if, as in the Locomotive problem, you don't have much data,
+using relevant background information (like the power law distribution)
+makes a big difference.
+\index{Locomotive problem}
+
+And if, as in the German tank problem, you have to make life-and-death
+decisions based on your results, you should probably use all of the
+information at your disposal, rather than maintaining the illusion of
+objectivity by pretending to know less than you do.  For more about
+the German tank problem, see
+\url{http://en.wikipedia.org/wiki/German_tank_problem}.
+\index{German tank problem}
+
 
 \chapter{More estimation}
 
@@ -2047,10 +2117,10 @@ If a coin is perfectly balanced, we expect $x$ to be close to 50\%, but
 for a lopsided coin $x$ might be substantially different.  We can use
 Bayes's Theorem and the observed data to estimate $x$.
 
-Let's define 101 hypotheses, where $H_i$ is the hypothesis that
-$x$ is $i$\%, for values of $i$ from 0 to 100.  I'll start with a uniform
-prior where the probability of $H_i$ is the same for all $i$.  We'll
-come back later to consider other priors.
+Let's define 101 hypotheses, where $H_x$ is the hypothesis that the
+probability of heads is $x$\%, for values of $x$ from 0 to 100.  I'll
+start with a uniform prior where the probability of $H_x$ is the same
+for all $x$.  We'll come back later to consider other priors.
 \index{uniform distribution}
 
 \begin{figure}
@@ -2061,19 +2131,19 @@ on a uniform prior.}
 \label{fig.euro1}
 \end{figure}
 
-The likelihood function is easy; in fact, it is the same as in
-the Four Urn problem.  If $H_i$ is true, then the probability of
-heads is $i/100$; the probability of tails is $1- i/100$.
+The likelihood function is relatively easy: If $H_x$ is true, then the
+probability of heads is $x/100$ and the probability of tails is $1-
+x/100$.
 
 \begin{verbatim}
 class Euro(Suite):
 
     def Likelihood(self, data, hypo):
-        x = hypo / 100.0
+        x = hypo
         if data == 'H':
-            return x
+            return x/100.0
         else:
-            return 1-x
+            return 1 - x/100.0
 \end{verbatim}
 
 Here's the code that makes the suite and updates it:
@@ -2136,10 +2206,10 @@ credible interval:
 
 The result is $(51, 61)$.
 
-Now, getting back to the original question,
-we would like to know whether the coin is fair.  We observe
-that the posterior credible interval does not include 50\%,
-which suggests that the coin is not fair.
+Now, getting back to the original question, we would like to know
+whether the coin is fair.  We observe that the posterior credible
+interval does not include 50\%, which suggests that the coin is not
+fair.
 
 But that is not exactly the question we started with.  MacKay asked,
 `` Do these data give evidence that the coin is biased rather than
@@ -2424,6 +2494,51 @@ same PDF are called ``conjugate distributions.''
 \index{Beta object}
 
 
+\section{Discussion}
+
+In this chapter we solved the same problem with two different 
+priors and found that with a large dataset, the priors get
+swamped.  If two people start with different
+prior beliefs, they generally find, as they see more data, that
+their posterior distributions converge.  At some point the
+difference between their distribution is small enough that it has
+no practical effect.
+\index{swamping the priors}
+\index{convergence}
+
+When this happens, it relieves some of the worry about objectivity
+that I discussed in the previous chapter.  In fact, it is encouraging
+to believe that even stark prior beliefs can eventually be reconciled
+by data.
+
+But that is not always the case.  First, remember that all Bayesian
+analysis is based on modeling decisions.  If you and I do not
+choose the same model, we might interpret data differently.  So
+even with the same data, we might compute different likelihoods,
+and our posterior beliefs would not converge.
+\index{modeling}
+
+Also, notice that in a Bayesian update, we always multiply
+the prior probability by a likelihood, so if \p{H} is 0,
+\p{H|E} is also 0, regardless of \p{E|H}.  In the Euro coin problem,
+if you are convinced that $x$ is less than 50\%, and you assign
+probability 0 to all other hypotheses, no amount of data will
+convince you otherwise.
+\index{Euro coin problem}
+
+This observation is the basis of ``Cromwell's rule,'' which is the
+recommendation that you should avoid giving a prior probability of
+0 to any hypothesis that is even remotely possible
+(see \url{http://en.wikipedia.org/wiki/Cromwell's_rule}).
+\index{Cromwell's rule}
+
+Cromwell's rule is named after Oliver Cromwell, who wrote, ``I beseech
+you, in the bowels of Christ, think it possible that you may be
+mistaken.''  For Bayesians, this turns out to be good advice (but
+maybe a little overwrought).
+\index{Cromwell, Oliver}
+
+
 \section{Exercises}
 
 \begin{exercise}
@@ -2474,6 +2589,7 @@ Write class definitions for redditors and links and an update function
 that updates both objects whenever a redditor casts a vote.
 
 \end{exercise}
+
 
 
 \chapter{Odds and addends}
@@ -3069,6 +3185,8 @@ they contain the same information, so you can convert from one
 to the other.  The difference between them is performance: some
 operations are faster and easier with a Pmf; others are faster
 with a Cdf.
+\index{Pmf}
+\index{Cdf}
 
 The other goal of this chapter is to introduce operations that act on
 distributions, like \verb"Pmf.__add__", {\tt Cdf.Max} and {\tt
@@ -3815,6 +3933,8 @@ posterior distribution by computing the mean or the maximum
 likelihood estimate.  These summaries can be useful, but if that's
 all you need, then you probably don't need Bayesian methods in the
 first place.
+\index{maximum likelihood}
+\index{summary statistics}
 
 Bayesian methods are most useful when you can carry the posterior
 distribution into the next step of the analysis to perform some
@@ -4036,7 +4156,7 @@ for {\tt lam}.  Based on the first four games, the most likely
 values for {\tt lam} are 2.6 for the Canucks and 2.9 for the Bruins.
 
 
-\section{The Meta-Pmf}
+\section{The meta-Pmf}
 \label{meta-pmf}
 
 \begin{figure}
@@ -4099,14 +4219,15 @@ def MakeMixture(metapmf):
     return mix
 \end{verbatim}  
 
-{\tt metapmf} is a Meta-Pmf, which means that it is a Pmf that
-contains Pmfs.  If you find the Meta-Pmf confusing; it might
+{\tt metapmf} is a meta-Pmf, which means that it is a Pmf that
+contains Pmfs.  If you find the meta-Pmf confusing; it might
 help to think about how you would generate a random value from
 a Meta-Pmf.  First you would choose a Pmf according to the
 probabilities in the Meta-Pmf.  Then you would choose a value
 according to the probabilities in the chosen Pmf.
-\index{Meta-Pmf}
+\index{meta-Pmf}
 \index{mixture}
+\index{MakeMixture}
 
 \verb"MakeMixture" computes the distribution of the resulting
 values.
@@ -4128,7 +4249,7 @@ def MakeGoalPmf(suite):
 \end{verbatim}  
 
 For each value of {\tt lam} we make a Poisson Pmf and add it to the
-Meta-Pmf.  Then we use \verb"MakeMixture" to compute the mixture.
+meta-Pmf.  Then we use \verb"MakeMixture" to compute the mixture.
 
 Figure~\ref{fig.hockey2} shows the resulting distribution of goals for
 the Bruins and Canucks.  As expected, the Bruins are less likely to
@@ -4205,9 +4326,11 @@ the Pmf.
 If we know {\tt lam} exactly, that's all there is to it.
 But we don't; instead we have a posterior
 distribution of possible values.  So as we did with the distribution
-of goals, we make a Meta-Pmf and compute a mixture of
+of goals, we make a meta-Pmf and compute a mixture of
 Pmfs.
 \index{MakeMixture}
+\index{meta-Pmf}
+\index{mixture}
 
 \begin{verbatim}
 def MakeGoalTimePmf(suite):
@@ -4384,6 +4507,7 @@ cannot trap another insect until it has been reset.
 If you reset the traps and come back in two days, how many traps
 do you expect to find triggered?  Compute a posterior predictive
 distribution for the number of traps.
+\index{predictive distribution}
 
 \end{exercise}
 
@@ -4620,6 +4744,7 @@ distribution to its probability.  Then it uses {\tt MakeMixture},
 which we saw in Section~\ref{meta-pmf}, to compute the mixture.
 \index{mixture}
 \index{MakeMixture}
+\index{meta-Pmf}
 
 It also uses {\tt MakeUniformPmf}, defined here:
 
@@ -4718,6 +4843,7 @@ passengers.
 The next step is to make an {\tt ElapsedTimeEstimator} (defined
 below), which encapsulates the posterior distribution of {\tt x} and
 the predictive distribution of {\tt y}.
+\index{predictive distribution}
 
 \begin{verbatim}
     ete = ElapsedTimeEstimator(wtc,
@@ -4755,6 +4881,7 @@ the posterior distribution.
 
 Finally, we use {\tt PredictWaitTime} to get the posterior
 predictive distribution of {\tt y}.
+\index{predictive distribution}
 
 Here's the definition of {\tt Elapsed}:
 
@@ -4782,6 +4909,7 @@ distribution.
 
 Finally, we use the posterior distribution of {\tt x}
 to predict the distribution of {\tt y}.
+\index{predictive distribution}
 
 \begin{verbatim}
 def PredictWaitTime(pmf_zb, pmf_x):
@@ -4823,6 +4951,7 @@ shows that, after seeing 15 passengers on the platform, we believe
 that the time since the last train is probably 5-10 minutes.  The
 predictive distribution of {\tt y} indicates that we expect the next
 train in less than 5 minutes, with about 80\% confidence.
+\index{predictive distribution}
 
 
 \section{Estimating the arrival rate}
@@ -4957,6 +5086,7 @@ we can take it into account by a process like this:
 
 \item Run the analysis for each value of the parameter, and generate a
   set of predictive distributions.
+\index{predictive distribution}
 
 \item Compute a mixture of the predictive distributions, using the
   weights from the distribution of the parameter.
@@ -4984,13 +5114,15 @@ class WaitMixtureEstimator(object):
 distribution of {\tt zb}.  {\tt are} is the {\tt ArrivalTimeEstimator}
 that contains the distribution of {\tt lam}.
 
-The first line makes a Meta-Pmf that maps from each possible
+The first line makes a meta-Pmf that maps from each possible
 distribution of {\tt y} to its probability.  For each value
 of {\tt lam}, we use {\tt ElapsedTimeEstimator} to
 compute the corresponding distribution of
 {\tt y} and store it in the Meta-Pmf.  Then
 we use {\tt thinkbayes.MakeMixture} to compute the mixture.
 \index{MakeMixture}
+\index{meta-Pmf}
+\index{mixture}
 
 %For purposes of comparison, I also compute the distribution of
 %{\tt y} based on a single point estimate of {\tt lam}, which is
@@ -5535,6 +5667,7 @@ interval should be.  The best choice might depend on context, but
 one common choice is the maximum likelihood credible interval, which
 contains the most likely values that add up to 50\% (or some other
 percentage).
+\index{maximum likelihood}
 
 {\tt thinkbayes.Joint} provides a method that computes maximum
 likelihood credible intervals. 
@@ -5831,6 +5964,7 @@ This process might seem bogus, because we use the data to choose the
 range of the prior distribution, and then use the data again to do the
 update.  In general, using the same data twice is, in fact, bogus.
 \index{bogus}
+\index{maximum likelihood}
 
 But in this case it is ok.  Really.  We use the data to choose the
 range for the prior, but only to avoid computing a lot of
@@ -5978,6 +6112,7 @@ instead of {\tt Mult}:
 \end{verbatim}
 
 \index{Gaussian distribution}
+\index{log-likelihood}
 To compute the log-likelihood, we look up the Gaussian PDF again:
 %
 \[ \frac{1}{\sigma \sqrt{2 \pi}} \exp \left[ -\frac{1}{2} \left( \frac{x-\mu}{\sigma} \right)^2 \right] \]
@@ -6024,6 +6159,7 @@ Before applying {\tt math.exp}, we find the maximum log-likelihood
 and shift so that the largest value in the distribution is 0, which
 yields likelihood 1.  The result is a set of values we can add
 up with minimal loss of precision.
+\index{maximum likelihood}
 
 Using the log transform, we can scale the program up to a dataset
 of 10000 values, but the run time is in the range of minutes on
@@ -6034,6 +6170,7 @@ We can do better.
 
 \section{A little optimization}
 
+\index{log-likelihood}
 We can speed things up by providing a new version of \verb"LogUpdateSet"
 that computes the log-likelihood of the entire dataset at once (rather
 than looping through the data).  Given a sequence of values, $x_i$,
@@ -6334,6 +6471,7 @@ The most likely values for men are 178 cm and 7.4 cm, so the
 maximum likelihood estimate for {\tt sigma}, based on robust
 sample statistics, is a bit less than the observed
 standard deviation, 7.7 cm.
+\index{maximum likelihood}
 
 For women, the most likely values are 163 cm and 7.0 cm.  Again,
 the estimate of {\tt sigma} is less than the observed
@@ -7116,10 +7254,12 @@ between efficacy and difficulty, so we can choose the units of
 efficacy and then calibrate the units of difficulty accordingly.
 \index{Gaussian distribution}
 
-{\tt pmfs} is a Meta-Pmf that contains one Pmf for each level of
+{\tt pmfs} is a meta-Pmf that contains one Pmf for each level of
 efficacy, and maps to the fraction of test-takers at that level.  {\tt
   thinkbayes.MakeMixture} takes the meta-pmf and compute the
 distribution of the mixture (see Section~\ref{meta-pmf}).
+\index{meta-Pmf}
+\index{MakeMixture}
 
 
 \section{Calibration}
@@ -7921,6 +8061,7 @@ that's close enough.
 
 Remember that {\tt MakeSequence} takes an iterator as an argument.
 That interface allows it to work with different generators:
+\index{generator}
 
 \begin{verbatim}
     iterator = UncorrelatedGenerator(cdf, rho)
@@ -8039,11 +8180,18 @@ can be found in human navels (\url{http://bbdata.yourwildlife.org}).
 The project might seem whimsical, but it is part of an increasing
 interest in the human microbiome, the set of microorganisms that live
 on human skin and other surfaces that contact the environment.
+\index{biodiversity}
+\index{belly button}
+\index{bacteria}
+\index{microbiome}
 
 In their pilot study, BBB2 researchers collected swabs from the navels
 of 60 volunteers, used multiplex pyrosequencing to extract and sequence
 fragments of 16S rDNA, then identified the species or genus the
 fragments came from.  Each identified fragment is called a ``read.''
+\index{navel}
+\index{rDNA}
+\index{pyrosequencing}
 
 We can use these data to answer several related questions:
 
@@ -8051,9 +8199,11 @@ We can use these data to answer several related questions:
 
 \item Based on the number of species observed, can we estimate
   the total number of species in the environment?
+\index{species}
 
 \item Can we estimate the prevalence of each species; that is, the
   fraction of the total population belonging to each species?
+\index{prevalence}
 
 \item If we are planning to collect additional samples, can we predict
   how many new species we are likely to discover?
@@ -8064,6 +8214,7 @@ We can use these data to answer several related questions:
 \end{itemize}
 
 These questions make up what is called the ``unseen species problem.''
+\index{Unseen species problem}
 
 
 \section{Lions and tigers and bears}
@@ -8072,12 +8223,14 @@ I'll start with a simplified version of the problem where we know that
 there are exactly three species.  Let's call them lions, tigers and
 bears.  Suppose we visit a wild animal preserve and see 3 lions, 2
 tigers and one bear.
+\index{lions and tigers and bears}
 
 If we have an equal chance of observing any animal in the preserve
 then the number of each species we see is governed by the multinomial
 distribution.  If the prevalence of lions and tigers and bears is
 \verb"p_lion" and \verb"p_tiger" and \verb"p_bear", the likelihood of
 seeing 3 lions, 2 tigers and one bear is
+\index{multinomial distribution}
 
 \begin{verbatim}
 p_lion**3 * p_tiger**2 * p_bear**1
@@ -8088,6 +8241,7 @@ distributions, as in Section~\ref{beta}, to describe the prevalence of
 each species separately.  For example, we saw 3 lions and 3 non-lions;
 if we think of that as 3 ``heads'' and 3 ``tails,'' then the posterior
 distribution of \verb"p_lion" is:
+\index{beta distribution}
 
 \begin{verbatim}
     beta = thinkbayes.Beta()
@@ -8098,6 +8252,7 @@ distribution of \verb"p_lion" is:
 The maximum likelihood estimate for \verb"p_lion" is the observed
 rate, 50\%.  Similarly the MLEs for \verb"p_tiger" and \verb"p_bear"
 are 33\% and 17\%.
+\index{maximum likelihood}
 
 But there are two problems:
 
@@ -8113,6 +8268,7 @@ But there are two problems:
   the prevalences have to add up to 1.  To capture this dependence, we
   need a joint distribution for the three prevalences.
 \index{independence}
+\index{joint distribution}
 
 \end{itemize}
 
@@ -8163,6 +8319,7 @@ compute like this:
 {\tt i} is the index of the marginal distribution we want.
 {\tt alpha0} is the sum of the parameters; {\tt alpha} is the
 parameter for the given species.
+\index{marginal distribution}
 
 In the example, the prior marginal distribution for each species
 is {\tt Beta(1, 2)}.  We can compute the prior means like
@@ -8223,13 +8380,16 @@ mean prevalences are 44\%, 33\% and 22\%.
 We have solved a simplified version of the problem: if we
 know how many species there are, we can estimate the prevalence
 of each.
+\index{prevalence}
 
 Now let's get back to the original problem, estimating the total
-number of species.  To solve this problem I'll define a metasuite,
+number of species.  To solve this problem I'll define a meta-Suite,
 which is a Suite that contains other Suites as hypotheses.  In this
 case, the top-level Suite contains hypotheses about the number of
 species; the bottom level contains hypotheses about prevalences.
 A multi-level model like this is called ``hierarchical.''
+\index{hierarchical model}
+\index{meta-Suite}
 
 Here's the class definition:
 
@@ -8318,6 +8478,7 @@ Here's what it looks like:
 The length of {\tt data} is the number of species observed.  If
 we see more species than we thought existed, the likelihood is 0.
 
+\index{multinomial distribution}
 Otherwise we select a random set of prevalences, {\tt p}, and
 compute the multinomial PDF, which is
 %
@@ -8329,6 +8490,7 @@ coefficient; I left it out of the computation because it is
 a multiplicative factor that depends only
 on the data, not the hypothesis, so it gets normalized away
 (see \url{http://en.wikipedia.org/wiki/Multinomial_distribution}).
+\index{multinomial coefficient}
 
 Also, I truncated {\tt p} at {\tt m}, which is the number of
 observed species.  For the unseen species, $x_i$ is 0, so
@@ -8342,11 +8504,13 @@ distribution.  One is to use the marginal beta distributions, but in
 that case you have to select one at a time and scale the rest so they
 add up to 1 (see
 \url{http://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation}).
+\index{random sample}
 
 A less obvious, but faster, way is to select values from {\tt n} gamma
 distributions, then normalize by dividing through by the total. 
 Here's the code:
 \index{numpy}
+\index{gamma distribution}
 
 \begin{verbatim}
 # class Dirichlet
@@ -8392,6 +8556,7 @@ we would get the same result.
 But remember that we started with a uniform prior for {\tt n}.  If we
 have background information about the number of species in the
 environment, we might choose a different prior.
+\index{uniform distribution}
 
 
 \section{Optimization}
@@ -8407,6 +8572,7 @@ data, with more than 100 species in some samples.
 The next few sections present a series of optimizations we need to
 make this solution scale.  Before we get into the details, here's
 a road map.
+\index{optimization}
 
 \begin{itemize}
 
@@ -8449,7 +8615,7 @@ button data.
 \section{Collapsing the hierarchy}
 \label{collapsing}
 
-As I said, all of the bottom-level Dirichlet distributions are updated
+All of the bottom-level Dirichlet distributions are updated
 with the same data, so the first {\tt m} parameters are the same for
 all of them.
 
@@ -8492,12 +8658,11 @@ then the Dirichlet parameters:
         self.params[:m] += data
 \end{verbatim}
 
-{\tt SampleLikelihood} returns an array of likelihoods, one for
-each value of {\tt n}.  {\tt like} accumulates the total likelihood
-for 1000 samples.  {\tt self.probs}
-is multiplied by the total likelihood, then normalized.
-Finally, updating the parameters is identical to what we saw in {\tt
-  Dirichlet.Update}.
+{\tt SampleLikelihood} returns an array of likelihoods, one for each
+value of {\tt n}.  {\tt like} accumulates the total likelihood for
+1000 samples.  {\tt self.probs} is multiplied by the total likelihood,
+then normalized.  Finally, updating the parameters is identical to
+what we saw in {\tt Dirichlet.Update}.
 
 Now let's look at {\tt SampleLikelihood}.  There are two
 opportunities for optimization here:
@@ -8511,9 +8676,12 @@ terms of the multinomial PDF; the rest are 1.
 \item If the number of species is large, the likelihood of the data
 might be too small for floating-point.  So it is safer to compute
 log-likelihoods.  For the multinomial PDF, it is also faster.
+\index{log-likelihood}
+\index{underflow}
 
 \end{itemize}
 
+\index{multinomial distribution}
 Again, the multinomial PDF is
 %
 \[ c(x) \prod_i p_i^{x_i}\]
@@ -8555,13 +8723,16 @@ which is fast and easy to compute.  Here's the code:
 length is the largest hypothetical value of {\tt n}.  {\tt row} is
 just the first {\tt m} elements of {\tt gammas}; since these are the
 only elements that depend on the data, they are the only ones we need.
+\index{gamma distribution}
 
 For each value of {\tt n} we need to divide {\tt row} by the
 total of the first {\tt n} values from {\tt gamma}.  {\tt cumsum}
 computes these cumulative sums and stores them in {\tt col}.
+\index{cumulative sum}
 
 The loop iterates through the values of {\tt n} and accumulates
 a list of log-likelihoods.
+\index{log-likelihood}
 
 Inside the loop, {\tt ps} contains the row of probabilities, normalized
 with the appropriate cumulative sum.  {\tt terms} contains the
@@ -8586,6 +8757,7 @@ a good idea to start with the simple version; we can use it for
 regression testing.  I plotted results from both versions and confirmed
 that they are approximately equal, and that they converge as the
 number of iterations increases.
+\index{regression testing}
 
 
 \section{One more problem}
@@ -8674,6 +8846,7 @@ of the data.
 This is a subtle point and I have to admit that I did not get it right
 the first time.  But again I was able to validate this version
 by comparing it to the previous versions.
+\index{regression testing}
 
 
 \section{We're not done yet}
@@ -8793,6 +8966,7 @@ There are a few dominant species that make up a substantial
 fraction of the whole, but many species that yielded only
 a single read.  The number of these ``singletons'' suggests
 that there are likely to be at least a few unseen species.
+\index{species}
 
 In the example with lions and tigers, we assume that each
 animal in the preserve is equally likely to be observed.
@@ -8804,12 +8978,15 @@ process might introduce consistent biases.  Some species might
 be more likely to be picked up by a swab, or to yield identifiable
 amplicons.  So when we talk about the prevalence of each species,
 we should remember this source of error.
+\index{sample bias}
 
 I should also acknowledge that I am using the term ``species''
 loosely.  First, bacterial species are not well defined.  Second,
 some reads identify a particular species, others only identify
 a genus.  To be more precise, I should say ``operational
 taxonomic unit'', or OTU.
+\index{operational taxonomic unit}
+\index{OTU}
 
 Now let's process some of the belly button data.  I defined
 a class called {\tt Subject} to represent information about
@@ -8839,6 +9016,7 @@ in \url{http://thinkbayes.com/species.py}.
 {\tt Subject} provides a method named {\tt Process} that creates and
 then updates a suite, specifically a suite of type {\tt Species5},
 which represents the distribution of {\tt n} and the prevalences.
+\index{prevalence}
 
 It also provides {\tt PlotDistOfN}, which plots the posterior
 distribution of {\tt n}.  Figure~\ref{species-ndist} shows this
@@ -8867,7 +9045,7 @@ each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
 
 {\tt index} indicates which species we want.  For each
 value of {\tt n}, we have a different posterior distribution
-of prevalence.  
+of prevalence.
 
 \begin{figure}
 % species.py
@@ -8876,7 +9054,7 @@ of prevalence.
 \label{species-prev}
 \end{figure}
 
-So the loop iterates through the possible values of {\tt n}
+The loop iterates through the possible values of {\tt n}
 and their probabilities.  For each value of {\tt n} it gets
 a Beta object representing the marginal distribution for the
 indicated species.  Remember that Beta objects contain the
@@ -8884,12 +9062,16 @@ parameters {\tt alpha} and {\tt beta}; they don't have
 values and probabilities like a Pmf, but they provide {\tt MakePmf},
 which generates a discrete approximation to the continuous
 beta distribution.
+\index{Beta object}
 
-{\tt metapmf} is a MetaPmf that contains the distributions
+{\tt metapmf} is a meta-Pmf that contains the distributions
 of prevalence, conditioned on {\tt n}.  {\tt MakeMixture}
 combines the MetaPmf into {\tt mix}, which combines the
 conditional distributions into a single distribution
 of prevalence.
+\index{meta-Pmf}
+\index{mixture}
+\index{MakeMixture}
 
 Figure~\ref{species-prev} shows these distributions for the five
 species with the most reads.  The most prevalent species accounts for
@@ -8910,6 +9092,7 @@ with 90\% credible interval between 17\% and 23\%.
 I introduced the hidden species problem in the form of four related
 questions.  We have answered the first two by computing the posterior
 distribution for {\tt n} and the prevalence of each species.
+\index{predictive distribution}
 
 The other two questions are:
 
@@ -8929,6 +9112,7 @@ predictive distributions for the number of species, and fraction of
 the total, we are likely to see.
 
 The kernel of these simulations looks like this:
+\index{simulation}
 
 \begin{enumerate}
 
@@ -8936,6 +9120,7 @@ The kernel of these simulations looks like this:
 
 \item Choose a prevalence for each species, including possible unseen
   species, using the Dirichlet distribution.
+\index{Dirichlet distribution}
 
 \item Generate a random sequence of future observations.
 
@@ -8944,6 +9129,7 @@ The kernel of these simulations looks like this:
 
 \item Repeat the previous steps and accumulate the joint distribution
   of \verb"num_new" and {\tt k}.
+\index{joint distribution}
 
 \end{enumerate}
 
@@ -8975,6 +9161,7 @@ strings with a unique name for each species.
 The result of {\tt RunSimulation} is a ``rarefaction curve'',
 represented as a list of pairs with the number of reads and
 the number of new species seen.
+\index{rarefaction curve}
 
 Before we see the results, let's look at {\tt GetSeenSpecies} and
 {\tt GenerateObservations}.
@@ -8993,6 +9180,7 @@ Before we see the results, let's look at {\tt GetSeenSpecies} and
 the data files, but for many subjects these names are not unique.
 So I use {\tt SpeciesGenerator} to extend each name with a serial
 number:
+\index{generator}
 
 \begin{verbatim}
 def SpeciesGenerator(names, num):
@@ -9035,6 +9223,8 @@ the posterior distribution.
 {\tt cdf} is a Cdf object that maps species names, including the
 unseen, to cumulative probabilities.  Using a Cdf makes it efficient
 to generate a random sequence of species names.
+\index{Cdf}
+\index{cumulative probability}
 
 Finally, here is {\tt Species2.SamplePosterior}:
 
@@ -9049,6 +9239,7 @@ Finally, here is {\tt Species2.SamplePosterior}:
 And {\tt SamplePrevalences}, which generates a sample of
 prevalences conditioned on {\tt n}:
 \index{numpy}
+\index{random sample}
 
 \begin{verbatim}
 # class Species2
@@ -9083,6 +9274,7 @@ To be more precise, we can use the simulations to estimate the
 joint distribution of \verb"num_new" and {\tt k}, and from that
 we can get the distribution of \verb"num_new" conditioned on any
 value of {\tt k}.
+\index{joint distribution}
 
 \begin{verbatim}
 def MakeJointPredictive(curves):
@@ -9096,10 +9288,12 @@ def MakeJointPredictive(curves):
 
 {\tt MakeJointPredictive} makes a Joint object, which is a
 {\tt Pmf} whose values are tuples.
+\index{Joint object}
 
 {\tt curves} is a list of rarefaction curves created by
 {\tt RunSimulation}.  Each curve contains a list of pairs of
 {\tt k} and \verb"num_new".
+\index{rarefaction curve}
 
 The resulting joint distribution is a map from each pair to
 its probability of occurring.  Given the joint distribution, we
@@ -9123,6 +9317,7 @@ can get the distribution of \verb"num_new" conditioned on {\tt k}:
 is the value the {\tt j}th variable has to have.
 You can think of this operation as taking vertical slices out
 of Figure~\ref{species-rare}.
+\index{conditional distribution}
 
 {\tt Subject.MakeConditionals} takes a list of {\tt ks}
 and computes the conditional distribution of \verb"num_new"
@@ -9160,6 +9355,7 @@ species.
 The last question we want to answer is, ``How many additional reads
 are needed to increase the fraction of observed species to a given
 threshold?''
+\index{coverage}
 
 To answer this question, we'll need a version of {\tt RunSimulation}
 that computes the fraction of observed species rather than the
@@ -9209,9 +9405,11 @@ Remember that the CDF tells you the probability of falling below a
 given threshold, so the {\em complementary} CDF tells you the
 probability of exceeding it.  Figure~\ref{species-frac} shows
 complementary CDFs for a range of values of {\tt k}.
+\index{complementary CDF}
 
 To read this figure, select the level of coverage you want to achieve
 along the $x$-axis.  As an example, choose 90\%.
+\index{coverage}
 
 Now you can read up the chart to find the probability of achieving
 90\% coverage after {\tt k} reads.  For example, with 200 reads,
@@ -9219,9 +9417,17 @@ you have about a 40\% of getting 90\% coverage.  With 1000 reads, you
 have a 90\% chance of getting 90\% coverage.
 
 With that, we have answered the four questions that make up the unseen
-species problem.  This has been a longer chapter than most, but I
-think there is a lot to it.  So if you made it this far,
-congratulations!
+species problem.  
+
+
+\section{Discussion}
+
+To validate the algorithms in this chapter with
+real data, I had to deal with a few more details.  But
+this chapter is already too long, so I won't discuss them here.
+
+You can read about the problems, and how I addressed them, at
+\url{http://allendowney.blogspot.com/2013/05/belly-button-biodiversity-end-game.html}.
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/species.py}.
