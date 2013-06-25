@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.24}
+\newcommand{\theversion}{0.26}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -371,6 +371,11 @@ with an {\it s} after the apostrophe, which is preferred in some
 style guides and deprecated in others.  I don't have a strong
 preference.  I had to choose one, and I chose this one.
 
+And finally one typographical note: throughout the book, I use
+PDF and CDF to refer to the mathematical concept of a probability
+density function or cumulative density function, and Pdf and Cdf
+to refer to the Python objects I use to represent them.
+
 
 \subsection*{Prerequisites}
 
@@ -382,9 +387,9 @@ prerequisites minimal.  If you know Python and a little bit about
 probability, you are ready to start this book.
 
 Chapter 1 is about probability and Bayes's Theorem; it has no code.
-Chapter 2 introduces {\tt Pmf}, a thinly disguised Python dictionary
+Chapter 2 introduces Pmf, a thinly disguised Python dictionary
 I use to represent a probability mass function (PMF).  Then
-Chapter 3 introduces {\tt Suite}, a kind of {\tt Pmf} that provides
+Chapter 3 introduces {\tt Suite}, a kind of Pmf that provides
 a framework for doing Bayesian updates.  And that's just about
 all there is to it.
 
@@ -494,7 +499,7 @@ with replacement is an unrealistic scenario.
 \mainmatter
 
 \newcommand{\p}[1]{\ensuremath{\mathrm{p}(#1)}}
-\renewcommand{\o}[1]{\ensuremath{\mathrm{o}(#1)}}
+\newcommand{\odds}[1]{\ensuremath{\mathrm{o}(#1)}}
 \newcommand{\T}[1]{\mbox{#1}}
 \newcommand{\AND}{~\mathrm{and}~}
 \newcommand{\NOT}{\mathrm{not}~}
@@ -560,7 +565,7 @@ attack in the next year, and $B$ is the set of conditions I listed.
 
 \section{Conjoint probability}
 
-``Conjoint probability'' is a fancy way to say the probability that
+{\bf Conjoint probability} is a fancy way to say the probability that
 two things are true.  I will write \p{A \AND B} to mean the
 probability that $A$ and $B$ are both true.
 \index{conjoint probability}
@@ -657,7 +662,7 @@ probability \p{B|A}.  Or you can do it the other way around; if you
 know \p{B}, you multiply by \p{A|B}.  Either way you should get
 the same thing.
 
-Finally we can divide through by \p{B}
+Finally we can divide through by \p{B}:
 %
 \[ \p{A|B} = \frac{\p{A}~\p{B|A}}{\p{B}} \]
 %
@@ -756,7 +761,6 @@ might disagree, either because they use different background
 information or because they interpret the same information
 differently.
 \index{subjective prior}
-\index{prior!subjective}
 
 The likelihood is usually the easiest part to compute.  In the
 Cookie Problem, if we know which bowl the cookie came from,
@@ -1057,8 +1061,9 @@ that includes each word and how many times it appears.
 In Python, you could represent a distribution with a dictionary that
 maps from each value to its probability.  As an alternative, I have
 written a class called {\tt Pmf} that represents a distribution.  PMF
-stands for ``probability mass function'' which is a specific
+stands for {\bf probability mass function} which is a specific
 kind of distribution (we'll see others soon).
+\index{probability mass function}
 \index{Pmf class}
 
 {\tt Pmf} is defined in a Python module I wrote to accompany this
@@ -1079,10 +1084,9 @@ for x in [1,2,3,4,5,6]:
     pmf.Set(x, 1/6.0)
 \end{verbatim}
 
-\verb"Pmf" creates an empty Pmf object with no values.  The
+\verb"Pmf" creates an empty Pmf with no values.  The
 \verb"Set" method sets the probability associated with each
 value to $1/6$.
-\index{Set}
 
 Here's another example that counts the number of times each word
 appears in a sequence:
@@ -1095,7 +1099,6 @@ for word in word_list:
 
 \verb"Incr" increases the ``probability'' associated with each
 word by 1.  If a word is not already in the Pmf, it is added.
-\index{Incr}
 
 I put ``probability'' in quotes because in this example, the
 probabilities are not normalized; that is, they do not add up to 1.
@@ -1105,7 +1108,7 @@ But in this example the word counts are proportional to the
 probabilities.  So after we count all the words, we can compute
 probabilities by dividing through by the total number of words.  {\tt
   Pmf} provides a method, \verb"Normalize", that does exactly that:
-\index{Normalize}
+\index{Pmf methods}
 
 \begin{verbatim}
 pmf.Normalize()
@@ -1933,7 +1936,7 @@ value with maximum likelihood.
 For intervals we usually report two values computed
 so that there is a 90\% chance that the unknown value falls
 between them, or 95\%, or some other value.
-These values define a ``credible interval.''
+These values define a {\bf credible interval}.
 
 A simple way to compute a credible interval is to add up the
 probabilities in the posterior distribution and record the values
@@ -1988,7 +1991,7 @@ that makes the corresponding Cdf:
 cdf = suite.MakeCdf()
 \end{verbatim}
 
-And Cdf provides a function named \verb"Percentile"
+And {\tt Cdf} provides a function named \verb"Percentile"
 
 \begin{verbatim}
     interval = cdf.Percentile(5), cdf.Percentile(95)
@@ -2033,12 +2036,12 @@ of the Locomotive problem, and compare the results.
 Among Bayesians, there are two approaches to choosing prior
 distributions.  Some recommend choosing the prior that best represents
 background information about the problem; in that case the prior
-is said to be ``informative''.  The problem with using an informative
+is said to be {\bf informative}.  The problem with using an informative
 prior is that people might use different background information (or
 interpret it differently).  So informative priors tend to be subjective.
 \index{informative prior}
 
-The alternative is a so-called ``uninformative'' prior, which is
+The alternative is a so-called {\bf uninformative prior}, which is
 intended to be as unrestricted as possible, in order to let the data
 speak for themselves.  In some cases you can identify a unique prior
 that has some desirable property, like representing minimal prior
@@ -2281,7 +2284,7 @@ and the credible intervals are identical; the means differ by
 less than 0.5\%.
 \index{triangle distribution}
 
-This is an example of ``swamping the priors:'' with enough
+This is an example of {\bf swamping the priors}: with enough
 data, people who start with different priors will tend to
 converge on the same posterior.
 \index{swamping the priors}
@@ -2402,7 +2405,7 @@ proportions and probabilities.  But wait, it gets better.
 
 It turns out that if you do a Bayesian update with a binomial
 likelihood function, as we did in the previous section, the beta
-distribution is a ``conjugate prior.''  That means that if the prior
+distribution is a {\bf conjugate prior}.  That means that if the prior
 distribution for {\tt x} is a beta distribution, the posterior is also
 a beta distribution.  But wait, it gets even better.
 \index{binomial likelihood function}
@@ -2467,8 +2470,11 @@ So we have yet another way to solve the Euro problem:
 \end{verbatim}
 
 The posterior mean is 56\% (again).  To get the probability for
-any value of {\tt x}, we can evaluate the PDF of the beta
+any value of {\tt x}, we can evaluate the probability density
+function (PDF) of the beta
 distribution:
+\index{probability density function}
+\index{PDF}
 
 \begin{verbatim}
     def EvalPdf(self, x):
@@ -2487,7 +2493,7 @@ It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
 random variable and {\tt alpha} and {\tt beta} as parameters; in {\tt
   EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and {\tt
   no} are random variables.  Distributions like these that share the
-same PDF are called ``conjugate distributions.''
+same PDF are called {\bf conjugate distributions}.
 \index{conjugate distribution}
 
 {\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
@@ -2507,8 +2513,8 @@ no practical effect.
 \index{convergence}
 
 When this happens, it relieves some of the worry about objectivity
-that I discussed in the previous chapter.  In fact, it is encouraging
-to believe that even stark prior beliefs can eventually be reconciled
+that I discussed in the previous chapter.  And for many real-world
+problems even stark prior beliefs can eventually be reconciled
 by data.
 
 But that is not always the case.  First, remember that all Bayesian
@@ -2518,15 +2524,15 @@ even with the same data, we might compute different likelihoods,
 and our posterior beliefs would not converge.
 \index{modeling}
 
-Also, notice that in a Bayesian update, we always multiply
-the prior probability by a likelihood, so if \p{H} is 0,
+Also, notice that in a Bayesian update, we multiply
+each prior probability by a likelihood, so if \p{H} is 0,
 \p{H|E} is also 0, regardless of \p{E|H}.  In the Euro coin problem,
 if you are convinced that $x$ is less than 50\%, and you assign
 probability 0 to all other hypotheses, no amount of data will
 convince you otherwise.
 \index{Euro coin problem}
 
-This observation is the basis of ``Cromwell's rule,'' which is the
+This observation is the basis of {\bf Cromwell's rule}, which is the
 recommendation that you should avoid giving a prior probability of
 0 to any hypothesis that is even remotely possible
 (see \url{http://en.wikipedia.org/wiki/Cromwell's_rule}).
@@ -2599,7 +2605,7 @@ that updates both objects whenever a redditor casts a vote.
 One way to represent a probability is with a number between
 0 and 1, but that's not the only way.  If you have ever bet
 on a football game or a horse race, you have probably encountered
-another representation of probability, called ``odds.''
+another representation of probability, called {\bf odds}.
 \index{odds}
 
 You might have heard expressions like ``the odds are
@@ -2659,8 +2665,8 @@ is $1/6$.
 \section{The odds form of Bayes's Theorem}
 
 \index{Bayes's theorem!odds form}
-In Chapter~\ref{intro} I wrote Bayes's Theorem in the ``probability
-form'':
+In Chapter~\ref{intro} I wrote Bayes's Theorem in the {\bf probability
+form}:
 %
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
 %
@@ -2670,12 +2676,12 @@ odds in favor of $H$ like this:
 \[ \frac{\p{H|D}}{\p{\bar{H}|D}} = \frac{\p{H}~\p{D|H}}
                                         {\p{\bar{H}}~\p{D|\bar{H}}} \]
 %
-Or writing \o{H} for odds in favor of H:
+Or writing \odds{H} for odds in favor of H:
 %
-\[ \o{H|D} = \o{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+\[ \odds{H|D} = \odds{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
 %
 In words, this says that the posterior odds are the prior odds times
-the likelihood ratio.  This is the ``odds form'' of Bayes's Theorem.
+the likelihood ratio.  This is the {\bf odds form} of Bayes's Theorem.
 
 This form is most convenient for computing a Bayesian update on
 paper or in your head.  For example, let's go back to the
@@ -2730,15 +2736,15 @@ that the vanilla cookie is evidence in favor of Bowl 1.
 The odds form of Bayes's Theorem provides a way to make this
 intuition more precise.  Again
 %
-\[ \o{H|D} = \o{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+\[ \odds{H|D} = \odds{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
 %
-Or dividing through by \o{H}:
+Or dividing through by \odds{H}:
 %
-\[ \frac{\o{H|D}}{\o{H}} = \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+\[ \frac{\odds{H|D}}{\odds{H}} = \frac{\p{D|H}}{\p{D|\bar{H}}} \]
 %
 The term on the left is the ratio of the posterior and prior odds.
-The term on the right is the likelihood ratio, also called the ``Bayes
-factor''.
+The term on the right is the likelihood ratio, also called the {\bf Bayes
+factor}.
 \index{likelihood ratio}
 \index{Bayes factor}
 
@@ -3289,9 +3295,9 @@ probability density functions and KDE.
 
 So far we have been working with probability mass functions, or PMFs.
 A PMF is a mapping from each possible value to its probability.  In my
-implementation, a {\tt Pmf} object provides a method named {\tt Prob} that
-takes a value and returns a probability, also known as a ``probability
-mass.''
+implementation, a Pmf object provides a method named {\tt Prob} that
+takes a value and returns a probability, also known as a {\bf probability
+mass}.
 \index{probability density function}
 \index{Pdf}
 \index{Pmf}
@@ -3539,7 +3545,7 @@ To answer this question, we can use the historical data again.
 Figure~\ref{fig.price2} shows the cumulative distribution of {\tt diff},
 the difference between the contestant's bid and the actual price
 of the showcase.
-\index{CDF}
+\index{Cdf}
 
 The definition of diff is
 %
@@ -3548,7 +3554,7 @@ The definition of diff is
 \end{verbatim}
 %
 When {\tt diff} is negative, the bid is too high.  As an
-aside, we can use this CDF to compute the probability that the
+aside, we can use this Cdf to compute the probability that the
 contestants overbid: the first contestant overbids 25\% of the
 time; the second contestant overbids 29\% of the time.
 
@@ -3934,7 +3940,7 @@ likelihood estimate.  These summaries can be useful, but if that's
 all you need, then you probably don't need Bayesian methods in the
 first place.
 \index{maximum likelihood}
-\index{summary statistics}
+\index{summary statistic}
 
 Bayesian methods are most useful when you can carry the posterior
 distribution into the next step of the analysis to perform some
@@ -4062,7 +4068,7 @@ floating-point value {\tt x}.
 
 \section{Poisson processes}
 
-In mathematical statistics, a ``process'' is a stochastic model of a
+In mathematical statistics, a {\bf process} is a stochastic model of a
 physical system, which means that the model has some kind of
 randomness in it.  For example, a Bernoulli process is a model of a
 sequence of events, called trials, in which each trial has two
@@ -4392,11 +4398,14 @@ The Bruins chance of winning the series is 57\%.  And in 2011,
 they did.
 
 
-\section{Opportunities for improvement}
+\section{Discussion}
 
-Solving problems like this is almost always iterative.  In general,
+As always, the analysis in this chapter is based on modeling decisions,
+and modeling is almost always an iterative process.  In general,
 you want to start with something simple that yields an approximate
-answer, then look for opportunities to improve.
+answer, identify likely sources of error, and look for opportunities
+for improvement.
+\index{modeling}
 \index{iterative modeling}
 
 In this example, I would consider these options:
@@ -4446,12 +4455,11 @@ If we run the analysis again with the higher-variance prior, the
 probability that the Bruins win the series is 80\%, substantially
 higher than the result with the low-variance prior, 57\%.
 
-So this is another example where the results are sensitive to the
-prior.  In general, if the variability in the prior is too high, the
-extreme values will be contradicted by data.  But if the
-variability is too low, the effective range of the prior is too
-narrow, and the data may not be able to correct the error.  So it is
-usually a good idea to err on the side of a more generous prior.
+So it turns out that the results are sensitive to the prior, which
+makes sense considering how little data we have to work with.  Based
+on the difference between the low-variance model and the high-variable
+model, it seems worthwhile to put some effort into getting the prior
+right.
 
 The code and data for this chapter are available from
 \url{http://thinkbayes.com/hockey.py} and
@@ -4631,7 +4639,7 @@ a 10 minute gap, and only 1/3 during a 5 minute gap.  So the
 average time between trains, as seen by an arriving passenger,
 is 8.33 minutes.
 
-This kind of ``observer bias'' appears in many contexts.  Students
+This kind of {\bf observer bias} appears in many contexts.  Students
 think that classes are bigger than they are, because more of them are
 in the big classes.  Airline passengers think that planes are fuller
 than they are, because more of them are on full flights.
@@ -5521,15 +5529,15 @@ suite.UpdateSet([15, 16, 18, 21])
 The result is a distribution that maps each {\tt (alpha, beta)} pair
 to a posterior probability.  Since each value in the posterior
 distribution is a pair of variables, this distribution is called a
-``joint distribution'' of the two variables.
+{\bf joint distribution} of the two variables.
 \index{joint distribution}
 
 
 \section{Joint distributions}
 
 Given the joint distribution, we can compute the distributions
-of each variable independently, which are called the ``marginal
-distributions.''
+of each variable independently, which are called the {\bf marginal
+distributions}.
 \index{marginal distribution}
 
 {\tt thinkbayes.Joint} provides a method that computes marginal
@@ -5595,8 +5603,8 @@ variables, if any.
 \index{independence}
 \index{dependence}
 
-One way to visualize dependence is by computing conditional
-distributions.  {\tt thinkbayes.Joint} provides a method that
+One way to visualize dependence is by computing {\bf conditional
+distributions}.  {\tt thinkbayes.Joint} provides a method that
 does just that:
 \index{conditional distribution}
 
@@ -5657,7 +5665,7 @@ if you want a 50\% credible interval, you could choose any set of
 values whose probability adds up to 50\%.
 
 When the values are one-dimensional, it is most common to choose
-the ``central credible interval;'' for example, the central 50\%
+the {\bf central credible interval}; for example, the central 50\%
 credible interval contains all values between the 25th and 75th
 percentiles.
 \index{central credible interval}
@@ -5725,6 +5733,64 @@ interval is the darkest region near the bottom wall.  For higher
 percentages, the credible interval is bigger, of course, and skewed
 toward the right side of the room.
 
+
+\section{Discussion}
+
+This chapter shows that the Bayesian framework from the previous
+chapters can be extended to handle a two-dimensional parameter space.
+The only difference is that each hypothesis is represented by
+a tuple of parameters.
+
+I also presented {\tt Joint} which is a parent class that provides
+{\tt Marginal}, {\tt Conditional} and {\tt MakeLikeInterval}, methods
+that apply to joint distributions.  In object-oriented terms,
+{\tt Joint} is a mixin (see \url{http://en.wikipedia.org/wiki/Mixin}).
+
+This might be a good time to review some of the vocabulary in this
+chapter:
+
+\begin{description}
+
+\item[Joint distribution:] A distribution that represents all possible
+values in a multidimensional space and their probabilities.  The example
+in this chapter is a two-dimensional space made up of the possible
+values of {\tt alpha} and {\tt beta}.  The joint distribution represents
+the probability of each ({\tt alpha}, {\tt beta}) pair.
+
+\item[Marginal distribution:] The distribution of one parameter in a
+joint distribution, treating the other parameters as unknown.  In
+this chapter we computed the distributions of {\tt alpha} and {\tt beta}
+independently.
+
+\item[Conditional distribution:] The distribution of one parameter in
+a joint distribution, conditioned on one or more of the other parameters.
+In this chapter we computed several distributions for {\tt alpha}, conditioned
+on different values of {\tt beta}.
+
+\end{description}
+
+Given the joint distribution, you can compute marginal and conditional
+distributions.  Given enough conditional distributions, you
+can re-create the joint distribution.  But given the marginal distributions
+you cannot re-create the joint distribution because you have lost
+information about the dependence between variables.
+
+If there are $n$ possible values for each of two parameters, most
+operations on the joint distribution take time proportional to $n^2$.
+And if there are $d$ parameters, run time is proportional to $n^d$,
+which quickly becomes impractical as the number of dimensions increases.
+
+If you can process a million hypotheses in a reasonable amount of time,
+you could handle two dimensions with 1000 values for each parameter,
+or three dimensions with 100 values each, or six dimensions with 10
+values each.
+
+If you need more dimensions, or more values per dimension, there are
+lots of tricks and optimizations you can try.  I present an example
+in Chapter~\ref{species}.
+
+You can download the code in this chapter from
+\url{http://thinkbayes.com/paintball.py}.
 
 
 \chapter{Approximate Bayesian Computation}
@@ -6041,7 +6107,7 @@ likelihoods, and densities from continuous distributions tend to be
 small.  And if you take 1000 small values and multiply
 them together, the result is very small.  In this case it is so small
 it can't be represented by a floating-point number, so it gets rounded
-down to zero, which is called ``underflow.''  And if all
+down to zero, which is called {\bf underflow}.  And if all
 probabilities in the distribution are 0, it's not a distribution any
 more.
 \index{underflow}
@@ -6121,7 +6187,7 @@ compute the log (dropping the constant term):
 %
 \[ -\log \sigma -\frac{1}{2} \left( \frac{x-\mu}{\sigma} \right)^2 \]
 %
-and translate into Python:
+which we can translate into Python:
 
 \begin{verbatim}
 # class Height
@@ -6448,7 +6514,7 @@ marginal distribution for {\tt sigma} would look a lot like the
 prior.
 
 
-\section{Who is more variable?}
+\section{Who is more variable}
 
 \begin{figure}
 % variability.py
@@ -6502,7 +6568,7 @@ word.  As we increase \verb"num_sigmas", the measure of variability is
 influenced by an increasing number of people whose stature is affected
 by medical conditions.  How much effect these people should have
 on the result depends on what notion of variability we are trying
-to capture, which depends on theory we are trying to test.
+to capture, which depends on the theory we are trying to test.
 
 In the case of the Variability Hypothesis, I don't think the theory
 is sufficiently well-defined to test, and even if it were, I don't
@@ -6512,6 +6578,37 @@ I hope you agree that this example is interesting, and it helped
 me demonstrate several new ideas, but at this point we have probably
 given the Variability Hypothesis more energy than it deserves, so
 I'll stop here.
+
+
+\section{Discussion}
+
+There are two ways you might think of ABC.  One interpretation
+is that it is, as the name suggests, an approximation that is
+faster to compute than the exact value.
+
+But remember that Bayesian analysis is always
+based on modeling decisions, which implies that there is no
+``exact'' solution.  For any interesting
+physical system there are many possible models, and each model
+yields different results.  To interpret the results, we have to
+evaluate the models.
+\index{modeling}
+
+So another interpretation of ABC is that it represents an alternative
+model of the likelihood.  When we compute \p{D|H}, we are asking
+``What is the likelihood of the data under a given hypothesis?''
+\index{likelihood}
+
+For large datasets, the likelihood of the data is very small, which
+is a hint that we might not be asking the right question.  What
+we really want to know is the likelihood of any outcome
+like the data, where the definition of ``like'' is yet another
+modeling decision.
+
+The underlying idea of ABC is that two datasets alike if they yield
+the same summary statistics.  But in some cases, like the example in
+this chapter, it is not obvious which summary statistics to choose.
+\index{summary statistic}
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/variability.py}.
@@ -6774,7 +6871,7 @@ In summary, we can use Bayesian hypothesis testing to compare the
 likelihood of $F$ and $B$, but we have to do some work to specify
 precisely what $B$ means.  This specification depends on background
 information about coins and their behavior when spun, so people
-could reasonably disagree about the ``right'' definition.
+could reasonably disagree about the right definition.
 
 Depending on which definition we choose, the data might provide
 evidence for or against the hypothesis that the coin is biased, but
@@ -6787,7 +6884,7 @@ You can download the code I used in this chapter from
 \url{http://thinkbayes.com/euro3.py}.
 
 
-\section{Strength of evidence}
+\section{Discussion}
 
 The Bayes factor for \verb"B_uniform" is 0.47, which means
 that the data provide evidence against this hypothesis (compared
@@ -7469,7 +7566,7 @@ have to solve an estimation problem.  For each test-taker
 we have to find the posterior distribution of either
 \verb"p_correct" or \verb"efficacy".
 
-Values like this are called ``nuisance parameters'' because
+Values like this are called {\bf nuisance parameters} because
 we don't care what they are, but we have
 to estimate them to answer the question we care about.
 \index{nuisance parameter}
@@ -7504,7 +7601,7 @@ cells that fall on the line, we added up the total mass and split it
 between $A$ and $B$.
 
 The process we used in this chapter---estimating a nuisance
-variable in order to evaluate the likelihood of competing
+parameter in order to evaluate the likelihood of competing
 hypotheses---is a common Bayesian approach to problems like this.
 
 
@@ -7996,7 +8093,7 @@ spherical geometry.
 To simulate correlated growth, I wrote a generator\footnote{If you are
   not familiar with Python generators, see
   \url{http://wiki.python.org/moin/Generators}.} that yields a
-correlated series from a given CDF.  Here's how the algorithm works:
+correlated series from a given Cdf.  Here's how the algorithm works:
 \index{generator}
 
 \begin{enumerate}
@@ -8011,7 +8108,7 @@ correlated series from a given CDF.  Here's how the algorithm works:
   \index{cumulative probability}
 
 \item Transform each cumulative probability to the corresponding value
-  using the given CDF.
+  using the given Cdf.
 
 \end{enumerate}
 
@@ -8028,7 +8125,7 @@ def CorrelatedGenerator(cdf, rho):
         yield Transform(x)
 \end{verbatim}
 
-{\tt cdf} is the desired CDF; {\tt rho} is the desired correlation.
+{\tt cdf} is the desired Cdf; {\tt rho} is the desired correlation.
 
 The first value of {\tt x} is Gaussian with mean 0 and standard
 deviation 1.  For subsequent values, the mean and standard deviation
@@ -8037,7 +8134,7 @@ next value is $\rho x$, and the variance is $1 - \rho^2$.
 \index{correlated random value}
 
 {\tt Transform} is the function that maps from each
-Gaussian value, {\tt x}, to a value from the given CDF, {\tt y}.
+Gaussian value, {\tt x}, to a value from the given Cdf, {\tt y}.
 
 \begin{verbatim}
     def Transform(x):
@@ -8113,7 +8210,7 @@ Here's the code:
 
 {\tt cm} is the size of the tumor; {\tt age} is the age threshold
 in years.  {\tt ProbOlder} converts size to a bucket number,
-gets the CDF of age conditioned on bucket, and computes the
+gets the Cdf of age conditioned on bucket, and computes the
 probability that age exceeds the given value.
 
 With no serial correlation, the probability that a
@@ -8213,7 +8310,7 @@ We can use these data to answer several related questions:
 
 \end{itemize}
 
-These questions make up what is called the ``unseen species problem.''
+These questions make up what is called the {\bf unseen species problem}.
 \index{Unseen species problem}
 
 
@@ -8387,7 +8484,7 @@ number of species.  To solve this problem I'll define a meta-Suite,
 which is a Suite that contains other Suites as hypotheses.  In this
 case, the top-level Suite contains hypotheses about the number of
 species; the bottom level contains hypotheses about prevalences.
-A multi-level model like this is called ``hierarchical.''
+A multi-level model like this is called {\bf hierarchical}.
 \index{hierarchical model}
 \index{meta-Suite}
 
@@ -9158,7 +9255,7 @@ strings with a unique name for each species.
 {\tt n} is a random value from the posterior distribution, and
 {\tt observations} is a random sequence of species names.
 
-The result of {\tt RunSimulation} is a ``rarefaction curve'',
+The result of {\tt RunSimulation} is a {\bf rarefaction curve},
 represented as a list of pairs with the number of reads and
 the number of new species seen.
 \index{rarefaction curve}
@@ -9287,7 +9384,7 @@ def MakeJointPredictive(curves):
 \end{verbatim}
 
 {\tt MakeJointPredictive} makes a Joint object, which is a
-{\tt Pmf} whose values are tuples.
+Pmf whose values are tuples.
 \index{Joint object}
 
 {\tt curves} is a list of rarefaction curves created by
