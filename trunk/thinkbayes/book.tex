@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.26}
+\newcommand{\theversion}{0.27}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -219,9 +219,9 @@ present ideas in terms of mathematical concepts like calculus.
 This book uses Python code instead of math and discrete approximations
 instead of continuous mathematics.  As a result, what would
 be an integral in a math book becomes a summation, and
-most operations on distributions are simple loops.
+most operations on probability distributions are simple loops.
 
-This presentation is easier to understand, at least for people with
+I think this presentation is easier to understand, at least for people with
 programming skills.  It is also more general, because when we make
 modeling decisions, we can choose the most appropriate model without
 worrying too much about whether the model lends itself to conventional
@@ -231,7 +231,7 @@ Also, it provides a smooth development path from
 simple examples to real-world problems.  Chapter~\ref{estimation} is a
 good example.  It starts with a simple example involving dice, one of
 the staples of basic probability.  From there it proceeds in small
-steps to the Locomotive Problem, which I borrowed from Mosteller's,
+steps to the Locomotive Problem, which I borrowed from Mosteller's
 {\it Fifty Challenging Problems in Probability}, and from there to the
 German Tank Problem, a famously-successful application of Bayesian
 methods during World War II.
@@ -260,7 +260,7 @@ the U.S.).  I start with a simple model that assumes that all SAT
 questions are equally difficult, but in fact the designers of the SAT
 deliberately include some questions that are relatively easy and some
 that are relatively hard.  I present a second model that includes this
-feature, and conclude that it doesn't have a big effect on the results
+feature, and show that it doesn't have a big effect on the results
 after all.
 
 I think it is important to include modeling as an explicit part
@@ -270,11 +270,11 @@ of the model.
 
 Many of the methods in this book are based on discrete distributions,
 which makes some people worry about numerical errors.  But for
-real-world problems, numerical errors are almost always much
+real-world problems, numerical errors are almost always
 smaller than modeling errors.
 
 Furthermore, the discrete approach often allows better modeling
-decisions; in that case, I would rather have an approximate solution
+decisions, and I would rather have an approximate solution
 to a good model than an exact solution to a bad model.
 
 On the other hand, continuous methods sometimes yield performance
@@ -290,7 +290,7 @@ So I recommend a general process with these steps:
   correct.  Focus your attention on good modeling decisions, not
   optimization.
 
-\item Once you have a simple model working, try to identify the
+\item Once you have a simple model working, identify the
   biggest sources of error.  You might need to increase the number of
   values in a discrete approximation, or increase the number of
   iterations in a Monte Carlo simulation, or add details to the model.
@@ -298,9 +298,10 @@ So I recommend a general process with these steps:
 \item If the performance of your solution is good enough for your
   application, you might not have to do any optimization.  But if you
   do, there are two approaches to consider.  You can review your code
-  and look for optimizations; for example, caching previously computed
-  results to avoid redundant computation.  Or you can look for
-  analytic methods that yield computational short-cuts.
+  and look for optimizations; for example, if you cache previously
+  computed results you might be able to avoid redundant computation.
+  Or you can look for analytic methods that yield computational
+  short-cuts.
 
 \end{enumerate}
 
@@ -311,13 +312,13 @@ of them.
 Another benefit is that if you get to Step 3, you will be starting
 with a reference implementation that is likely to be correct,
 which you can use for regression testing (that is, checking that the
-optimized code yields the same answer, at least approximately).
+optimized code yields the same results, at least approximately).
 \index{regression testing}
 
 
 \subsection*{Working with the code}
 
-Many of the code examples in this book use classes and functions
+Many of the examples in this book use classes and functions
 defined in {\tt thinkbayes.py}.  You can download this module
 from \url{http://thinkbayes.com/thinkbayes.py}.
 
@@ -328,7 +329,7 @@ keep all of these files in the same directory so they can import
 each other without changing the Python path.
 
 You can download these files one at a time when you need them, or you
-can download them all at once in a zip file,
+can download them all at once from
 \url{http://thinkbayes.com/thinkbayes_code.zip}.  This file also
 contains the data files used by some of the programs.  When you unzip
 it, it creates a directory named \verb"thinkbayes_code" that contains
@@ -362,8 +363,8 @@ a capital letter and use camel case, \verb"LikeThis".
 
 I broke this rule because I developed some of the code
 while I was a Visiting Scientist at Google, so I followed
-the Google style guide for Python, which deviates from PEP 8 in a few
-places.  Also, once I got used to Google style, I found that I liked
+the Google style guide, which deviates from PEP 8 in a few
+places.  Once I got used to Google style, I found that I liked
 it.  And at this point, it would be too much trouble to change.
 
 Also on the topic of style, I choose to write ``Bayes's Theorem''
@@ -372,7 +373,7 @@ style guides and deprecated in others.  I don't have a strong
 preference.  I had to choose one, and I chose this one.
 
 And finally one typographical note: throughout the book, I use
-PDF and CDF to refer to the mathematical concept of a probability
+PDF and CDF for the mathematical concept of a probability
 density function or cumulative density function, and Pdf and Cdf
 to refer to the Python objects I use to represent them.
 
@@ -386,15 +387,15 @@ to get started with these modules, and I want to keep the
 prerequisites minimal.  If you know Python and a little bit about
 probability, you are ready to start this book.
 
-Chapter 1 is about probability and Bayes's Theorem; it has no code.
-Chapter 2 introduces Pmf, a thinly disguised Python dictionary
-I use to represent a probability mass function (PMF).  Then
-Chapter 3 introduces {\tt Suite}, a kind of Pmf that provides
-a framework for doing Bayesian updates.  And that's just about
-all there is to it.
+Chapter~\ref{intro} is about probability and Bayes's Theorem; it has
+no code.  Chapter~\ref{compstat} introduces {\tt Pmf}, a thinly disguised
+Python dictionary I use to represent a probability mass function
+(PMF).  Then Chapter~\ref{estimation} introduces {\tt Suite}, a kind
+of Pmf that provides a framework for doing Bayesian updates.  And
+that's just about all there is to it.
 
-Well, almost.  In some of the later chapters, I use common
-analytic distributions, including the Gaussian (normal) distribution,
+Well, almost.  In some of the later chapters, I use
+analytic distributions including the Gaussian (normal) distribution,
 the exponential and Poisson distributions, and the beta distribution.
 In Chapter~\ref{species} I break out the less-common Dirichlet
 distribution, but I explain it as I go along.  If you are not familiar
@@ -406,6 +407,7 @@ purposes).
 
 
 Allen B. Downey \\*
+
 Needham MA \\*
 
 Allen B. Downey is a Professor of Computer Science at 
@@ -423,7 +425,7 @@ feedback, I will add you to the contributor list
 
 If you include at least part of the sentence the
 error appears in, that makes it easy for me to search.  Page and
-section numbers are fine, too, but not quite as easy to work with.
+section numbers are fine, too, but not as easy to work with.
 Thanks!
 
 \small
@@ -433,7 +435,7 @@ Thanks!
 \item First, I have to acknowledge David MacKay's excellent book,
   {\it Information Theory, Inference, and Learning Algorithms} which is
   where I first came to understand Bayesian methods.  With his
-  permission (and with acknowledgment) I use several problems from
+  permission I use several problems from
   his book as examples.
 
 \item This book has also benefited from my interactions with Sanjoy
@@ -456,7 +458,7 @@ Thanks!
 
 \item Robert Marcus found a misplaced {\it i}.
 
-\item Max Hailperin suggests a clarification in Chapter 1.
+\item Max Hailperin suggested a clarification in Chapter 1.
 
 \item Markus Dobler pointed out that drawing cookies from a bowl
 with replacement is an unrealistic scenario.
@@ -466,11 +468,11 @@ with replacement is an unrealistic scenario.
 
 \item Ram Limbu found a typo and suggested a clarification.
 
-\item In Spring 2013, students in Computational Bayesian statistics
-  made many helpful corrections and suggestions: Kai Austin, Claire
-  Barnes, Kari Bender, Rachel Boy, Kat Mendoza, Arjun Iyer, Ben Kroop,
-  Nathan Lintz, Kyle McCannaughay, Alec Radford, Brendan Ritter and
-  Evan Simpson.
+\item In Spring 2013, students in my class, Computational Bayesian
+  Statistics, made many helpful corrections and suggestions: Kai
+  Austin, Claire Barnes, Kari Bender, Rachel Boy, Kat Mendoza, Arjun
+  Iyer, Ben Kroop, Nathan Lintz, Kyle McConnaughay, Alec Radford,
+  Brendan Ritter and Evan Simpson.
 
 \item Greg Marra and Matt Aasted helped me clarify the discussion of
   {\it The Price is Right} problem.
@@ -526,7 +528,7 @@ that the fact is false.
 \index{degree of belief}
 
 Intermediate values represent degrees of certainty.  The value 0.5,
-often represented as 50\%, means that a predicted outcome is
+often written as 50\%, means that a predicted outcome is
 as likely to happen as not.  For example, the probability that a tossed
 coin lands face up is very close to 50\%.
 \index{coin toss}
@@ -535,7 +537,7 @@ A conditional probability is a probability based on some background
 information.  For example, I might be interested in the probability
 that I will have a heart attack in the next year.  According to the
 CDC, ``Every year about 785,000 Americans have a first coronary attack.
-(\url{http://www.cdc.gov/heartdisease/facts.htm})''
+[\url{http://www.cdc.gov/heartdisease/facts.htm}]''
 \index{heart attack}
 
 The U.S. population is about 311 million, so the probability that a
@@ -581,29 +583,24 @@ face up, and $B$ means the second coin lands face up, then $\p{A} =
 \p{B} = 0.5$, and sure enough, $\p{A \AND B} = \p{A}~\p{B} = 0.25$.
 
 But this formula only works because in this case $A$ and $B$ are
-independent; that is, the second event does not depend on the first.
-If you tell me the first coin is heads, that does not change \p{B}.
+independent; that is, knowing the outcome of the first event does
+not change the probability of the second.  Or, more formally,
+\p{B|A} = \p{B}.
 \index{independence}
 \index{dependence}
 
 Here is a different example where the events are not independent.
-Suppose again that $A$ means the first coin lands face up, but let's
-add $C$, which means that {\em both} coins land face up.  What is the
-probability of both events, \p{A \AND C}?
-
-These events are dependent because if we know whether or not $A$ is
-true, that changes \p{C}.  Specifically, if $A$ is true then $\p{C}
-= 0.5$; but if $A$ is false $\p{C} = 0$.
-
-To be more precise, I should not say that \p{C} changes, but
-rather that the conditional probabilities are different: $\p{C|A} = 0.5$
-and $\p{C| \NOT A} = 0$.
+Suppose that $A$ means that it rains today and $B$ means that it
+rains tomorrow.  If I know that it rained today, it is more likely
+that it will rain tomorrow, so $\p{B|A} > \p{B}$.
 
 In general, the probability of a conjunction is
 %
-\[ \p{A \AND C} = \p{A}~\p{C|A} \]
+\[ \p{A \AND B} = \p{A}~\p{B|A} \]
 %
-for any $A$ and $C$.  In this example, \p{A \AND C} = (0.5)(0.5) = 0.25.
+for any $A$ and $B$.  So if the chance of rain on any given day
+is 0.5, the chance of rain on two consecutive days is not
+0.25, but probably a bit higher.
 
 
 \section{The Cookie Problem}
@@ -628,7 +625,7 @@ different question---the probability of a vanilla cookie given Bowl
 %
 \p{\T{vanilla} | \T{Bowl 1}} = 3/4
 %
-Unfortunately, \p{A|B} is {\em not} the same as \p{B|A}.  But there
+Sadly \p{A|B} is {\em not} the same as \p{B|A}, but there
 is a way to get from one to the other: Bayes's Theorem.
 
 
@@ -652,7 +649,7 @@ are interchangeable.  Interchanging them yields
 %
 \[ \p{B \AND A} = \p{B}~\p{A|B} \]
 %
-And that's all we need.  Pulling those pieces together, we get
+That's all we need.  Pulling those pieces together, we get
 %
 \[ \p{B}~\p{A|B} = \p{A}~\p{B|A} \]
 %
@@ -666,8 +663,8 @@ Finally we can divide through by \p{B}:
 %
 \[ \p{A|B} = \frac{\p{A}~\p{B|A}}{\p{B}} \]
 %
-And that's Bayes's Theorem!  It doesn't look like much, but
-it is a surprisingly powerful idea.
+And that's Bayes's Theorem!  It might not look like much, but
+it turns out to be surprisingly powerful.
 
 For example, we can use it to solve the Cookie Problem.  I'll write
 $B_1$ for the hypothesis that the cookie came from Bowl 1
@@ -699,7 +696,7 @@ chocolate cookies, so \p{V} = 5/8.
 
 Putting it together, we have 
 %
-\[ \p{B_1|V} = \frac{(1/2)(3/4)}{5/8} \]
+\[ \p{B_1|V} = \frac{(1/2)~(3/4)}{5/8} \]
 %
 which reduces to 3/5.  So the vanilla cookie is evidence in favor of
 the hypothesis that we chose Bowl 1, because vanilla cookies are more
@@ -707,7 +704,7 @@ likely to come from Bowl 1.
 \index{evidence}
 
 This example demonstrates one use of Bayes's Theorem: it provides
-a process to get from \p{B|A} to \p{A|B}.  This strategy is useful
+a strategy to get from \p{B|A} to \p{A|B}.  This strategy is useful
 in cases, like the Cookie Problem, where it is easier to compute
 the terms on the right side of Bayes's Theorem than the term on the
 left.
@@ -722,8 +719,8 @@ some body of data, $D$.
 
 This way of thinking about Bayes's Theorem is called the
 {\bf diachronic interpretation}.  ``Diachronic'' means that something
-is happening over time; in this case there is an implicit notion
-that the probability of the hypotheses changes, over time, as
+is happening over time; in this case
+the probability of the hypotheses changes, over time, as
 we see new data.
 
 Rewriting Bayes's Theorem with $H$ and $D$ yields:
@@ -752,7 +749,7 @@ called the {\bf normalizing constant}.
 
 \end{itemize}
 
-In some cases, we can compute the prior based on background
+Sometimes we can compute the prior based on background
 information.  For example, the Cookie Problem specifies that we choose
 a bowl at random with equal probability.
 
@@ -764,7 +761,7 @@ differently.
 
 The likelihood is usually the easiest part to compute.  In the
 Cookie Problem, if we know which bowl the cookie came from,
-we can get the probability of getting a vanilla cookie by counting.
+we find the probability of a vanilla cookie by counting.
 
 The normalizing constant can be tricky.  It is supposed to be the
 probability of seeing the data under any hypothesis at all, but in the
@@ -777,11 +774,11 @@ that are
 
 \begin{description}
 
-\item[Mutually exclusive:] which means that only one hypothesis in
+\item[Mutually exclusive:] At most one hypothesis in
 the set can be true, and
 
-\item[Collectively exhaustive:] which means that there are no other
-possibilities; one of the hypotheses has to be true.
+\item[Collectively exhaustive:] There are no other
+possibilities; at least one of the hypotheses has to be true.
 
 \end{description}
 
@@ -836,7 +833,7 @@ solve them computationally.
 \index{table method}
 
 The first step is to enumerate the hypotheses.  The bag the yellow
-\MM came from I'll call Bag 1; I'll call the other Bag 2.  So
+\MM~came from I'll call Bag 1; I'll call the other Bag 2.  So
 the hypotheses are:
 
 \begin{itemize}
@@ -861,14 +858,14 @@ B  &  1/2  &  (10)(14)  &   70  &  7/27 \\
 \end{tabular}
 
 The first column has the priors.
-Since there is one bag from 1994 and one from 1996,
+Based on the statement of the problem,
 it is reasonable to choose $\p{A} = \p{B} = 1/2$.
 
 The second column has the likelihoods, which follow from the
-information in the problem.  If $A$ is true, the yellow \MM~came from
-the 1994 bag with probability 20\%, and the green came from the 1996
-bag with probability 20\%.  Because the selections are independent, we
-get the conjoint probability by multiplying.
+information in the problem.  For example, if $A$ is true, the yellow
+\MM~came from the 1994 bag with probability 20\%, and the green came
+from the 1996 bag with probability 20\%.  Because the selections are
+independent, we get the conjoint probability by multiplying.
 \index{independence}
 
 The third column is just the product of the previous two.
@@ -914,7 +911,7 @@ games on the show.  If you are on the show, here's what happens:
 \item The object of the game is to guess which door has the car.  If
   you guess right, you get to keep the car.
 
-\item So you pick a door, which we will call Door A.  We'll call the
+\item You pick a door, which we will call Door A.  We'll call the
   other doors B and C.
 
 \item Before opening the door you chose, Monty increases the
@@ -945,8 +942,8 @@ pieces, and maybe convince ourselves that the correct answer is,
 in fact, correct.
 
 To start, we should make a careful statement of the data.  In
-this case $D$ consists of two parts: Monty chooses Door B,
-and there is no car there.
+this case $D$ consists of two parts: Monty chooses Door B
+{\em and} there is no car there.
 
 Next we define three hypotheses: $A$, $B$, and $C$ represent the
 hypothesis that the car is behind Door A, Door B, or Door C.
@@ -1035,12 +1032,13 @@ and \p{B}.
 \index{divide-and-conquer}
 
 If the Monty Hall problem is your idea of fun, I have collected a
-number of similar problem in an article called ``All your Bayes are
+number of similar problems in an article called ``All your Bayes are
 belong to us,'' which you can read at
 \url{http://allendowney.blogspot.com/2011/10/all-your-bayes-are-belong-to-us.html}.
 
 
 \chapter{Computational statistics}
+\label{compstat}
 
 \section{Distributions}
 
@@ -1058,16 +1056,18 @@ word appears in common English usage.  You could build a distribution
 that includes each word and how many times it appears.
 \index{word frequency}
 
-In Python, you could represent a distribution with a dictionary that
-maps from each value to its probability.  As an alternative, I have
-written a class called {\tt Pmf} that represents a distribution.  PMF
-stands for {\bf probability mass function} which is a specific
-kind of distribution (we'll see others soon).
+To represent a distribution in Python, you could use a dictionary that
+maps from each value to its probability.  I have written a class
+called {\tt Pmf} that uses a Python dictionary in exactly that way,
+and provides a number of useful methods.
+I called the class Pmf in reference to 
+a {\bf probability mass function}, which is a way to
+represent a distribution mathematically.
 \index{probability mass function}
 \index{Pmf class}
 
 {\tt Pmf} is defined in a Python module I wrote to accompany this
-book, called {\tt thinkbayes.py}.  You can download it from
+book, {\tt thinkbayes.py}.  You can download it from
 \url{http://thinkbayes.com/thinkbayes.py}.  To use {\tt Pmf} you
 can import it like this:
 
@@ -1114,7 +1114,7 @@ probabilities by dividing through by the total number of words.  {\tt
 pmf.Normalize()
 \end{verbatim}
 
-Once you have made a Pmf object, you can ask for the probability
+Once you have a Pmf object, you can ask for the probability
 associated with any value:
 \index{Prob}
 
@@ -1208,7 +1208,7 @@ class Cookie(Pmf):
 
 A Cookie object is a Pmf that maps from hypotheses to their
 probabilities.  The \verb"__init__" method gives each hypothesis
-the same probability.  As in the previous section, there are
+the same prior probability.  As in the previous section, there are
 two hypotheses:
 
 \begin{verbatim}
@@ -1476,8 +1476,8 @@ Next I map from the name of the hypothesis to the representation:
 \end{verbatim}
 
 And finally I can write \verb"Likelihood".  In this case
-the hypothesis, \verb"hypo" is a string, \verb"A" or \verb"B".
-The data is a tuple that specifies a bag, \verb"bag1" or \verb"bag2",
+the hypothesis, \verb"hypo" is a string, either \verb"A" or \verb"B".
+The data is a tuple that specifies a bag
 and a color.
 
 \begin{verbatim}
