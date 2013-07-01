@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.27}
+\newcommand{\theversion}{0.29}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -373,8 +373,8 @@ style guides and deprecated in others.  I don't have a strong
 preference.  I had to choose one, and I chose this one.
 
 And finally one typographical note: throughout the book, I use
-PDF and CDF for the mathematical concept of a probability
-density function or cumulative density function, and Pdf and Cdf
+PMF and CDF for the mathematical concept of a probability
+mass function or cumulative distribution function, and Pdf and Cdf
 to refer to the Python objects I use to represent them.
 
 
@@ -678,11 +678,11 @@ that we chose a vanilla cookie.  The terms on the right are:
 
 \begin{itemize}
 
-\item \p{B_1}: This is the probability that we chose Bowl 1, unconditioned
+\item $\p{B_1}$: This is the probability that we chose Bowl 1, unconditioned
 by what kind of cookie we got.  Since the problem says we chose a
-bowl at random, we can assume \p{B_1} = 1/2.
+bowl at random, we can assume $\p{B_1} = 1/2$.
 
-\item \p{V|B_1}: This is the probability of getting a vanilla cookie
+\item $\p{V|B_1}$: This is the probability of getting a vanilla cookie
 from Bowl 1, which is 3/4.
 
 \item \p{V}: This is the probability of drawing a vanilla cookie from
@@ -1046,7 +1046,7 @@ In statistics a {\bf distribution} is a set of values and their
 corresponding probabilities.
 \index{distribution}
 
-For example, if you roll a six-sided die, the set of possible
+For example, if you roll a 6-sided die, the set of possible
 values is the numbers 1 to 6, and the probability associated
 with each value is 1/6.
 \index{dice}
@@ -1076,7 +1076,7 @@ from thinkbayes import Pmf
 \end{verbatim}
 
 The following code builds a Pmf to represent the distribution
-of outcomes for a six-sided die:
+of outcomes for a 6-sided die:
 
 \begin{verbatim}
 pmf = Pmf()
@@ -1548,13 +1548,9 @@ few cases we override {\tt Update}, usually to improve performance.
 \chapter{Estimation}
 \label{estimation}
 
-\section{Which die was it?}
+\section{The dice problem}
 
 \index{Dice problem}
-This problem is based on an example I saw in Sanjoy Mahajan's class on
-Bayesian inference.  You can download the code in this section from
-\url{http://thinkbayes.com/dice.py}.
-
 Suppose I have a box of dice that contains a 4-sided die, a 6-sided
 die, an 8-sided die, a 12-sided die and a 20-sided die.  If you
 have ever played {\it Dungeons~\&~Dragons}, you know what I am talking about.
@@ -1585,7 +1581,7 @@ I'll use the integers 4, 6, 8, 12, and 20 to represent hypotheses:
 \end{verbatim}
 
 And integers from 1 to 20 for the data.
-I chose these representations because they make it easy to
+These representations make it easy to
 write the likelihood function:
 
 \begin{verbatim}
@@ -1646,15 +1642,18 @@ die seems quite likely.  Here are the results:
 Now the probability is 94\% that we are rolling the 8-sided die,
 and less than 1\% for the 20-sided die.
 
+The dice problem is based on an example I saw in Sanjoy Mahajan's class on
+Bayesian inference.  You can download the code in this section from
+\url{http://thinkbayes.com/dice.py}.
+
 
 \section{The Locomotive problem}
 
 \index{locomotive problem}
 \index{Mosteller, Frederick}
 \index{German tank problem}
-The locomotive problem is a classic also
-known as the ``German tank problem.''  Here is the version
-that appears in Mosteller, {\it Fifty Challenging Problems in
+I found the locomotive problem 
+in Mosteller, {\it Fifty Challenging Problems in
   Probability}:
 
 \begin{quote}
@@ -1687,14 +1686,12 @@ on a uniform prior.}
 \label{fig.train1}
 \end{figure}
 
-We don't have much basis to choose a prior, but we can
-start with something simple and
-then evaluate alternatives.  So let's assume that $N$ is less
-than 1000, and equally likely to be any value from 1 to 1000.
+We don't have much basis to choose a prior, but we can start with
+something simple and then consider alternatives.  Let's assume that
+$N$ is equally likely to be any value from 1 to 1000.
 
 \begin{verbatim}
     hypos = xrange(1, 1001)
-    suite = Train(hypos)
 \end{verbatim}
 
 Now all we need is a likelihood function.  In a hypothetical fleet of
@@ -1723,32 +1720,27 @@ problem and the Dice problem are identical.
 Here's the update:
 
 \begin{verbatim}
+    suite = Train(hypos)
     suite.Update(60)
 \end{verbatim}
 
-Since there are 1000 hypotheses, I didn't print the results.
-Instead I used {\tt thinkplot.Pmf}:
-\index{thinkplot}
+There are too many hypotheses to print, so I plotted the
+results in Figure~\ref{fig.train1}.  Not surprisingly, all
+values of $N$ below 60 have been eliminated.
 
-\begin{verbatim}
-    thinkplot.Pmf(suite)
-    thinkplot.Show(xlabel='Number of trains',
-                ylabel='Probability')
-\end{verbatim}
-
-The result is in Figure~\ref{fig.train1}.  Not surprisingly, all
-values of $N$ below 60 have been eliminated.  The most likely
+The most likely
 value, if you had to guess, is 60.  That might not seem like
 a very good guess; after all, what are the chances that you just
 happened to see the train with the highest number?
-
 Nevertheless, if you want to maximize the chance of getting
-the answer exactly right, you should guess 60.  But maybe that's
-not the right goal.  One alternative is to compute the
+the answer exactly right, you should guess 60.
+
+But maybe that's
+not the right goal.  An alternative is to compute the
 mean of the posterior distribution:
 
 \begin{verbatim}
-def Mean(suite): 
+def Mean(suite):
     total = 0
     for hypo, prob in suite.Items():
         total += hypo * prob
@@ -1763,10 +1755,10 @@ Or you could use the very similar method provided by {\tt Pmf}:
     print suite.Mean()
 \end{verbatim}
 
-The mean of this posterior distribution is 333, so that might be a
+The mean of the posterior is 333, so that might be a
 good guess if you wanted to minimize error.  If you played this
 guessing game over and over, using the mean of the posterior as your
-estimate would minimize the total squared error over the long run (see
+estimate would minimize the mean squared error over the long run (see
 \url{http://en.wikipedia.org/wiki/Minimum_mean_square_error}).
 \index{mean squared error}
 
@@ -1776,7 +1768,7 @@ You can download this example from \url{http://thinkbayes.com/train.py}.
 \section{What about that prior?}
 
 To make any progress on the Locomotive problem we had to make
-some assumptions, and some of them were pretty arbitrary.  In
+assumptions, and some of them were pretty arbitrary.  In
 particular, we chose a uniform prior from 1 to 1000, without
 much justification for choosing 1000, or for choosing a uniform
 distribution.
@@ -1892,10 +1884,9 @@ And here's the code that constructs the prior:
 Again, the upper bound is arbitrary, but with a power law
 prior, the posterior is less sensitive to this choice.
 
-Figure~\ref{fig.train4} shows the distribution after
-we see train 60, comparing the posterior based on the power
-law prior to the posterior based on a uniform prior, both
-with upper bound 1000.  Using the additional background
+Figure~\ref{fig.train4} shows the new posterior based on
+the power law, compared to the posterior based on the
+uniform prior.  Using the background information
 represented in the power law prior, we can all but eliminate
 values of $N$ greater than 700.
 
@@ -1935,7 +1926,7 @@ value with maximum likelihood.
 
 For intervals we usually report two values computed
 so that there is a 90\% chance that the unknown value falls
-between them, or 95\%, or some other value.
+between them (or any other probability).
 These values define a {\bf credible interval}.
 
 A simple way to compute a credible interval is to add up the
@@ -1998,14 +1989,14 @@ And {\tt Cdf} provides a function named \verb"Percentile"
 \end{verbatim}
 
 Converting from a Pmf to a Cdf takes time proportional to the number
-of values.  The Cdf stores the values and probabilities in sorted
-lists, so looking up a probability to get the corresponding value
-takes ``log time,'' that is, time proportional to the logarithm of the
-number of values.  Looking up a value to get the corresponding
-probability is also logarithmic, so Cdfs are efficient for many
-calculations.
+of values, {\tt len(pmf)}.  The Cdf stores the values and
+probabilities in sorted lists, so looking up a probability to get the
+corresponding value takes ``log time,'' that is, time proportional to
+the logarithm of the number of values.  Looking up a value to get the
+corresponding probability is also logarithmic, so Cdfs are efficient
+for many calculations.
 
-The examples in this section are in \url{http://thinkbayes.com/train.py}.
+The examples in this section are in \url{http://thinkbayes.com/train3.py}.
 
 
 \begin{exercise}
@@ -2021,7 +2012,6 @@ care about).
 But suppose instead that there are many companies with different
 numbers of trains.  And suppose that you are equally likely to see any
 train operated by any company.
-
 In that case, the likelihood function is different because you
 are more likely to see a train operated by a large company.
 
@@ -2031,6 +2021,43 @@ of the Locomotive problem, and compare the results.
 \end{exercise}
 
 
+\section{The German Tank Problem}
+
+During World War II, the Economic Warfare Division of the American
+Embassy in London used statistical analysis to estimate German
+production of tanks and other equipment\footnote{Ruggles and Brodie,
+  ``An Empirical Approach to Economic Intelligence in World War II,''
+  {\em Journal of the American Statistical Association}, Vol. 42,
+  No. 237 (March 1947).}.
+
+The Western Allies had captured log books, inventories, and repair
+records that included chassis and engine serial numbers for individual
+tanks.
+
+Analysis of these records indicated that serial numbers were allocated
+by manufacturer and tank type in blocks of 100 numbers, that numbers
+in each block were used sequentially, and that not all numbers in each
+block were used.  So the problem of estimating German tank product
+could be reduced, within each block of 100 numbers, to a form of the
+Locomotive problem.
+
+Based on this insight, American and British analysts produced
+estimates substantially lower than estimates from other forms
+of intelligence.  And after the war, records indicated that they were
+substantially more accurate.
+
+They performed similar analyses for tires, trucks, rockets, and other
+equipment, yielding accurate and actionable economic intelligence.
+
+The German Tank problem is historically interesting; it is also a nice
+example of real-world application of statistical estimation.  So far
+many of the examples in this book have been toy problems with coins
+and dice, but it will not be long before we start solving real
+problems.  I think it is an advantage of Bayesian analysis, especially
+with the computational approach we are taking, that it provides
+such a short path from a basic introduction to the research frontier.
+
+
 \section{Discussion}
 
 Among Bayesians, there are two approaches to choosing prior
@@ -2038,7 +2065,7 @@ distributions.  Some recommend choosing the prior that best represents
 background information about the problem; in that case the prior
 is said to be {\bf informative}.  The problem with using an informative
 prior is that people might use different background information (or
-interpret it differently).  So informative priors tend to be subjective.
+interpret it differently).  So informative priors often seem subjective.
 \index{informative prior}
 
 The alternative is a so-called {\bf uninformative prior}, which is
@@ -2048,7 +2075,7 @@ that has some desirable property, like representing minimal prior
 information about the estimated quantity.
 \index{uninformative prior}
 
-Uninformative priors are appealing because they seem to be more
+Uninformative priors are appealing because they seem more
 objective.  But I am generally in favor of using informative priors.
 Why?  First, Bayesian analysis is always based on
 modeling decisions.  Choosing the prior is one of those decisions, but
@@ -2073,9 +2100,7 @@ makes a big difference.
 And if, as in the German tank problem, you have to make life-and-death
 decisions based on your results, you should probably use all of the
 information at your disposal, rather than maintaining the illusion of
-objectivity by pretending to know less than you do.  For more about
-the German tank problem, see
-\url{http://en.wikipedia.org/wiki/German_tank_problem}.
+objectivity by pretending to know less than you do.
 \index{German tank problem}
 
 
@@ -2087,7 +2112,7 @@ the German tank problem, see
 \index{Euro problem}
 \index{MacKay David}
 In {\it Information Theory, Inference, and Learning Algorithms}, David MacKay
-poses this question:
+poses this problem:
 
 \begin{quote}
 A statistical statement appeared in ``The Guardian" on Friday January 4, 2002:
@@ -2121,7 +2146,7 @@ for a lopsided coin $x$ might be substantially different.  We can use
 Bayes's Theorem and the observed data to estimate $x$.
 
 Let's define 101 hypotheses, where $H_x$ is the hypothesis that the
-probability of heads is $x$\%, for values of $x$ from 0 to 100.  I'll
+probability of heads is $x$\%, for values from 0 to 100.  I'll
 start with a uniform prior where the probability of $H_x$ is the same
 for all $x$.  We'll come back later to consider other priors.
 \index{uniform distribution}
@@ -2134,7 +2159,7 @@ on a uniform prior.}
 \label{fig.euro1}
 \end{figure}
 
-The likelihood function is relatively easy: If $H_x$ is true, then the
+The likelihood function is relatively easy: If $H_x$ is true, the
 probability of heads is $x/100$ and the probability of tails is $1-
 x/100$.
 
@@ -2159,14 +2184,6 @@ Here's the code that makes the suite and updates it:
         suite.Update(data)
 \end{verbatim}
 
-And then we can plot the posterior.
-\index{thinkplot}
-
-\begin{verbatim}
-    thinkplot.Pmf(suite)
-    thinkplot.Show()
-\end{verbatim}
-
 The result is in Figure~\ref{fig.euro1}.
 
 
@@ -2188,7 +2205,7 @@ def MaximumLikelihood(pmf):
 
 In this case the result is 56, which is also the observed percentage of
 heads, $140/250 = 0.56\%$.  So that suggests (correctly) that the
-percentage in a sample is the maximum likelihood estimator
+observed percentage is the maximum likelihood estimator
 for the population.
 
 We might also summarize the posterior by computing the mean
@@ -2229,7 +2246,7 @@ to ask for the probability that {\tt x} is 50\%:
     print suite.Prob(50)
 \end{verbatim}
 
-The result is 0.021, but that value is pretty much meaningless.  The
+The result is 0.021, but that value is almost meaningless.  The
 decision to evaluate 101 hypotheses was arbitrary; we could have
 divided the range into more or fewer pieces, and if we had, the
 probability for any given hypothesis would be greater or less.
@@ -2253,13 +2270,13 @@ Euro problem.}
 \label{fig.euro3}
 \end{figure}
 
-Again we started with a uniform prior, and again we have to
-acknowledge that it was not a very good choice. I can believe
+We started with a uniform prior, but that might not be a good
+choice.  I can believe
 that if a coin is lopsided, $x$ might deviate substantially from
 50\%, but it seems unlikely that the Belgian Euro coin is so
 imbalanced that $x$ is 10\% or 90\%.
 
-So it might be more reasonable to choose a prior that gives
+It might be more reasonable to choose a prior that gives
 higher probability to values of $x$ near 50\% and lower probability
 to extreme values.
 
@@ -2268,7 +2285,7 @@ Figure~\ref{fig.euro2}.  Here's the code that constructs the prior:
 
 \begin{verbatim}
 def TrianglePrior():
-    suite = Euro(xrange(0, 101))
+    suite = Euro()
     for x in range(0, 51):
         suite.Set(x, x)
     for x in range(51, 101):
@@ -2276,13 +2293,13 @@ def TrianglePrior():
     suite.Normalize()
 \end{verbatim}
 
-Figure~\ref{fig.euro2} shows the result.  Updating this prior
-with the same dataset yields the posterior distribution shown
-in Figure~\ref{fig.euro3}.  Even with substantially different
-priors, the posterior distributions are very similar.  The medians
-and the credible intervals are identical; the means differ by
-less than 0.5\%.
-\index{triangle distribution}
+Figure~\ref{fig.euro2} shows the result (and the uniform prior for
+comparison).
+Updating this prior with the same dataset yields the posterior
+distribution shown in Figure~\ref{fig.euro3}.  Even with substantially
+different priors, the posterior distributions are very similar.  The
+medians and the credible intervals are identical; the means differ by
+less than 0.5\%.  \index{triangle distribution}
 
 This is an example of {\bf swamping the priors}: with enough
 data, people who start with different priors will tend to
@@ -2394,7 +2411,7 @@ There is one more optimization that solves this problem
 even faster.
 
 So far we have used a Pmf object to represent a discrete set of
-possible values for {\tt x}.  Now we will use a continuous
+values for {\tt x}.  Now we will use a continuous
 distribution, specifically the beta distribution (see
 \url{http://en.wikipedia.org/wiki/Beta_distribution}).
 \index{continuous distribution}
@@ -2426,7 +2443,8 @@ approximation, and for a uniform prior there is a perfect match.  The
 beta distribution with {\tt alpha=1} and {\tt beta=1} is uniform from
 0 to 1.
 
-Let's see how we can take advantage of all this.  Here's
+Let's see how we can take advantage of all this.  
+{\tt thinkbayes.py} provides 
 a class that represents a beta distribution:
 \index{Beta object}
 
@@ -2449,11 +2467,18 @@ By default \verb"__init__" makes a uniform distribution.
 \end{verbatim}
 
 {\tt data} is a pair of integers representing the number of
-heads and tails, or in the language of Bernoulli trials: successes
-and failures.
-\index{Bernoulli trials}
+heads and tails.
 
-The mean of a beta distribution is a simple function of {\tt alpha}
+So we have yet another way to solve the Euro problem:
+
+\begin{verbatim}
+    beta = thinkbayes.Beta()
+    beta.Update((140, 110))
+    print beta.Mean()
+\end{verbatim}
+
+{\tt Beta} provides {\tt Mean}, which 
+computes a simple function of {\tt alpha}
 and {\tt beta}:
 
 \begin{verbatim}
@@ -2461,18 +2486,12 @@ and {\tt beta}:
         return float(self.alpha) / (self.alpha + self.beta)
 \end{verbatim}
 
-So we have yet another way to solve the Euro problem:
+For the Euro problem the posterior mean is 56\%, which is the
+same result we got using Pmfs.  
 
-\begin{verbatim}
-    beta = Beta()
-    beta.Update((140, 110))
-    print beta.Mean()
-\end{verbatim}
-
-The posterior mean is 56\% (again).  To get the probability for
-any value of {\tt x}, we can evaluate the probability density
-function (PDF) of the beta
-distribution:
+{\tt Beta} also provides {\tt EvalPdf}, which evaluates
+the probability density
+function (PDF)  of the beta distribution:
 \index{probability density function}
 \index{PDF}
 
@@ -2481,23 +2500,24 @@ distribution:
         return x**(self.alpha-1) * (1-x)**(self.beta-1)
 \end{verbatim}
 
-This expression might look familiar.  Here's {\tt
-  thinkbayes.EvalBinomialPmf}
+Finally, {\tt Beta} provides {\tt MakePmf}, which
+uses {\tt EvalPdf} to generate a discrete approximation
+of the beta distribution.
 
-\begin{verbatim}
-def EvalBinomialPmf(x, yes, no): 
-    return x**yes * (1-x)**no
-\end{verbatim}
+%This expression might look familiar.  Here's {\tt
+%  thinkbayes.EvalBinomialPmf}
 
-It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
-random variable and {\tt alpha} and {\tt beta} as parameters; in {\tt
-  EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and {\tt
-  no} are random variables.  Distributions like these that share the
-same PDF are called {\bf conjugate distributions}.
-\index{conjugate distribution}
+%\begin{verbatim}
+%def EvalBinomialPmf(x, yes, no): 
+%    return x**yes * (1-x)**no
+%\end{verbatim}
 
-{\tt Beta} is defined in \url{http://thinkbayes.com/thinkbayes.py}.
-\index{Beta object}
+%It's the same function, but in {\tt EvalPdf}, we think of {\tt x} as a
+%random variable and {\tt alpha} and {\tt beta} as parameters; in {\tt
+%  EvalBinomialPmf}, {\tt x} is the parameter, and {\tt yes} and {\tt
+%  no} are random variables.  Distributions like these that share the
+%same PDF are called {\bf conjugate distributions}.
+%\index{conjugate distribution}
 
 
 \section{Discussion}
@@ -2520,13 +2540,13 @@ by data.
 But that is not always the case.  First, remember that all Bayesian
 analysis is based on modeling decisions.  If you and I do not
 choose the same model, we might interpret data differently.  So
-even with the same data, we might compute different likelihoods,
-and our posterior beliefs would not converge.
+even with the same data, we would compute different likelihoods,
+and our posterior beliefs might not converge.
 \index{modeling}
 
 Also, notice that in a Bayesian update, we multiply
 each prior probability by a likelihood, so if \p{H} is 0,
-\p{H|E} is also 0, regardless of \p{E|H}.  In the Euro coin problem,
+\p{H|D} is also 0, regardless of $D$.  In the Euro coin problem,
 if you are convinced that $x$ is less than 50\%, and you assign
 probability 0 to all other hypotheses, no amount of data will
 convince you otherwise.
@@ -2540,8 +2560,8 @@ recommendation that you should avoid giving a prior probability of
 
 Cromwell's rule is named after Oliver Cromwell, who wrote, ``I beseech
 you, in the bowels of Christ, think it possible that you may be
-mistaken.''  For Bayesians, this turns out to be good advice (but
-maybe a little overwrought).
+mistaken.''  For Bayesians, this turns out to be good advice (even if
+it's a little overwrought).
 \index{Cromwell, Oliver}
 
 
@@ -2577,10 +2597,10 @@ giving an ``upvote'' to high-quality links and a ``downvote'' to
 links that are bad or irrelevant.
 
 A problem, identified by dominosci, is that some redditors
-are more reliable than others, and Reddit does not currently take
+are more reliable than others, and Reddit does not take
 this into account.
 
-So the challenge is to devise a system so that when a redditor
+The challenge is to devise a system so that when a redditor
 casts a vote, the estimated quality of the link is updated
 in accordance with the reliability of the redditor, and the
 estimated reliability of the redditor is updated in accordance
@@ -2609,8 +2629,8 @@ another representation of probability, called {\bf odds}.
 \index{odds}
 
 You might have heard expressions like ``the odds are
-three to one against,'' but you might not know what they mean.  
-The odds in favor of an event are the ratio of the probability
+three to one,'' but you might not know what they mean.  
+The {\bf odds in favor} of an event are the ratio of the probability
 it will occur to the probability that it will not.
 
 So if I think my team has a 75\% chance of winning, I would
@@ -2622,7 +2642,7 @@ write them as a ratio of integers.  So ``three to one'' is
 written $3:1$.
 
 When probabilities are low, it is more common to report the
-``odds against'' rather than the odds in favor.  For
+{\bf odds against} rather than the odds in favor.  For
 example, if I think my horse has a 10\% chance of winning,
 I would say that the odds against are $9:1$.
 
@@ -2670,15 +2690,22 @@ form}:
 %
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
 %
-If we define $\bar{H}$ as ``hypothesis H is false'', we can write the
-odds in favor of $H$ like this:
+If we have two hypotheses, $A$ and $B$, 
+we can write the ratio of posterior probabilities like this:
 %
-\[ \frac{\p{H|D}}{\p{\bar{H}|D}} = \frac{\p{H}~\p{D|H}}
-                                        {\p{\bar{H}}~\p{D|\bar{H}}} \]
+\[ \frac{\p{A|D}}{\p{B|D}} = \frac{\p{A}~\p{D|A}}
+                                        {\p{B}~\p{D|B}} \]
 %
-Or writing \odds{H} for odds in favor of H:
+Notice that the normalizing constant, \p{D}, drops out of
+this equation.
+
+If $A$ and $B$ are mutually exclusive and collectively exhaustive,
+that means $\p{B} = 1 - \p{A}$, so we can rewrite the ratio of
+the priors, and the ratio of the posteriors, as odds.
+
+Writing \odds{A} for odds in favor of $A$, we get:
 %
-\[ \odds{H|D} = \odds{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+\[ \odds{A|D} = \odds{A} \frac{\p{D|A}}{\p{D|B}} \]
 %
 In words, this says that the posterior odds are the prior odds times
 the likelihood ratio.  This is the {\bf odds form} of Bayes's Theorem.
@@ -2736,11 +2763,11 @@ that the vanilla cookie is evidence in favor of Bowl 1.
 The odds form of Bayes's Theorem provides a way to make this
 intuition more precise.  Again
 %
-\[ \odds{H|D} = \odds{H} \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+\[ \odds{A|D} = \odds{A} \frac{\p{D|A}}{\p{D|B}} \]
 %
-Or dividing through by \odds{H}:
+Or dividing through by \odds{A}:
 %
-\[ \frac{\odds{H|D}}{\odds{H}} = \frac{\p{D|H}}{\p{D|\bar{H}}} \]
+\[ \frac{\odds{A|D}}{\odds{A}} = \frac{\p{D|A}}{\p{D|B}} \]
 %
 The term on the left is the ratio of the posterior and prior odds.
 The term on the right is the likelihood ratio, also called the {\bf Bayes
@@ -2749,13 +2776,13 @@ factor}.
 \index{Bayes factor}
 
 If the Bayes factor value is greater than $1$, that means that the
-data were more likely under $H$ than under $\bar{H}$.  And since the
+data were more likely under $A$ than under $B$.  And since the
 odds ratio is also greater than $1$, that means that the odds are
 greater, in light of the data, than they were before.
 
 If the Bayes factor is less than $1$, that means the data were
-less likely under $H$ than under $\bar{H}$, so the odds in
-favor of $H$ go down.
+less likely under $A$ than under $B$, so the odds in
+favor of $A$ go down.
 
 Finally, if the Bayes factor is exactly $1$, the data are equally
 likely under either hypothesis, so the odds do not change.
@@ -2808,12 +2835,13 @@ max and min, and mixtures.
 This chapter presents addition and max; I will present
 other operations as we need them.
 
-{\it Dungeons~\&~Dragons} is a role-playing game where the results
+The first example is based on
+{\it Dungeons~\&~Dragons}, a role-playing game where the results
 of players' decisions are usually determined by rolling dice.
 In fact, before game play starts, players generate each
 attribute of their characters---strength, intelligence, wisdom,
 dexterity, constitution, and charisma---by rolling three
-six-sided dice and adding them up.
+6-sided dice and adding them up.
 \index{Dungeons"&Dragons}
 
 So you might be curious to know the distribution of this sum.
@@ -2840,32 +2868,36 @@ a single die as a Pmf:
 class Die(thinkbayes.Pmf):
 
     def __init__(self, sides):
-        d = dict((i, 1) for i in xrange(1, sides+1))
-        thinkbayes.Pmf.__init__(self, d)
+        thinkbayes.Pmf.__init__(self)
+        for x in xrange(1, sides+1):
+            self.Set(x, 1)
         self.Normalize()
 \end{verbatim}
 
-Now I can create a six-sided die:
+Now I can create a 6-sided die:
 
 \begin{verbatim}
 d6 = Die(6)
 \end{verbatim}
 
-And use \verb"SampleSum" to generate a sample of 1000 rolls.
+And use \verb"thinkbayes.SampleSum" to generate a sample of 1000 rolls.
 
 \begin{verbatim}
-def SampleSum(dists, n):
-    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
-    return pmf
-
 dice = [d6] * 3
 three = thinkbayes.SampleSum(dice, 1000)
 \end{verbatim}
 
 \verb"SampleSum" takes list of distributions (either Pmf or Cdf
 objects) and the sample size, {\tt n}.  It generates {\tt n} random
-sums and returns their distribution as a Pmf object.  \verb"SampleSum"
-uses \verb"RandomSum", also in \verb"thinkbayes.py":
+sums and returns their distribution as a Pmf object.
+
+\begin{verbatim}
+def SampleSum(dists, n):
+    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
+    return pmf
+\end{verbatim}
+
+\verb"SampleSum" uses \verb"RandomSum", also in \verb"thinkbayes.py":
 
 \begin{verbatim}
 def RandomSum(dists):
@@ -2873,8 +2905,11 @@ def RandomSum(dists):
     return total
 \end{verbatim}
 
-The drawback of estimating this distribution by simulation is that
-it is only approximately correct.  As \verb"n" gets larger, it gets
+{\tt RandomSum} invokes {\tt Random} on each distribution and
+adds up the results.
+
+The drawback of simulation is that the result
+is only approximately correct.  As \verb"n" gets larger, it gets
 more accurate, but of course the run time increases as well.
 
 The other approach is to enumerate all pairs of values and
@@ -2913,7 +2948,7 @@ by simulation and the exact result computed by enumeration.
 % dungeons.py
 \centerline{\includegraphics[height=2.5in]{figs/dungeons1.pdf}}
 \caption{Approximate and exact distributions for the sum of
-three six-sided dice.}
+three 6-sided dice.}
 \label{fig.dungeons1}
 \end{figure}
 
@@ -2936,7 +2971,7 @@ The code from this section is available from
 \label{fig.dungeons2}
 \end{figure}
 
-When you generate a Dungeons~\&~Dragons character, you are
+When you generate a {\it Dungeons~\&~Dragons} character, you are
 particularly interested in the character's best attributes, so
 you might like to know the
 distribution of the maximum attribute.
@@ -2987,18 +3022,18 @@ def PmfMax(pmf1, pmf2):
 \end{verbatim}
 
 In fact, you could generalize this function by taking the
-appropriate function as a parameter.
+appropriate operator as a parameter.
 
 The only problem with this algorithm is that if each Pmf
 has $m$ values, the run time is proportional to $m^2$.
-And if we want to maximum of {\tt k} selections, it takes
+And if we want the maximum of {\tt k} selections, it takes
 time proportional to $k m^2$
 
 If we convert the Pmfs to Cdfs, we can do the same calculation
 much faster!  The key is to remember the definition of the
 cumulative distribution function:
 %
-\[ CDF(x) = \p{X \le x} \]
+\[ CDF(x) = \p{X \le~x} \]
 %
 where $X$ is a random variable that means ``a value chosen
 randomly from this distribution.''  So, for example, $CDF(5)$
@@ -3072,7 +3107,7 @@ Figure~\ref{fig.dungeons2} shows the distribution.
 \label{fig.dungeons3}
 \end{figure}
 
-Let's do one more example from Dungeons~\&~Dragons.  Suppose
+Let's do one more example from {\it Dungeons~\&~Dragons}.  Suppose
 I have a box of dice with the following inventory:
 
 \begin{verbatim}
@@ -3086,14 +3121,14 @@ I have a box of dice with the following inventory:
 I choose a die from the box and roll it.  What is the distribution
 of the outcome?
 
-If you know which die it was, the answer is easy.  A die with {\tt n}
+If you know which die it is, the answer is easy.  A die with {\tt n}
 sides yields a uniform distribution from 1 to {\tt n}, including both.
 \index{uniform distribution}
 
-But if we don't know which die it was, the resulting distribution is
+But if we don't know which die it is, the resulting distribution is
 a {\bf mixture} of uniform distributions with different bounds.
 In general, this kind of mixture does not fit any simple mathematical
-model, but we it is straightforward to compute the distribution in
+model, but it is straightforward to compute the distribution in
 the form of a PMF.
 \index{mixture}
 
@@ -3104,7 +3139,7 @@ exact solution, we need a different approach.
 \index{simulation}
 
 Let's start with a simple version of the problem where there are
-only two dice, one with 6 sides and one with 8.  We can make Pmfs to
+only two dice, one with 6 sides and one with 8.  We can make a Pmf to
 represent each die:
 
 \begin{verbatim}
@@ -3112,8 +3147,7 @@ represent each die:
     d8 = Die(8)
 \end{verbatim}
 
-Then we create a Pmf to represent the mixture and use {\tt Pmf.Incr}
-to add in the outcomes from the two distributions.
+Then we create a Pmf to represent the mixture:
 
 \begin{verbatim}
     mix = thinkbayes.Pmf()
@@ -3122,6 +3156,10 @@ to add in the outcomes from the two distributions.
             mix.Incr(outcome, prob)
     mix.Normalize()
 \end{verbatim}
+
+The first loop enumerates the dice; the second enumerates the
+outcomes and their probabilities.  Inside the loop,
+{\tt Pmf.Incr} adds up the contributions from the two distributions.
 
 This code assumes that the two dice are equally likely.  More
 generally, we need to know the probability of each die so we can
@@ -3158,12 +3196,6 @@ through 4 are the most likely because any die can produce them.
 Values above 12 are unlikely because there is only one die in the box
 that can produce them (and it does so less than half the time).
 
-The way I drew this Pmf is a little misleading.  The figure connects
-discrete points with a line, which suggests (incorrectly) that the
-values in between are possible.  It would be more precise to render a
-Pmf with a row of vertical lines, but that can be hard to read.  This
-difficulty is another reason I generally prefer to work with Cdfs.
-
 {\tt thinkbayes} provides a function named {\tt MakeMixture}
 that encapsulates this algorithm, so we could have written:
 
@@ -3185,14 +3217,12 @@ is any data structure that represents a set of values (possible
 outcomes of a random process) and their probabilities.
 \index{distribution}
 
-We have seen two common representations of distributions: Pmfs
-and Cdfs.  These representations are equivalent in the sense that
-they contain the same information, so you can convert from one
-to the other.  The difference between them is performance: some
-operations are faster and easier with a Pmf; others are faster
-with a Cdf.
-\index{Pmf}
-\index{Cdf}
+We have seen two representations of distributions: Pmfs and Cdfs.
+These representations are equivalent in the sense that they contain
+the same information, so you can convert from one to the other.  The
+primary difference between them is performance: some operations are
+faster and easier with a Pmf; others are faster with a Cdf.
+\index{Pmf} \index{Cdf}
 
 The other goal of this chapter is to introduce operations that act on
 distributions, like \verb"Pmf.__add__", {\tt Cdf.Max} and {\tt
@@ -3203,8 +3233,8 @@ probabilities.
 
 
 
-\chapter{Optimization}
-\label{optimization}
+\chapter{Decision analysis}
+\label{decision analysis}
 
 \section{The Price is Right problem}
 
@@ -3238,7 +3268,7 @@ For a Bayesian thinker, this scenario suggests several questions:
   contestant have about the price of the showcase?
 
 \item After seeing the prizes, how should the contestant update
-  those prior beliefs?
+  those beliefs?
 
 \item Based on the posterior distribution, what should the
   contestant bid?
@@ -3246,14 +3276,14 @@ For a Bayesian thinker, this scenario suggests several questions:
 \end{enumerate}
 
 The third question demonstrates a common use of Bayesian analysis:
-optimization.  Given a posterior distribution, we can choose
+decision analysis.  Given a posterior distribution, we can choose
 the bid that maximizes the contestant's expected return.
-\index{optimization}
+\index{decision analysis}
 
 This problem is inspired by an example in Cameron Davidson-Pilon's
 book, {\it Bayesian Methods for Hackers}.  The code I wrote for this
 chapter is available from \url{http://thinkbayes.com/price.py}; it
-reads data you can download from
+reads data files you can download from
 \url{http://thinkbayes.com/showcases.2011.csv} and
 \url{http://thinkbayes.com/showcases.2012.csv}.
 \index{Davidson-Pilon, Cameron}
@@ -3274,7 +3304,7 @@ of data from previous episodes.  Fortunately, fans of the show
 keep detailed records.  When I corresponded with Mr.~Davidson-Pilon
 about his book, he sent me data collected by Steve Gee at
 \url{http://tpirsummaries.8m.com}.  It includes the price of
-each showcase from the 2011 and 2012 seasons, and the bids
+each showcase from the 2011 and 2012 seasons and the bids
 offered by the contestants.
 \index{Gee, Steve}
 
@@ -3285,7 +3315,7 @@ and the second showcase is occasionally worth more than \$70,000.
 
 These distributions are based on actual data, but they
 have been smoothed by Gaussian kernel density estimation (KDE).
-So before we go on, I want to take a detour to talk about 
+Before we go on, I want to take a detour to talk about 
 probability density functions and KDE.
 \index{kernel density estimation}
 \index{KDE}
@@ -3294,7 +3324,7 @@ probability density functions and KDE.
 \section{Probability density functions}
 
 So far we have been working with probability mass functions, or PMFs.
-A PMF is a mapping from each possible value to its probability.  In my
+A PMF is a map from each possible value to its probability.  In my
 implementation, a Pmf object provides a method named {\tt Prob} that
 takes a value and returns a probability, also known as a {\bf probability
 mass}.
@@ -3302,7 +3332,7 @@ mass}.
 \index{Pdf}
 \index{Pmf}
 
-A probability density function, or PDF, is the continuous version of a
+A {\bf probability density function}, or PDF, is the continuous version of a
 PMF, where the possible values make up a continuous range rather than
 a discrete set.  
 
@@ -3313,41 +3343,35 @@ mean 0 and standard deviation 1:
 %
 \[ f(x) = \exp(-x^2) \]
 %
-To represent this PDF in Python, I could define a class like this:
-
-\begin{verbatim}
-class StandardGaussianPdf(object):
-
-    def Density(self, x):
-        return math.exp(-x**2)
-\end{verbatim}
-
-{\tt Density} takes a value, {\tt x}, and returns the probability
-density evaluated at {\tt x}.  
-
-A probability density is similar
-to a probability mass in one way: higher density indicates that a
-value is more likely.
+For a given value of $x$, this function computes a probability
+density.  
+A density is similar
+to a probability mass in the sense that a higher density indicates
+that a value is more likely.
 \index{density}
 \index{probability density}
 \index{probability}
 
-But a density is not a probability.  If you integrate a density
+But a density is not a probability.  A density can be 0 or any positive
+value; it is not bounded, like a probability, between 0 and 1.
+
+If you integrate a density
 over a continuous range, the result is a probability.  But 
 for the applications in this book we seldom have to do that.
 
-In this book we primarily use probability densities as part
+Instead we primarily use probability densities as part
 of a likelihood function.  We will see an example soon.
 
 
 \section{Representing Pdfs}
 
-Before we get back to {\it The Price is Right}, I want to
-present a more general way to represent PDFs.
 \index{Pdf object}
-
-{\tt thinkbayes.py} provides a class named {\tt Pdf} that defines
-two functions, {\tt Density} and {\tt MakePmf}:
+To represent PDFs in Python,
+{\tt thinkbayes.py} provides a class named {\tt Pdf}.
+{\tt Pdf} is an {\bf abstract type}, which means that it defines
+the interface a Pdf is supposed to have, but does not provide
+a complete implementation.  The {\tt Pdf} interface includes
+two methods, {\tt Density} and {\tt MakePmf}:
 
 \begin{verbatim}
 class Pdf(object):
@@ -3363,22 +3387,17 @@ class Pdf(object):
         return pmf
 \end{verbatim}
 
-{\tt Pdf} is an {\bf abstract type}, which means that it defines
-the interface a Pdf is supposed to have, but does not provide
-a complete implementation.  The {\tt Pdf} interface includes
-{\tt Density} and
-{\tt MakePmf}, which makes a discrete approximation to the
-PDF.  But the {\tt Pdf} class only provides an implementation
-of {\tt MakePmf}, not {\tt Density}.
-\index{abstract type}
-\index{concrete type}
-\index{interface}
+{\tt Density} takes a value, {\tt x}, and returns the corresponding
+density.  {\tt MakePmf} makes a discrete approximation to the PDF.
+
+{\tt Pdf} provides an implementation of {\tt MakePmf}, but not {\tt
+  Density}, which has to be provided by a child class.
+\index{abstract type} \index{concrete type} \index{interface}
 \index{implementation}
 
-A {\bf concrete type} is a class that extends an abstract parent
-class and provides an implementation of the missing methods.
-
 \index{Gaussian distribution}
+A {\bf concrete type} is a child class that extends an abstract type
+and provides an implementation of the missing methods.
 For example, {\tt GaussianPdf} extends {\tt Pdf} and provides
 {\tt Density}:
 
@@ -3397,9 +3416,10 @@ class GaussianPdf(Pdf):
 \end{verbatim}
 
 \verb"__init__" takes {\tt mu} and {\tt sigma}, which are
-the mean and standard deviation of the distribution.
+the mean and standard deviation of the distribution, and stores
+them as attributes.
 
-{\tt Density} uses a function from {\tt scipy} to evaluate the
+{\tt Density} uses a function from {\tt scipy.stats} to evaluate the
 Gaussian PDF.
 \index{scipy}
 
@@ -3410,7 +3430,7 @@ approximately Gaussian.
 \index{Gaussian distribution}
 \index{Gaussian PDF}
 
-But with real data, there is no guarantee that the PDF
+But with real data, there is no guarantee that the distribution
 is Gaussian or any other simple mathematical function.  In
 that case we can use a sample to estimate the PDF of
 the whole population.
@@ -3428,18 +3448,18 @@ In the sample, no values appear between 28801 and 28867, but
 there is no reason to think that these values are impossible.
 Based on our background information, we expect all
 values in this range to be equally likely.  In other words,
-we expect the PDF to be reasonably smooth.
+we expect the PDF to be fairly smooth.
 
 Kernel density estimation (KDE) is an algorithm that takes
-a sample of values and finds an appropriately-smooth PDF that fits 
-the data.  You can read about the details at
+a sample and finds an appropriately-smooth PDF that fits 
+the data.  You can read details at
 \url{http://en.wikipedia.org/wiki/Kernel_density_estimation}.
 \index{KDE}
 \index{kernel density estimation}
 
-{\tt scipy} provides an implementation of KDE.  {\tt thinkbayes}
-provides a class called {\tt EstimatedPdf} that extends {\tt Pdf}
-and uses KDE:
+{\tt scipy} provides an implementation of KDE and  {\tt thinkbayes}
+provides a class called {\tt EstimatedPdf} that 
+uses it:
 \index{scipy}
 \index{numpy}
 
@@ -3481,7 +3501,7 @@ Figure~\ref{fig.price1}:
 
 {\tt pdf} is a {\tt Pdf} object, estimated by KDE.  {\tt pmf}
 is a Pmf object that approximates the Pdf by evaluating the density
-for a sequence of equally-spaced values.
+at a sequence of equally-spaced values.
 
 {\tt linspace} stands for
 ``linear space.''  It takes a range, {\tt low} and {\tt high}, and
@@ -3503,9 +3523,9 @@ And now back to {\it The Price is Right}.
 \end{figure}
 
 The PDFs in Figure~\ref{fig.price1} estimate the distribution of
-possible prices for each showcase.  If you were a contestant on the
+possible prices.  If you were a contestant on the
 show, you could use this distribution to quantify your prior belief
-about the price of the showcases (before you see the prizes).
+about the price of each showcase (before you see the prizes).
 
 To update these priors, we have to answer these questions:
 
@@ -3529,7 +3549,7 @@ adds up the prices.  Let's call this total {\tt guess}.
 
 Under this model, the question we have to answer is, ``If the
 actual price is {\tt price}, what is the likelihood that the
-contestant's total estimate would be {\tt guess}?''
+contestant's estimate would be {\tt guess}?''
 \index{likelihood}
 
 Or if we define
@@ -3554,7 +3574,7 @@ The definition of diff is
 \end{verbatim}
 %
 When {\tt diff} is negative, the bid is too high.  As an
-aside, we can use this Cdf to compute the probability that the
+aside, we can use this distribution to compute the probability that the
 contestants overbid: the first contestant overbids 25\% of the
 time; the second contestant overbids 29\% of the time.
 
@@ -3562,7 +3582,7 @@ We can also see that the bids are biased;
 that is, they are more likely to be too low than too high.  And
 that makes sense, given the rules of the game.
 
-We can use this distribution to estimate the reliability of
+Finally, we can use this distribution to estimate the reliability of
 the contestants' guesses.  This step is a little tricky because
 we don't actually know the contestant's guesses; we only know
 what they bid.
@@ -3578,21 +3598,17 @@ The {\tt Player} class implements this model:
 \begin{verbatim}
 class Player(object):
 
-    def __init__(self, price, bid, diff):
-        self.price = price
-        self.bid = bid
-        self.diff = diff
-
-        self.pdf_price = thinkbayes.EstimatedPdf(price)
-        self.cdf_diff = thinkbayes.MakeCdfFromList(diff)
+    def __init__(self, prices, bids, diffs):
+        self.pdf_price = thinkbayes.EstimatedPdf(prices)
+        self.cdf_diff = thinkbayes.MakeCdfFromList(diffs)
 
         mu = 0
-        sigma = numpy.std(self.diff)
+        sigma = numpy.std(diffs)
         self.pdf_error = thinkbayes.GaussianPdf(mu, sigma)
 \end{verbatim}
 
-{\tt price} is a sequence of showcase prices, {\tt bid} is a
-sequence of bids, and {\tt diff} is a sequence of diffs, where
+{\tt prices} is a sequence of showcase prices, {\tt bids} is a
+sequence of bids, and {\tt diffs} is a sequence of diffs, where
 again {\tt diff = price - bid}.
 
 \verb"pdf_price" is the smoothed PDF of prices, estimated by KDE.
@@ -3602,12 +3618,13 @@ is the PDF that characterizes the distribution of errors; where
 {\tt error = price - guess}.
 
 Again, we use the variance of {\tt diff} to estimate the variance of
-{\tt error}.  But contestants' bids are sometimes strategic; for
-example, if Player 2 thinks that Player 1 has overbid, Player 2 might
-make a very low bid.  In that case {\tt diff} does not reflect {\tt
-  error}.  If this strategy is common, the observed variance in {\tt
-  diff} might overestimate the variance in {\tt error}.  Nevertheless,
-I think it is a reasonable modeling decision.
+{\tt error}.  This estimate is not perfect because contestants' bids
+are sometimes strategic; for example, if Player 2 thinks that Player 1
+has overbid, Player 2 might make a very low bid.  In that case {\tt
+  diff} does not reflect {\tt error}.  If this happens a lot, the
+observed variance in {\tt diff} might overestimate the variance in
+{\tt error}.  Nevertheless, I think it is a reasonable modeling
+decision.
 
 As an alternative, someone preparing to appear on the show could
 estimate their own distribution of {\tt error} by watching previous shows
@@ -3628,11 +3645,9 @@ class Price(thinkbayes.Suite):
         self.player = player
 \end{verbatim}
 
-{\tt pmf} represents the prior distribution, and
+{\tt pmf} represents the prior distribution and
 {\tt player} is a Player object as described in the previous
-section.
-
-And here's {\tt Likelihood}:
+section.  Here's {\tt Likelihood}:
 
 \begin{verbatim}
     def Likelihood(self, data, hypo):
@@ -3661,7 +3676,6 @@ given the hypothesis.
 
 {\tt ErrorDensity} works by evaluating \verb"pdf_error" at
 the given value of {\tt error}.
-
 The result is a probability density, so it is not really a probability.
 But remember that {\tt Likelihood} doesn't
 need to compute a probability; it only has to compute something {\em
@@ -3724,28 +3738,19 @@ So let's get back to the original scenario.  Suppose you are
 Player 1 and when you see your showcase, your best guess is
 that the total price of the prizes is \$20,000.
 
-The following code constructs and plots your prior and
-posterior beliefs about the actual price:
-\index{thinkplot}
-
-\begin{verbatim}
-    player1.MakeBeliefs(20000)
-    thinkplot.Pmf(player1.prior)
-    thinkplot.Pmf(player2.prior)
-\end{verbatim}
-
-Figure~\ref{fig.price3} shows the results.  Your guess 
-is on the low end of the prior range, so the posterior is shifted
-to the left.  The mean of the posterior is \$25,096; the most
-likely value is \$24,000.
+Figure~\ref{fig.price3} shows prior and
+posterior beliefs about the actual price.
+The posterior is shifted
+to the left because your guess 
+is on the low end of the prior range.
 
 On one level, this result makes sense.  The most likely value
-in the prior is \$27,750.  Your best guess is \$20,000.  And the
-most likely value in the posterior is about half way in between.
+in the prior is \$27,750, your best guess is \$20,000, and
+the mean of the posterior is somewhere in between: \$25,096.
 
 On another level, you might find this result bizarre, because it
-suggests that if you think the price is \$20,000, then you
-should believe the price is \$24,000.
+suggests that if you {\em think} the price is \$20,000, then you
+should {\em believe} the price is \$24,000.
 
 To resolve this apparent paradox, remember that you are combining two
 sources of information, historical data about past showcases and
@@ -3763,12 +3768,12 @@ most likely value in the posterior is not your original guess.
 
 Now that we have a posterior distribution, we can use it to
 compute the optimal bid, which I define as the bid that maximizes
-expected gain.
-\index{optimization}
+expected return (see \url{http://en.wikipedia.org/wiki/Expected_return}).
+\index{decision analysis}
 
 I'm going to present the methods in this section top-down, which
 means I will show you how they are used before I show you how they
-work.  If you see an unfamiliar method, don't panic; the definition
+work.  If you see an unfamiliar method, don't worry; the definition
 will be along shortly.
 
 To compute optimal bids, I wrote a class called {\tt GainCalculator}:
@@ -3918,7 +3923,7 @@ the optimal bid is less than the best guess.
 
 \section{Discussion}
 
-One of the most useful features of Bayesian estimation is that the
+One of the features of Bayesian estimation is that the
 result comes in the form of a posterior distribution.  Classical
 estimation usually generates a single point estimate or a confidence
 interval, which is sufficient if estimation is the last step in the
@@ -3927,12 +3932,12 @@ subsequent analysis, point estimates and intervals are often not much
 help.
 \index{distribution}
 
-In this example, the Bayesian analysis yields a posterior distribution
-we can use to compute an optimal bid.  The gain function is asymmetric
+In this example, we use the posterior distribution
+to compute an optimal bid.  The return on a given bid is asymmetric
 and discontinuous (if you overbid, you lose), so it would be hard to
 solve this problem analytically.  But it is relatively simple to do
 computationally.
-\index{optimization}
+\index{decision analysis}
 
 Newcomers to Bayesian thinking are often tempted to summarize the
 posterior distribution by computing the mean or the maximum
@@ -3944,8 +3949,8 @@ first place.
 
 Bayesian methods are most useful when you can carry the posterior
 distribution into the next step of the analysis to perform some
-kind of optimization, as we did in this chapter, or some kind of
-prediction, as we will see in the next chapter.
+kind of decision analysis, as we did in this chapter, or some kind of
+prediction, as we see in the next chapter.
 
 
 
@@ -7021,7 +7026,7 @@ for each test-taker is the number of questions answered correctly
 minus a penalty of $1/4$ point for each question answered incorrectly.
 
 The College Board, which administers the SAT, publishes the
-mapping from raw scores to scaled scores.  I have downloaded that
+map from raw scores to scaled scores.  I have downloaded that
 data and wrapped it in an Interpolator object that provides a forward
 lookup (from raw score to scaled) and a reverse lookup (from scaled
 score to raw).
