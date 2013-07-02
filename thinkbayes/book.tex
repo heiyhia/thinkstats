@@ -2037,7 +2037,7 @@ tanks.
 Analysis of these records indicated that serial numbers were allocated
 by manufacturer and tank type in blocks of 100 numbers, that numbers
 in each block were used sequentially, and that not all numbers in each
-block were used.  So the problem of estimating German tank product
+block were used.  So the problem of estimating German tank production
 could be reduced, within each block of 100 numbers, to a form of the
 Locomotive problem.
 
@@ -2051,11 +2051,11 @@ equipment, yielding accurate and actionable economic intelligence.
 
 The German Tank problem is historically interesting; it is also a nice
 example of real-world application of statistical estimation.  So far
-many of the examples in this book have been toy problems with coins
-and dice, but it will not be long before we start solving real
-problems.  I think it is an advantage of Bayesian analysis, especially
-with the computational approach we are taking, that it provides
-such a short path from a basic introduction to the research frontier.
+many of the examples in this book have been toy problems, but it will
+not be long before we start solving real problems.  I think it is an
+advantage of Bayesian analysis, especially with the computational
+approach we are taking, that it provides such a short path from a
+basic introduction to the research frontier.
 
 
 \section{Discussion}
@@ -3099,6 +3099,7 @@ Figure~\ref{fig.dungeons2} shows the distribution.
 
 
 \section{Mixtures}
+\label{mixture}
 
 \begin{figure}
 % dungeons.py
@@ -3409,10 +3410,7 @@ class GaussianPdf(Pdf):
         self.sigma = sigma
         
     def Density(self, x):
-        density = scipy.stats.norm.pdf(x, 
-                                       loc=self.mu, 
-                                       scale=self.sigma)
-        return density
+        return scipy.stats.norm.pdf(x, self.mu, self.sigma)
 \end{verbatim}
 
 \verb"__init__" takes {\tt mu} and {\tt sigma}, which are
@@ -3420,8 +3418,10 @@ the mean and standard deviation of the distribution, and stores
 them as attributes.
 
 {\tt Density} uses a function from {\tt scipy.stats} to evaluate the
-Gaussian PDF.
+Gaussian PDF.  The function is called {\tt norm.pdf} because the
+Gaussian distribution is also called the ``normal'' distribution. 
 \index{scipy}
+\index{normal distribution}
 
 The Gaussian PDF is defined by a simple mathematical function,
 so it is easy to evaluate.  And it is useful because many
@@ -3973,7 +3973,7 @@ As always, to answer a question like this, we need to make some
 assumptions.  First, it is reasonable to believe that goal scoring in
 hockey is at least approximately a Poisson process, which means that
 it is equally likely for a goal to be scored at any time during a
-game.  Second, we can assume that when team A plays team B, each team
+game.  Second, we can assume that against a particular opponent, each team
 has some long-term average goals per game, denoted $\lambda$.
 \index{Poisson process}
 
@@ -3989,11 +3989,10 @@ for each team.
 
 \item Use the posterior distributions of $\lambda$ to compute 
 distribution of goals for each team, the distribution of the
-goal differential, and the probability that each team wins.
+goal differential, and the probability that each team wins
+the next game.
 
-\item Simulate the rest of the series to estimate the probability
-of each possible outcome.
-\index{simulation}
+\item Compute the probability that each team wins the series.
 
 \end{enumerate}
 
@@ -4017,7 +4016,7 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=101):
     high = mu + num_sigmas*sigma
 
     for x in numpy.linspace(low, high, n):
-        p = EvalGaussianPdf(mu, sigma, x)
+        p = scipy.stats.norm.pdf(mu, sigma, x)
         pmf.Set(x, p)
     pmf.Normalize()
     return pmf
@@ -4032,20 +4031,7 @@ Again we use {\tt numpy.linspace} to make an array of {\tt n}
 equally-spaced values between {\tt low} and {\tt high}, including
 both.
 
-\verb"EvalGaussianPdf" does what it says; it evaluates the
-Gaussian probability density function (PDF).
-
-\begin{verbatim}
-def EvalGaussianPdf(mu, sigma, x):
-    z = (x - mu) / sigma
-    p = math.exp(-z**2/2)
-    return p
-\end{verbatim}  
-
-If you look up the Gaussian PDF, you'll see that I left out a
-normalizing constant, so this function actually computes
-a likelihood that is proportional to the Gaussian PDF.  But
-that's fine, because I have to normalize the Pmf anyway.
+\verb"norm.pdf" evaluates the Gaussian probability density function (PDF).
 \index{PDF}
 \index{probability density function}
 
@@ -4056,15 +4042,12 @@ of hypotheses about the value of $\lambda$.
 class Hockey(thinkbayes.Suite):
 
     def __init__(self):
-        thinkbayes.Suite.__init__(self)
-
-        pmf = thinkbayes.MakeGaussianPmf(2.7, 0.3, 6)
-        for x, p in pmf.Items():
-            self.Set(x, p)
+        pmf = thinkbayes.MakeGaussianPmf(2.7, 0.3, 4)
+        thinkbayes.Suite.__init__(self, pmf)
 \end{verbatim}  
 
 So the prior distribution is Gaussian with mean 2.7, standard deviation
-0.3, and it spans six sigmas above and below the mean.
+0.3, and it spans 4 sigmas above and below the mean.
 
 As always, we have to decide how to represent each hypothesis; in
 this case I represent the hypothesis that $\lambda=x$ with the
@@ -4074,8 +4057,8 @@ floating-point value {\tt x}.
 \section{Poisson processes}
 
 In mathematical statistics, a {\bf process} is a stochastic model of a
-physical system, which means that the model has some kind of
-randomness in it.  For example, a Bernoulli process is a model of a
+physical system (``stochastic'' means that the model has some kind of
+randomness in it).  For example, a Bernoulli process is a model of a
 sequence of events, called trials, in which each trial has two
 possible outcomes, like success and failure.  So a Bernoulli process
 is a natural model for a series of coin flips, or a series of shots on
@@ -4093,9 +4076,9 @@ buses are supposed to arrive at fixed intervals, and goals are more
 or less likely at different times during a game.
 
 But all models are based on simplifications, and in this case modeling
-a hockey game with a Poisson process is a reasonable choice.  Heuer
-et al.~analyze scoring in a German soccer league and come to the same
-conclusion; see
+a hockey game with a Poisson process is a reasonable choice.  Heuer,
+M\"{u}ller and Rubner (2010) analyze scoring in a German soccer league
+and come to the same conclusion; see
 \url{http://www.cimat.mx/Eventos/vpec10/img/poisson.pdf}.
 \index{Heuer, Andreas}
 
@@ -4167,8 +4150,7 @@ for {\tt lam}.  Based on the first four games, the most likely
 values for {\tt lam} are 2.6 for the Canucks and 2.9 for the Bruins.
 
 
-\section{The meta-Pmf}
-\label{meta-pmf}
+\section{The distribution of goals}
 
 \begin{figure}
 % hockey.py
@@ -4218,41 +4200,15 @@ in the distribution of {\tt lam}.
 \index{mixture}
 \index{Poisson distribution}
 
-\verb"thinkbayes" provides a method that computes mixtures
-of distributions:
-
-\begin{verbatim}
-def MakeMixture(metapmf):
-    mix = Pmf()
-    for pmf, p1 in metapmf.Items():
-        for x, p2 in pmf.Items():
-            mix.Incr(x, p1 * p2)
-    return mix
-\end{verbatim}  
-
-{\tt metapmf} is a meta-Pmf, which means that it is a Pmf that
-contains Pmfs.  If you find the meta-Pmf confusing; it might
-help to think about how you would generate a random value from
-a Meta-Pmf.  First you would choose a Pmf according to the
-probabilities in the Meta-Pmf.  Then you would choose a value
-according to the probabilities in the chosen Pmf.
-\index{meta-Pmf}
-\index{mixture}
-\index{MakeMixture}
-
-\verb"MakeMixture" computes the distribution of the resulting
-values.
-
 Given the posterior distribution of {\tt lam}, here's the code
 that makes the distribution of goals:
 
 \begin{verbatim}
 def MakeGoalPmf(suite):
     metapmf = thinkbayes.Pmf()
-    high = 10
 
     for lam, prob in suite.Items():
-        pmf = thinkbayes.MakePoissonPmf(lam, high)
+        pmf = thinkbayes.MakePoissonPmf(lam, 10)
         metapmf.Set(pmf, prob)
 
     mix = thinkbayes.MakeMixture(metapmf)
@@ -4260,10 +4216,17 @@ def MakeGoalPmf(suite):
 \end{verbatim}  
 
 For each value of {\tt lam} we make a Poisson Pmf and add it to the
-meta-Pmf.  Then we use \verb"MakeMixture" to compute the mixture.
+meta-Pmf.  I call it a meta-Pmf because it is a Pmf that contains
+Pmfs as its values.
+\index{meta-Pmf}
+
+Then we use \verb"MakeMixture" to compute the mixture
+(we saw {\tt MakeMixture} in Section~\ref{mixture}).
+\index{mixture}
+\index{MakeMixture}
 
 Figure~\ref{fig.hockey2} shows the resulting distribution of goals for
-the Bruins and Canucks.  As expected, the Bruins are less likely to
+the Bruins and Canucks.  The Bruins are less likely to
 score 3 goals or fewer in the next game, and more likely to score 4 or
 more.
 
@@ -4303,7 +4266,7 @@ Canucks win; if 0, it's a tie:
 With the distributions from the previous section, \verb"p_win"
 is 46\%, \verb"p_loss" is 37\%, and \verb"p_tie" is 17\%.
 
-In the event of a tie at the end of regulation play, the teams play
+In the event of a tie at the end of ``regulation play,'' the teams play
 overtime periods until one team scores.  Since the game ends
 immediately when the first goal is scored, this overtime format
 is known as ``sudden death.''
@@ -4316,7 +4279,7 @@ is known as ``sudden death.''
 To compute the probability of winning in a sudden death overtime,
 the important statistic is not goals per game, but time until the
 first goal.  The assumption that goal-scoring is a Poisson process
-is helpful here, because it implies that the time between goals
+implies that the time between goals
 is exponentially distributed.
 \index{Poisson process}
 \index{exponential distribution}
@@ -4375,7 +4338,7 @@ Now we compute the probability that the Bruins score first:
 For the Bruins, the probability of winning in overtime is 52\%.
 
 Finally, the total probability of winning is the chance of
-winning at the end of ``regulation play'' plus the probability
+winning at the end of regulation play plus the probability
 of winning in overtime.
 
 \begin{verbatim}
@@ -4425,7 +4388,7 @@ In this example, I would consider these options:
   deviations above the mean.
 
 \item For data I used only the first four games of the championship
-  series.  Assuming that the same teams played each other during the
+  series.  If the same teams played each other during the
   regular season, I could use the results from those games as well.
   One complication is that the composition of teams changes during
   the season due to trades and injuries.  So it might be best to
@@ -4486,8 +4449,8 @@ distribution of time between buses.  Compute your distribution
 of wait times.
 
 Hint: Suppose that the time between buses is either
-10 or 20 minutes with equal probability.  What is the probability
-that you arrive during one of the 20 minute intervals?
+5 or 10 minutes with equal probability.  What is the probability
+that you arrive during one of the 10 minute intervals?
 
 I solve a version of this problem in the next chapter.
 
@@ -4497,7 +4460,7 @@ I solve a version of this problem in the next chapter.
 \begin{exercise}
 
 Suppose that passengers arriving at the bus stop are well-modeled
-by a Poisson process with parameter $\mu$.  If you arrive at the
+by a Poisson process with parameter $\lambda$.  If you arrive at the
 stop and find 3 people waiting, what is your posterior distribution
 for the time since the last bus arrived.
 \index{Poisson process}
@@ -4558,8 +4521,8 @@ light bulb survival curves.
 
 \section{The Red Line problem}
 
-In Massachusetts, the Red Line is a subway that runs north-south from
-Cambridge to Boston.  When I was working in Cambridge I took the Red
+In Massachusetts, the Red Line is a subway that connects
+Cambridge and Boston.  When I was working in Cambridge I took the Red
 Line from Kendall Square to South Station and caught the commuter rail
 to Needham.  During rush hour Red Line trains run every 7--8
 minutes, on average.
@@ -4603,9 +4566,9 @@ Before we get to the analysis, we have to make some
 modeling decisions.  First, I will treat passenger arrivals as
 a Poisson process, which means I assume that passengers are equally
 likely to arrive at any time, and that they arrive at an unknown
-rate, $lambda$, measured in passengers per minute.  Since I
+rate, $\lambda$, measured in passengers per minute.  Since I
 observe passengers during a short period of time, and at the same
-time every day, I assume that $lambda$ is constant.
+time every day, I assume that $\lambda$ is constant.
 \index{Poisson process}
 
 On the other hand, the arrival process for trains is not Poisson.
@@ -4621,7 +4584,7 @@ trains arriving at Kendall square, and records their arrival times
 in a database.  I ran the script from 4pm to 6pm every weekday
 for 5 days, and recorded about 15 arrivals per day.  Then
 I computed the time between consecutive arrivals; the distribution
-of these inter-arrival times is in Figure~\ref{fig.redline0}.
+of these gaps is shown in Figure~\ref{fig.redline0}, labeled {\tt z}.
 
 If you stood on the platform from 4pm to 6pm and recorded the time
 between trains, this is the distribution you would see.  But if you
@@ -4645,9 +4608,9 @@ average time between trains, as seen by an arriving passenger,
 is 8.33 minutes.
 
 This kind of {\bf observer bias} appears in many contexts.  Students
-think that classes are bigger than they are, because more of them are
+think that classes are bigger than they are because more of them are
 in the big classes.  Airline passengers think that planes are fuller
-than they are, because more of them are on full flights.
+than they are because more of them are on full flights.
 \index{observer bias}
 
 In each case, values from the actual distribution are
@@ -4675,9 +4638,9 @@ probability of each value, {\tt x}, by the likelihood it will
 be observed, which is proportional to {\tt x}.  Then we
 normalize the result.
 
-Figure~\ref{fig.redline0} shows the actual distribution of gaps, which
-I call {\tt z}, and the distribution of gaps seen by passengers,
-which I call {\tt zb} for ``z biased''.  
+Figure~\ref{fig.redline0} shows the actual distribution of gaps,
+labeled {\tt z}, and the distribution of gaps seen by passengers,
+labeled {\tt zb} for ``z biased''.
 
 
 \section{Wait times}
@@ -4701,12 +4664,57 @@ Given the distribution of {\tt zb}, we can compute the distribution of
 Suppose, as in the previous example, that {\tt zb} is either 5 minutes
 with probability 1/3, or 10 minutes with probability 2/3.
 
-If we arrive at a random time during a 5 minute gap, the distribution
-of {\tt y} is uniform from 0 to 5 minutes.  If we arrive during a 10
+If we arrive at a random time during a 5 minute gap, 
+{\tt y} is uniform from 0 to 5 minutes.  If we arrive during a 10
 minute gap, {\tt y} is uniform from 0 to 10.  So the overall
 distribution is a mixture of uniform distributions weighted
 according to the probability of each gap.
 \index{uniform distribution}
+
+The following function takes the distribution of {\tt zb} and
+computes the distribution of {\tt y}:
+
+\begin{verbatim}
+def PmfOfWaitTime(pmf_zb):
+    metapmf = thinkbayes.Pmf()
+    for gap, prob in pmf_zb.Items():
+        uniform = MakeUniformPmf(0, gap)
+        metapmf.Set(uniform, prob)
+
+    pmf_y = thinkbayes.MakeMixture(metapmf)
+    return pmf_y
+\end{verbatim}
+
+{\tt PmfOfWaitTime} makes a meta-Pmf that maps from each uniform
+distribution to its probability.  Then it uses {\tt MakeMixture},
+which we saw in Section~\ref{mixture}, to compute the mixture.
+\index{mixture}
+\index{MakeMixture}
+\index{meta-Pmf}
+
+{\tt PmfOfWaitTime} also uses {\tt MakeUniformPmf}, defined here:
+
+\begin{verbatim}
+def MakeUniformPmf(low, high):
+    pmf = thinkbayes.Pmf()
+    for x in MakeRange(low=low, high=high):
+        pmf.Set(x, 1)
+    pmf.Normalize()
+    return pmf
+\end{verbatim}
+
+{\tt low} and {\tt high} are the range of the uniform distribution,
+(both ends included).  Finally, {\tt MakeUniformPmf} uses {\tt
+  MakeRange}, defined here:
+
+\begin{verbatim}
+def MakeRange(low, high, skip=10):
+    return range(low, high+skip, skip)
+\end{verbatim}
+
+{\tt MakeRange} defines a set of possible values for wait time
+(expressed in seconds).  By default it divides the range into 
+10 second intervals.
 
 To encapsulate the process of computing these distributions, I
 created a class called {\tt WaitTimeCalculator}:
@@ -4714,15 +4722,15 @@ created a class called {\tt WaitTimeCalculator}:
 \begin{verbatim}
 class WaitTimeCalculator(object):
 
-    def __init__(self, pmf):
-        self.pmf_z = pmf
+    def __init__(self, pmf_z):
+        self.pmf_z = pmf_z
         self.pmf_zb = BiasPmf(pmf)
 
         self.pmf_y = self.PmfOfWaitTime(self.pmf_zb)
         self.pmf_x = self.pmf_y
 \end{verbatim}
 
-The parameter, {\tt pmf}, is the unbiased distribution of {\tt z}.
+The parameter, \verb"pmf_z", is the unbiased distribution of {\tt z}.
 \verb"pmf_zb" is the biased distribution of gap time, as seen by
 passengers.
 
@@ -4737,51 +4745,6 @@ x = zp - y
 \end{verbatim}
 %
 So the distribution of {\tt x} is also uniform from 0 to {\tt zp}.
-
-{\tt PmfOfWaitTime} takes the distribution of {\tt zb} and
-computes the distribution of {\tt y}:
-
-\begin{verbatim}
-def PmfOfWaitTime(pmf_zb):
-    metapmf = thinkbayes.Pmf()
-    for gap, prob in pmf_zb.Items():
-        uniform = MakeUniformPmf(0, gap)
-        metapmf.Set(uniform, prob)
-
-    pmf_y = thinkbayes.MakeMixture(metapmf)
-    return pmf_y
-\end{verbatim}
-
-{\tt PmfOfWaitTime} makes a Meta-Pmf that maps from each uniform
-distribution to its probability.  Then it uses {\tt MakeMixture},
-which we saw in Section~\ref{meta-pmf}, to compute the mixture.
-\index{mixture}
-\index{MakeMixture}
-\index{meta-Pmf}
-
-It also uses {\tt MakeUniformPmf}, defined here:
-
-\begin{verbatim}
-def MakeUniformPmf(low, high):
-    pmf = thinkbayes.Pmf()
-    for x in MakeRange(low=low, high=high):
-        pmf.Set(x, 1)
-    pmf.Normalize()
-    return pmf
-\end{verbatim}
-
-{\tt low} and {\tt high} are the range of the uniform distribution,
-(both ends included).  {\tt MakeUniformPmf} uses {\tt MakeRange},
-defined here:
-
-\begin{verbatim}
-def MakeRange(low, high, skip=10):
-    return range(low, high+skip, skip)
-\end{verbatim}
-
-{\tt MakeRange} defines a set of possible values for wait time
-(expressed in seconds).  By default it divides the range into 
-10 second intervals.
 
 Figure~\ref{fig.redline2} shows the distribution of {\tt z}, {\tt zb}
 and {\tt y} based on the data I collected from the Red Line web site.
@@ -4801,9 +4764,8 @@ As an aside, the Red Line schedule reports that trains run every
 9 minutes during peak times.  This is close to the average of
 {\tt zb}, but higher than the average of {\tt z}.  I exchanged email
 with a representative of the MBTA, who confirmed that the reported
-time between trains is a deliberately conservative simplification
-of the actual gaps, which vary over time and at different
-points along the line.
+time between trains is deliberately conservative in order to
+account for variability.
 
 
 \section{Predicting wait times}
@@ -4812,8 +4774,7 @@ points along the line.
 \begin{figure}
 % redline.py
 \centerline{\includegraphics[height=2.5in]{figs/redline3.pdf}}
-\caption{CDF of {\tt x} before and after the update, and predicted
-{\tt y} based on posterior {\tt x}. }
+\caption{Prior and posterior of {\tt x} and predicted {\tt y}. }
 \label{fig.redline3}
 \end{figure}
 
@@ -4879,11 +4840,15 @@ class ElapsedTimeEstimator(object):
         self.post_x = self.prior_x.Copy()
         self.post_x.Update((lam, num_passengers))
 
-        self.pmf_y = self.post_x.PredictWaitTime(wtc.pmf_zb)
+        self.pmf_y = PredictWaitTime(wtc.pmf_zb, self.post_x)
 \end{verbatim}
 
-I present the functions in this section top-down, so if you see a
-function before its definition, be patient.
+\verb"prior_x" and \verb"posterior_x" are the prior and
+posterior distributions of elapsed time.  \verb"pmf_y" is
+the predictive distribution of wait time.
+
+{\tt ElapsedTimeEstimator} uses {\tt Elapsed} and {\tt PredictWaitTime},
+defined below.
 
 {\tt Elapsed} is a Suite that represents the hypothetical
 distribution of {\tt x}.  The prior distribution of {\tt x}
@@ -4891,10 +4856,6 @@ comes straight from the {\tt WaitTimeCalculator}.  Then we
 use the data, which consists of the arrival rate, {\tt lam},
 and the number of passengers on the platform, to compute
 the posterior distribution.
-
-Finally, we use {\tt PredictWaitTime} to get the posterior
-predictive distribution of {\tt y}.
-\index{predictive distribution}
 
 Here's the definition of {\tt Elapsed}:
 
@@ -4913,16 +4874,15 @@ computes the likelihood of the data under the hypothesis.
 In this case {\tt hypo} is the elapsed time since the last train
 and {\tt data} is a tuple of {\tt lam} and the number of
 passengers.
+\index{likelihood}
 
-So the likelihood of the data is the probability of getting
+The likelihood of the data is the probability of getting
 {\tt k} arrivals in {\tt x} time, given arrival rate
 {\tt lam}.  We compute that using the PMF of the Poisson
 distribution.
 \index{Poisson distribution}
 
-Finally, we use the posterior distribution of {\tt x}
-to predict the distribution of {\tt y}.
-\index{predictive distribution}
+Finally, here's the definition of {\tt PredictWaitTime}:
 
 \begin{verbatim}
 def PredictWaitTime(pmf_zb, pmf_x):
@@ -4942,7 +4902,7 @@ we can compute
 
 The subtraction operator invokes \verb"Pmf.__sub__", which enumerates
 all pairs of {\tt zb} and {\tt x}, computes the differences, and adds
-the results to \verb"pmf_y" with the appropriate weights.
+the results to \verb"pmf_y".
 
 The resulting Pmf includes some negative values, which we know are
 impossible.  For example, if you arrive during a gap of 5 minutes, you
@@ -4989,8 +4949,9 @@ a little more effort, you could estimate $\lambda$ quantitatively.
 
 Each day when you arrive at the platform, you should note the
 time and the number of passengers waiting (if the platform is too
-big, you could choose a sample area).  Then you should note the
-number of new arrivals while you are waiting and the wait time.
+big, you could choose a sample area).  Then you should record your
+wait time and the
+number of new arrivals while you are waiting.
 
 After five days, you might have data like this:
 %
@@ -5050,8 +5011,6 @@ of {\tt k1, y, k2} tuples, as in the table above.
 class ArrivalRateEstimator(object):
 
     def __init__(self, passenger_data):
-        self.passenger_data = passenger_data
-
         low, high = 0, 5
         n = 51
         hypos = numpy.linspace(low, high, n) / 60
@@ -5066,9 +5025,10 @@ class ArrivalRateEstimator(object):
 \verb"__init__" builds
 {\tt hypos}, which is a sequence of hypothetical values for {\tt lam},
 then builds the prior distribution, \verb"prior_lam".
+The {\tt for} loop updates the prior with data, yielding the posterior
+distribution, \verb"post_lam".
 
-The {\tt for} loop updates the prior with the data, yielding the posterior
-distribution, \verb "post_lam".  Figure~\ref{fig.redline1} shows
+Figure~\ref{fig.redline1} shows
 the prior and posterior distributions.  As expected, the mean and
 median of the posterior are near the observed rate, 2 passengers per
 minute.  But the spread of the posterior distribution captures our
@@ -5080,9 +5040,8 @@ uncertainty about $\lambda$ based on a small sample.
 \begin{figure}
 % redline.py
 \centerline{\includegraphics[height=2.5in]{figs/redline4.pdf}}
-\caption{Predictive distribution of {\tt y} based on a single
-point estimate for {\tt lam} or on a distribution
-of possible values of {\tt lam}. }
+\caption{Predictive distributions of {\tt y} for possible values
+  of {\tt lam}. }
 \label{fig.redline4}
 \end{figure}
 
@@ -5132,7 +5091,7 @@ distribution of {\tt y} to its probability.  For each value
 of {\tt lam}, we use {\tt ElapsedTimeEstimator} to
 compute the corresponding distribution of
 {\tt y} and store it in the Meta-Pmf.  Then
-we use {\tt thinkbayes.MakeMixture} to compute the mixture.
+we use {\tt MakeMixture} to compute the mixture.
 \index{MakeMixture}
 \index{meta-Pmf}
 \index{mixture}
@@ -5249,23 +5208,26 @@ distribution of {\tt z}, which I use to create the
 
 This process is complicated, but
 all of the steps are operations we have seen before.
-Now we are ready to estimate wait time as a function of
-\verb"num_passengers":
+Now we are ready to compute the probability of a long wait.
 
 \begin{verbatim}
-    for num_passengers in nums:
-        ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
-        cdf_y = ete.pmf_y.MakeCdf()
-        prob = 1 - cdf_y.Prob(15 * 60)
+def ProbLongWait(num_passengers, minutes):
+    ete = ElapsedTimeEstimator(wtc, lam, num_passengers)
+    cdf_y = ete.pmf_y.MakeCdf()
+    prob = 1 - cdf_y.Prob(minutes * 60)
 \end{verbatim}
 
-For each value in {\tt nums}, we make an {\tt ElapsedTimeEstimator},
-extract the distribution of wait time, \verb"pmf_y", and compute
-the probability that wait time exceeds 15 minutes (expressed in seconds).
+Given the number of passengers on the platform,
+{\tt ProbLongWait} 
+makes an {\tt ElapsedTimeEstimator},
+extracts the distribution of wait time, and 
+computes 
+the probability that wait time
+exceeds {\tt minutes}.
 
 Figure~\ref{fig.redline5} shows the result.  When the number of
-passengers is less than 20, we infer that they system is
-operating normally, and the probability of a long delay is small.
+passengers is less than 20, we infer that the system is
+operating normally, so the probability of a long delay is small.
 If there are 30 passengers, we estimate that it has been 15
 minutes since the last train; that's longer than a normal delay,
 so we infer that something is wrong and expect longer delays.
@@ -5274,9 +5236,11 @@ If we are willing to accept a 10\% chance of missing the connection
 at South Station, we should stay and wait as long as there
 are fewer than 30 passengers, and take a taxi if there are more.
 
-Or, to take this analysis one step farther, we could quantify the cost
+Or, to take this analysis one step further, we could quantify the cost
 of missing the connection and the cost of taking a taxi, then choose
 the threshold that minimizes expected cost.
+
+\section{Discussion}
 
 The analysis so far has been based on the assumption that the
 arrival rate of passengers is the same every day.  For a commuter
@@ -5291,21 +5255,16 @@ be important to include them in the model.  We could do that by
 extending the distribution of {\tt lam} to include occasional
 large values.
 
-
-\section{Discussion}
-
-We started with the assumption that we know the passenger arrival
-rate and distribution of {\tt z}.  Then we relaxed the first assumption,
-using observations by a hypothetical passenger to estimate
-{\tt lam}.
-
-It is also possible to estimate the
-distribution of {\tt z}, but it is harder because passengers generally
-observe only their own wait times, {\tt y}.  Unless you choose to skip
-the first train and wait for a second train, you generally don't
+We started with the assumption that we know
+distribution of {\tt z}.
+As an alternative, a passenger could estimate {\tt z}, but it would
+not be easy.
+As a passenger, you only
+observe only your own wait time, {\tt y}.  Unless you skip
+the first train and wait for the second, you don't
 observe the gap between trains, {\tt z}.
 
-However, we can make some inferences about {\tt zb}.  If we note
+However, we could make some inferences about {\tt zb}.  If we note
 the number of passengers waiting when we arrive, we can estimate
 the elapsed time since the last train, {\tt x}.  Then we observe
 {\tt y}.  If we add the posterior distribution of {\tt x} to
@@ -5317,7 +5276,7 @@ distribution of {\tt zb}.  Finally, we can compute the
 inverse of {\tt BiasPmf} to get from the distribution of {\tt zb}
 to the distribution of {\tt z}.
 
-I leave the implementation of this analysis as an exercise for the
+I leave this analysis as an exercise for the
 reader.  One suggestion: you should read Chapter~\ref{species} first.
 You can find the outline of
 a solution in \url{http://thinkbayes.com/redline.py}.
@@ -7358,9 +7317,8 @@ efficacy and then calibrate the units of difficulty accordingly.
 
 {\tt pmfs} is a meta-Pmf that contains one Pmf for each level of
 efficacy, and maps to the fraction of test-takers at that level.  {\tt
-  thinkbayes.MakeMixture} takes the meta-pmf and compute the
-distribution of the mixture (see Section~\ref{meta-pmf}).
-\index{meta-Pmf}
+  MakeMixture} takes the meta-pmf and computes the distribution of the
+mixture (see Section~\ref{mixture}).  \index{meta-Pmf}
 \index{MakeMixture}
 
 
@@ -7645,7 +7603,7 @@ the following message:
   tumor was 15.5 cm x 15 cm at detection. Grade II."
 \end{quote}
 
-I contacted the original poster and got more information; I learned
+I contacted the author of the message and got more information; I learned
 that veterans get different benefits if it is "more likely than not"
 that a tumor formed while they were in military service (among other
 considerations).
@@ -9168,7 +9126,7 @@ beta distribution.
 
 {\tt metapmf} is a meta-Pmf that contains the distributions
 of prevalence, conditioned on {\tt n}.  {\tt MakeMixture}
-combines the MetaPmf into {\tt mix}, which combines the
+combines the meta-Pmf into {\tt mix}, which combines the
 conditional distributions into a single distribution
 of prevalence.
 \index{meta-Pmf}
