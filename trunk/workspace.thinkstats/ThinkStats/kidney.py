@@ -402,25 +402,28 @@ class Calculator(object):
     """Encapsulates the state of the computation."""
 
     def __init__(self):
+        """Initializes the cache."""
         self.cache = Cache()
 
-    def ExtendSequence(self, age, seq, rdt, interval):
-        """Generates a new random value and adds it to the end of seq.
+    def MakeSequences(self, n, rho, cdf):
+        """Returns a list of sequences of volumes.
 
-        Side-effect: adds sub-sequences to the cache.
+        n: number of sequences to make
+        rho: serial correlation
+        cdf: Cdf of rdts
 
-        age: age of tumor at the end of this interval
-        seq: sequence of values so far
-        rdt: reciprocal doubling time in doublings per year
-        interval: timestep in years
+        Returns: list of n sequences of volumes
         """
-        initial = seq[-1]
-        doublings = rdt * interval
-        final = initial * 2**doublings
-        new_seq = seq + (final,)
-        self.cache.Add(age, new_seq, rdt)
+        sequences = []
+        for i in range(n):
+            iterator = RdtGenerator(cdf, rho)
+            seq = self.MakeSequence(iterator)
+            sequences.append(seq)
 
-        return final, new_seq
+            if i % 100 == 0:
+                print i
+
+        return sequences
 
     def MakeSequence(self, iterator, v0=0.01, interval=INTERVAL, 
                      vmax=Volume(MAXSIZE)):
@@ -430,6 +433,8 @@ class Calculator(object):
         v0: initial volume in mL (cm^3)
         interval: timestep in years
         vmax: volume to stop at
+
+        Returns: sequence of volumes
         """
         seq = v0,
         age = 0
@@ -442,25 +447,25 @@ class Calculator(object):
 
         return seq
 
-    def MakeSequences(self, n, rho, cdf):
-        """Returns a sequence of times and a list of sequences of volumes.
+    def ExtendSequence(self, age, seq, rdt, interval):
+        """Generates a new random value and adds it to the end of seq.
 
-        n: sequence length
-        rho: serial correlation
-        cdf: Cdf of rdts
+        Side-effect: adds sub-sequences to the cache.
 
-        Returns: list of n iterators of n rdts
+        age: age of tumor at the end of this interval
+        seq: sequence of values so far
+        rdt: reciprocal doubling time in doublings per year
+        interval: timestep in years
+
+        Returns: final volume, extended sequence
         """
-        sequences = []
-        for i in range(n):
-            iterator = RdtGenerator(cdf, rho)
-            seq = self.MakeSequence(iterator)
-            sequences.append(seq)
+        initial = seq[-1]
+        doublings = rdt * interval
+        final = initial * 2**doublings
+        new_seq = seq + (final,)
+        self.cache.Add(age, new_seq, rdt)
 
-            if i % 100 == 0:
-                print i
-
-        return sequences
+        return final, new_seq
 
     def PlotBucket(self, bucket, color='blue'):
         """Plots the set of sequences for the given bucket.

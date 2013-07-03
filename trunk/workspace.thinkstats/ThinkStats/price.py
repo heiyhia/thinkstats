@@ -146,22 +146,18 @@ class Player(object):
     n = 101
     price_xs = numpy.linspace(0, 75000, n)
 
-    def __init__(self, price, bid, diff):
+    def __init__(self, prices, bids, diffs):
         """Construct the Player.
 
-        price: sequence of prices
-        bid: sequence of bids
-        diff: sequence of underness (negative means over)
+        prices: sequence of prices
+        bids: sequence of bids
+        diffs: sequence of underness (negative means over)
         """
-        self.price = price
-        self.bid = bid
-        self.diff = diff
-
-        self.pdf_price = thinkbayes.EstimatedPdf(price)
-        self.cdf_diff = thinkbayes.MakeCdfFromList(diff)
+        self.pdf_price = thinkbayes.EstimatedPdf(prices)
+        self.cdf_diff = thinkbayes.MakeCdfFromList(diffs)
 
         mu = 0
-        sigma = numpy.std(self.diff)
+        sigma = numpy.std(diffs)
         self.pdf_error = thinkbayes.GaussianPdf(mu, sigma)
 
     def ErrorDensity(self, error):

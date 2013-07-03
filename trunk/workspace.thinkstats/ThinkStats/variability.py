@@ -8,15 +8,18 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import math
 import numpy
 import cPickle
+import numpy
 import random
+import scipy
 
 import brfss
-import thinkplot
 
+import thinkplot
 import thinkbayes
 import thinkstats
 
 import matplotlib.pyplot as pyplot
+
 
 NUM_SIGMAS = 1
 
@@ -30,9 +33,6 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         sigmas: sequence of possible sigmas
         name: string name for the Suite
         """
-        self.mus = mus
-        self.sigmas = sigmas
-
         pairs = [(mu, sigma) 
                  for mu in mus
                  for sigma in sigmas]
@@ -51,7 +51,7 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         """
         x = data
         mu, sigma = hypo
-        like = thinkbayes.EvalGaussianPdf(mu, sigma, x)
+        like = scipy.stats.norm.pdf(x, mu, sigma)
         return like
 
     def LogLikelihood(self, data, hypo):
@@ -66,7 +66,7 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         """
         x = data
         mu, sigma = hypo
-        loglike = EvalGaussianLogPdf(mu, sigma, x)
+        loglike = EvalGaussianLogPdf(x, mu, sigma)
         return loglike
 
     def LogUpdateSetFast(self, data):
@@ -95,11 +95,10 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         xs = data
         n = len(xs)
 
-        # compute summary stats
-        xbar, s2 = thinkstats.MeanVar(xs)
-        s = math.sqrt(s2)
+        m = numpy.mean(xs)
+        s = numpy.std(xs)
 
-        self.LogUpdateSetABC(n, xbar, s)
+        self.LogUpdateSetABC(n, m, s)
 
     def LogUpdateSetMedianIPR(self, data):
         """Updates the suite using ABC and median/iqr.
@@ -111,45 +110,41 @@ class Height(thinkbayes.Suite, thinkbayes.Joint):
         n = len(xs)
 
         # compute summary stats
-        median, sighat = MedianSighat(xs, num_sigmas=NUM_SIGMAS)
-        print 'median, sighat', median, sighat
+        median, s = MedianS(xs, num_sigmas=NUM_SIGMAS)
+        print 'median, s', median, s
 
-        self.LogUpdateSetABC(n, median, sighat)
+        self.LogUpdateSetABC(n, median, s)
 
-    def LogUpdateSetABC(self, n, xbar, sighat):
+    def LogUpdateSetABC(self, n, m, s):
         """Updates the suite using ABC.
 
         n: sample size
-        xbar: estimated central tendency
-        sighat: estimated spread
+        m: estimated central tendency
+        s: estimated spread
         """
         for hypo in sorted(self.Values()):
             mu, sigma = hypo
 
-            # compute log likelihood of xbar, given hypo
-            sample_mu = mu
-            sample_sigma = sigma / math.sqrt(n)
-            loglike = EvalGaussianLogPdf(sample_mu, sample_sigma, xbar)
+            # compute log likelihood of m, given hypo
+            stderr_m = sigma / math.sqrt(n)
+            loglike = EvalGaussianLogPdf(m, mu, stderr_m)
 
-            #compute log likelihood of sighat, given hypo
-            sample_mu = sigma
-            sample_sigma = sigma / math.sqrt(2 * (n-1))
-            loglike += EvalGaussianLogPdf(sample_mu, sample_sigma, sighat)
+            #compute log likelihood of s, given hypo
+            stderr_s = sigma / math.sqrt(2 * (n-1))
+            loglike += EvalGaussianLogPdf(s, sigma, stderr_s)
 
             self.Incr(hypo, loglike)
 
 
-def EvalGaussianLogPdf(mu, sigma, x):
+def EvalGaussianLogPdf(x, mu, sigma):
     """Computes the log PDF of x given mu and sigma.
 
-    mu, sigma: paramemters of Gaussian
     x: float values
+    mu, sigma: paramemters of Gaussian
 
     returns: float log-likelihood
     """
-    z = (x-mu) / sigma
-    logpdf = -math.log(sigma) - z**2 / 2
-    return logpdf
+    return scipy.stats.norm.logpdf(x, mu, sigma)
 
 
 def FindPriorRanges(xs, num_points, num_stderrs=3.0, median_flag=False):
@@ -176,16 +171,16 @@ def FindPriorRanges(xs, num_points, num_stderrs=3.0, median_flag=False):
     # estimate mean and stddev of xs
     n = len(xs)
     if median_flag:
-        xbar, s = MedianSighat(xs, num_sigmas=NUM_SIGMAS)
+        m, s = MedianS(xs, num_sigmas=NUM_SIGMAS)
     else:
-        xbar, s2 = thinkstats.MeanVar(xs)
-        s = math.sqrt(s2)
+        m = numpy.mean(xs)
+        s = numpy.std(xs)
 
-    print 'classical estimators', xbar, s
+    print 'classical estimators', m, s
 
-    # compute ranges for xbar and s
-    stderr_xbar = s / math.sqrt(n)
-    mus = MakeRange(xbar, stderr_xbar)
+    # compute ranges for m and s
+    stderr_m = s / math.sqrt(n)
+    mus = MakeRange(m, stderr_m)
 
     stderr_s = s / math.sqrt(2 * (n-1))
     sigmas = MakeRange(s, stderr_s)
@@ -211,7 +206,7 @@ def Summation(xs, mu, cache={}):
         return total
 
 
-def ComputeCoefVariation(suite):
+def CoefVariation(suite):
     """Computes the distribution of CV.
 
     suite: Pmf that maps (x, y) to z
@@ -266,7 +261,7 @@ def PlotCoefVariation(suites):
 
     pmfs = {}
     for label, suite in suites.iteritems():
-        pmf = ComputeCoefVariation(suite)
+        pmf = CoefVariation(suite)
         print 'CV posterior mean', pmf.Mean()
         cdf = thinkbayes.MakeCdfFromPmf(pmf, label)
         thinkplot.Cdf(cdf)
@@ -427,7 +422,7 @@ def MedianIPR(xs, p):
     return median, ipr
 
 
-def MedianSighat(xs, num_sigmas):
+def MedianS(xs, num_sigmas):
     """Computes the median and an estimate of sigma.
 
     Based on an interpercentile range (IPR).
@@ -436,9 +431,9 @@ def MedianSighat(xs, num_sigmas):
     """
     half_p = thinkbayes.StandardGaussianCdf(num_sigmas) - 0.5
     median, ipr = MedianIPR(xs, half_p * 2)
-    sighat = ipr / 2 / num_sigmas
+    s = ipr / 2 / num_sigmas
 
-    return median, sighat
+    return median, s
 
 def Summarize(xs):
     """Prints summary statistics from a sequence of values.

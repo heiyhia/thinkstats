@@ -65,7 +65,7 @@ def UniformPrior():
 
 def TrianglePrior():
     """Makes a Suite with a triangular prior."""
-    suite = Euro(xrange(0, 101))
+    suite = Euro()
     for x in range(0, 51):
         suite.Set(x, x)
     for x in range(51, 101):
