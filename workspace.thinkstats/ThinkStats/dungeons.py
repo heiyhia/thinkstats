@@ -22,8 +22,9 @@ class Die(thinkbayes.Pmf):
         sides: int number of sides
         name: string
         """
-        d = dict((i, 1) for i in xrange(1, sides+1))
-        thinkbayes.Pmf.__init__(self, d, name)
+        thinkbayes.Pmf.__init__(self, name=name)
+        for x in xrange(1, sides+1):
+            self.Set(x, 1)
         self.Normalize()
 
 
@@ -57,7 +58,8 @@ def main():
 
     mix = thinkbayes.MakeMixture(pmf_dice)
 
-    thinkplot.Pmf(mix)
+    colors = thinkplot.Brewer.Colors()
+    thinkplot.Hist(mix, width=0.9, color=colors[4])
     thinkplot.Save(root='dungeons3',
                 xlabel='Outcome',
                 ylabel='Probability',

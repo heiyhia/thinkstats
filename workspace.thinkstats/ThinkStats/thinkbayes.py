@@ -112,6 +112,9 @@ class _DictWrapper(object):
         self.d = d
         self.name = name
 
+        # flag whether the distribution is under a log transform
+        self.log = False
+
     def __len__(self):
         return len(self.d)
 
@@ -151,6 +154,43 @@ class _DictWrapper(object):
         for val, prob in self.Items():
             new.Set(val * factor, prob)
         return new
+
+    def Log(self, m=None):
+        """Log transforms the probabilities.
+        
+        Removes values with probability 0.
+
+        Normalizes so that the largest logprob is 0.
+        """
+        if self.log:
+            raise ValueError("Pmf/Hist already under a log transform")
+        self.log = True
+
+        if m is None:
+            m = self.MaxLike()
+
+        for x, p in self.d.iteritems():
+            if p:
+                self.Set(x, math.log(p / m))
+            else:
+                self.Remove(x)
+
+    def Exp(self, m=None):
+        """Exponentiates the probabilities.
+
+        m: how much to shift the ps before exponentiating
+
+        If m is None, normalizes so that the largest prob is 1.
+        """
+        if not self.log:
+            raise ValueError("Pmf/Hist not under a log transform")
+        self.log = False
+
+        if m is None:
+            m = self.MaxLike()
+
+        for x, p in self.d.iteritems():
+            self.Set(x, math.exp(p - m))
 
     def GetDict(self):
         """Gets the dictionary."""
@@ -311,6 +351,9 @@ class Pmf(_DictWrapper):
 
         Returns: the total probability before normalizing
         """
+        if self.log:
+            raise ValueError("Pmf is under a log transform")
+
         total = self.Total()
         if total == 0.0:
             raise ValueError('total probability is zero.')
@@ -392,35 +435,6 @@ class Pmf(_DictWrapper):
         """
         cdf = self.MakeCdf()
         return cdf.CredibleInterval(percentage)
-
-    def Log(self, m=None):
-        """Log transforms the probabilities.
-        
-        Removes values with probability 0.
-
-        Normalizes so that the largest logprob is 0.
-        """
-        if m is None:
-            m = self.MaxLike()
-
-        for x, p in self.d.iteritems():
-            if p:
-                self.Set(x, math.log(p / m))
-            else:
-                self.Remove(x)
-
-    def Exp(self, m=None):
-        """Exponentiates the probabilities.
-
-        m: how much to shift the ps before exponentiating
-
-        If m is None, normalizes so that the largest prob is 1.
-        """
-        if m is None:
-            m = self.MaxLike()
-
-        for x, p in self.d.iteritems():
-            self.Set(x, math.exp(p - m))
 
     def __add__(self, other):
         """Computes the Pmf of the sum of values drawn from self and other.
@@ -1243,6 +1257,8 @@ class Pdf(object):
 
 
 class GaussianPdf(Pdf):
+    """Represents the PDF of a Gaussian distribution."""
+
     def __init__(self, mu, sigma):
         """Constructs a Gaussian Pdf with given mu and sigma.
 
@@ -1257,13 +1273,12 @@ class GaussianPdf(Pdf):
 
         Returns: float probability density
         """
-        density = scipy.stats.norm.pdf(x,
-                                       loc=self.mu,
-                                       scale=self.sigma)
-        return density
+        return EvalGaussianPdf(x, self.mu, self.sigma)
 
 
 class EstimatedPdf(Pdf):
+    """Represents a PDF estimated by KDE."""
+
     def __init__(self, sample):
         """Estimates the density function based on a sample.
 
@@ -1392,18 +1407,16 @@ def SampleSum(dists, n):
     return pmf
 
 
-def EvalGaussianPdf(mu, sigma, x, denom=math.sqrt(2 * math.pi)):
+def EvalGaussianPdf(x, mu, sigma):
     """Computes the unnormalized PDF of the normal distribution.
 
+    x: value
     mu: mean
     sigma: standard deviation
-    x: value
     
     returns: float probability density
     """
-    z = (x - mu) / sigma
-    p = math.exp(-z ** 2 / 2) / sigma / denom
-    return p
+    return scipy.stats.norm.pdf(x, mu, sigma)
 
 
 def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
@@ -1421,21 +1434,21 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
     high = mu + num_sigmas * sigma
 
     for x in numpy.linspace(low, high, n):
-        p = EvalGaussianPdf(mu, sigma, x)
+        p = EvalGaussianPdf(x, mu, sigma)
         pmf.Set(x, p)
     pmf.Normalize()
     return pmf
 
 
-def EvalPoissonPmf(lam, k):
+def EvalPoissonPmf(k, lam):
     """Computes the Poisson PMF.
 
-    lam: parameter lambda in events per unit time
     k: number of events
+    lam: parameter lambda in events per unit time
 
     returns: float probability
     """
-    return (lam) ** k * math.exp(-lam) / math.factorial(k)
+    return scipy.stats.poisson.pmf(k, lam)
 
 
 def MakePoissonPmf(lam, high):
@@ -1448,17 +1461,17 @@ def MakePoissonPmf(lam, high):
     """
     pmf = Pmf()
     for k in xrange(0, high + 1):
-        p = EvalPoissonPmf(lam, k)
+        p = EvalPoissonPmf(k, lam)
         pmf.Set(k, p)
     pmf.Normalize()
     return pmf
 
 
-def EvalExponentialPdf(lam, x):
+def EvalExponentialPdf(x, lam):
     """Computes the exponential PDF.
 
-    lam: parameter lambda in events per unit time
     x: value
+    lam: parameter lambda in events per unit time
 
     returns: float probability density
     """
@@ -1481,7 +1494,7 @@ def MakeExponentialPmf(lam, high, n=200):
     """
     pmf = Pmf()
     for x in numpy.linspace(0, high, n):
-        p = EvalExponentialPdf(lam, x)
+        p = EvalExponentialPdf(x, lam)
         pmf.Set(x, p)
     pmf.Normalize()
     return pmf

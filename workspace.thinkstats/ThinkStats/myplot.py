@@ -56,6 +56,12 @@ class Brewer(object):
                     ]
 
     @classmethod
+    def Colors(cls):
+        """Returns the list of colors.
+        """
+        return cls.colors
+
+    @classmethod
     def ColorGenerator(cls, n):
         """Returns an iterator of color strings.
 
@@ -215,7 +221,7 @@ def Hist(hist, **options):
 
     options = Underride(options, 
                         align='center',
-                        edgecolor='blue',
+                        linewidth=0,
                         width=width)
 
     pyplot.bar(xs, fs, **options)

@@ -321,7 +321,7 @@ class ArrivalRate(thinkbayes.Suite):
         """
         lam = hypo
         x, k = data
-        like = thinkbayes.EvalPoissonPmf(lam * x, k)
+        like = thinkbayes.EvalPoissonPmf(k, lam * x)
         return like
 
 
@@ -334,8 +334,6 @@ class ArrivalRateEstimator(object):
 
         passenger_data: sequence of (k1, y, k2) pairs
         """
-        self.passenger_data = passenger_data
-
         # range for lambda
         low, high = 0, 5
         n = 51
@@ -384,7 +382,7 @@ class Elapsed(thinkbayes.Suite):
         """
         x = hypo
         lam, k = data
-        like = thinkbayes.EvalPoissonPmf(lam * x, k)
+        like = thinkbayes.EvalPoissonPmf(k, lam * x)
         return like
 
 

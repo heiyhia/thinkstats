@@ -23,8 +23,6 @@ class Hockey(thinkbayes.Suite):
 
         name: string
         """
-        thinkbayes.Suite.__init__(self, name=name)
-
         if USE_SUMMARY_DATA:
             # prior based on each team's average goals scored
             mu = 2.8
@@ -34,10 +32,8 @@ class Hockey(thinkbayes.Suite):
             mu = 2.8
             sigma = 0.85
 
-        pmf = thinkbayes.MakeGaussianPmf(mu, sigma, 6)
-        for x, p in pmf.Items():
-            if x > 0:
-                self.Set(x, p)
+        pmf = thinkbayes.MakeGaussianPmf(mu, sigma, 4)
+        thinkbayes.Suite.__init__(self, pmf, name=name)
             
     def Likelihood(self, data, hypo):
         """Computes the likelihood of the data under the hypothesis.
@@ -49,19 +45,19 @@ class Hockey(thinkbayes.Suite):
         """
         lam = hypo
         k = data
-        like = thinkbayes.EvalPoissonPmf(lam, k)
+        like = thinkbayes.EvalPoissonPmf(k, lam)
         return like
 
 
-def MakeGoalPmf(suite):
+def MakeGoalPmf(suite, high=10):
     """Makes the distribution of goals scored, given distribution of lam.
 
     suite: distribution of goal-scoring rate
+    high: upper bound
 
     returns: Pmf of goals per game
     """
     metapmf = thinkbayes.Pmf()
-    high = 10
 
     for lam, prob in suite.Items():
         pmf = thinkbayes.MakePoissonPmf(lam, high)
@@ -105,27 +101,34 @@ def ReadHockeyData(filename='hockey_data.csv'):
     filename: string
     """
     game_list = columns.read_csv(filename, Game)
-    games = {}
 
     # map from gameID to list of two games
+    games = {}
     for game in game_list:
         if game.season != 2011:
             continue
         key = game.game
         games.setdefault(key, []).append(game)
 
-    pairs = {}
-
     # map from (team1, team2) to (score1, score2)
+    pairs = {}
     for key, pair in games.iteritems():
         t1, t2 = pair
         key = t1.team, t2.team
         entry = t1.total, t2.total
         pairs.setdefault(key, []).append(entry)
 
-    goals_scored = {}
+    ProcessScoresTeamwise(pairs)
+    ProcessScoresPairwise(pairs)
 
+
+def ProcessScoresPairwise(pairs):
+    """Average number of goals for each team against each opponent.
+
+    pairs: map from (team1, team2) to (score1, score2)
+    """
     # map from (team1, team2) to list of goals scored
+    goals_scored = {}
     for key, entries in pairs.iteritems():
         t1, t2 = key
         for entry in entries:
@@ -133,7 +136,7 @@ def ReadHockeyData(filename='hockey_data.csv'):
             goals_scored.setdefault((t1, t2), []).append(g1)
             goals_scored.setdefault((t2, t1), []).append(g2)
 
-    # make a list of average goals scored for each pair of teams
+    # make a list of average goals scored
     lams = []
     for key, goals in goals_scored.iteritems():
         if len(goals) < 3:
@@ -150,6 +153,35 @@ def ReadHockeyData(filename='hockey_data.csv'):
     print 'mu, sig', mu, math.sqrt(var)
 
     print 'BOS v VAN', pairs['BOS', 'VAN']
+
+
+def ProcessScoresTeamwise(pairs):
+    """Average number of goals for each team.
+
+    pairs: map from (team1, team2) to (score1, score2)
+    """
+    # map from team to list of goals scored
+    goals_scored = {}
+    for key, entries in pairs.iteritems():
+        t1, t2 = key
+        for entry in entries:
+            g1, g2 = entry
+            goals_scored.setdefault(t1, []).append(g1)
+            goals_scored.setdefault(t2, []).append(g2)
+
+    # make a list of average goals scored
+    lams = []
+    for key, goals in goals_scored.iteritems():
+        lam = thinkstats.Mean(goals)
+        lams.append(lam)
+
+    # make the distribution of average goals scored
+    cdf = thinkbayes.MakeCdfFromList(lams)
+    thinkplot.Cdf(cdf)
+    thinkplot.Show()
+
+    mu, var = thinkstats.MeanVar(lams)
+    print 'mu, sig', mu, math.sqrt(var)
 
 
 def main():
