@@ -623,7 +623,7 @@ This is a conditional probability; we want \p{\T{Bowl 1} |
 different question---the probability of a vanilla cookie given Bowl
 1---it would be easy:
 %
-\p{\T{vanilla} | \T{Bowl 1}} = 3/4
+\[ \p{\T{vanilla} | \T{Bowl 1}} = 3/4 \]
 %
 Sadly \p{A|B} is {\em not} the same as \p{B|A}, but there
 is a way to get from one to the other: Bayes's Theorem.
@@ -2106,6 +2106,7 @@ objectivity by pretending to know less than you do.
 
 
 \chapter{More estimation}
+\label{more}
 
 \section{The Euro coin problem}
 \label{euro}
@@ -2706,7 +2707,7 @@ the priors, and the ratio of the posteriors, as odds.
 
 Writing \odds{A} for odds in favor of $A$, we get:
 %
-\[ \odds{A|D} = \odds{A} \frac{\p{D|A}}{\p{D|B}} \]
+\[ \odds{A|D} = \odds{A}~\frac{\p{D|A}}{\p{D|B}} \]
 %
 In words, this says that the posterior odds are the prior odds times
 the likelihood ratio.  This is the {\bf odds form} of Bayes's Theorem.
@@ -2727,7 +2728,7 @@ that it came from Bowl 1?
 \end{quote}
 
 The prior probability is 50\%, so the prior odds are $1:1$, or just
-$1$.  The likelihood ratio is $\frac{3}{4} / \frac{1}{2}$, or $3/2$.
+1.  The likelihood ratio is $\frac{3}{4} / \frac{1}{2}$, or $3/2$.
 So the posterior odds are $3:2$, which corresponds to probability
 $3/5$.
 
@@ -2764,7 +2765,7 @@ that the vanilla cookie is evidence in favor of Bowl 1.
 The odds form of Bayes's Theorem provides a way to make this
 intuition more precise.  Again
 %
-\[ \odds{A|D} = \odds{A} \frac{\p{D|A}}{\p{D|B}} \]
+\[ \odds{A|D} = \odds{A}~\frac{\p{D|A}}{\p{D|B}} \]
 %
 Or dividing through by \odds{A}:
 %
@@ -2776,16 +2777,16 @@ factor}.
 \index{likelihood ratio}
 \index{Bayes factor}
 
-If the Bayes factor value is greater than $1$, that means that the
+If the Bayes factor value is greater than 1, that means that the
 data were more likely under $A$ than under $B$.  And since the
-odds ratio is also greater than $1$, that means that the odds are
+odds ratio is also greater than 1, that means that the odds are
 greater, in light of the data, than they were before.
 
-If the Bayes factor is less than $1$, that means the data were
+If the Bayes factor is less than 1, that means the data were
 less likely under $A$ than under $B$, so the odds in
 favor of $A$ go down.
 
-Finally, if the Bayes factor is exactly $1$, the data are equally
+Finally, if the Bayes factor is exactly 1, the data are equally
 likely under either hypothesis, so the odds do not change.
 
 Now we can get back to the Oliver's blood problem.  If Oliver is
@@ -3343,7 +3344,7 @@ In mathematical notation, PDFs are usually written as functions; for
 example, here is the PDF of a Gaussian distribution with
 mean 0 and standard deviation 1:
 %
-\[ f(x) = \exp(-x^2) \]
+\[ f(x) = \frac{1}{\sqrt{2 \pi}} \exp(-x^2) \]
 %
 For a given value of $x$, this function computes a probability
 density.  
@@ -5408,14 +5409,14 @@ angle $\theta$; the pellet would hit the wall at location $x$, where
 %
 Solving this equation for $\theta$ yields
 %
-\[ \theta = tan^{-1} \left[ \frac{x - \alpha}{\beta} \right] \]
+\[ \theta = tan^{-1} \left( \frac{x - \alpha}{\beta} \right) \]
 %
 So given a location on the wall, we can find $\theta$.
 
 Taking the derivative of the first equation with respect to
 $\theta$ yields
 %
-\[ \frac{dx}{d\theta} = \beta / \cos^2 \theta \]
+\[ \frac{dx}{d\theta} = \frac{\beta}{\cos^2 \theta} \]
 %
 This derivative is what I'll call the ``strafing speed'',
 which is the speed of the target location along the wall as $\theta$
@@ -6610,7 +6611,7 @@ If the parameters for Group 1 are $(\mu_1, \sigma_1)$, and the
 parameters for Group 1 are $(\mu_2, \sigma_2)$, the dimensionless
 effect size is
 %
-\[ \frac{\mu_1 - \mu_2}{2 (\sigma_1 + \sigma_2)} \]
+\[ \frac{\mu_1 - \mu_2}{1/2 (\sigma_1 + \sigma_2)} \]
 %
 Write a function that takes joint distributions of
 {\tt mu} and {\tt sigma} for two groups and returns
@@ -6627,7 +6628,7 @@ long, consider random sampling.
 
 \section{Back to the Euro problem}
 
-In Section~\ref{euro} I presented a question from MacKay's {\it Information
+In Section~\ref{euro} I presented a problem from MacKay's {\it Information
   Theory, Inference, and Learning Algorithms}:
 \index{MacKay, David}
 
@@ -6645,15 +6646,13 @@ A statistical statement appeared in ``The Guardian" on Friday January 4, 2002:
 But do these data give evidence that the coin is biased rather than fair?
 \end{quote}
 
-We used this data to estimate the probability that the coin would
-land face up, but we didn't really answer MacKay's question.  Let's
-get back to that now.
+We estimated the probability that the coin would
+land face up, but we didn't really answer MacKay's question:
+Do the data give evidence that the coin is biased?
 \index{Euro problem}
 \index{evidence}
 
-\section{Bayesian hypothesis testing}
-
-In Section~\ref{oliver} I proposed that data are in favor of
+In Chapter~\ref{more} I proposed that data are in favor of
 a hypothesis if the data are more likely under the hypothesis than
 under the alternative or, equivalently, if the Bayes factor is greater
 than 1.
@@ -6667,7 +6666,7 @@ that it is biased.
 \index{biased coin}
 
 If the coin is fair, it is easy to compute the likelihood of the
-data, \p{D|F}.  In fact, we already wrote the {\tt Likelihood}
+data, \p{D|F}.  In fact, we already wrote the function
 that does it.
 
 \begin{verbatim}
@@ -6678,8 +6677,9 @@ that does it.
         return like
 \end{verbatim}
 
-All we have to do is create a {\tt Euro} suite and use its 
-{\tt Likelihood} method:
+To use it we can
+create a {\tt Euro} suite and invoke
+{\tt Likelihood}:
 
 \begin{verbatim}
     suite = Euro()
@@ -6688,7 +6688,7 @@ All we have to do is create a {\tt Euro} suite and use its
 
 \p{D|F} is $5.5 \cdot 10^{-76}$, which doesn't tell us much except
 that the probability of seeing any particular dataset is very small.
-As always, it takes two likelihoods to make a ratio, so we have to
+It takes two likelihoods to make a ratio, so we also have to
 compute \p{D|B}.
 
 It is not obvious how to compute the likelihood of $B$, because
@@ -6743,9 +6743,10 @@ means the data provide weak evidence in favor of \verb"b_two".
 \index{likelihood ratio}
 \index{Bayes factor}
 
-More generally, suppose you suspect that the coin is biased,
-but you have no clue about the value of $x$.  In that case you
-might build a Suite to represent sub-hypotheses from 0 to 100.
+More generally, suppose you suspect that the coin is biased, but you
+have no clue about the value of $x$.  In that case you might build a
+Suite, which I call \verb"b_uniform", to represent sub-hypotheses from
+0 to 100.
 
 \begin{verbatim}
     b_uniform = Euro(xrange(0, 101))
@@ -6753,10 +6754,14 @@ might build a Suite to represent sub-hypotheses from 0 to 100.
     b_uniform.Normalize()
 \end{verbatim}
 
-I removed the sub-hypothesis that $x$ is 50\%, but it doesn't
-really matter if you include it.  To compute the likelihood of
-\verb"b_uniform" we compute the likelihood of the sub-hypotheses
-and compute a weighted average.
+I initialize \verb"b_uniform" with vales from 0 to 100.
+I removed the sub-hypothesis that $x$ is 50\%, because if
+$x$ is 50\% the coin is fair, but it has almost no
+effect on the result whether you remove it or not.
+
+To compute the likelihood of
+\verb"b_uniform" we compute the likelihood of each sub-hypothesis
+and accumulate a weighted average.
 
 \begin{verbatim}
 def SuiteLikelihood(suite, data):
@@ -6768,8 +6773,8 @@ def SuiteLikelihood(suite, data):
 \end{verbatim}
 
 The likelihood ratio for \verb"b_uniform" is 0.47, which means
-that the data are weak evidence against \verb"b_uniform" at
-least compared to $F$.
+that the data are weak evidence against \verb"b_uniform",
+compared to $F$.
 \index{likelihood}
 
 If you think about the computation performed by
@@ -6797,11 +6802,12 @@ And here's {\tt Normalize}:
         return total
 \end{verbatim}
 
-The return value from {\tt Normalize} is the total of the probabilities
-in the Suite, which is the average of the likelihoods for the
-sub-hypotheses, weighted by the prior probabilities.  And {\tt Update}
-passes this value along, so we could compute the likelihood
-of \verb"b_uniform" like this:
+The return value from {\tt Normalize} is the total of the
+probabilities in the Suite, which is the average of the likelihoods
+for the sub-hypotheses, weighted by the prior probabilities.  And {\tt
+  Update} passes this value along, so instead of using {\tt
+  SuiteLikelihood}, we could compute the likelihood of
+\verb"b_uniform" like this:
 
 \begin{verbatim}
     likelihood = b_uniform.Update(data)
@@ -6811,7 +6817,7 @@ of \verb"b_uniform" like this:
 
 \section{The triangle prior}
 
-In Chapter~\ref{euro} we also considered a triangle-shaped prior that
+In Chapter~\ref{more} we also considered a triangle-shaped prior that
 gives higher probability to values of $x$ near 50\%.  If we think of
 this prior as a suite of sub-hypotheses, we can compute its likelihood
 like this:
@@ -6822,14 +6828,11 @@ like this:
     likelihood = b_triangle.Update(data)
 \end{verbatim}
 
-{\tt TrianglePrior} is defined in Section~\ref{triangle} and
-shown in Figure~\ref{fig.euro2}.
-
 The likelihood ratio for \verb"b_triangle" is 0.84, compared to $F$, so
 again we would say that the data are weak evidence against $B$.
 \index{evidence}
 
-The following table shows the different priors we have considered, the
+The following table shows the priors we have considered, the
 likelihood of each, and the likelihood ratio (or Bayes factor)
 relative to $F$.
 \index{likelihood ratio}
@@ -6848,19 +6851,18 @@ $F$              & 5.5   & --   \\
 \hline
 \end{tabular}
 
+Depending on which definition we choose, the data might provide
+evidence for or against the hypothesis that the coin is biased, but
+in either case it is relatively weak evidence.
+
 In summary, we can use Bayesian hypothesis testing to compare the
 likelihood of $F$ and $B$, but we have to do some work to specify
 precisely what $B$ means.  This specification depends on background
 information about coins and their behavior when spun, so people
 could reasonably disagree about the right definition.
 
-Depending on which definition we choose, the data might provide
-evidence for or against the hypothesis that the coin is biased, but
-in either case it is relatively weak evidence.
-
-I should acknowledge that my presentation of this example follows
+My presentation of this example follows
 David MacKay's discussion, and comes to the same conclusion.
-
 You can download the code I used in this chapter from
 \url{http://thinkbayes.com/euro3.py}.
 
@@ -6868,9 +6870,9 @@ You can download the code I used in this chapter from
 \section{Discussion}
 
 The Bayes factor for \verb"B_uniform" is 0.47, which means
-that the data provide evidence against this hypothesis (compared
-to $F$).  In the previous section I characterized this evidence
-as ``weak,'' but I didn't say why.
+that the data provide evidence against this hypothesis, compared
+to $F$.  In the previous section I characterized this evidence
+as ``weak,'' but didn't say why.
 \index{evidence}
 
 Part of the answer is historical.  Harold Jeffreys, an early
@@ -6891,17 +6893,16 @@ $>$ 100 & Decisive \\
 \end{tabular}
 
 In the example, the Bayes factor is 0.47 in favor of \verb"B_uniform",
-so it is 2.1 in favor is $F$, which Jeffreys would consider
-``barely worth mentioning.''
-
-Other authors have suggested variations on the wording.  To
-avoid arguing about adjectives, we could think about odds instead.
+so it is 2.1 in favor is $F$, which Jeffreys would consider ``barely
+worth mentioning.''  Other authors have suggested variations on the
+wording.  To avoid arguing about adjectives, we could think about odds
+instead.
 
 If your prior odds are 1:1, and you see evidence with Bayes
 factor 2, your posterior odds are 2:1.  In terms of probability,
 the data changed your degree of belief from 50\% to 66\%.  For
 most real world problems, that change would be small relative
-to the uncertainty of the prior.
+to modeling errors other sources of uncertainty.
 
 On the other hand, if you had seen evidence with Bayes
 factor 100, your posterior odds would be 100:1 or more than 99\%.
@@ -6975,8 +6976,8 @@ than Bob?''
 
 To answer that question, we need to make some modeling decisions.
 I'll start with a simplification I know is wrong; then we'll come back
-and improve the model.  Specifically, I will temporarily pretend that
-all SAT questions are equally difficult.  In reality, the designers of
+and improve the model.  I pretend, temporarily, that
+all SAT questions are equally difficult.  Actually, the designers of
 the SAT choose questions with a range of difficulty, because that
 improves the ability to measure statistical differences between
 test-takers.
@@ -7034,16 +7035,15 @@ class Exam(object):
         self.prior = DivideValues(raw, 54)
 \end{verbatim}
 
-{\tt Exam} encapsulates the information we have about the offering
-of an exam.
+{\tt Exam} encapsulates the information we have about the exam.
 {\tt ReadScale} and {\tt ReadRanks} read files and return
-object that contain the data:
+objects that contain the data:
 {\tt self.scale} is the {\tt Interpolator} that converts
 from raw to scaled scores and back;  {\tt scores} is a list
 of (score, frequency) pairs.
 
 \verb"score_pmf" is the Pmf of
-scaled scores.   {\tt raw} is the Pmf of raw scores, and
+scaled scores.   {\tt self.raw} is the Pmf of raw scores, and
 {\tt self.prior} is the Pmf of \verb"p_correct".
 
 \begin{figure}
@@ -7099,15 +7099,14 @@ As usual, we inherit {\tt Update} from {\tt Suite} and provide
         return like
 \end{verbatim}
 
-And as usual, {\tt Likelihood} computes the likelihood of the data
-under a given hypothesis.  In this case {\tt hypo} is a hypothetical
-value of \verb"p_correct".  And {\tt data} is a scaled score.
+{\tt hypo} is a hypothetical
+value of \verb"p_correct", and {\tt data} is a scaled score.
 
 To keep things simple, I interpret the raw score as the number of
 correct answers, ignoring the penalty for wrong answers.  With
 this simplification, the likelihood is given by the binomial
-distribution, which computes the probability of {\tt yes} correct
-answers and {\tt no} incorrect.
+distribution, which computes the probability of the given number
+of correct and incorrect responses.
 \index{binomial distribution}
 \index{raw score}
 
@@ -7124,7 +7123,7 @@ answers and {\tt no} incorrect.
 Figure~\ref{fig.satposterior1} shows the posterior distributions
 of \verb"p_correct" for Alice and Bob based on their exam scores.
 We can see that they overlap, so it is possible that \verb"p_correct"
-is actually higher for Bob, but it looks unlikely.
+is actually higher for Bob, but it seems unlikely.
 
 Which brings us back to the original question, ``How strong is the
 evidence that Alice is better prepared than Bob?''  We can use the
@@ -7183,10 +7182,10 @@ probability that it is higher for Bob.
 
 \verb"c_like" is the probability that they are ``equal,'' but this
 equality is an artifact of the decision to model \verb"p_correct" with
-a set of discrete values.  If we chose more values, \verb"c_like"
-would be smaller, and in the extreme, if \verb"p_correct" were
-continuous, \verb"c_like" would be zero.  So I treat \verb"c_like" as
-a kind of round-off error, and split it evenly between \verb"a_like"
+a set of discrete values.  If we use more values, \verb"c_like"
+is smaller, and in the extreme, if \verb"p_correct" is
+continuous, \verb"c_like" is zero.  So I treat \verb"c_like" as
+a kind of round-off error and split it evenly between \verb"a_like"
 and \verb"b_like".
 
 Here is the code that creates {\tt TopLevel} and updates it:
@@ -7207,7 +7206,7 @@ scores are evidence that Alice is better than Bob at answering SAT
 questions.  If we believed, before seeing the test scores, that $A$
 and $B$ were equally likely, then after seeing the scores we should
 believe that the probability of $A$ is 79\%, which means there is
-still an 21\% chance that Bob is actually better prepared.
+still a 21\% chance that Bob is actually better prepared.
 \index{likelihood ratio}
 \index{Bayes factor}
 
@@ -7219,32 +7218,26 @@ the simplification that all SAT questions are equally difficult.
 In reality, some are easier than others, which means that the
 difference between Alice and Bob might be even smaller.
 
-To see why, consider a test where most questions are so easy that
-Alice and Bob are nearly certain to answer them correctly.  In that
-case, the difference between their scores is determined by a small
-number of difficult questions, so it is more likely to be due to
-chance.
-
 But how big is the modeling error?  If it is small, we conclude
 that the first model---based on the simplification that all questions
 are equally difficult---is good enough.  If it's large,
 we need a better model.
 \index{modeling error}
 
-In the next few sections, I develop a better model and we will
+In the next few sections, I develop a better model and 
 discover (spoiler alert!) that the modeling error is small.  So if
-you are satisfied with the simpler mode, you can skip to the next
+you are satisfied with the simple mode, you can skip to the next
 chapter.  If you want to see how the more realistic model works,
 read on...
 
 \begin{itemize}
 
-\item First, let's assume that each test-taker has some 
-  degree of {\tt efficacy}, that measures their
+\item Assume that each test-taker has some 
+  degree of {\tt efficacy}, which measures their
   ability to answer SAT questions.
 \index{efficacy}
 
-\item Second, assume that each question has some level of
+\item Assume that each question has some level of
   {\tt difficulty}.
 
 \item Finally, assume that the chance that a test-taker answers a
@@ -7258,8 +7251,8 @@ def ProbCorrect(efficacy, difficulty, a=1):
 
 \end{itemize}
 
-This function is a simplified version of the curve used in item
-response theory, which you can read about at
+This function is a simplified version of the curve used in {\bf item
+response theory}, which you can read about at
 \url{http://en.wikipedia.org/wiki/Item_response_theory}.  {\tt
   efficacy} and {\tt difficulty} are considered to be on the same
 scale, and the probability of getting a question right depends only on
@@ -7280,7 +7273,7 @@ we'll compute the distribution of raw scores.
 
 \begin{verbatim}
 def PmfCorrect(efficacy, difficulties):
-    pmf0 = thinkbayes.Suite([0])
+    pmf0 = thinkbayes.Pmf([0])
 
     ps = [ProbCorrect(efficacy, diff) for diff in difficulties]
     pmfs = [BinaryPmf(p) for p in ps]
@@ -7306,13 +7299,13 @@ of the sums.  In order to use Python's {\tt sum} to add up Pmfs,
 we have to provide {\tt pmf0} which is the identity for Pmfs,
 so {\tt pmf + pmf0} is always {\tt pmf}.
 
-So if we know a person's efficacy, we can compute their distribution
+If we know a person's efficacy, we can compute their distribution
 of raw scores.  For a group of people with a different efficacies, the
 resulting distribution of raw scores is a mixture.  Here's the code
 that computes the mixture:
 
 \begin{verbatim}
-class Exam:
+# class Exam:
 
     def MakeRawScoreDist(self, efficacies):
         pmfs = thinkbayes.Pmf()
@@ -7324,13 +7317,13 @@ class Exam:
         return mix
 \end{verbatim}
 
-{\tt efficacies} is a Pmf that represents the distribution of efficacy
-across test-takers.  I assume that it is Gaussian with mean 0 and
-standard deviation 1.5.  This choice is mostly arbitrary.  The
-probability of getting a question correct depends on the difference
-between efficacy and difficulty, so we can choose the units of
-efficacy and then calibrate the units of difficulty accordingly.
-\index{Gaussian distribution}
+{\tt MakeRawScoreDist} takes {\tt efficacies}, which is a Pmf that
+represents the distribution of efficacy across test-takers.  I assume
+it is Gaussian with mean 0 and standard deviation 1.5.  This
+choice is mostly arbitrary.  The probability of getting a question
+correct depends on the difference between efficacy and difficulty, so
+we can choose the units of efficacy and then calibrate the units of
+difficulty accordingly.  \index{Gaussian distribution}
 
 {\tt pmfs} is a meta-Pmf that contains one Pmf for each level of
 efficacy, and maps to the fraction of test-takers at that level.  {\tt
@@ -7366,16 +7359,15 @@ def MakeDifficulties(center, width, n):
 \end{verbatim}
 
 By trying out a few combinations, I found that
-the values {\tt center=-0.05} and {\tt width=1.8} yield a distribution
-of raw scores similar to the actual data.
-Figure~\ref{fig.satcalibrate} shows the actual data and the results
-from this model.
+{\tt center=-0.05} and {\tt width=1.8} yield a distribution
+of raw scores similar to the actual data, as shown in
+Figure~\ref{fig.satcalibrate}.
 \index{calibration}
 
 So, assuming that the distribution of difficulty is uniform,
-the range is approximately
-{\tt -1.85} to {\tt 1.75}, on a scale with a distribution of
-efficacy that is Gaussian with mean 0 and standard deviation 1.5.
+its range is approximately
+{\tt -1.85} to {\tt 1.75}, given that
+efficacy is Gaussian with mean 0 and standard deviation 1.5.
 \index{Gaussian distribution}
 
 The following table shows the range of {\tt ProbCorrect} for
@@ -7413,32 +7405,25 @@ has only a 24\% chance of answering the easiest questions.
 
 Now that the model is calibrated, we can compute the posterior
 distribution of efficacy for Alice and Bob.  Here is a version of the
-Sat class that works with the new model:
+Sat class that uses the new model:
 
 \begin{verbatim}
 class Sat2(thinkbayes.Suite):
 
     def __init__(self, exam, score):
-        thinkbayes.Suite.__init__(self)
-
         self.exam = exam
         self.score = score
 
-        # start with the prior distribution
+        # start with the Gaussian prior
         efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
-        for efficacy, prob in efficacies.Items():
-            self.Set(efficacy, prob)
+        thinkbayes.Suite.__init__(self, efficacies)
 
         # update based on an exam score
         self.Update(score)
 \end{verbatim}
 
-The prior distribution of efficacy is
-Gaussian with mean 0 and standard deviation 1.5 (and the suite of
-hypotheses spans 3 standard deviations in each direction).
-\index{Gaussian distribution}
-
-\verb"Sat2.Likelihood" computes the likelihood of a given test score
+\verb"Update" invokes
+\verb"Likelihood", which computes the likelihood of a given test score
 for a hypothetical level of efficacy.
 
 \begin{verbatim}
@@ -7482,7 +7467,7 @@ observable, it is hard to validate the results.
 \index{predictive distribution}
 
 To give the model predictive power, we can use it to answer
-another related question: ``If Alice and Bob take the math SAT
+a related question: ``If Alice and Bob take the math SAT
 again, what is the chance that Alice will do better again?''
 
 We'll answer this question in two steps:
@@ -7575,13 +7560,13 @@ part of the space where \verb"p_correct" is the same for Alice and
 Bob.  To the right of this line, Alice is more prepared; to the left
 Bob is more prepared.
 
-In {\tt TopLevel.Update}, when we computed the likelihoods of $A$ and
-$B$, we added up the probability mass each side of this line.  For the
-cells that fall on the line, we added up the total mass and split it
+In {\tt TopLevel.Update}, when we compute the likelihoods of $A$ and
+$B$, we add up the probability mass on each side of this line.  For the
+cells that fall on the line, we add up the total mass and split it
 between $A$ and $B$.
 
-The process we used in this chapter---estimating a nuisance
-parameter in order to evaluate the likelihood of competing
+The process we used in this chapter---estimating nuisance
+parameters in order to evaluate the likelihood of competing
 hypotheses---is a common Bayesian approach to problems like this.
 
 
@@ -8559,11 +8544,11 @@ we see more species than we thought existed, the likelihood is 0.
 Otherwise we select a random set of prevalences, {\tt p}, and
 compute the multinomial PDF, which is
 %
-\[ c(x) \prod_i p_i^{x_i}\]
+\[ c_x \prod_i p_i^{x_i}\]
 %
 $p_i$ is the prevalence of the $i$th species, and $x_i$ is the
-observed number.  The first term, $c(x)$, is the multinomial
-coefficient; I left it out of the computation because it is
+observed number.  The first term, $c_x$, is the multinomial
+coefficient; I leave it out of the computation because it is
 a multiplicative factor that depends only
 on the data, not the hypothesis, so it gets normalized away
 (see \url{http://en.wikipedia.org/wiki/Multinomial_distribution}).
@@ -8761,13 +8746,15 @@ log-likelihoods.  For the multinomial PDF, it is also faster.
 \index{multinomial distribution}
 Again, the multinomial PDF is
 %
-\[ c(x) \prod_i p_i^{x_i}\]
+\[ c_x \prod_i p_i^{x_i}\]
 %
 So the log-likelihood is
 %
-\[ log(c(x)) + \sum_i \log(p_i) * x_i \]
+\[ \log c_x + \sum_i * x_i \log p_i\]
 %
-which is fast and easy to compute.  Here's the code:
+which is fast and easy to compute.  Again, I drop $c_x$ because
+it is the same for all hypotheses, so it gets normalized away.
+Here's the code:
 \index{numpy}
 
 \begin{verbatim}
