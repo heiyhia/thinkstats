@@ -105,15 +105,64 @@ class Interpolator(object):
 class _DictWrapper(object):
     """An object that contains a dictionary."""
 
-    def __init__(self, d=None, name=''):
-        # if d is provided, use it; otherwise make a new dict
-        if d == None:
-            d = {}
-        self.d = d
+    def __init__(self, values=None, name=''):
+        """Initializes the distribution.
+
+        hypos: sequence of hypotheses
+        """
         self.name = name
+        self.d = {}
 
         # flag whether the distribution is under a log transform
         self.log = False
+
+        if values is None:
+            return
+
+        init_methods = [
+            self.InitPmf,
+            self.InitMapping,
+            self.InitSequence,
+            self.InitFailure,
+            ]
+
+        for method in init_methods:
+            try:
+                method(values)
+                break
+            except AttributeError:
+                continue
+
+        if len(self) > 0:
+            self.Normalize()
+
+    def InitSequence(self, values):
+        """Initializes with a sequence of equally-likely values.
+
+        values: sequence of values
+        """
+        for value in values:
+            self.Set(value, 1)
+
+    def InitMapping(self, values):
+        """Initializes with a map from value to probability.
+
+        values: map from value to probability
+        """
+        for value, prob in values.iteritems():
+            self.Set(value, prob)
+
+    def InitPmf(self, values):
+        """Initializes with a Pmf.
+
+        values: Pmf object
+        """
+        for value, prob in values.Items():
+            self.Set(value, prob)
+
+    def InitFailure(self, values):
+        """Raises an error."""
+        raise ValueError('None of the initialization methods worked.')
 
     def __len__(self):
         return len(self.d)
@@ -1011,58 +1060,6 @@ class UnimplementedMethodException(Exception):
 class Suite(Pmf):
     """Represents a suite of hypotheses and their probabilities."""
 
-    def __init__(self, hypos=tuple(), name=''):
-        """Initializes the distribution.
-
-        hypos: sequence of hypotheses
-        """
-        Pmf.__init__(self, name=name)
-
-        methods = [
-            self.InitPmf,
-            self.InitMapping,
-            self.InitSequence,
-            self.InitFailure,
-        ]
-
-        for method in methods:
-            try:
-                method(hypos)
-                break
-            except AttributeError:
-                continue
-
-        if len(self) > 0:
-            self.Normalize()
-
-    def InitSequence(self, hypos):
-        """Initializes with a sequence of equally-likely hypotheses.
-
-        hypos: sequence of hypotheses
-        """
-        for hypo in hypos:
-            self.Set(hypo, 1)
-
-    def InitMapping(self, hypos):
-        """Initializes with a map from hypothesis to probability.
-
-        hypos: map from hypothesis to probability
-        """
-        for hypo, prob in hypos.iteritems():
-            self.Set(hypo, prob)
-
-    def InitPmf(self, hypos):
-        """Initializes with a Pmf.
-
-        hypos: Pmf object
-        """
-        for hypo, prob in hypos.Items():
-            self.Set(hypo, prob)
-
-    def InitFailure(self, hypos):
-        """Raises an error."""
-        raise ValueError('None of the initialization methods worked.')
-
     def Update(self, data):
         """Updates each hypothesis based on the data.
 
@@ -1448,7 +1445,11 @@ def EvalPoissonPmf(k, lam):
 
     returns: float probability
     """
-    return scipy.stats.poisson.pmf(k, lam)
+    # don't use the scipy function.  for lam=0 it returns NaN;
+    # should be 0.0
+    # return scipy.stats.poisson.pmf(k, lam)
+
+    return lam ** k * math.exp(-lam) / math.factorial(k)
 
 
 def MakePoissonPmf(lam, high):

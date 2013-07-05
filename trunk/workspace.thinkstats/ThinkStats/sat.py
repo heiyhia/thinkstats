@@ -210,14 +210,11 @@ class Sat(thinkbayes.Suite):
     """Represents the distribution of p_correct for a test-taker."""
 
     def __init__(self, exam, score):
-        thinkbayes.Suite.__init__(self)
-
         self.exam = exam
         self.score = score
 
         # start with the prior distribution
-        for p_correct, prob in exam.prior.Items():
-            self.Set(p_correct, prob)
+        thinkbayes.Suite.__init__(self, exam.prior)
 
         # update based on an exam score
         self.Update(score)
@@ -255,15 +252,12 @@ class Sat2(thinkbayes.Suite):
     """Represents the distribution of efficacy for a test-taker."""
 
     def __init__(self, exam, score):
-        thinkbayes.Suite.__init__(self)
-
         self.exam = exam
         self.score = score
 
-        # start with the prior distribution
+        # start with the Gaussian prior
         efficacies = thinkbayes.MakeGaussianPmf(0, 1.5, 3)
-        for efficacy, prob in efficacies.Items():
-            self.Set(efficacy, prob)
+        thinkbayes.Suite.__init__(self, efficacies)
 
         # update based on an exam score
         self.Update(score)
@@ -424,7 +418,7 @@ def PmfCorrect(efficacy, difficulties):
 
     Returns: new Pmf object
     """
-    pmf0 = thinkbayes.Suite([0])
+    pmf0 = thinkbayes.Pmf([0])
 
     ps = [ProbCorrect(efficacy, difficulty) for difficulty in difficulties]
     pmfs = [BinaryPmf(p) for p in ps]
