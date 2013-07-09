@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.30}
+\newcommand{\theversion}{0.32}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -206,11 +206,9 @@ Unported License, which is available at
 \chapter{Preface}
 \label{preface}
 
-\subsection*{My theory, which is mine\footnote{This section title
-is a reference to a Monty Python sketch, which is required for
-all Python-based books.}}
+\section{My theory, which is mine}
 
-The premise of this book, and the other books in the {\it Think}
+The premise of this book, and the other books in the {\it Think X}
 series, is that if you know how to program, you
 can use that skill to learn other topics.
 
@@ -237,7 +235,7 @@ German Tank Problem, a famously-successful application of Bayesian
 methods during World War II.
 
 
-\subsection{Modeling and approximation}
+\section{Modeling and approximation}
 
 Most chapters in this book are motivated by a real-world problem,
 so most chapters involve some degree of modeling.   Before we
@@ -316,7 +314,8 @@ optimized code yields the same results, at least approximately).
 \index{regression testing}
 
 
-\subsection*{Working with the code}
+\section{Working with the code}
+\label{download}
 
 Many of the examples in this book use classes and functions
 defined in {\tt thinkbayes.py}.  You can download this module
@@ -328,14 +327,17 @@ dependencies you will also have to download.  I suggest you
 keep all of these files in the same directory so they can import
 each other without changing the Python path.
 
-You can download these files one at a time when you need them, or you
+You can download these files one at a time as you need them, or you
 can download them all at once from
 \url{http://thinkbayes.com/thinkbayes_code.zip}.  This file also
 contains the data files used by some of the programs.  When you unzip
 it, it creates a directory named \verb"thinkbayes_code" that contains
 all the code used in this book.
 
-One of the modules in that directory is {\tt thinkplot.py},
+Or, if you are a Git user, you can fork this repository:
+\url{https://github.com/AllenDowney/ThinkBayes}.
+
+One of the modules I use is {\tt thinkplot.py},
 which provides wrappers for some of the functions in {\tt pyplot},
 which is part of {\tt matplotlib}.  If you don't have {\tt matplotlib}
 installed, check your package manager to see if it is available.
@@ -349,7 +351,7 @@ available from \url{http://numpy.org} and \url{http://scipy.org}.
 \index{scipy}
 
 
-\subsection*{Code style}
+\section{Code style}
 
 Experienced Python programmers will notice that the code in this
 book does not comply with PEP 8, which is the most common
@@ -378,7 +380,7 @@ mass function or cumulative distribution function, and Pdf and Cdf
 to refer to the Python objects I use to represent them.
 
 
-\subsection*{Prerequisites}
+\section{Prerequisites}
 
 There are several excellent modules for doing Bayesian statistics in
 Python, including {\tt pymc} and OpenBUGS.  I chose not to use them
@@ -521,9 +523,9 @@ statistics.
 \index{probability!conditional}
 
 A probability is a number between 0 and 1 (including both) that
-represents a degree of belief in a fact or prediction.  A probability
-of 1 represents certainty that a fact is true, or that a prediction
-will come true.  A probability of 0 represents certainty
+represents a degree of belief in a fact or prediction.  The value
+1 represents certainty that a fact is true, or that a prediction
+will come true.  The value 0 represents certainty
 that the fact is false.
 \index{degree of belief}
 
@@ -534,7 +536,7 @@ coin lands face up is very close to 50\%.
 \index{coin toss}
 
 A conditional probability is a probability based on some background
-information.  For example, I might be interested in the probability
+information.  For example, I want to know the probability
 that I will have a heart attack in the next year.  According to the
 CDC, ``Every year about 785,000 Americans have a first coronary attack.
 [\url{http://www.cdc.gov/heartdisease/facts.htm}]''
@@ -568,7 +570,7 @@ attack in the next year, and $B$ is the set of conditions I listed.
 \section{Conjoint probability}
 
 {\bf Conjoint probability} is a fancy way to say the probability that
-two things are true.  I will write \p{A \AND B} to mean the
+two things are true.  I write \p{A \AND B} to mean the
 probability that $A$ and $B$ are both true.
 \index{conjoint probability}
 \index{probability!conjoint}
@@ -1068,8 +1070,10 @@ represent a distribution mathematically.
 
 {\tt Pmf} is defined in a Python module I wrote to accompany this
 book, {\tt thinkbayes.py}.  You can download it from
-\url{http://thinkbayes.com/thinkbayes.py}.  To use {\tt Pmf} you
-can import it like this:
+\url{http://thinkbayes.com/thinkbayes.py}.    For more information
+see Section~\ref{download}.
+
+To use {\tt Pmf} you can import it like this:
 
 \begin{verbatim}
 from thinkbayes import Pmf
@@ -1184,7 +1188,8 @@ print pmf.Prob('Bowl 1')
 \end{verbatim}
 
 And the answer is 0.6.  You can download this example
-from \url{http://thinkbayes.com/cookie.py}.
+from \url{http://thinkbayes.com/cookie.py}.  For more information
+see Section~\ref{download}.
 \index{cookie.py}
 
 
@@ -1287,6 +1292,8 @@ the same.
 
 The code in this section is available from
 \url{http://thinkbayes.com/cookie2.py}.
+  For more information
+see Section~\ref{download}.
 
 \begin{exercise}
 
@@ -1377,7 +1384,8 @@ C 0.666666666667
 In this example, writing \verb"Likelihood" is a little complicated,
 but the framework of the Bayesian update is simple.  The code in
 this section is available from \url{http://thinkbayes.com/monty.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Encapsulating the framework}
 
@@ -1429,6 +1437,8 @@ And here's the code that uses this class:
 
 You can download this example from
 \url{http://thinkbayes.com/monty2.py}.
+  For more information
+see Section~\ref{download}.
 
 
 \section{The \MM~problem}
@@ -1511,7 +1521,8 @@ is what we got before.
 
 The code in this section is available from
 \url{http://thinkbayes.com/m_and_m.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Discussion}
 
@@ -1645,7 +1656,8 @@ and less than 1\% for the 20-sided die.
 The dice problem is based on an example I saw in Sanjoy Mahajan's class on
 Bayesian inference.  You can download the code in this section from
 \url{http://thinkbayes.com/dice.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{The Locomotive problem}
 
@@ -1763,7 +1775,8 @@ estimate would minimize the mean squared error over the long run (see
 \index{mean squared error}
 
 You can download this example from \url{http://thinkbayes.com/train.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{What about that prior?}
 
@@ -1913,7 +1926,8 @@ behaves better in practice.
 
 You can download the examples in this section from
 \url{http://thinkbayes.com/train3.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Credible intervals}
 \label{credible}
@@ -1998,7 +2012,8 @@ corresponding probability is also logarithmic, so Cdfs are efficient
 for many calculations.
 
 The examples in this section are in \url{http://thinkbayes.com/train3.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \begin{exercise}
 To write a likelihood function for the Locomotive problem, we had
@@ -2137,6 +2152,8 @@ coin is biased.
 
 You can download the code in this section from
 \url{http://thinkbayes.com/euro.py}.
+  For more information
+see Section~\ref{download}.
 
 Any given coin has some probability, $x$, of landing heads up when spun
 on edge.  It seems reasonable to believe that the value of $x$ depends
@@ -2962,7 +2979,8 @@ would have to extend this method to use conditional probabilities.
 
 The code from this section is available from
 \url{http://thinkbayes.com/dungeons.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Maxima}
 
@@ -3288,7 +3306,8 @@ book, {\it Bayesian Methods for Hackers}.  The code I wrote for this
 chapter is available from \url{http://thinkbayes.com/price.py}; it
 reads data files you can download from
 \url{http://thinkbayes.com/showcases.2011.csv} and
-\url{http://thinkbayes.com/showcases.2012.csv}.
+\url{http://thinkbayes.com/showcases.2012.csv}.    For more information
+see Section~\ref{download}.
 \index{Davidson-Pilon, Cameron}
 
 
@@ -4431,7 +4450,8 @@ right.
 The code and data for this chapter are available from
 \url{http://thinkbayes.com/hockey.py} and
 \url{http://thinkbayes.com/hockey_data.csv}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Exercises}
 
@@ -4547,6 +4567,8 @@ Kai Austin, who took a class with me at Olin College.
 The code in this chapter is available from
 \url{http://thinkbayes.com/redline.py}.  The code I used
 to collect data is in \url{http://thinkbayes.com/redline_data.py}.
+  For more information
+see Section~\ref{download}.
 \index{Olin College}
 
 
@@ -5279,7 +5301,8 @@ I leave this analysis as an exercise for the
 reader.  One suggestion: you should read Chapter~\ref{species} first.
 You can find the outline of
 a solution in \url{http://thinkbayes.com/redline.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \chapter{Two dimensions}
 \label{paintball}
@@ -5324,7 +5347,8 @@ notation follows the presentation of the problem in Sivia, {\it Data
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/paintball.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{The suite}
 
@@ -5561,6 +5585,7 @@ evidence.  The 90\% credible intervals cover most of the room!
 
 
 \section{Conditional distributions}
+\label{conditional}
 
 \begin{figure}
 % paintball.py
@@ -5765,7 +5790,8 @@ in Chapter~\ref{species}.
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/paintball.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Exercises}
 
@@ -5870,7 +5896,8 @@ I will proceed in a few steps:
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/variability.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Mean and standard deviation}
 
@@ -6063,7 +6090,8 @@ have to deal with:
 The following sections explain these problems and their solutions.
 
 
-\section{Big data, small likelihood}
+\section{Underflow}
+\label{underflow}
 
 If we select the first 100 values from the BRFSS dataset and run the
 analysis I just described, it runs without errors and we get posterior
@@ -6586,7 +6614,8 @@ this chapter, it is not obvious which summary statistics to choose.
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/variability.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Exercises}
 
@@ -6865,7 +6894,8 @@ My presentation of this example follows
 David MacKay's discussion, and comes to the same conclusion.
 You can download the code I used in this chapter from
 \url{http://thinkbayes.com/euro3.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{Discussion}
 
@@ -7011,7 +7041,8 @@ score to raw).
 
 You can download the code for this example from
 \url{http://thinkbayes.com/sat.py}.
-
+  For more information
+see Section~\ref{download}.
 
 \section{The prior}
 
@@ -7575,9 +7606,9 @@ hypotheses---is a common Bayesian approach to problems like this.
 \chapter{Simulation}
 
 In this chapter I describe my solution to a problem posed
-by a patient with a kidney tumor.  I think the problem is interesting,
-and important, because it is relevant to both the patient and
-doctors treating other patients with these tumors.
+by a patient with a kidney tumor.  I think the problem is 
+important and relevant to patients with these tumors
+and doctors treating them.
 
 And I think the solution is interesting because, although it
 is a Bayesian approach to the problem, the use of Bayes's Theorem
@@ -7684,10 +7715,8 @@ measure is three times longer.
 \end{verbatim}
 
 You can download the code in this chapter from
-\url{http://thinkbayes.com/kidney.py}.  It depends on several other
-modules in the same directory.  You can download them separately, or
-check out the whole repository from
-\url{http://thinkbayes.com/thinkbayes_code.zip}.
+\url{http://thinkbayes.com/kidney.py}.  For more information
+see Section~\ref{download}.
 
 The result, {\tt d0}, is about 6 cm.  So if this tumor formed after
 the date of discharge, it must have grown substantially faster than
@@ -7716,7 +7745,7 @@ doublings to get to a final size of 15.5 cm:
 \end{verbatim}
 
 {\tt dt} is linear doubling time, so {\tt vdt} is volumetric
-doubling time, and {\tt rdt} is reciprocal volumetric doubling
+doubling time, and {\tt rdt} is reciprocal doubling
 time.
 
 The number of doublings, in linear measure, is 7.3, which implies
@@ -7761,7 +7790,7 @@ The simulation starts with a small tumor and runs these steps:
 
 \item Compute the size of the tumor at the end of an interval.
 
-\item Record the size of the tumor at each interval
+\item Record the size of the tumor at each interval.
 
 \item Repeat until the tumor exceeds the maximum relevant size.
 
@@ -7794,7 +7823,7 @@ so it does not depend on age, size, or growth rate during
 previous intervals.
 \index{independence}
 
-In Section~\ref{serial} I will review these assumptions and
+In Section~\ref{serial} I review these assumptions and
 consider more detailed models.  But first let's look at some
 examples.
 
@@ -7818,11 +7847,11 @@ Here is the kernel of the simulation:
 \index{simulation}
 
 \begin{verbatim}
-def MakeSequence(iterator, v0=0.01, interval=0.67, vmax=Volume(20.0)):
+def MakeSequence(rdt_seq, v0=0.01, interval=0.67, vmax=Volume(20.0)):
     seq = v0,
     age = 0
 
-    for rdt in iterator:
+    for rdt in rdt_seq:
         age += interval
         final, seq = ExtendSequence(age, seq, rdt, interval)
         if final > vmax:
@@ -7831,15 +7860,12 @@ def MakeSequence(iterator, v0=0.01, interval=0.67, vmax=Volume(20.0)):
     return seq
 \end{verbatim}
 
-{\tt iterator} is an iterator object that yields a series of
-random values from the CDF of growth rate.  {\tt MakeSequence}
-takes the iterator as an argument so we can run it with
-different random number generators, as you will see soon.
-\index{iterator}
-
+\verb"rdt_seq" is an iterator that yields 
+random values from the CDF of growth rate.
 {\tt v0} is the initial volume in mL.  {\tt interval} is the time step
 in years.  {\tt vmax} is the final volume corresponding to a linear
 measurement of 20 cm.
+\index{iterator}
 
 {\tt Volume} converts from linear measurement in cm to volume
 in mL, based on the simplification that the tumor is a sphere:
@@ -7869,11 +7895,11 @@ the growth rate during the interval, in doublings per year.
 {\tt interval} is the size of the time step in years.
 
 The return values are {\tt final}, the volume of the
-tumor at the end of the interval, and \verb"new_seq" a new
+tumor at the end of the interval, and \verb"new_seq", a new
 tuple containing the volumes in {\tt seq} plus the new volume
 {\tt final}.
 
-{\tt Cache.Add} records the size and age of each tumor at the end
+{\tt Cache.Add} records the age and size of each tumor at the end
 of each interval, as explained in the next section.
 \index{cache}
 
@@ -7925,7 +7951,14 @@ sequence of volumes so far.
 \end{figure}
 
 Before adding the new data to the joint distribution, we use {\tt
-  Diameter} to convert from volume to diameter in centimeters, and
+  Diameter} to convert from volume to diameter in centimeters:
+
+\begin{verbatim}
+def Diameter(volume, factor=3/math.pi/4, exp=1/3.0):
+    return 2 * (factor * volume) ** exp
+\end{verbatim}
+
+And
 {\tt CmToBucket} to convert from centimeters to a discrete bucket
 number:
 
@@ -7934,20 +7967,19 @@ def CmToBucket(x, factor=10):
     return factor * math.log(x)
 \end{verbatim}
 
-The buckets are equally spaced on a log scale.  I chose the
-factor 10 to yield a reasonable number of buckets.  For example,
-1 cm maps to bucket 0; 10 cm maps to bucket 23.
+The buckets are equally spaced on a log scale.  Using {\tt factor=10}
+yields a reasonable number of buckets; for example,
+1 cm maps to bucket 0 and 10 cm maps to bucket 23.
 \index{log scale}
 \index{bucket}
 
 After running the simulations, we can plot the joint distribution
 as a pseudocolor plot, where each cell represents the number of
 tumors observed at a given size-age pair.
+Figure~\ref{fig.kidney8} shows the joint distribution after 1000
+simulations.
 \index{pseudocolor plot}
 
-Figure~\ref{fig.kidney8} shows the joint distribution after 1000
-simulations.  As expected, the size of tumors typically increases
-with age.
 
 
 \section{Conditional distributions}
@@ -7965,7 +7997,7 @@ slice, we can get the distribution of ages conditioned on size.
 \index{conditional distribution}
 
 Here's the code that reads the joint distribution and builds
-the conditional distribution for a given size bucket.
+the conditional distribution for a given size.
 \index{joint distribution}
 
 \begin{verbatim}
@@ -7977,10 +8009,10 @@ the conditional distribution for a given size bucket.
         return cdf
 \end{verbatim}
 
-\verb"bucket" is the integer bucket number corresponding to a
-particular size.  {\tt Conditional} computes the
+\verb"bucket" is the integer bucket number corresponding to
+tumor size.  {\tt Joint.Conditional} computes the
 PMF of age conditioned on {\tt bucket}.
-The return value is the CDF of age conditioned on {\tt bucket}.
+The result is the CDF of age conditioned on {\tt bucket}.
 
 Figure~\ref{fig.kidney6} shows several of these CDFs, for
 a range of sizes.  To summarize these distributions, we can
@@ -7997,9 +8029,9 @@ compute percentiles as a function of size.
 
 Figure~\ref{fig.kidney7} shows these percentiles for each
 size bucket.  The data points are computed from the estimated
-joint distribution.  There is some variability caused by making
-time and size discrete, so I also show a least squares fit for
-each sequence of percentiles.
+joint distribution.  In the model, size and time are discrete,
+which contributes numerical errors, so I also show a least 
+squares fit for each sequence of percentiles.
 \index{least squares fit}
 
 
@@ -8027,10 +8059,10 @@ likely sources of error:
   \index{growth rate}
 
 \item The growth model does not take into account tumor subtype or
-  grade, which is consistent with the conclusion of Zhang et al:
+  grade; this assumption is consistent with the conclusion of Zhang et al:
   ``Growth rates in renal tumors of different sizes, subtypes and
   grades represent a wide range and overlap substantially.''
-  But again, with a larger sample, difference might become apparent.
+  But with a larger sample, a difference might become apparent.
   \index{tumor type}
 
 \item The distribution of growth rate does not depend on the size of
@@ -8043,8 +8075,8 @@ likely sources of error:
   likely to be weak, at least in this size range.
   
 \item In the simulations, growth rate during each interval is
-  independent of previous growth rates.  It is plausible that, in
-  reality, tumors that have grown quickly in the past are more likely
+  independent of previous growth rates.  In reality is it plausible
+  that tumors that have grown quickly in the past are more likely
   to grow quickly.  In other words, there is probably
   a serial correlation in growth rate.
   \index{serial correlation}
@@ -8068,7 +8100,7 @@ correlated series from a given Cdf.  Here's how the algorithm works:
   of the next value conditioned on the previous value.
   \index{Gaussian distribution}
 
-\item Transform each value to its cumulative probability, using
+\item Transform each value to its cumulative probability using
   the Gaussian CDF.
   \index{cumulative probability}
 
@@ -8091,14 +8123,16 @@ def CorrelatedGenerator(cdf, rho):
 \end{verbatim}
 
 {\tt cdf} is the desired Cdf; {\tt rho} is the desired correlation.
+The values of {\tt x} are Gaussian; {\tt Transform} converts them
+to the desired distribution.
 
 The first value of {\tt x} is Gaussian with mean 0 and standard
 deviation 1.  For subsequent values, the mean and standard deviation
-depend on the previous value.  Given the previous $x$, the mean of the
-next value is $\rho x$, and the variance is $1 - \rho^2$.
+depend on the previous value.  Given the previous {\tt x}, the mean of the
+next value is {\tt x * rho}, and the variance is {\tt 1 - rho**2}.
 \index{correlated random value}
 
-{\tt Transform} is the function that maps from each
+{\tt Transform} maps from each
 Gaussian value, {\tt x}, to a value from the given Cdf, {\tt y}.
 
 \begin{verbatim}
@@ -8115,9 +8149,9 @@ corresponding value in {\tt cdf}.
 
 Depending on the shape of {\tt cdf}, information can
 be lost in transformation, so the actual correlation might be
-lower than the target.  For example, when I generate
+lower than {\tt rho}.  For example, when I generate
 10000 values from the distribution of growth rates with
-target correlation 0.4, the actual correlation is 0.37.
+{\tt rho=0.4}, the actual correlation is 0.37.
 But since we are guessing at the right correlation anyway,
 that's close enough.
 
@@ -8126,7 +8160,7 @@ That interface allows it to work with different generators:
 \index{generator}
 
 \begin{verbatim}
-    iterator = UncorrelatedGenerator(cdf, rho)
+    iterator = UncorrelatedGenerator(cdf)
     seq1 = MakeSequence(iterator)
 
     iterator = CorrelatedGenerator(cdf, rho)
@@ -8241,7 +8275,7 @@ science project with the goal of identifying bacterial species that
 can be found in human navels (\url{http://bbdata.yourwildlife.org}).
 The project might seem whimsical, but it is part of an increasing
 interest in the human microbiome, the set of microorganisms that live
-on human skin and other surfaces that contact the environment.
+on human skin and parts of the body.
 \index{biodiversity}
 \index{belly button}
 \index{bacteria}
@@ -8275,8 +8309,8 @@ We can use these data to answer several related questions:
 
 \end{itemize}
 
-These questions make up what is called the {\bf unseen species problem}.
-\index{Unseen species problem}
+These questions make up what is called the {\bf Unseen Species problem}.
+\index{Unseen Species problem}
 
 
 \section{Lions and tigers and bears}
@@ -8287,8 +8321,8 @@ bears.  Suppose we visit a wild animal preserve and see 3 lions, 2
 tigers and one bear.
 \index{lions and tigers and bears}
 
-If we have an equal chance of observing any animal in the preserve
-then the number of each species we see is governed by the multinomial
+If we have an equal chance of observing any animal in the preserve,
+the number of each species we see is governed by the multinomial
 distribution.  If the prevalence of lions and tigers and bears is
 \verb"p_lion" and \verb"p_tiger" and \verb"p_bear", the likelihood of
 seeing 3 lions, 2 tigers and one bear is
@@ -8396,8 +8430,8 @@ this:
 
 As expected, the prior mean prevalence for each species is 1/3.
 
-To update the Dirichlet distribution, we add the number of
-observations to each parameter, like this:
+To update the Dirichlet distribution, we add the
+observations to the parameters like this:
 
 \begin{verbatim}
     def Update(self, data):
@@ -8409,8 +8443,8 @@ Here {\tt data} is a sequence of counts in the same order as {\tt
   params}, so in this example, it should be the number of lions,
 tigers and bears.
 
-But {\tt data} can be shorter than {\tt params}; in that
-case there are some hypothetical species that have not been
+{\tt data} can be shorter than {\tt params}; in that
+case there are some species that have not been
 observed.
 
 Here's code that updates {\tt dirichlet} with the observed data and
@@ -8475,14 +8509,14 @@ Here's the code that creates the top-level suite:
 
 {\tt ns} is the list of possible values for {\tt n}.  We have seen 3
 species, so there have to be at least that many.  I chose an upper
-bound that seemed reasonable, but we will have to check later that the
+bound that seems reasonable, but we will check later that the
 probability of exceeding this bound is low.  And at least initially
 we assume that any value in this range is equally likely.
 
 To update a hierarchical model, you have to update all levels.
-Sometimes it is necessary or more efficient to update the bottom
-level first and work up.  In this case it doesn't matter, so
-I update the top level first:
+Usually you have to update the bottom
+level first and work up, but in this case we can
+update the top level first:
 
 \begin{verbatim}
 #class Species
@@ -8496,8 +8530,7 @@ I update the top level first:
 {\tt Species.Update} invokes {\tt Update} in the parent class,
 then loops through the sub-hypotheses and updates them.
 
-Now all we need is a likelihood function.  As usual,
-{\tt Likelihood} gets a hypothesis and a dataset as arguments:
+Now all we need is a likelihood function:
 
 \begin{verbatim}
 # class Species
@@ -8511,11 +8544,12 @@ Now all we need is a likelihood function.  As usual,
         return like
 \end{verbatim}
 
-{\tt hypo} is a Dirichlet object; {\tt data} is a sequence of
-observed counts.  {\tt Species.Likelihood} calls
+{\tt data} is a sequence of
+observed counts; {\tt hypo} is a Dirichlet object.
+{\tt Species.Likelihood} calls
 {\tt Dirichlet.Likelihood} 1000 times and returns the total.
 
-Why do we have to call it 1000 times?  Because {\tt
+Why call it 1000 times?  Because {\tt
   Dirichlet.Likelihood} doesn't actually compute the likelihood of the
 data under the whole Dirichlet distribution.  Instead, it draws one
 sample from the hypothetical distribution and computes the likelihood
@@ -8542,9 +8576,9 @@ we see more species than we thought existed, the likelihood is 0.
 
 \index{multinomial distribution}
 Otherwise we select a random set of prevalences, {\tt p}, and
-compute the multinomial PDF, which is
+compute the multinomial PMF, which is
 %
-\[ c_x \prod_i p_i^{x_i}\]
+\[ c_x  p_1^{x_1} \cdots p_n^{x_n} \]
 %
 $p_i$ is the prevalence of the $i$th species, and $x_i$ is the
 observed number.  The first term, $c_x$, is the multinomial
@@ -8554,12 +8588,14 @@ on the data, not the hypothesis, so it gets normalized away
 (see \url{http://en.wikipedia.org/wiki/Multinomial_distribution}).
 \index{multinomial coefficient}
 
-Also, I truncated {\tt p} at {\tt m}, which is the number of
-observed species.  For the unseen species, $x_i$ is 0, so
-$p_i^{x_i}$ is 1, so we can leave them out of the product.
+{\tt m} is the number of observed species.
+We only need the first {\tt m} elements of {\tt p};
+for the others, $x_i$ is 0, so
+$p_i^{x_i}$ is 1, and we can leave them out of the product.
 
 
 \section{Random sampling}
+\label{randomdir}
 
 There are two ways to generate a random sample from a Dirichlet
 distribution.  One is to use the marginal beta distributions, but in
@@ -8582,17 +8618,8 @@ Here's the code:
         return p / p.sum()
 \end{verbatim}
 
-Now we're ready to look at some results.  Here is the code that
-updates the top-level suite and extracts the posterior PMF of {\tt n}:
-
-\begin{verbatim}
-    data = [3, 2, 1]
-    suite.Update(data)
-    pmf = suite.DistOfN()
-\end{verbatim}
-
-To get the posterior distribution of {\tt n}, {\tt DistOfN} iterates
-through the top-level hypotheses:
+Now we're ready to look at some results.  Here is the code extracts
+the posterior distribution of {\tt n}:
 
 \begin{verbatim}
     def DistOfN(self):
@@ -8602,6 +8629,10 @@ through the top-level hypotheses:
         return pmf
 \end{verbatim}
 
+{\tt DistOfN} iterates
+through the top-level hypotheses and accumulates the probability
+of each {\tt n}.
+
 \begin{figure}
 % species.py
 \centerline{\includegraphics[height=2.5in]{figs/species2.pdf}}
@@ -8610,20 +8641,20 @@ through the top-level hypotheses:
 \end{figure}
 
 Figure~\ref{fig.species2} shows the result.  The most likely value is 4.
-Values from 3 to 8 are all likely; after that the probabilities
+Values from 3 to 7 are reasonably likely; after that the probabilities
 drop off quickly.  The probability that there are 29 species is
 low enough to be negligible; if we chose a higher bound, 
-we would get the same result.
+we would get nearly the same result.
 
-But remember that we started with a uniform prior for {\tt n}.  If we
-have background information about the number of species in the
-environment, we might choose a different prior.
-\index{uniform distribution}
+Remember that this result is based on a uniform prior for {\tt n}.  If
+we have background information about the number of species in the
+environment, we might choose a different prior.  \index{uniform
+  distribution}
 
 
 \section{Optimization}
 
-I have to admit that I am proud of this example.  The unseen species
+I have to admit that I am proud of this example.  The Unseen Species
 problem is not easy, and I think this solution is simple and clear,
 and takes surprisingly few lines of code (about 50 so far).
 
@@ -8648,16 +8679,16 @@ a road map.
 \item {\tt Species2} also uses the same set of random values for all
   of the hypotheses.  This saves time generating random values, but it
   has a second benefit that turns out to be more important: by giving
-  all hypothesis the same selection from the sample space, we make
+  all hypotheses the same selection from the sample space, we make
   the comparison between the hypotheses more fair, so it takes
   fewer iterations to converge.
 
-\item But there is still a major performance problem.  As the
-  number of observed species increases, the array of random
+\item Even with these changes there is a major performance problem.
+  As the number of observed species increases, the array of random
   prevalences gets bigger, and the chance of choosing one that is
-  approximately right becomes small.  So the vast majority
-  of iterations yield small likelihoods that don't contribute
-  much to the total, and don't discriminate between hypotheses.
+  approximately right becomes small.  So the vast majority of
+  iterations yield small likelihoods that don't contribute much to the
+  total, and don't discriminate between hypotheses.
 
   The solution is to do the updates one species at a time.  {\tt
   Species4} is a simple implementation of this strategy using
@@ -8670,7 +8701,7 @@ a road map.
 \end{itemize}
 
 If you are not interested in the details, feel free to skip to
-Section~\ref{belly} where we look at some results from the belly
+Section~\ref{belly} where we look at results from the belly
 button data.
 
 
@@ -8679,10 +8710,8 @@ button data.
 
 All of the bottom-level Dirichlet distributions are updated
 with the same data, so the first {\tt m} parameters are the same for
-all of them.
-
-Since the bottom-level Dirichlet distributions all contain the same
-information, we can eliminate them and merge the parameters into
+all of them.  
+We can eliminate them and merge the parameters into
 the top-level suite.  {\tt Species2} implements this optimization:
 \index{numpy}
 
@@ -8700,7 +8729,7 @@ class Species2(object):
 {\tt params} is the sequence of Dirichlet parameters, initially
 all 1.
 
-Here's the {\tt Update} function that updates both levels of
+{\tt Species2.Update} updates both levels of
 the hierarchy: first the probability for each value of {\tt n},
 then the Dirichlet parameters:
 \index{numpy}
@@ -8723,8 +8752,8 @@ then the Dirichlet parameters:
 {\tt SampleLikelihood} returns an array of likelihoods, one for each
 value of {\tt n}.  {\tt like} accumulates the total likelihood for
 1000 samples.  {\tt self.probs} is multiplied by the total likelihood,
-then normalized.  Finally, updating the parameters is identical to
-what we saw in {\tt Dirichlet.Update}.
+then normalized.  The last two lines, which update the parameters,
+are the same as in {\tt Dirichlet.Update}.
 
 Now let's look at {\tt SampleLikelihood}.  There are two
 opportunities for optimization here:
@@ -8733,27 +8762,26 @@ opportunities for optimization here:
 
 \item When the hypothetical number of species, {\tt n},
 exceeds the observed number, {\tt m}, we only need the first {\tt m}
-terms of the multinomial PDF; the rest are 1.
+terms of the multinomial PMF; the rest are 1.
 
 \item If the number of species is large, the likelihood of the data
-might be too small for floating-point.  So it is safer to compute
-log-likelihoods.  For the multinomial PDF, it is also faster.
-\index{log-likelihood}
-\index{underflow}
+  might be too small for floating-point (see ~\ref{underflow}).  So it
+  is safer to compute log-likelihoods.
+  \index{log-likelihood} \index{underflow}
 
 \end{itemize}
 
 \index{multinomial distribution}
-Again, the multinomial PDF is
+Again, the multinomial PMF is
 %
-\[ c_x \prod_i p_i^{x_i}\]
+\[ c_x p_1^{x_1} \cdots p_n^{x_n} \]
 %
 So the log-likelihood is
 %
-\[ \log c_x + \sum_i * x_i \log p_i\]
+\[ \log c_x + x_1 \log p_1 + \cdots + x_n \log p_n \]
 %
-which is fast and easy to compute.  Again, I drop $c_x$ because
-it is the same for all hypotheses, so it gets normalized away.
+which is fast and easy to compute.  Again, $c_x$
+it is the same for all hypotheses, so we can drop it.
 Here's the code:
 \index{numpy}
 
@@ -8770,7 +8798,7 @@ Here's the code:
         log_likes = []
         for n in self.ns:
             ps = row / col[n-1]
-            terms = numpy.log(ps) * data
+            terms = data * numpy.log(ps)
             log_like = terms.sum()
             log_likes.append(log_like)
 
@@ -8800,18 +8828,18 @@ a list of log-likelihoods.
 
 Inside the loop, {\tt ps} contains the row of probabilities, normalized
 with the appropriate cumulative sum.  {\tt terms} contains the
-terms of the summation, $\log(p_i) x_i$, and \verb"log_like" contains
+terms of the summation, $x_i \log p_i$, and \verb"log_like" contains
 their sum.
 
 After the loop, we want to convert the log-likelihoods to linear
 likelihoods, but first it's a good idea to shift them so the largest
 log-likelihood is 0; that way the linear likelihoods are not too
-small.
+small (see ~\ref{underflow}).
 
 Finally, before we return the likelihood, we have to apply a correction
 factor, which is the number of ways we could have observed these {\tt m}
-species, if the total number of species is {\tt n}.  The binomial
-coefficient is the fancy name for ``n choose m'', which is written
+species, if the total number of species is {\tt n}.  
+{\tt BinomialCoefficient} computes ``n choose m'', which is written
 $\binom{n}{m}$. 
 \index{binomial coefficient}
 
@@ -8826,12 +8854,12 @@ number of iterations increases.
 
 \section{One more problem}
 
-There's more we could do to optimize this version, but there's a 
-problem we need to work on first.  As the number of observed
+There's more we could do to optimize this code, but there's another
+problem we need to fix first.  As the number of observed
 species increases, this version gets noisier and takes more
 iterations to converge on a good answer.
 
-The problem is that if the probabilities we choose from the Dirichlet
+The problem is that if the prevalences we choose from the Dirichlet
 distribution, the {\tt ps}, are not at least approximately right,
 the likelihood of the observed data is close to zero and almost
 equally bad for all values of {\tt n}.  So most iterations don't
@@ -8871,7 +8899,7 @@ represents the hypotheses as a list of Dirichlet objects (unlike
 
 {\tt Update} loops through the observed species and makes an
 array, {\tt one}, with all zeros and one species count.  Then
-it calls {\tt Update} in the parent class, which actually computes
+it calls {\tt Update} in the parent class, which computes
 the likelihoods and updates the sub-hypotheses.
 
 So in the running example, we do three updates.  The first
@@ -8879,7 +8907,7 @@ is something like ``I have seen three lions.''  The second is
 ``I have see two tigers and no additional lions.''  And the third
 is ``I have seen one bear and no more lions and tigers.''
 
-So here's the new version of {\tt Likelihood}:
+Here's the new version of {\tt Likelihood}:
 
 \begin{verbatim}
 # class Species4
@@ -8918,8 +8946,10 @@ by comparing it to the previous versions.
 \newcommand{\BigO}[1]{\mathcal{O}(#1)}
 
 Performing the updates one species at a time solves one problem, but
-it creates another.  Each update takes time proportional to $n m$,
-so if we do $m$ updates, the algorithm is $\BigO{n m^2}$. 
+it creates another.  Each update takes time proportional to $k m$,
+where $k$ is the number of hypotheses and $m$ is the number of observed
+species.  So if we do $m$ updates, the total run time is
+proportional to $k m^2$. 
 
 But we can speed things up using the same trick we used in
 Section~\ref{collapsing}: we'll get rid of the Dirichlet objects and
@@ -8942,23 +8972,18 @@ of {\tt n}, and {\tt params} to represent the parameters of
 the Dirichlet distribution.
 
 {\tt Update} is similar to what we saw in the previous section.
-It loops through the observed species and calls {\tt UpdateOne}.
-One difference is that {\tt UpdateOne} doesn't get the whole list
-of species counts; it just gets the index (which species was
-observed) and the count (how many of them there were).
-
-Now here's {\tt UpdateOne}:
+It loops through the observed species and calls {\tt UpdateOne}:
 \index{numpy}
 
 \begin{verbatim}
 # class Species5
 
-    def UpdateOne(self, m, count):
+    def UpdateOne(self, i, count):
         likes = numpy.zeros(len(self.ns), dtype=numpy.double)
         for i in range(self.iterations):
-            likes += self.SampleLikelihood(m, count)
+            likes += self.SampleLikelihood(i, count)
 
-        unseen_species = [n-m+1 for n in self.ns]
+        unseen_species = [n-i+1 for n in self.ns]
         likes *= unseen_species
 
         self.probs *= likes
@@ -8970,7 +8995,7 @@ This function is similar to {\tt Species2.Update}, with two changes:
 \begin{itemize}
 
 \item The interface is different.  Instead of the whole dataset, we
-  get {\tt m}, the number of species we have seen, and {\tt count},
+  get {\tt i}, the index of the observed species, and {\tt count},
   how many of that species we've seen.
 
 \item We have to apply a correction factor for the number of unseen
@@ -8986,12 +9011,12 @@ Finally, here's {\tt SampleLikelihood}:
 \begin{verbatim}
 # class Species5
 
-    def SampleLikelihood(self, m, count):
+    def SampleLikelihood(self, i, count):
         gammas = numpy.random.gamma(self.params)
 
         sums = numpy.cumsum(gammas)[self.ns[0]-1:]
 
-        ps = gammas[m-1] / sums
+        ps = gammas[i-1] / sums
         log_likes = numpy.log(ps) * count
 
         log_likes -= numpy.max(log_likes)
@@ -9004,10 +9029,11 @@ This is similar to {\tt Species2.SampleLikelihood}; the
 difference is that each update only includes a single species,
 so we don't need a loop.
 
-The runtime of this function is linear in {\tt n}, but does not
-depend on {\tt m}.  {\tt Update} is linear in {\tt m}, so the
-whole update process is $\BigO{n m}$.  And the number of iterations
-we need to get an accurate result is usually small.
+The runtime of this function is proportional to the number
+of hypotheses, $k$.  It runs $m$ times, so the run time of
+the update is proportional to $k m$.
+And the number of iterations we
+need to get an accurate result is usually small.
 
 
 \section{The belly button data}
@@ -9026,7 +9052,7 @@ counts:
 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 \end{verbatim}
 
-There are a few dominant species that make up a substantial
+There are a few dominant species that make up a large
 fraction of the whole, but many species that yielded only
 a single read.  The number of these ``singletons'' suggests
 that there are likely to be at least a few unseen species.
@@ -9038,7 +9064,7 @@ Similarly, for the belly button data, we assume that each
 bacterium is equally likely to yield a read.
 
 In reality, each step in the data-collection
-process might introduce consistent biases.  Some species might
+process might introduce biases.  Some species might
 be more likely to be picked up by a swab, or to yield identifiable
 amplicons.  So when we talk about the prevalence of each species,
 we should remember this source of error.
@@ -9052,7 +9078,7 @@ taxonomic unit'', or OTU.
 \index{operational taxonomic unit}
 \index{OTU}
 
-Now let's process some of the belly button data.  I defined
+Now let's process some of the belly button data.  I define
 a class called {\tt Subject} to represent information about
 each subject in the study:
 
@@ -9069,6 +9095,8 @@ Each subject has a string code, like ``B1242'', and a list of
 {\tt Subject} provides several methods to make it
 easy to access these counts and species names.  You can see the details
 in \url{http://thinkbayes.com/species.py}.
+  For more information
+see Section~\ref{download}.
 
 \begin{figure}
 % species.py
@@ -9078,16 +9106,27 @@ in \url{http://thinkbayes.com/species.py}.
 \end{figure}
 
 {\tt Subject} provides a method named {\tt Process} that creates and
-then updates a suite, specifically a suite of type {\tt Species5},
-which represents the distribution of {\tt n} and the prevalences.
+updates a {\tt Species5} suite,
+which represents the distributions of {\tt n} and the prevalences.
 \index{prevalence}
 
-It also provides {\tt PlotDistOfN}, which plots the posterior
-distribution of {\tt n}.  Figure~\ref{species-ndist} shows this
-distribution for subject B1242.  The probability that there are
-exactly 61 species, and no unseen species, is nearly zero.  The most
-likely value is 72, with 90\% credible interval 66 to 79.  At the high
-end, it is unlikely that there are as many as 87 species.
+And {\tt Suite2} provides {\tt DistOfN}, which returns the posterior
+distribution of {\tt n}.
+
+\begin{verbatim}
+# class Suite2
+
+    def DistN(self):
+        items = zip(self.ns, self.probs)
+        pmf = thinkbayes.MakePmfFromItems(items)
+        return pmf
+\end{verbatim}
+
+Figure~\ref{species-ndist} shows the distribution of {\tt n} for
+subject B1242.  The probability that there are exactly 61 species, and
+no unseen species, is nearly zero.  The most likely value is 72, with
+90\% credible interval 66 to 79.  At the high end, it is unlikely that
+there are as many as 87 species.
 
 Next we compute the posterior distribution of prevalence for
 each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
@@ -9108,7 +9147,7 @@ each species.  {\tt Species2} provides {\tt DistOfPrevalence}:
 \end{verbatim}
 
 {\tt index} indicates which species we want.  For each
-value of {\tt n}, we have a different posterior distribution
+{\tt n}, we have a different posterior distribution
 of prevalence.
 
 \begin{figure}
@@ -9137,7 +9176,7 @@ of prevalence.
 \index{mixture}
 \index{MakeMixture}
 
-Figure~\ref{species-prev} shows these distributions for the five
+Figure~\ref{species-prev} shows results for the five
 species with the most reads.  The most prevalent species accounts for
 23\% of the 400 reads, but since there are almost certainly unseen
 species, the most likely estimate for its prevalence is 20\%,
@@ -9222,9 +9261,13 @@ strings with a unique name for each species.
 {\tt n} is a random value from the posterior distribution, and
 {\tt observations} is a random sequence of species names.
 
+Each time through the loop, we add the new observation to
+{\tt seen} and record the number of reads and the number of
+new species so far.
+
 The result of {\tt RunSimulation} is a {\bf rarefaction curve},
 represented as a list of pairs with the number of reads and
-the number of new species seen.
+the number of new species.
 \index{rarefaction curve}
 
 Before we see the results, let's look at {\tt GetSeenSpecies} and
@@ -9315,11 +9358,12 @@ prevalences conditioned on {\tt n}:
         return gammas
 \end{verbatim}
 
-We saw this algorithm for generating prevalences previously
-in {\tt Species2.SampleLikelihood}.
+We saw this algorithm for generating random values from a Dirichlet
+distribution in Section~\ref{randomdir}.
 
 Figure~\ref{species-rare} shows 100 simulated rarefaction curves
-for subject B1242.  I shifted each curve by a random offset so they
+for subject B1242.  The curves are ``jittered;''
+that is, I shifted each curve by a random offset so they
 would not all overlap.  By inspection we can estimate that after
 400 more reads we are likely to find 2--6 new species.
 
@@ -9334,7 +9378,7 @@ the number of additional reads.}
 \label{species-cond}
 \end{figure}
 
-To be more precise, we can use the simulations to estimate the
+We can use these simulations to estimate the
 joint distribution of \verb"num_new" and {\tt k}, and from that
 we can get the distribution of \verb"num_new" conditioned on any
 value of {\tt k}.
@@ -9361,26 +9405,9 @@ Pmf whose values are tuples.
 
 The resulting joint distribution is a map from each pair to
 its probability of occurring.  Given the joint distribution, we
-can get the distribution of \verb"num_new" conditioned on {\tt k}:
-
-\begin{verbatim}
-# class Joint
-
-    def Conditional(self, i, j, val):
-        pmf = Pmf()
-        for vs, prob in self.Items():
-            if vs[j] != val: continue
-            pmf.Incr(vs[i], prob)
-
-        pmf.Normalize()
-        return pmf
-\end{verbatim}
-
-{\tt i} is the index of the variable whose distribution we want;
-{\tt j} is the index of the conditional variables, and {\tt val}
-is the value the {\tt j}th variable has to have.
-You can think of this operation as taking vertical slices out
-of Figure~\ref{species-rare}.
+can use {\tt Joint.Conditional}
+get the distribution of \verb"num_new" conditioned on {\tt k}
+(see Section~\ref{conditional}).
 \index{conditional distribution}
 
 {\tt Subject.MakeConditionals} takes a list of {\tt ks}
@@ -9421,7 +9448,7 @@ are needed to increase the fraction of observed species to a given
 threshold?''
 \index{coverage}
 
-To answer this question, we'll need a version of {\tt RunSimulation}
+To answer this question, we need a version of {\tt RunSimulation}
 that computes the fraction of observed species rather than the
 number of new species.
 
@@ -9481,12 +9508,7 @@ you have about a 40\% of getting 90\% coverage.  With 1000 reads, you
 have a 90\% chance of getting 90\% coverage.
 
 With that, we have answered the four questions that make up the unseen
-species problem.  
-
-
-\section{Discussion}
-
-To validate the algorithms in this chapter with
+species problem.  To validate the algorithms in this chapter with
 real data, I had to deal with a few more details.  But
 this chapter is already too long, so I won't discuss them here.
 
@@ -9495,6 +9517,49 @@ You can read about the problems, and how I addressed them, at
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/species.py}.
+  For more information
+see Section~\ref{download}.
+
+
+\section{Discussion}
+
+The Unseen Species problem is an area of active research, and I
+believe the algorithm in this chapter is a novel contribution.  So in
+fewer than 200 pages we have made it from the basics of probability to
+the research frontier.  I'm very happy about that.
+
+My goal for this book is to present three related ideas:
+
+\begin{itemize}
+
+\item {\bf Bayesian thinking}: The foundation of Bayesian analysis is
+  the idea of using probability distributions to represent uncertain
+  beliefs, using data to update those distributions, and using the
+  results to make predictions and inform decisions.
+
+\item {\bf A computational approach}: The premise of this book is that
+  it is easier to understand Bayesian analysis using computation
+  rather than math, and easier to implement Bayesian methods with
+  reusable building blocks that can be rearranged to solve real-world
+  problems quickly.
+
+\item {\bf Iterative modeling}: Most real-world problems involve
+  modeling decisions and trade-offs between realism and complexity.
+  It is often impossible to know ahead of time what factors should be
+  included in the model and which can be abstracted away.  The best
+  approach is to iterate, starting with simple models and adding
+  complexity gradually, using each model to validate the others.
+
+\end{itemize}
+
+These ideas are versatile and powerful; they are applicable to
+problems in every area of science and engineering, from simple
+examples to topics of current research.
+
+If you made it this far, you should be prepared to apply these
+tools to new problems relevant to your work.  I hope you find
+them useful; let me know how it goes!
+
 
 
 %\chapter{Future chapters}
