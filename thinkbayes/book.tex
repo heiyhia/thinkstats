@@ -8392,9 +8392,10 @@ of values of $r$:
     f = 0.1
     k = 15
 
-    for r in [150, 300, 450]:
-        suite = Detector(r, f)
+    for r in [100, 250, 400]:
+        suite = Detector(r, f, step=1)
         suite.Update(k)
+        print suite.MaximumLikelihood()
 \end{verbatim}
 
 Figure~\ref{} shows the posterior distribution of $n$ given
@@ -8504,12 +8505,15 @@ default version of {\tt Update}.  So this version has fewer
 lines of code, and it runs faster because it does not compute
 the total probabilities twice.
 
+
 \section{Extracting the posteriors}
 
 After we update the Emitter, we can get the posterior distribution
 of $r$ by looping through the updated Detectors:
 
 \begin{verbatim}
+# class Emitter
+
     def DistOfR(self):
         items = [(detector.r, prob) for detector, prob in self.Items()]
         return thinkbayes.MakePmfFromItems(items)
@@ -8525,25 +8529,32 @@ from each distribution to its probability.  And that's exactly
 what the Emitter is:
 
 \begin{verbatim}
+# class Emitter
+
     def DistOfN(self):
         return thinkbayes.MakeMixture(self)
 \end{verbatim}
 
-Figure~\ref{} shows the results.  Not surprisingly, the most
-likely value for 
+Figure~\ref{} shows the results.  Not surprisingly, the most likely
+value for $n$ is 150.  Given $f$ and $n$, the expected count is $k = f
+n$, so given $f$ and $k$, the expected value of $n$ is $k / f$, which
+is 150.
+
+And if 150 particles are emitted in one second, the most likely value
+of $r$ is 150 particles per second.  So the posterior distribution of
+$r$ is also centered on 150.
+
+In fact, the posterior distribution of $r$ and $n$ are very similar,
+only we are slightly less certain about $n$.  In general, we can be
+more certain about the long-range emission rate, $r$, than the number
+of particles emitted in any particular second, $n$.
+
+
+\section{Exercises}
 
 
 
-\begin{verbatim}
-\end{verbatim}
-
-
-\begin{verbatim}
-\end{verbatim}
-
-
-\begin{verbatim}
-\end{verbatim}
+\section{Discussion}
 
 
 
