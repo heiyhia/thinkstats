@@ -1437,6 +1437,17 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
     return pmf
 
 
+def EvalBinomialPmf(k, n, p):
+    """Evaluates the binomial pmf.
+
+    Returns the probabily of k successes in n trials with probability p.
+    """
+    # Don't use the scipy function.  for p=0 it throws a spurious
+    # warning
+    # return scipy.stats.binom.pmf(k, n, p)
+    return BinomialCoef(n, k) * p**k * (1-p)**(n-k)
+    
+
 def EvalPoissonPmf(k, lam):
     """Computes the Poisson PMF.
 
@@ -1447,12 +1458,12 @@ def EvalPoissonPmf(k, lam):
     """
     # don't use the scipy function.  for lam=0 it returns NaN;
     # should be 0.0
-    # return scipy.stats.poisson.pmf(k, lam)
+    return scipy.stats.poisson.pmf(k, lam)
 
-    return lam ** k * math.exp(-lam) / math.factorial(k)
+    #return lam ** k * math.exp(-lam) / math.factorial(k)
 
 
-def MakePoissonPmf(lam, high):
+def MakePoissonPmf(lam, high, step=1):
     """Makes a PMF discrete approx to a Poisson distribution.
 
     lam: parameter lambda in events per unit time
@@ -1461,7 +1472,7 @@ def MakePoissonPmf(lam, high):
     returns: normalized Pmf
     """
     pmf = Pmf()
-    for k in xrange(0, high + 1):
+    for k in xrange(0, high + 1, step):
         p = EvalPoissonPmf(k, lam)
         pmf.Set(k, p)
     pmf.Normalize()
@@ -1499,20 +1510,6 @@ def MakeExponentialPmf(lam, high, n=200):
         pmf.Set(x, p)
     pmf.Normalize()
     return pmf
-
-
-def EvalBinomialPmf(p, yes, no):
-    """Computes the unnormalized Binomial PMF.
-
-    Does not include the binomial coefficient.
-
-    p: probability of success
-    yes: number of successes
-    no: number of failures
-
-    returns: float likelihood
-    """
-    return p ** yes * (1 - p) ** no
 
 
 def StandardGaussianCdf(x, root2=math.sqrt(2)):

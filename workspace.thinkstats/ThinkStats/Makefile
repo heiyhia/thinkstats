@@ -133,7 +133,8 @@ monty.py cookie2.py cookie.py train3.py dungeons.py hockey.py hockey_data.csv \
 sat.py euro*.py kidney.py species.py paintball.py myplot.py columns.py \
 thinkstats.py sat_ranks.csv sat_scale.csv correlation.py \
 journal.pone.0047712.s001.csv variability.py price.py redline.py \
-redline_data.py thinkplot.py showcases.2011.csv  showcases.2012.csv
+redline_data.py thinkplot.py showcases.2011.csv  showcases.2012.csv \
+decay.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 

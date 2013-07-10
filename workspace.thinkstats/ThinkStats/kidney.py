@@ -183,7 +183,7 @@ def CorrelatedGenerator(cdf, rho):
         yield Transform(x)
 
 
-def UncorrelatedGenerator(cdf, _rho):
+def UncorrelatedGenerator(cdf, _rho=None):
     """Generates a sequence of values from cdf with no correlation.
 
     Ignores rho, which is accepted as a parameter to provide the
@@ -204,7 +204,7 @@ def RdtGenerator(cdf, rho):
     rho: coefficient of correlation
     """
     if rho == 0.0:
-        return UncorrelatedGenerator(cdf, rho)
+        return UncorrelatedGenerator(cdf)
     else:
         return CorrelatedGenerator(cdf, rho)
 
@@ -416,8 +416,8 @@ class Calculator(object):
         """
         sequences = []
         for i in range(n):
-            iterator = RdtGenerator(cdf, rho)
-            seq = self.MakeSequence(iterator)
+            rdt_seq = RdtGenerator(cdf, rho)
+            seq = self.MakeSequence(rdt_seq)
             sequences.append(seq)
 
             if i % 100 == 0:
@@ -425,11 +425,11 @@ class Calculator(object):
 
         return sequences
 
-    def MakeSequence(self, iterator, v0=0.01, interval=INTERVAL, 
+    def MakeSequence(self, rdt_seq, v0=0.01, interval=INTERVAL, 
                      vmax=Volume(MAXSIZE)):
         """Simulate the growth of a tumor.
 
-        iterator: iterator of rdts
+        rdt_seq: sequence of rdts
         v0: initial volume in mL (cm^3)
         interval: timestep in years
         vmax: volume to stop at
@@ -439,7 +439,7 @@ class Calculator(object):
         seq = v0,
         age = 0
 
-        for rdt in iterator:
+        for rdt in rdt_seq:
             age += interval
             final, seq = self.ExtendSequence(age, seq, rdt, interval)
             if final > vmax:
@@ -582,20 +582,21 @@ class Calculator(object):
 
             # put a label at the end of each line
             x, y = fxs[-1], fys[-1]
-            pyplot.Text(x*1.05, y, label, 
+            pyplot.text(x*1.05, y, label, color='blue',
                         horizontalalignment='left',
                         verticalalignment='center')
 
         # make the figure
         thinkplot.Save(root='kidney7',
-                    formats=FORMATS,
-                    title='Credible interval for age vs diameter',
-                    xlabel='diameter (cm, log scale)',
-                    ylabel='tumor age (years)',
-                    xscale=xscale,
-                    xticks=MakeTicks([0.5, 1, 2, 5, 10, 20]),
-                    axis=[0.25, 35, 0, 45],
-                    legend=False)
+                       formats=FORMATS,
+                       title='Credible interval for age vs diameter',
+                       xlabel='diameter (cm, log scale)',
+                       ylabel='tumor age (years)',
+                       xscale=xscale,
+                       xticks=MakeTicks([0.5, 1, 2, 5, 10, 20]),
+                       axis=[0.25, 35, 0, 45],
+                       legend=False,
+                       )
 
 
 def PlotSequences(sequences):
@@ -722,8 +723,8 @@ def TestCorrelation(cdf):
     n = 10000
     rho = 0.4
 
-    iterator = CorrelatedGenerator(cdf, rho)
-    xs = [iterator.next() for _ in range(n)]
+    rdt_seq = CorrelatedGenerator(cdf, rho)
+    xs = [rdt_seq.next() for _ in range(n)]
     
     rho2 = correlation.SerialCorr(xs)
     print rho, rho2
