@@ -1170,10 +1170,10 @@ class Species5(Species2):
         self.probs *= likes
         self.probs /= self.probs.sum()
 
-    def SampleLikelihood(self, m, count):
+    def SampleLikelihood(self, i, count):
         """Computes the likelihood of the data under all hypotheses.
 
-        m: which species was observed
+        i: which species was observed
         count: how many were observed
         """
         # get a random sample of p
@@ -1183,7 +1183,7 @@ class Species5(Species2):
         sums = numpy.cumsum(gammas)[self.ns[0]-1:]
 
         # get p for the mth species, for each value of n
-        ps = gammas[m-1] / sums
+        ps = gammas[i-1] / sums
         log_likes = numpy.log(ps) * count
 
         # before exponentiating, scale into a reasonable range
@@ -1359,7 +1359,7 @@ def RunSubject(code, conc=1, high=500):
     subjects = JoinSubjects()
     subject = subjects[code]
 
-    subject.Process(conc=conc, high=high)
+    subject.Process(conc=conc, high=high, iters=300)
     subject.MakeQuickPrediction()
 
     PrintSummary(subject)

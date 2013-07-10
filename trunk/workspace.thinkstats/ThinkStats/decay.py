@@ -5,9 +5,8 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import myplot
-import Pmf
-import thinkstats
+import thinkbayes
+import thinkplot
 
 from math import exp
 
@@ -23,57 +22,23 @@ cm.  What is $\lambda$?
 
 """
 
-def MakeUniformSuite(low, high, steps):
-    """Makes a PMF that represents a suite of hypotheses with equal p.
-    
-    Args:
-        low: low end of range
-        high: high end of range
-        steps: number of values
+class Decay(thinkbayes.Suite):
+    """Represents hypotheses about the emission rate, lam."""
 
-    Returns:
-        Pmf object
-    """
-    hypos = [low + (high-low) * i / (steps-1.0) for i in range(steps)]
-    pmf = Pmf.MakePmfFromList(hypos)
-    return pmf
+    def Likelihood(self, data, hypo):
+        """Likelihood of the data given the hypothesis.
 
+        Args:
+            data: location of decay event in cm
+            hypo: parameter of the expo distribution
 
-def Update(suite, evidence):
-    """Updates a suite of hypotheses based on new evidence.
-
-    Modifies the suite directly; if you want to keep the original, make
-    a copy.
-
-    Args:
-        suite: Pmf object
-        evidence: whatever kind of object Likelihood expects
-    """
-    for hypo in suite.Values():
-        likelihood = Likelihood(evidence, hypo)
-        suite.Mult(hypo, likelihood)
-    suite.Normalize()
+        Returns:
+            probability density of the data under the hypothesis
+        """
+        return ExpoCondPdf(data, hypo)
 
 
-def Likelihood(evidence, hypo):
-    """Computes the likelihood of the evidence assuming the hypothesis is true.
-
-    Args:
-        evidence: sequence of measurements
-        hypo: parameter of the expo distribution
-
-    Returns:
-        probability of the evidence under the hypothesis
-    """
-    param = hypo
-    likelihood = 1
-    for x in evidence:
-        likelihood *= ExpoCondPdf(x, param)
-
-    return likelihood
-
-
-def ExpoCondPdf(x, param, low=1.0, high=20.0):
+def ExpoCondPdf(x, lam, low=1.0, high=20.0):
     """Evaluates the conditional exponential PDF.
 
     Returns the probability density of x in the exponential PDF
@@ -81,30 +46,33 @@ def ExpoCondPdf(x, param, low=1.0, high=20.0):
 
     Args:
       x: float observed value
-      param: float parameter of the exponential distribution
+      lam: float parameter of the exponential distribution
       low: float, low end of the observable range
       high: float, high end of the observable range
     """
-    factor = exp(-low * param) - exp(-high * param)
-    p = param * exp(-param * x) / factor
+    factor = exp(-low * lam) - exp(-high * lam)
+    p = lam * exp(-lam * x) / factor
     return p
 
 
 def main():
-    suite = MakeUniformSuite(0.001, 1.5, 1000)
-    evidence = [1.5, 2, 3, 4, 5, 12]
+    low = 0.001
+    high = 1.5
+    steps = 1001
+    hypos = [low + (high-low) * i / (steps-1.0) for i in range(steps)]
 
-    Update(suite, evidence)
-    suite.name = 'posterior'
+    suite = Decay(hypos)
+    data = [1.5, 2, 3, 4, 5, 12]
 
-    # plot the posterior distributions
-    myplot.Pmf(suite)
-    myplot.Show(title='Decay parameter',
-                xlabel='Parameter (inverse cm)',
-                ylabel='Posterior probability')
-
-    print 'Naive parameter estimate:', 1.0 / thinkstats.Mean(evidence)
+    suite.UpdateSet(data)
     print 'Mean of the posterior distribution:', suite.Mean()
+
+    # plot the posterior distribution
+    thinkplot.Pmf(suite)
+    thinkplot.Show(title='Decay parameter',
+                   xlabel='Parameter (inverse cm)',
+                   ylabel='Posterior probability')
+
 
 if __name__ == '__main__':
     main()

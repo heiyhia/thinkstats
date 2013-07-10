@@ -223,10 +223,10 @@ class Sat(thinkbayes.Suite):
         """Computes the likelihood of a test score, given efficacy."""
         p_correct = hypo
         score = data
-        raw = self.exam.Reverse(score)
 
-        yes, no = raw, self.exam.max_score - raw
-        like = thinkbayes.EvalBinomialPmf(p_correct, yes, no)
+        k = self.exam.Reverse(score)
+        n = self.exam.max_score
+        like = thinkbayes.EvalBinomialPmf(k, n, p_correct)
         return like
 
     def PlotPosteriors(self, other):
