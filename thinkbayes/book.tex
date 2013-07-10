@@ -325,7 +325,7 @@ Most chapters contain references to code you can download from
 \url{http://thinkbayes.com}.  Some of those files have
 dependencies you will also have to download.  I suggest you
 keep all of these files in the same directory so they can import
-each other without changing the Python path.
+each other without changing the Python search path.
 
 You can download these files one at a time as you need them, or you
 can download them all at once from
@@ -334,18 +334,18 @@ contains the data files used by some of the programs.  When you unzip
 it, it creates a directory named \verb"thinkbayes_code" that contains
 all the code used in this book.
 
-Or, if you are a Git user, you can fork this repository:
+Or, if you are a Git user, you can get all of the files at once by
+forking and cloning this repository:
 \url{https://github.com/AllenDowney/ThinkBayes}.
 
-One of the modules I use is {\tt thinkplot.py},
-which provides wrappers for some of the functions in {\tt pyplot},
-which is part of {\tt matplotlib}.  If you don't have {\tt matplotlib}
-installed, check your package manager to see if it is available.
-Otherwise you can get download instructions
-from \url{http://matplotlib.org}.
+One of the modules I use is {\tt thinkplot.py}, which provides
+wrappers for some of the functions in {\tt pyplot}.  To use it, you
+need to install {\tt matplotlib}.  If you don't already have it, check
+your package manager to see if it is available.  Otherwise you can get
+download instructions from \url{http://matplotlib.org}.
 \index{thinkplot}
 
-In addition, some programs in this book use NumPy and SciPy, which are
+Finally, some programs in this book use NumPy and SciPy, which are
 available from \url{http://numpy.org} and \url{http://scipy.org}.
 \index{numpy}
 \index{scipy}
@@ -369,10 +369,10 @@ the Google style guide, which deviates from PEP 8 in a few
 places.  Once I got used to Google style, I found that I liked
 it.  And at this point, it would be too much trouble to change.
 
-Also on the topic of style, I choose to write ``Bayes's Theorem''
+Also on the topic of style, I write ``Bayes's Theorem''
 with an {\it s} after the apostrophe, which is preferred in some
 style guides and deprecated in others.  I don't have a strong
-preference.  I had to choose one, and I chose this one.
+preference.  I had to choose one, and this is the one I chose.
 
 And finally one typographical note: throughout the book, I use
 PMF and CDF for the mathematical concept of a probability
@@ -877,7 +877,7 @@ the third column by the normalizing constant.
 
 That's it.  Simple, right?
 
-Well, you might be bothered by one detail.  I wrote \p{D|H}
+Well, you might be bothered by one detail.  I write \p{D|H}
 in terms of percentages, not probabilities, which means it
 is off by a factor of 10,000.  But that
 cancels out when we divide through by the normalizing constant, so
@@ -2127,7 +2127,7 @@ objectivity by pretending to know less than you do.
 \label{euro}
 
 \index{Euro problem}
-\index{MacKay David}
+\index{MacKay, David}
 In {\it Information Theory, Inference, and Learning Algorithms}, David MacKay
 poses this problem:
 
@@ -5261,6 +5261,28 @@ Or, to take this analysis one step further, we could quantify the cost
 of missing the connection and the cost of taking a taxi, then choose
 the threshold that minimizes expected cost.
 
+\section{Exercises}
+
+\begin{exercise}
+This exercise is from
+MacKay, {\em Information Theory, Inference, and Learning Algorithms}.
+\index{MacKay, David}
+
+\begin{quote}
+    Unstable particles are emitted from a source and decay at a
+distance $x$, a real number that has an exponential probability
+distribution with [parameter] $\lambda$.  Decay events can only be
+observed if they occur in a window extending from $x=1$ cm to $x=20$
+cm.  $N$ decays are observed at locations $\{ 1.5, 2, 3, 4, 5, 12 \}$
+cm.  What is the posterior distribution of $\lambda$?
+
+You can download a solution to this exercise from
+\url{http://thinkbayes.com/decay.py}.
+\end{quote}
+
+\end{exercise}
+
+
 \section{Discussion}
 
 The analysis so far has been based on the assumption that the
@@ -6745,6 +6767,7 @@ is exactly 50\%.
 \index{bogus}
 
 \section{Making a fair comparison}
+\label{suitelike}
 
 To make a legitimate comparison, we have to define $B$ without looking
 at the data.  So let's try a different definition.  If you inspect
@@ -7123,10 +7146,9 @@ As usual, we inherit {\tt Update} from {\tt Suite} and provide
         p_correct = hypo
         score = data
 
-        raw = self.exam.Reverse(score)
-        yes, no = raw, 54 - raw
-
-        like = thinkbayes.EvalBinomialPmf(p_correct, yes, no)
+        k = self.exam.Reverse(score)
+        n = self.exam.max_score
+        like = thinkbayes.EvalBinomialPmf(k, n, p_correct)
         return like
 \end{verbatim}
 
@@ -7136,8 +7158,8 @@ value of \verb"p_correct", and {\tt data} is a scaled score.
 To keep things simple, I interpret the raw score as the number of
 correct answers, ignoring the penalty for wrong answers.  With
 this simplification, the likelihood is given by the binomial
-distribution, which computes the probability of the given number
-of correct and incorrect responses.
+distribution, which computes the probability of $k$ correct
+responses out of $n$ questions.
 \index{binomial distribution}
 \index{raw score}
 
@@ -8266,6 +8288,266 @@ So we side-stepped Bayes, but he was with us in spirit.
 
 
 \chapter{A hierarchical model}
+\label{hierarchical}
+
+
+\section{The Geiger counter problem}
+
+I got the idea for the following problem from Tom Campbell-Ricketts
+author of the Maximum Entropy blog at
+\url{http://maximum-entropy-blog.blogspot.com}.  And he got the idea
+from E.~T.~Jaynes, author of the classic {\em Probability Theory: The
+  Logic of Science}.
+\index{Jaynes, E.~T.}
+\index{Campbell-Ricketts, Tom}
+
+\begin{quote}
+Radioactive decay is well modeled by a Poisson process; the
+probability that an atom decays is the same at any point in time.
+
+Suppose that a radioactive source emits particles toward
+a Geiger counter at an average rate of $r$ particles per second,
+but the counter only registers a fraction, $f$, of the particles
+that hit it.  If $f$ is 10\% and
+the counter registers 15 particles in a one second
+interval, what is the posterior distribution of $n$, the actual
+number of particles that hit the counter, and $r$, the average
+rate particles are emitted?
+\end{quote}
+
+To get started on a problem like this, think about the chain of
+causation that starts with the parameters of the system and ends
+with the observed data:
+
+\begin{itemize}
+
+\item The source emits particles at an average rate, $r$.
+
+\item During any given second, the source emits $n$ particles
+toward the counter.
+
+\item Out of those $n$ particles, some number, $k$, get counted.
+
+\end{itemize}
+
+Given the value of $r$, we can compute the distribution of $n$.
+In fact, it is the Poisson distribution with parameter $r$.
+
+And given the value of $n$, we can compute the distribution of $k$.
+It is the binomial distribution with parameters $n$ and $f$.
+
+If we can solve the forward problem---using the parameters to
+find the distribution of the data---we can solve the reverse
+problem---using the data to find the distribution of the parameters.
+
+
+\section{A simplified version}
+
+Let's start with a simple version of the problem where we know
+the value of $r$.  And we are given the value of $f$, so all we
+have to do is estimate $n$.
+
+I define a Suite called {\tt Detector} that models the behavior
+of the detector and estimates $n$.
+
+\begin{verbatim}
+class Detector(thinkbayes.Suite):
+
+    def __init__(self, r, f, high=500, step=1):
+        pmf = thinkbayes.MakePoissonPmf(r, high, step=step)
+        thinkbayes.Suite.__init__(self, pmf, name=r)
+        self.r = r
+        self.f = f
+\end{verbatim}
+
+The prior distribution of $n$ is Poisson with parameter $r$.
+{\tt high} and {\tt step} determine the upper bound for $n$
+and the step size between hypothetical values.
+
+Now we need a likelihood function.  If there are actually
+$n$ particles, and the probability of detecting any one of them
+is $f$, the probability of detecting $k$ particles is given
+by the binomial distribution:
+
+\begin{verbatim}
+# class Detector
+
+    def Likelihood(self, data, hypo):
+        k = data
+        n = hypo
+        p = self.f
+
+        if n < k:
+            return 0
+        return thinkbayes.EvalBinomialPmf(k, n, p)
+\end{verbatim}
+
+Of course, if there are $n$ particles, the probability of
+detecting more than $n$ particles is 0.
+
+That's it for the Detector.  We can try it out for a range
+of values of $r$:
+
+\begin{verbatim}
+    f = 0.1
+    k = 15
+
+    for r in [150, 300, 450]:
+        suite = Detector(r, f)
+        suite.Update(k)
+\end{verbatim}
+
+Figure~\ref{} shows the posterior distribution of $n$ given
+different values of $r$.
+
+
+\section{Make it hierarchical}
+
+In the previous section, we assume $r$ is known.  Now let's
+relax that assumption.  I define another Suite, called {\tt Emitter},
+that models the behavior of the emitter and estimates $r$:
+
+\begin{verbatim}
+class Emitter(thinkbayes.Suite):
+
+    def __init__(self, rs, f=0.1):
+        detectors = [Detector(r, f) for r in rs]
+        thinkbayes.Suite.__init__(self, detectors)
+\end{verbatim}
+
+{\tt rs} is a sequence of hypothetical value for $r$.
+{\tt detectors} is a sequence of Detector objects, one for
+each value of $r$.  So the values in an Emitter are Detectors!
+
+To update the Emitter, we have to compute the likelihood of the data
+under each hypothetical value of $r$.  But each value of $r$ is
+represented by a Detector that contains a range of values for $n$.
+
+To compute the likelihood of the data for a given Detector, we loop
+through the values of $n$ and add up the total probability of $k$.
+That's what {\tt SuiteLikelihood} does:
+
+\begin{verbatim}
+# class Detector
+
+    def TotalLikelihood(self, data):
+        total = 0
+        for hypo, prob in self.Items():
+            like = self.Likelihood(data, hypo)
+            total += prob * like
+        return total
+\end{verbatim}
+
+Now we can write the Likelihood function for the Emitter:
+
+\begin{verbatim}
+# class Detector
+
+    def Likelihood(self, data, hypo):
+        detector = hypo
+        like = detector.SuiteLikelihood(data)
+        return like
+\end{verbatim}
+
+Each {\tt hypo} is a Detector, so we can invoke
+{\tt SuiteLikelihood} to get the likelihood of the data under
+the hypothesis.
+
+After we update the Emitter, we have to update each of the
+Detectors, too.  
+
+\begin{verbatim}
+# class Detector
+
+    def Update(self, data):
+        """Updates the Suite based on data.
+
+        data: number of particles counted
+        """
+        thinkbayes.Suite.Update(self, data)
+        
+        for detector in self.Values():
+            detector.Update()
+\end{verbatim}
+
+Emitter is a meta-Suite; that is, a Suite that contains other Suites
+as values.  A multi-level model like this is called {\bf
+  hierarchical}.
+\index{hierarchical model}
+\index{meta-Suite}
+
+
+\section{A little optimization}
+
+You might recognize {\tt SuiteLikelihood}; we saw it
+in Section~\ref{suitelike}.  At the time, I pointed out that
+we didn't really need it, because the total probability
+computed by {\tt SuiteLikelihood} is exactly the normalizing
+constant computed and returned by {\tt Update}.
+
+So instead of updating the Emitter and then updating the
+Detectors, we can do both steps at the same time, and use
+the result from {\tt Detector.Update} as the likelihood
+of Emitter.
+
+Here's the streamlined version of {\tt Emitter.Likelihood}:
+
+\begin{verbatim}
+# class Emitter
+
+    def Likelihood(self, data, hypo):
+        return hypo.Update(data)
+\end{verbatim}
+
+And with this version of {\tt Likelihood} we can use the
+default version of {\tt Update}.  So this version has fewer
+lines of code, and it runs faster because it does not compute
+the total probabilities twice.
+
+\section{Extracting the posteriors}
+
+After we update the Emitter, we can get the posterior distribution
+of $r$ by looping through the updated Detectors:
+
+\begin{verbatim}
+    def DistOfR(self):
+        items = [(detector.r, prob) for detector, prob in self.Items()]
+        return thinkbayes.MakePmfFromItems(items)
+\end{verbatim}
+
+{\tt items} is a list of values of $r$ and their probabilities.
+The result is the Pmf of $r$.
+
+To get the posterior distribution of $n$, we have to compute
+the mixture of the Detectors.  We can use 
+{\tt thinkbayes.MakeMixture}, which takes a meta-Pmf that maps
+from each distribution to its probability.  And that's exactly
+what the Emitter is:
+
+\begin{verbatim}
+    def DistOfN(self):
+        return thinkbayes.MakeMixture(self)
+\end{verbatim}
+
+Figure~\ref{} shows the results.  Not surprisingly, the most
+likely value for 
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
+
+\begin{verbatim}
+\end{verbatim}
+
+
+
+\chapter{Another hierarchical model}
 \label{species}
 
 \section{Belly button bacteria}
@@ -8471,7 +8753,7 @@ Figure~\ref{fig.species1} shows the results.  The posterior
 mean prevalences are 44\%, 33\% and 22\%.
 
 
-\section{A hierarchical model}
+\section{The hierarchical version}
 
 We have solved a simplified version of the problem: if we
 know how many species there are, we can estimate the prevalence
@@ -8483,7 +8765,6 @@ number of species.  To solve this problem I'll define a meta-Suite,
 which is a Suite that contains other Suites as hypotheses.  In this
 case, the top-level Suite contains hypotheses about the number of
 species; the bottom level contains hypotheses about prevalences.
-A multi-level model like this is called {\bf hierarchical}.
 \index{hierarchical model}
 \index{meta-Suite}
 
