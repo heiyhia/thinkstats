@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{0.32}
+\newcommand{\theversion}{1.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -440,7 +440,7 @@ Thanks!
   permission I use several problems from
   his book as examples.
 
-\item This book has also benefited from my interactions with Sanjoy
+\item This book also benefited from my interactions with Sanjoy
   Mahajan, especially in Fall 2012, when I audited his class on
   Bayesian Inference at Olin College.
 
@@ -814,7 +814,7 @@ bowls.
 \MM's are small candy-coated chocolates that come in a variety of
 colors.  Mars, Inc., which makes \MM's, changes the mixture of
 colors from time to time.
-\index{M"&M problem}
+\index{M and M problem}
 
 In 1995, they introduced blue \MM's.  Before then, the color mix in
 a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
@@ -1443,8 +1443,7 @@ see Section~\ref{download}.
 
 \section{The \MM~problem}
 
-\index{M"&M problem}
-
+\index{M and M problem}
 We can use the \verb"Suite" framework to solve the \MM~problem.
 Writing the \verb"Likelihood" function is tricky, but everything
 else is straightforward.
@@ -1565,7 +1564,7 @@ few cases we override {\tt Update}, usually to improve performance.
 Suppose I have a box of dice that contains a 4-sided die, a 6-sided
 die, an 8-sided die, a 12-sided die and a 20-sided die.  If you
 have ever played {\it Dungeons~\&~Dragons}, you know what I am talking about.
-\index{Dungeons"&Dragons}
+\index{Dungeons and Dragons}
 
 Suppose I select a die from the box at random, roll it, and get a 6.
 What is the probability that I rolled each die?
@@ -1661,7 +1660,7 @@ see Section~\ref{download}.
 
 \section{The Locomotive problem}
 
-\index{locomotive problem}
+\index{Locomotive problem}
 \index{Mosteller, Frederick}
 \index{German tank problem}
 I found the locomotive problem 
@@ -2717,6 +2716,7 @@ we can write the ratio of posterior probabilities like this:
 %
 Notice that the normalizing constant, \p{D}, drops out of
 this equation.
+\index{normalizing constant}
 
 If $A$ and $B$ are mutually exclusive and collectively exhaustive,
 that means $\p{B} = 1 - \p{A}$, so we can rewrite the ratio of
@@ -2861,7 +2861,7 @@ In fact, before game play starts, players generate each
 attribute of their characters---strength, intelligence, wisdom,
 dexterity, constitution, and charisma---by rolling three
 6-sided dice and adding them up.
-\index{Dungeons"&Dragons}
+\index{Dungeons and Dragons}
 
 So you might be curious to know the distribution of this sum.
 There are two ways you might compute it:
@@ -3255,7 +3255,7 @@ probabilities.
 
 
 \chapter{Decision analysis}
-\label{decision analysis}
+\label{decisionanalysis}
 
 \section{The Price is Right problem}
 
@@ -3387,7 +3387,7 @@ of a likelihood function.  We will see an example soon.
 
 \section{Representing Pdfs}
 
-\index{Pdf object}
+\index{Pdf}
 To represent PDFs in Python,
 {\tt thinkbayes.py} provides a class named {\tt Pdf}.
 {\tt Pdf} is an {\bf abstract type}, which means that it defines
@@ -5261,28 +5261,6 @@ Or, to take this analysis one step further, we could quantify the cost
 of missing the connection and the cost of taking a taxi, then choose
 the threshold that minimizes expected cost.
 
-\section{Exercises}
-
-\begin{exercise}
-This exercise is from
-MacKay, {\em Information Theory, Inference, and Learning Algorithms}.
-\index{MacKay, David}
-
-\begin{quote}
-    Unstable particles are emitted from a source and decay at a
-distance $x$, a real number that has an exponential probability
-distribution with [parameter] $\lambda$.  Decay events can only be
-observed if they occur in a window extending from $x=1$ cm to $x=20$
-cm.  $N$ decays are observed at locations $\{ 1.5, 2, 3, 4, 5, 12 \}$
-cm.  What is the posterior distribution of $\lambda$?
-
-You can download a solution to this exercise from
-\url{http://thinkbayes.com/decay.py}.
-\end{quote}
-
-\end{exercise}
-
-
 \section{Discussion}
 
 The analysis so far has been based on the assumption that the
@@ -5326,17 +5304,32 @@ a solution in \url{http://thinkbayes.com/redline.py}.
   For more information
 see Section~\ref{download}.
 
+\section{Exercises}
+
+\begin{exercise}
+This exercise is from
+MacKay, {\em Information Theory, Inference, and Learning Algorithms}.
+\index{MacKay, David}
+
+\begin{quote}
+    Unstable particles are emitted from a source and decay at a
+distance $x$, a real number that has an exponential probability
+distribution with [parameter] $\lambda$.  Decay events can only be
+observed if they occur in a window extending from $x=1$ cm to $x=20$
+cm.  $N$ decays are observed at locations $\{ 1.5, 2, 3, 4, 5, 12 \}$
+cm.  What is the posterior distribution of $\lambda$?
+
+You can download a solution to this exercise from
+\url{http://thinkbayes.com/decay.py}.
+\end{quote}
+
+\end{exercise}
+
+
 \chapter{Two dimensions}
 \label{paintball}
 
 \section{Paintball}
-
-\begin{figure}
-% paintball.py
-\centerline{\includegraphics[height=2.5in]{figs/paintball.pdf}}
-\caption{Diagram of the layout for the paintball problem.}
-\label{fig.paintball}
-\end{figure}
 
 Paintball is a sport in which competing teams try to shoot each other
 with guns that fire paint-filled pellets that break on impact, leaving
@@ -5376,9 +5369,9 @@ see Section~\ref{download}.
 
 \begin{figure}
 % paintball.py
-\centerline{\includegraphics[height=2.5in]{figs/paintball2.pdf}}
-\caption{Posterior CDFs for {\tt alpha} and {\tt beta}, given the data.}
-\label{fig.paintball2}
+\centerline{\includegraphics[height=2.5in]{figs/paintball.pdf}}
+\caption{Diagram of the layout for the paintball problem.}
+\label{fig.paintball}
 \end{figure}
 
 To get started, we need a Suite that represents a set of hypotheses
@@ -5409,6 +5402,13 @@ of all {\tt (alpha, beta)} pairs.
 {\tt locations} is a list of possible locations along
 the wall; it is stored for use in {\tt Likelihood}.
 
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball2.pdf}}
+\caption{Posterior CDFs for {\tt alpha} and {\tt beta}, given the data.}
+\label{fig.paintball2}
+\end{figure}
+
 The room is 30 feet wide and 50 feet long, so here's the code that
 creates the suite:
 
@@ -5426,14 +5426,6 @@ detailed prior, but we'll start simple.
 
 
 \section{Trigonometry}
-
-\begin{figure}
-% paintball.py
-\centerline{\includegraphics[height=2.5in]{figs/paintball1.pdf}}
-\caption{PMF of location given {\tt alpha=10}, for several values of
-  {\tt beta}.}
-\label{fig.paintball1}
-\end{figure}
 
 Now we need a likelihood function, we means we have to figure
 out the likelihood of hitting any spot along the wall, given
@@ -5483,6 +5475,14 @@ def StrafingSpeed(alpha, beta, x):
 {\tt alpha} and {\tt beta} are the coordinates of the shooter;
 {\tt x} is the location of a spatter.  The result is
 the derivative of {\tt x} with respect to {\tt theta}.
+
+\begin{figure}
+% paintball.py
+\centerline{\includegraphics[height=2.5in]{figs/paintball1.pdf}}
+\caption{PMF of location given {\tt alpha=10}, for several values of
+  {\tt beta}.}
+\label{fig.paintball1}
+\end{figure}
 
 Now we can compute a Pmf that represents the probability of hitting
 any location on the wall.  {\tt MakeLocationPmf} takes {\tt alpha} and
@@ -5558,6 +5558,7 @@ Given a joint distribution, we can compute the distributions
 of each variable independently, which are called the {\bf marginal
 distributions}.
 \index{marginal distribution}
+\index{Joint}
 
 {\tt thinkbayes.Joint} provides a method that computes marginal
 distributions:
@@ -5627,6 +5628,7 @@ One way to visualize dependence is by computing {\bf conditional
 distributions}.  {\tt thinkbayes.Joint} provides a method that
 does that:
 \index{conditional distribution}
+\index{Joint}
 
 \begin{verbatim}
     def Conditional(self, i, j, val):
@@ -5702,6 +5704,7 @@ percentage).
 
 {\tt thinkbayes.Joint} provides a method that computes maximum
 likelihood credible intervals. 
+\index{Joint}
 
 \begin{verbatim}
 # class Joint:
@@ -5766,6 +5769,7 @@ I also presented {\tt Joint}, which is a parent class that provides
 {\tt Marginal}, {\tt Conditional} and {\tt MakeLikeInterval}, methods
 that apply to joint distributions.  In object-oriented terms,
 {\tt Joint} is a mixin (see \url{http://en.wikipedia.org/wiki/Mixin}).
+\index{Joint}
 
 There is a lot of new vocabulary in this chapter, so let's review:
 
@@ -5795,6 +5799,9 @@ re-create the joint distribution, at least approximately.  But given
 the marginal distributions you cannot re-create the joint distribution
 because you have lost information about the dependence between
 variables.
+\index{joint distribution}
+\index{conditional distribution}
+\index{marginal distribution}
 
 If there are $n$ possible values for each of two parameters, most
 operations on the joint distribution take time proportional to $n^2$.
@@ -6662,7 +6669,7 @@ If the parameters for Group 1 are $(\mu_1, \sigma_1)$, and the
 parameters for Group 1 are $(\mu_2, \sigma_2)$, the dimensionless
 effect size is
 %
-\[ \frac{\mu_1 - \mu_2}{1/2 (\sigma_1 + \sigma_2)} \]
+\[ \frac{\mu_1 - \mu_2}{(\sigma_1 + \sigma_2)/2} \]
 %
 Write a function that takes joint distributions of
 {\tt mu} and {\tt sigma} for two groups and returns
@@ -8291,20 +8298,18 @@ So we side-stepped Bayes, but he was with us in spirit.
 \label{hierarchical}
 
 
-\section{The Geiger counter problem}
+\section{The Geiger Counter problem}
 
-I got the idea for the following problem from Tom Campbell-Ricketts
+I got the idea for the following problem from Tom Campbell-Ricketts,
 author of the Maximum Entropy blog at
 \url{http://maximum-entropy-blog.blogspot.com}.  And he got the idea
 from E.~T.~Jaynes, author of the classic {\em Probability Theory: The
-  Logic of Science}.
+  Logic of Science}:
 \index{Jaynes, E.~T.}
 \index{Campbell-Ricketts, Tom}
+\index{Geiger Counter problem}
 
 \begin{quote}
-Radioactive decay is well modeled by a Poisson process; the
-probability that an atom decays is the same at any point in time.
-
 Suppose that a radioactive source emits particles toward
 a Geiger counter at an average rate of $r$ particles per second,
 but the counter only registers a fraction, $f$, of the particles
@@ -8318,6 +8323,7 @@ rate particles are emitted?
 To get started on a problem like this, think about the chain of
 causation that starts with the parameters of the system and ends
 with the observed data:
+\index{causation}
 
 \begin{itemize}
 
@@ -8330,21 +8336,39 @@ toward the counter.
 
 \end{itemize}
 
-Given the value of $r$, we can compute the distribution of $n$.
-In fact, it is the Poisson distribution with parameter $r$.
+The probability that an atom decays is the same at any point in time,
+so radioactive decay is well modeled by a Poisson process.  Given $r$,
+the distribution of $n$ is Poisson distribution with parameter $r$.
+\index{radioactive decay}
+\index{Poisson process}
 
-And given the value of $n$, we can compute the distribution of $k$.
-It is the binomial distribution with parameters $n$ and $f$.
+And if we assume that the probability of detection for each particle
+is independent of the others, the distribution of $k$ is the binomial
+distribution with parameters $n$ and $f$.
+\index{binomial distribution}
 
-If we can solve the forward problem---using the parameters to
-find the distribution of the data---we can solve the reverse
-problem---using the data to find the distribution of the parameters.
+Given the parameters of the system, we can find the distribution of
+the data.  So we can solve what is called the {\bf forward problem}.
+\index{forward problem}
+
+Now we want to go the other way: given the data, we
+want the distribution of the parameters.  This is called
+the {\bf inverse problem}.  And if you can solve the forward
+problem, you can use Bayesian methods to solve the inverse problem.
+\index{inverse problem}
 
 
-\section{A simplified version}
+\section{Start simple}
+
+\begin{figure}
+% jaynes.py
+\centerline{\includegraphics[height=2.5in]{figs/jaynes1.pdf}}
+\caption{Posterior distribution of $n$ for three values of $r$.}
+\label{fig.jaynes1}
+\end{figure}
 
 Let's start with a simple version of the problem where we know
-the value of $r$.  And we are given the value of $f$, so all we
+the value of $r$.  We are given the value of $f$, so all we
 have to do is estimate $n$.
 
 I define a Suite called {\tt Detector} that models the behavior
@@ -8360,14 +8384,14 @@ class Detector(thinkbayes.Suite):
         self.f = f
 \end{verbatim}
 
-The prior distribution of $n$ is Poisson with parameter $r$.
+If the average emission rate is $r$ particles per second, the
+distribution of $n$ is Poisson with parameter $r$.
 {\tt high} and {\tt step} determine the upper bound for $n$
 and the step size between hypothetical values.
+\index{Poisson distribution}
 
-Now we need a likelihood function.  If there are actually
-$n$ particles, and the probability of detecting any one of them
-is $f$, the probability of detecting $k$ particles is given
-by the binomial distribution:
+Now we need a likelihood function:
+\index{likelihood}
 
 \begin{verbatim}
 # class Detector
@@ -8377,13 +8401,16 @@ by the binomial distribution:
         n = hypo
         p = self.f
 
-        if n < k:
-            return 0
         return thinkbayes.EvalBinomialPmf(k, n, p)
 \end{verbatim}
 
-Of course, if there are $n$ particles, the probability of
-detecting more than $n$ particles is 0.
+{\tt data} is the number of particles detected, and {\tt hypo} is
+the hypothetical number of particles emitted, $n$.
+
+If there are actually $n$ particles, and the probability of detecting
+any one of them is $f$, the probability of detecting $k$ particles is
+given by the binomial distribution.
+\index{binomial distribution}
 
 That's it for the Detector.  We can try it out for a range
 of values of $r$:
@@ -8398,8 +8425,8 @@ of values of $r$:
         print suite.MaximumLikelihood()
 \end{verbatim}
 
-Figure~\ref{} shows the posterior distribution of $n$ given
-different values of $r$.
+Figure~\ref{fig.jaynes1} shows the posterior distribution of $n$ for
+several given values of $r$.
 
 
 \section{Make it hierarchical}
@@ -8416,9 +8443,11 @@ class Emitter(thinkbayes.Suite):
         thinkbayes.Suite.__init__(self, detectors)
 \end{verbatim}
 
-{\tt rs} is a sequence of hypothetical value for $r$.
-{\tt detectors} is a sequence of Detector objects, one for
-each value of $r$.  So the values in an Emitter are Detectors!
+{\tt rs} is a sequence of hypothetical value for $r$.  {\tt detectors}
+is a sequence of Detector objects, one for each value of $r$.  The
+values in the Suite are Detectors, so Emitter is a {\bf meta-Suite};
+that is, a Suite that contains other Suites as values.
+\index{meta-Suite}
 
 To update the Emitter, we have to compute the likelihood of the data
 under each hypothetical value of $r$.  But each value of $r$ is
@@ -8431,7 +8460,7 @@ That's what {\tt SuiteLikelihood} does:
 \begin{verbatim}
 # class Detector
 
-    def TotalLikelihood(self, data):
+    def SuiteLikelihood(self, data):
         total = 0
         for hypo, prob in self.Items():
             like = self.Likelihood(data, hypo)
@@ -8461,21 +8490,14 @@ Detectors, too.
 # class Detector
 
     def Update(self, data):
-        """Updates the Suite based on data.
-
-        data: number of particles counted
-        """
         thinkbayes.Suite.Update(self, data)
         
         for detector in self.Values():
             detector.Update()
 \end{verbatim}
 
-Emitter is a meta-Suite; that is, a Suite that contains other Suites
-as values.  A multi-level model like this is called {\bf
-  hierarchical}.
-\index{hierarchical model}
-\index{meta-Suite}
+A model like this, with multiple levels of Suites, is called {\bf
+  hierarchical}.  \index{hierarchical model}
 
 
 \section{A little optimization}
@@ -8485,9 +8507,10 @@ in Section~\ref{suitelike}.  At the time, I pointed out that
 we didn't really need it, because the total probability
 computed by {\tt SuiteLikelihood} is exactly the normalizing
 constant computed and returned by {\tt Update}.
-
+\index{normalizing constant}
+ 
 So instead of updating the Emitter and then updating the
-Detectors, we can do both steps at the same time, and use
+Detectors, we can do both steps at the same time, using
 the result from {\tt Detector.Update} as the likelihood
 of Emitter.
 
@@ -8503,13 +8526,21 @@ Here's the streamlined version of {\tt Emitter.Likelihood}:
 And with this version of {\tt Likelihood} we can use the
 default version of {\tt Update}.  So this version has fewer
 lines of code, and it runs faster because it does not compute
-the total probabilities twice.
+the normalizing constant twice.
+\index{optimization}
 
 
 \section{Extracting the posteriors}
 
+\begin{figure}
+% jaynes.py
+\centerline{\includegraphics[height=2.5in]{figs/jaynes2.pdf}}
+\caption{Posterior distributions of $n$ and $r$.}
+\label{fig.jaynes2}
+\end{figure}
+
 After we update the Emitter, we can get the posterior distribution
-of $r$ by looping through the updated Detectors:
+of $r$ by looping through the Detectors and their probabilities:
 
 \begin{verbatim}
 # class Emitter
@@ -8535,27 +8566,90 @@ what the Emitter is:
         return thinkbayes.MakeMixture(self)
 \end{verbatim}
 
-Figure~\ref{} shows the results.  Not surprisingly, the most likely
-value for $n$ is 150.  Given $f$ and $n$, the expected count is $k = f
-n$, so given $f$ and $k$, the expected value of $n$ is $k / f$, which
-is 150.
+Figure~\ref{fig.jaynes2} shows the results.  Not surprisingly, the
+most likely value for $n$ is 150.  Given $f$ and $n$, the expected
+count is $k = f n$, so given $f$ and $k$, the expected value of $n$ is
+$k / f$, which is 150.
 
 And if 150 particles are emitted in one second, the most likely value
 of $r$ is 150 particles per second.  So the posterior distribution of
 $r$ is also centered on 150.
 
-In fact, the posterior distribution of $r$ and $n$ are very similar,
-only we are slightly less certain about $n$.  In general, we can be
-more certain about the long-range emission rate, $r$, than the number
-of particles emitted in any particular second, $n$.
+The posterior distributions of $r$ and $n$ are similar;
+the only difference is that we are slightly less certain about $n$.
+In general, we can be more certain about the long-range emission rate,
+$r$, than about the number of particles emitted in any particular second,
+$n$.
 
-
-\section{Exercises}
-
+You can download the code in this chapter from
+\url{http://thinkbayes.com/jaynes.py}.  For more information see
+Section~\ref{download}.
 
 
 \section{Discussion}
 
+The Geiger Counter problem demonstrates the connection between
+causation and hierarchical modeling.  In the example, the
+emission rate $r$ has a causal effect on the number of particles,
+$n$, which has a causal effect on the particle count, $k$.
+\index{Geiger Counter problem}
+\index{causation}
+
+The hierarchical model reflects the structure of the
+system, with causes at the top and effects at the bottom.
+\index{hierarchical model}
+
+\begin{enumerate}
+
+\item At the top level, we start with a range of hypothetical
+values for $r$.
+
+\item For each value of $r$, we have a range of values for $n$,
+and the prior distribution of $n$ depends on $r$.
+
+\item When we update the model, we go bottom-up.  We compute
+a posterior distribution of $n$ for each value of $r$, then
+compute the posterior distribution of $r$.
+
+\end{enumerate}
+
+So causal information flows down the hierarchy, and inference flows
+up.
+
+
+\section{Exercises}
+
+\begin{exercise}
+This exercise is also inspired by an example in Jaynes, {\em
+Probability Theory}.
+
+Suppose you buy a mosquito trap that is supposed to reduce the
+population of mosquitoes near your house.  Each
+week, you empty the trap and count the number of mosquitoes
+captured.  After the first week, you count 30 mosquitoes.
+After the second week, you count 20 mosquitoes.  Estimate the
+percentage change in the number of mosquitoes in your yard.
+
+To answer this question, you have to make some modeling
+decisions.  Here are some suggestions:
+
+\begin{itemize}
+
+\item Suppose that each week a large number of mosquitoes, $N$, is bred
+in a wetland near your home.
+
+\item During the week, some fraction of
+them, $f_1$, wander into your yard, and of those some fraction, $f_2$,
+are caught in the trap.
+
+\item Your solution should take into account your prior belief
+about how much $N$ is likely to change from one week to the next.
+You can do that by adding a level to the hierarchy to
+model the percent change in $N$.
+
+\end{itemize}
+
+\end{exercise}
 
 
 \chapter{Another hierarchical model}
