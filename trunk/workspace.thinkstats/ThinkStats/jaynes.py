@@ -144,8 +144,6 @@ class Detector(thinkbayes.Suite):
         n = hypo
         p = self.f
 
-        if n < k:
-            return 0
         return thinkbayes.EvalBinomialPmf(k, n, p)
 
     def SuiteLikelihood(self, data):
@@ -166,10 +164,11 @@ def main():
 
     # plot Detector suites for a range of hypothetical r
     thinkplot.PrePlot(num=3)
-    for r in [150, 300, 450]:
+    for r in [100, 250, 400]:
         suite = Detector(r, f, step=1)
-        print suite.Update(k)
+        suite.Update(k)
         thinkplot.Pmf(suite)
+        print suite.MaximumLikelihood()
 
     thinkplot.Save(root='jaynes1',
                    xlabel='Number of particles (n)',
