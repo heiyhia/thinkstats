@@ -134,7 +134,7 @@ sat.py euro*.py kidney.py species.py paintball.py myplot.py columns.py \
 thinkstats.py sat_ranks.csv sat_scale.csv correlation.py \
 journal.pone.0047712.s001.csv variability.py price.py redline.py \
 redline_data.py thinkplot.py showcases.2011.csv  showcases.2012.csv \
-decay.py
+decay.py jaynes.py
 
 BAYES_DEST = /home/downey/public_html/greent/thinkbayes
 
@@ -149,6 +149,7 @@ paintball*.pdf paintball*.eps \
 variability*.pdf variability*.eps \
 price*.pdf price*.eps \
 redline*.pdf redline*.eps \
+jaynes*.pdf jaynes*.eps \
 
 
 BAYES_TABLES = kidney_table*.tex
@@ -172,6 +173,7 @@ bayes_run:
 	python euro3.py
 	python sat.py
 	python kidney.py
+	python jaynes.py
 	python species.py
 
 bayes_code:

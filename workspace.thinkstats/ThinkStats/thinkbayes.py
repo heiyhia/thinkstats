@@ -1442,10 +1442,7 @@ def EvalBinomialPmf(k, n, p):
 
     Returns the probabily of k successes in n trials with probability p.
     """
-    # Don't use the scipy function.  for p=0 it throws a spurious
-    # warning
-    # return scipy.stats.binom.pmf(k, n, p)
-    return BinomialCoef(n, k) * p**k * (1-p)**(n-k)
+    return scipy.stats.binom.pmf(k, n, p)
     
 
 def EvalPoissonPmf(k, lam):
