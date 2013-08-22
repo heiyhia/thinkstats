@@ -30,6 +30,15 @@ import scipy.stats
 from scipy.special import erf, erfinv
 
 
+def RandomSeed(x):
+    """Initialize the random and numpy.random generators.
+
+    x: int seed
+    """
+    random.seed(x)
+    numpy.random.seed(x)
+    
+
 def Odds(p):
     """Computes odds for a given probability.
 
@@ -385,12 +394,87 @@ class Pmf(_DictWrapper):
         return MakeCdfFromPmf(self, name=name)
 
     def ProbGreater(self, x):
+        """Probability that a sample from this Pmf exceeds x.
+
+        x: number
+
+        returns: float probability
+        """
         t = [prob for (val, prob) in self.d.iteritems() if val > x]
         return sum(t)
 
     def ProbLess(self, x):
+        """Probability that a sample from this Pmf is less than x.
+
+        x: number
+
+        returns: float probability
+        """
         t = [prob for (val, prob) in self.d.iteritems() if val < x]
         return sum(t)
+
+    def __lt__(self, obj):
+        """Less than.
+
+        obj: number or _DictWrapper
+
+        returns: float probability
+        """
+        if isinstance(obj, _DictWrapper):
+            return PmfProbLess(self, obj)
+        else:
+            return self.ProbLess(obj)
+
+    def __gt__(self, obj):
+        """Greater than.
+
+        obj: number or _DictWrapper
+
+        returns: float probability
+        """
+        if isinstance(obj, _DictWrapper):
+            return PmfProbGreater(self, obj)
+        else:
+            return self.ProbGreater(obj)
+
+    def __ge__(self, obj):
+        """Greater than or equal.
+
+        obj: number or _DictWrapper
+
+        returns: float probability
+        """
+        return 1 - (self < obj)
+
+    def __le__(self, obj):
+        """Less than or equal.
+
+        obj: number or _DictWrapper
+
+        returns: float probability
+        """
+        return 1 - (self > obj)
+
+    def __eq__(self, obj):
+        """Less than.
+
+        obj: number or _DictWrapper
+
+        returns: float probability
+        """
+        if isinstance(obj, _DictWrapper):
+            return PmfProbEqual(self, obj)
+        else:
+            return self.Prob(obj)
+
+    def __ne__(self, obj):
+        """Less than.
+
+        obj: number or _DictWrapper
+
+        returns: float probability
+        """
+        return 1 - (self == obj)
 
     def Normalize(self, fraction=1.0):
         """Normalizes this PMF so the sum of all probs is fraction.
@@ -1453,11 +1537,11 @@ def EvalPoissonPmf(k, lam):
 
     returns: float probability
     """
-    # don't use the scipy function.  for lam=0 it returns NaN;
+    # don't use the scipy function (yet).  for lam=0 it returns NaN;
     # should be 0.0
-    return scipy.stats.poisson.pmf(k, lam)
+    # return scipy.stats.poisson.pmf(k, lam)
 
-    #return lam ** k * math.exp(-lam) / math.factorial(k)
+    return lam ** k * math.exp(-lam) / math.factorial(k)
 
 
 def MakePoissonPmf(lam, high, step=1):
@@ -1586,6 +1670,14 @@ class Beta(object):
     def Random(self):
         """Generates a random variate from this distribution."""
         return random.betavariate(self.alpha, self.beta)
+
+    def Sample(self, n):
+        """Generates a random sample from this distribution.
+
+        n: int sample size
+        """
+        size = n,
+        return numpy.random.beta(self.alpha, self.beta, size)
 
     def EvalPdf(self, x):
         """Evaluates the PDF at x."""

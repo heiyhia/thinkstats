@@ -436,6 +436,25 @@ def SaveFormat(root, fmt='eps'):
     pyplot.savefig(filename, format=fmt, dpi=300)
 
 
+# provide aliases for calling functons with lower-case names
+preplot = PrePlot
+clf = Clf
+figure = Figure
+plot = Plot
+scatter = Scatter
+pmf = Pmf
+pmfs = Pmfs
+hist = Hist
+hists = Hists
+diff = Diff
+cdf = Cdf
+cdfs = Cdfs
+contour = Contour
+config = Config
+show = Show
+save = Save
+
+
 def main():
     color_iter = Brewer.ColorGenerator(7)
     for color in color_iter:

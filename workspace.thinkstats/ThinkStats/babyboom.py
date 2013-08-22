@@ -42,27 +42,31 @@ def MakeFigure():
     sample = [random.expovariate(1/mu) for i in range(n)]
     model = Cdf.MakeCdfFromList(sample, 'model')
     
-    myplot.Cdf(cdf, root='interarrivals',
+    myplot.Cdf(cdf)
+    myplot.Save(root='interarrivals',
               title='Time between births',
               xlabel='minutes',
               ylabel='CDF',
-              legend=False)
+              legend=False,
+                formats=['eps', 'png', 'pdf'])
 
-    myplot.Cdfs([cdf, model], root='interarrivals_model',
-              complement=True,
-              title='Time between births',
-              xlabel='minutes',
-              ylabel='Complementary CDF',
-              yscale='log')
+    myplot.Cdfs([cdf, model], complement=True)
+    myplot.Save(root='interarrivals_model',
+                title='Time between births',
+                xlabel='minutes',
+                ylabel='Complementary CDF',
+                yscale='log',
+                formats=['eps', 'png', 'pdf'])
 
     pyplot.subplots_adjust(bottom=0.11)
-    myplot.Cdf(cdf, root='interarrivals_logy',
-              complement=True,
-              title='Time between births',
-              xlabel='minutes',
-              ylabel='Complementary CDF',
-              yscale='log',
-              legend=False)
+    myplot.Cdf(cdf, complement=True)
+    myplot.Save(root='interarrivals_logy',
+                title='Time between births',
+                xlabel='minutes',
+                ylabel='Complementary CDF',
+                yscale='log',
+                legend=False,
+                formats=['eps', 'png', 'pdf'])
 
 def main():
     MakeFigure()

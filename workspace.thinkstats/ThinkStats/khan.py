@@ -131,16 +131,20 @@ def Crosses(ps, thresh):
 
 
 def CheckCdf():
+    """Compare chi2 values from simulation with chi2 distributions.
     """
-    """
-    xs, ys = Chi2Cdf(df=3, high=15)
-    pyplot.plot(xs, ys)
+    for df in [1, 2, 3]:
+        xs, ys = Chi2Cdf(df=df, high=15)
+        pyplot.plot(xs, ys, label=df)
 
     t = [SimulateChi2() for i in range(1000)]
     cdf = Cdf.MakeCdfFromList(t)
 
     myplot.Cdf(cdf)
-    myplot.Show()
+    myplot.Save(root='khan3',
+                xlabel='chi2 value',
+                ylabel="CDF",
+                formats=['png'])
 
 
 def CheckCdf2():
@@ -169,14 +173,20 @@ def Chi2Cdf(df=2, high=5, n=100):
 def SimulateChi2(pa=0.5, q=0.5, n=100):
     """Run a simulation and return the chi2 statistic."""
     expected = Expected(pa, q, n)
-    simulated = Simulate(pa, q, n)
+
+    simulated = Pmf.Hist()
+
+    for i in range(1, n+1):
+        version = Flip(pa, 'A', 'B')
+        outcome = Flip(q, 'Y', 'N')
+        simulated.Incr((version, outcome))
 
     chi2 = ChiSquared(expected, simulated)
     return chi2
 
 
 def MakeSpaghetti(iters=1000, lines=100, n=300, thresh=0.05, index=2):
-    """Makes a spaghetti plot of random-walk p-values.
+    """Makes a spaghetti plot of random-walk lines.
     
     iters: number of simulations to run
     lines: number of lines to plot
@@ -210,6 +220,9 @@ def MakeSpaghetti(iters=1000, lines=100, n=300, thresh=0.05, index=2):
                 )
 
 def main():
+    CheckCdf()
+    return
+
     random.seed(17)
     MakeSpaghetti(10, 10, 200, index=0, thresh=None)
     MakeSpaghetti(10, 10, 1000, index=1, thresh=None)
