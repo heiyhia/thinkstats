@@ -6,6 +6,8 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 import numpy
+import math
+import scipy
 
 import thinkbayes
 import thinkplot
@@ -107,8 +109,74 @@ def RunSimulation(ctr1, ctr2):
     data2 = FakeData(100, ctr2)
 
     p = PosteriorProb(data1, data2)
+
+    #print data1[0], data2[0], p
     return p
 
+
+def RunPvalue1(ctr1, ctr2):
+    """Generate data and return the p-value of the observed difference.
+
+    ctr1: float CTR for A
+    ctr2: float CTR for B
+
+    returns: float p-value
+    """
+    def proportion(data):
+        yes, no = data
+        n = yes + no
+        p = float(yes) / n
+        return p, n
+
+    data1 = FakeData(100, ctr1)
+    data2 = FakeData(100, ctr2)
+
+    diff = abs(data1[0] - data2[0])
+
+    p1, n1 = proportion(data1)
+    p2, n2 = proportion(data2)
+    p = float(p1 * n1 + p2 * n2) / (n1 + n2)
+    term = 1.0/n1 + 1.0/n2
+    se = math.sqrt(p * (1-p) * term)
+    z = -abs(p1 - p2) / se
+    pval = 2 * scipy.stats.norm.cdf(z)
+
+    print p, se, z, pval
+
+    return pval
+
+
+def RunPvalue2(ctr1, ctr2):
+    """Generate data and return the p-value of the observed difference.
+
+    ctr1: float CTR for A
+    ctr2: float CTR for B
+
+    returns: float p-value
+    """
+    data1 = FakeData(100, ctr1)
+    data2 = FakeData(100, ctr2)
+
+    diff = abs(data1[0] - data2[0])
+
+    pval = 1 - sample_diff.Prob(diff)
+    print data1[0], data2[0], pval
+    print p, se, z, pval_z
+
+    return pval
+
+
+def SampleDistOfDiff(ctr1, ctr2, n=2000):
+    diffs = []
+    for i in range(n):
+        data1 = FakeData(100, ctr1)
+        data2 = FakeData(100, ctr2)
+        diff = abs(data1[0] - data2[0])
+        diffs.append(diff)
+
+    cdf = thinkbayes.MakeCdfFromList(diffs, name='diff')
+    return cdf
+    
 
 def PredDist(ctr1, ctr2, n=100):
     """Predictive posterior distribution of prob A>B.
@@ -155,7 +223,7 @@ def SamplePredDist(ctr1, ctr2, n=30):
     return sample_pred
     
 
-def SampleDist(ctr1, ctr2, n=1000):
+def SampleDist(ctr1, ctr2, n=365):
     """Computes the sample distribution of p.
 
     Where p is the posterior probability of A>B.
@@ -167,7 +235,21 @@ def SampleDist(ctr1, ctr2, n=1000):
     returns: Cdf of p
     """
     ps = [RunSimulation(ctr1, ctr2) for i in range(n)]
-    cdf = thinkbayes.MakeCdfFromList(ps, name='sample dist')
+    cdf = thinkbayes.MakeCdfFromList(ps, name='posterior probs')
+    return cdf
+
+
+def SampleDistPval(ctr1, ctr2, n=365):
+    """Computes the sample distribution of p-values.
+
+    ctr1: CTR of A
+    ctr2: CTR of B
+    n: number of iterations
+
+    returns: Cdf of p-values
+    """
+    ps = [RunPvalue1(ctr1, ctr2) for i in range(n)]
+    cdf = thinkbayes.MakeCdfFromList(ps, name='p-values')
     return cdf
 
 
@@ -190,6 +272,21 @@ def main():
     ctr1 = 0.05
     ctr2 = 0.05
 
+    global sample_diff
+    sample_diff = SampleDistOfDiff(ctr1, ctr2, n=2000)
+    #thinkplot.Cdf(sample_diff)
+    #thinkplot.Show()
+
+    sample_pval = SampleDistPval(ctr1, ctr2)
+
+    thinkplot.Cdf(sample_pval)
+    thinkplot.Save(root='abtest3',
+                   xlabel='p-value',
+                   ylabel='CDF',
+                   formats=FORMATS)
+
+    return
+
     sample_dist = SampleDist(ctr1, ctr2)
 
     thinkplot.Cdf(sample_dist)
@@ -198,6 +295,7 @@ def main():
                    ylabel='CDF',
                    formats=FORMATS)
 
+    return
 
     sample_pred = SamplePredDist(ctr1, ctr2)
 
