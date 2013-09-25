@@ -29,6 +29,7 @@ import random
 import scipy.stats
 from scipy.special import erf, erfinv
 
+ROOT2 = math.sqrt(2)
 
 def RandomSeed(x):
     """Initialize the random and numpy.random generators.
@@ -1593,7 +1594,7 @@ def MakeExponentialPmf(lam, high, n=200):
     return pmf
 
 
-def StandardGaussianCdf(x, root2=math.sqrt(2)):
+def StandardGaussianCdf(x):
     """Evaluates the CDF of the standard Gaussian distribution.
     
     See http://en.wikipedia.org/wiki/Normal_distribution
@@ -1605,7 +1606,7 @@ def StandardGaussianCdf(x, root2=math.sqrt(2)):
     Returns:
         float
     """
-    return (erf(x / root2) + 1) / 2
+    return (erf(x / ROOT2) + 1) / 2
 
 
 def GaussianCdf(x, mu=0, sigma=1):
@@ -1639,7 +1640,7 @@ def GaussianCdfInverse(p, mu=0, sigma=1):
     Returns:
         float
     """
-    x = root2 * erfinv(2 * p - 1)
+    x = ROOT2 * erfinv(2 * p - 1)
     return mu + x * sigma
 
 
