@@ -324,11 +324,12 @@ def PlotMarathon(data):
     inter, slope = correlation.LeastSquares(sxs, sys)
     print '(inter, slope):', inter, slope
 
+    end = 2043
     target = 26.21875 / 2
-    lxs, lys = MakeLine(target, 0, [1965, 2045.5])
+    lxs, lys = MakeLine(target, 0, [1965, end])
     pyplot.plot(lxs, lys, 'r')
 
-    lxs, lys = MakeLine(inter, slope, [1965, 2045.5])
+    lxs, lys = MakeLine(inter, slope, [1965, end])
     pyplot.plot(lxs, lys, 'b')
 
     #pyplot.plot(fxs, fys, 'go')
@@ -339,7 +340,8 @@ def PlotMarathon(data):
 
     myplot.Save(root='world_record_predict',
                 title='Marathon record projection',
-                ylabel='mph')
+                ylabel='mph',
+                formats=['pdf', 'eps', 'png'])
 
 
 def MakeLine(inter, slope, xs):

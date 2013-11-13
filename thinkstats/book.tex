@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{1.5.9}
+\newcommand{\theversion}{1.6.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -566,6 +566,11 @@ in the docstrings of the accompanying code.
 \item Tommie Gannert sent a patch file with a number of corrections.
 
 \item Alexander Gryzlov suggested a clarification in an exercise.
+
+\item Martin Veillette reported an error in one of the formulas for
+Pearson's correlation.
+
+\item Christoph Lendenmann submitted several errata.
 
 % ENDCONTRIB
 
@@ -4735,7 +4740,7 @@ exponential distribution with parameter \mylambda.
 The distribution of \Z~=~\X~+~\Y~is:
 %
 \[ \PDF_Z(z) = \infint \PDF_X(x)~\PDF_Y(z-x) \spa dx = 
-\infint \lambda e^{-\lambda x}~\lambda e^{\lambda (z-x)} dx \]
+\infint \lambda e^{-\lambda x}~\lambda e^{-\lambda (z-x)} dx \]
 %
 Now we have to remember that $PDF_{expo}$ is 0 for all negative
 values, but we can handle that by adjusting the limits of integration:
@@ -5798,12 +5803,12 @@ we invoke another property of the normal distribution: if \X\sub{1} is
 \mynormal (\mymu\sub{1}, \mysigma\sub{1}\super{2}) and \X\sub{2} is
 \mynormal (\mymu\sub{2}, \mysigma\sub{2}\super{2}),
 %
-\[ aX_1 + bX_2 \sim \normal (a\mu_1 + b\mu_2, 
+\[ aX_1 + bX_2 \sim \normal(a\mu_1 + b\mu_2, 
                                  a^2\sigma_1^2 + b^2\sigma_2^2) \]
 %
 So as a special case:
 %
-\[ X_1 - X_2 \sim \normal (\mu_1 - \mu_2, 
+\[ X_1 - X_2 \sim \normal(\mu_1 - \mu_2, 
                                \sigma_1^2 + \sigma_2^2) \]
 %
 Putting it all together, we conclude that the sample in
@@ -6634,7 +6639,7 @@ To find an unbiased estimator, we can compute the mean error (ME):
 %
 And find the value of \mya~that yields ME~=~0, which turns out to be
 %
-\[ a = \frac{2N}{N-1}\]
+\[ a = \frac{2N}{N+1}\]
 %
 For large values of \N, \mya~converges to 2, so we could choose
 \mynhat~=~2\ii.
@@ -6867,6 +6872,11 @@ The mean of these products is
 %
 \[ \rho = \frac{1}{n} \sum p_i \]
 %
+Or we can rewrite \myrho~by factoring out \mysigma \sub{X} and
+\mysigma \sub{Y}:
+%
+\[ \rho = \frac{Cov(X,Y)}{\sigma_X \sigma_Y} \]
+%
 This value is called {\bf Pearson's correlation} after Karl Pearson,
 an influential early statistician.  It is easy to compute and easy to
 interpret.  Because standard scores are dimensionless, so is \myrho.
@@ -6874,24 +6884,11 @@ interpret.  Because standard scores are dimensionless, so is \myrho.
 \index{Pearson coefficient of correlation}
 \index{coefficient!correlation}
 
-Also, the result is necessarily between \minus1 and +1.  To see why, we
-can rewrite \myrho~by factoring out \mysigma \sub{X} and \mysigma \sub{Y}:
-%
-\[ \rho = \frac{Cov(X,Y)}{\sigma_X \sigma_Y} \]
-%
-Expressed in terms of deviations, we have
-%
-\[ \rho = \frac{\sum dx_i dy_x}{\sum dx_i \sum dy_i} \]
-%
-Then by the ever-useful Cauchy-Schwarz inequality\footnote{See
-  \url{http://wikipedia.org/wiki/Cauchy-Schwarz_inequality}.}, we can show
-that \myrho\super{2}~\myle~1, so \minus1~\myle~\myrho~\myle~1.
-\index{Cauchy-Schwarz inequality}
-
-The magnitude of \myrho~indicates the strength of the correlation.  If
+Pearson's correlation is always between -1 and +1 (including both).
+The magnitude indicates the strength of the correlation.  If
 \myrho~=~1 the variables are perfectly correlated, which means that if
 you know one, you can make a perfect prediction about the other.  The
-same is also true if \myrho~=~\minus1.  It means that the variables
+same is true if \myrho~=~\minus1.  It means that the variables
 are negatively correlated, but for purposes of prediction, a
 negative correlation is just as good as a positive one.
 \index{prediction}

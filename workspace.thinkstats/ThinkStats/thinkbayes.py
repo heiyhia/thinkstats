@@ -366,6 +366,15 @@ class Hist(_DictWrapper):
         for val, freq in other.Items():
             self.Incr(val, -freq)
 
+    def MakePmf(self, name=None):
+        """Make a Pmf from this Hist.
+
+        name: string
+
+        returns: Pmf
+        """
+        return MakePmfFromHist(self, name=name)
+
 
 class Pmf(_DictWrapper):
     """Represents a probability mass function.

@@ -31,7 +31,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Bayes: Bayesian Statistics Made Simple}
-\newcommand{\theversion}{1.0}
+\newcommand{\theversion}{1.0.1}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -214,7 +214,7 @@ can use that skill to learn other topics.
 
 Most books on Bayesian statistics use mathematical notation and
 present ideas in terms of mathematical concepts like calculus.
-This book uses Python code instead of math and discrete approximations
+This book uses Python code instead of math, and discrete approximations
 instead of continuous mathematics.  As a result, what would
 be an integral in a math book becomes a summation, and
 most operations on probability distributions are simple loops.
@@ -225,25 +225,23 @@ modeling decisions, we can choose the most appropriate model without
 worrying too much about whether the model lends itself to conventional
 analysis.
 
-Also, it provides a smooth development path from
-simple examples to real-world problems.  Chapter~\ref{estimation} is a
-good example.  It starts with a simple example involving dice, one of
-the staples of basic probability.  From there it proceeds in small
-steps to the Locomotive Problem, which I borrowed from Mosteller's
-{\it Fifty Challenging Problems in Probability}, and from there to the
-German Tank Problem, a famously-successful application of Bayesian
-methods during World War II.
+Also, it provides a smooth development path from simple examples to
+real-world problems.  Chapter~\ref{estimation} is a good example.  It
+starts with a simple example involving dice, one of the staples of
+basic probability.  From there it proceeds in small steps to the
+locomotive problem, which I borrowed from Mosteller's {\it
+  Fifty Challenging Problems in Probability with Solutions}, and from
+there to the German tank problem, a famously successful application of
+Bayesian methods during World War II.
 
 
 \section{Modeling and approximation}
 
-Most chapters in this book are motivated by a real-world problem,
-so most chapters involve some degree of modeling.   Before we
-can apply Bayesian methods (or any other analysis), we have to
-make decisions about which parts of the real-world system we
-have to include in the model, and which details we can abstract
-away.
-\index{modeling}
+Most chapters in this book are motivated by a real-world problem, so
+they involve some degree of modeling.  Before we can apply Bayesian
+methods (or any other analysis), we have to make decisions about which
+parts of the real-world system to include in the model and which
+details we can abstract away.  \index{modeling}
 
 For example, in Chapter~\ref{prediction}, the motivating problem is to
 predict the winner of a hockey game.  I model goal-scoring as a
@@ -254,17 +252,17 @@ good enough model for most purposes.
 
 In Chapter~\ref{evidence} the motivating problem is interpreting SAT
 scores (the SAT is a standardized test used for college admissions in
-the U.S.).  I start with a simple model that assumes that all SAT
-questions are equally difficult, but in fact the designers of the SAT
-deliberately include some questions that are relatively easy and some
-that are relatively hard.  I present a second model that includes this
-feature, and show that it doesn't have a big effect on the results
-after all.
+the United States).  I start with a simple model that assumes that all
+SAT questions are equally difficult, but in fact the designers of the
+SAT deliberately include some questions that are relatively easy and
+some that are relatively hard.  I present a second model that accounts
+for this aspect of the design, and show that it doesn't have a big
+effect on the results after all.
 
 I think it is important to include modeling as an explicit part
-of problem-solving because it reminds us to think about modeling
-errors; that is, errors due to simplifications and assumptions
-of the model.
+of problem solving because it reminds us to think about modeling
+errors (that is, errors due to simplifications and assumptions
+of the model).
 
 Many of the methods in this book are based on discrete distributions,
 which makes some people worry about numerical errors.  But for
@@ -276,7 +274,7 @@ decisions, and I would rather have an approximate solution
 to a good model than an exact solution to a bad model.
 
 On the other hand, continuous methods sometimes yield performance
-advantages, for example by replacing a linear- or quadratic-time
+advantages---for example by replacing a linear- or quadratic-time
 computation with a constant-time solution.
 
 So I recommend a general process with these steps:
@@ -299,7 +297,7 @@ So I recommend a general process with these steps:
   and look for optimizations; for example, if you cache previously
   computed results you might be able to avoid redundant computation.
   Or you can look for analytic methods that yield computational
-  short-cuts.
+  shortcuts.
 
 \end{enumerate}
 
@@ -369,14 +367,14 @@ the Google style guide, which deviates from PEP 8 in a few
 places.  Once I got used to Google style, I found that I liked
 it.  And at this point, it would be too much trouble to change.
 
-Also on the topic of style, I write ``Bayes's Theorem''
+Also on the topic of style, I write ``Bayes's theorem''
 with an {\it s} after the apostrophe, which is preferred in some
 style guides and deprecated in others.  I don't have a strong
 preference.  I had to choose one, and this is the one I chose.
 
 And finally one typographical note: throughout the book, I use
 PMF and CDF for the mathematical concept of a probability
-mass function or cumulative distribution function, and Pdf and Cdf
+mass function or cumulative distribution function, and Pmf and Cdf
 to refer to the Python objects I use to represent them.
 
 
@@ -389,7 +387,7 @@ to get started with these modules, and I want to keep the
 prerequisites minimal.  If you know Python and a little bit about
 probability, you are ready to start this book.
 
-Chapter~\ref{intro} is about probability and Bayes's Theorem; it has
+Chapter~\ref{intro} is about probability and Bayes's theorem; it has
 no code.  Chapter~\ref{compstat} introduces {\tt Pmf}, a thinly disguised
 Python dictionary I use to represent a probability mass function
 (PMF).  Then Chapter~\ref{estimation} introduces {\tt Suite}, a kind
@@ -408,19 +406,11 @@ a mathematical approach that is not particularly helpful for practical
 purposes).
 
 
-Allen B. Downey \\*
-
-Needham MA \\*
-
-Allen B. Downey is a Professor of Computer Science at 
-the Franklin W. Olin College of Engineering.
-
-
 
 \section*{Contributor List}
 
 If you have a suggestion or correction, please send email to 
-{\tt downey@allendowney.com}.  If I make a change based on your
+{\it downey@allendowney.com}.  If I make a change based on your
 feedback, I will add you to the contributor list
 (unless you ask to be omitted).
 \index{contributors}
@@ -435,24 +425,24 @@ Thanks!
 \begin{itemize}
 
 \item First, I have to acknowledge David MacKay's excellent book,
-  {\it Information Theory, Inference, and Learning Algorithms} which is
+  {\it Information Theory, Inference, and Learning Algorithms}, which is
   where I first came to understand Bayesian methods.  With his
-  permission I use several problems from
+  permission, I use several problems from
   his book as examples.
 
 \item This book also benefited from my interactions with Sanjoy
-  Mahajan, especially in Fall 2012, when I audited his class on
+  Mahajan, especially in fall 2012, when I audited his class on
   Bayesian Inference at Olin College.
 
 \item I wrote parts of this book during project nights with the Boston
-  Python Users' Group, so I would like to thank them for their
+  Python User Group, so I would like to thank them for their
   company and pizza.
 
 \item Jonathan Edwards sent in the first typo.
 
 \item George Purkins found a markup error.
 
-\item Olivier Yiptong send several helpful suggestions.
+\item Olivier Yiptong sent several helpful suggestions.
 
 \item Yuriy Pasichnyk found several errors.
 
@@ -460,7 +450,7 @@ Thanks!
 
 \item Robert Marcus found a misplaced {\it i}.
 
-\item Max Hailperin suggested a clarification in Chapter 1.
+\item Max Hailperin suggested a clarification in Chapter~\ref{intro}.
 
 \item Markus Dobler pointed out that drawing cookies from a bowl
 with replacement is an unrealistic scenario.
@@ -470,17 +460,22 @@ with replacement is an unrealistic scenario.
 
 \item Ram Limbu found a typo and suggested a clarification.
 
-\item In Spring 2013, students in my class, Computational Bayesian
+\item In spring 2013, students in my class, Computational Bayesian
   Statistics, made many helpful corrections and suggestions: Kai
   Austin, Claire Barnes, Kari Bender, Rachel Boy, Kat Mendoza, Arjun
   Iyer, Ben Kroop, Nathan Lintz, Kyle McConnaughay, Alec Radford,
-  Brendan Ritter and Evan Simpson.
+  Brendan Ritter, and Evan Simpson.
 
 \item Greg Marra and Matt Aasted helped me clarify the discussion of
   {\it The Price is Right} problem.
 
 \item Marcus Ogren pointed out that the original statement of the
-  Locomotive problem was ambiguous.
+  locomotive problem was ambiguous.
+
+\item Jasmine Kwityn and Dan Fauxsmith at O'Reilly Media proofread the
+  book and found many opportunities for improvement.
+
+\item James Lawry spotted a math error.
 
 % ENDCONTRIB
 
@@ -514,10 +509,10 @@ with replacement is an unrealistic scenario.
 
 \section{Conditional probability}
 
-The fundamental idea behind all Bayesian statistics is Bayes's Theorem,
+The fundamental idea behind all Bayesian statistics is Bayes's theorem,
 which is surprisingly easy to derive, provided that you understand
 conditional probability.  So we'll start with probability, then
-conditional probability, then Bayes's Theorem, and on to Bayesian
+conditional probability, then Bayes's theorem, and on to Bayesian
 statistics.
 \index{conditional probability}
 \index{probability!conditional}
@@ -539,14 +534,14 @@ A conditional probability is a probability based on some background
 information.  For example, I want to know the probability
 that I will have a heart attack in the next year.  According to the
 CDC, ``Every year about 785,000 Americans have a first coronary attack.
-[\url{http://www.cdc.gov/heartdisease/facts.htm}]''
+(\url{http://www.cdc.gov/heartdisease/facts.htm})''
 \index{heart attack}
 
 The U.S. population is about 311 million, so the probability that a
-randomly-chosen American will have a heart attack in the next year is
+randomly chosen American will have a heart attack in the next year is
 roughly 0.3\%.
 
-But I am not a randomly-chosen American.  Epidemiologists have
+But I am not a randomly chosen American.  Epidemiologists have
 identified many factors that affect the risk of heart attacks;
 depending on those factors, my risk might be higher or lower than
 average.
@@ -576,9 +571,9 @@ probability that $A$ and $B$ are both true.
 \index{probability!conjoint}
 
 If you learned about probability in the context of coin tosses and
-dice, you might have learned the formula
+dice, you might have learned the following formula:
 %
-\[ \p{A \AND B} = \p{A}~\p{B} \quad\mbox{WARNING: not always true}\]
+\[ \p{A \AND B} = \p{A}~\p{B} \quad\quad\mbox{WARNING: not always true}\]
 %
 For example, if I toss two coins, and $A$ means the first coin lands
 face up, and $B$ means the second coin lands face up, then $\p{A} =
@@ -605,16 +600,16 @@ is 0.5, the chance of rain on two consecutive days is not
 0.25, but probably a bit higher.
 
 
-\section{The Cookie Problem}
+\section{The cookie problem}
 
-We'll get to Bayes's Theorem soon, but I want to motivate it with an
-example called The Cookie Problem\footnote{Based on an example from
+We'll get to Bayes's theorem soon, but I want to motivate it with an
+example called the cookie problem.\footnote{Based on an example from
   \url{http://en.wikipedia.org/wiki/Bayes'_theorem} that is no longer
-  there.}.  Suppose there are two bowls of cookies.  Bowl 1 contains
+  there.}  Suppose there are two bowls of cookies.  Bowl 1 contains
   30 vanilla cookies and 10 chocolate cookies.  Bowl 2 contains 20 of
   each.
-\index{Bayes's Theorem}
-\index{Cookie problem}
+\index{Bayes's theorem}
+\index{cookie problem}
 
 Now suppose you choose one of the bowls at random and, without
 looking, select a cookie at random.  The cookie is vanilla.  What is
@@ -627,19 +622,19 @@ different question---the probability of a vanilla cookie given Bowl
 %
 \[ \p{\T{vanilla} | \T{Bowl 1}} = 3/4 \]
 %
-Sadly \p{A|B} is {\em not} the same as \p{B|A}, but there
-is a way to get from one to the other: Bayes's Theorem.
+Sadly, \p{A|B} is {\em not} the same as \p{B|A}, but there
+is a way to get from one to the other: Bayes's theorem.
 
 
-\section{Bayes's Theorem}
+\section{Bayes's theorem}
 
-At this point we have everything we need to derive Bayes's Theorem.
+At this point we have everything we need to derive Bayes's theorem.
 We'll start with the observation that conjunction is commutative; that is
 %
 \[ \p{A \AND B} = \p{B \AND A} \]
 %
 for any events $A$ and $B$.
-\index{Bayes's Theorem derivation}
+\index{Bayes's theorem!derivation}
 \index{conjunction}
 
 Next, we write the probability of a conjunction:
@@ -665,12 +660,12 @@ Finally we can divide through by \p{B}:
 %
 \[ \p{A|B} = \frac{\p{A}~\p{B|A}}{\p{B}} \]
 %
-And that's Bayes's Theorem!  It might not look like much, but
+And that's Bayes's theorem!  It might not look like much, but
 it turns out to be surprisingly powerful.
 
-For example, we can use it to solve the Cookie Problem.  I'll write
+For example, we can use it to solve the cookie problem.  I'll write
 $B_1$ for the hypothesis that the cookie came from Bowl 1
-and $V$ for the vanilla cookie.  Plugging in Bayes's Theorem
+and $V$ for the vanilla cookie.  Plugging in Bayes's theorem
 we get
 %
 \[ \p{B_1|V} = \frac{\p{B_1}~\p{V|B_1}}{\p{V}} \]
@@ -705,27 +700,27 @@ the hypothesis that we chose Bowl 1, because vanilla cookies are more
 likely to come from Bowl 1.
 \index{evidence}
 
-This example demonstrates one use of Bayes's Theorem: it provides
+This example demonstrates one use of Bayes's theorem: it provides
 a strategy to get from \p{B|A} to \p{A|B}.  This strategy is useful
-in cases, like the Cookie Problem, where it is easier to compute
-the terms on the right side of Bayes's Theorem than the term on the
+in cases, like the cookie problem, where it is easier to compute
+the terms on the right side of Bayes's theorem than the term on the
 left.
 
 
 \section{The diachronic interpretation}
 
-There is another way to think of Bayes's Theorem: it gives us a
+There is another way to think of Bayes's theorem: it gives us a
 way to update the probability of a hypothesis, $H$, in light of
 some body of data, $D$.
 \index{diachronic interpretation}
 
-This way of thinking about Bayes's Theorem is called the
+This way of thinking about Bayes's theorem is called the
 {\bf diachronic interpretation}.  ``Diachronic'' means that something
 is happening over time; in this case
 the probability of the hypotheses changes, over time, as
 we see new data.
 
-Rewriting Bayes's Theorem with $H$ and $D$ yields:
+Rewriting Bayes's theorem with $H$ and $D$ yields:
 %
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
 %
@@ -752,7 +747,7 @@ called the {\bf normalizing constant}.
 \end{itemize}
 
 Sometimes we can compute the prior based on background
-information.  For example, the Cookie Problem specifies that we choose
+information.  For example, the cookie problem specifies that we choose
 a bowl at random with equal probability.
 
 In other cases the prior is subjective; that is, reasonable people
@@ -762,7 +757,7 @@ differently.
 \index{subjective prior}
 
 The likelihood is usually the easiest part to compute.  In the
-Cookie Problem, if we know which bowl the cookie came from,
+cookie problem, if we know which bowl the cookie came from,
 we find the probability of a vanilla cookie by counting.
 
 The normalizing constant can be tricky.  It is supposed to be the
@@ -788,7 +783,7 @@ I use the word {\bf suite} for a set of hypotheses that has these
 properties.
 \index{suite}
 
-In the Cookie Problem, there are only two hypotheses---the cookie
+In the cookie problem, there are only two hypotheses---the cookie
 came from Bowl 1 or Bowl 2---and they are mutually exclusive and
 collectively exhaustive.
 
@@ -798,7 +793,7 @@ might happen, you can add up the probabilities like this:
 %
 \[ \p{D} = \p{B_1}~\p{D|B_1} + \p{B_2}~\p{D|B_2} \]
 %
-Plugging in the values from the Cookie Problem, we have
+Plugging in the values from the cookie problem, we have
 %
 \[ \p{D} = (1/2)~(3/4) + (1/2)~(1/2) = 5/8 \]
 %
@@ -809,7 +804,7 @@ bowls.
 
 \newcommand{\MM}{M\&M}
 
-\section{The \MM~Problem}
+\section{The \MM~problem}
 
 \MM's are small candy-coated chocolates that come in a variety of
 colors.  Mars, Inc., which makes \MM's, changes the mixture of
@@ -817,9 +812,9 @@ colors from time to time.
 \index{M and M problem}
 
 In 1995, they introduced blue \MM's.  Before then, the color mix in
-a bag of plain M\&Ms was (30\% Brown, 20\% Yellow, 20\% Red, 10\%
-Green, 10\% Orange, 10\% Tan).  Afterward it was (24\% Blue , 20\%
-Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown).
+a bag of plain \MM's was 30\% Brown, 20\% Yellow, 20\% Red, 10\%
+Green, 10\% Orange, 10\% Tan.  Afterward it was 24\% Blue , 20\%
+Green, 16\% Orange, 14\% Yellow, 13\% Red, 13\% Brown.
 
 Suppose a friend of mine has two bags of \MM's, and he tells me
 that one is from 1994 and one from 1996.  He won't tell me which is
@@ -827,7 +822,7 @@ which, but he gives me one \MM~from each bag.  One is yellow and
 one is green.  What is the probability that the yellow one came
 from the 1994 bag?
 
-This problem is similar to the Cookie Problem, with the twist that I
+This problem is similar to the cookie problem, with the twist that I
 draw one sample from each bowl/bag.  This problem also gives me a
 chance to demonstrate the table method, which is useful for solving
 problems like this on paper.  In the next chapter we will
@@ -847,7 +842,7 @@ the hypotheses are:
 \end{itemize}
 
 Now we construct a table with a row for each hypothesis and a
-column for each term in Bayes's Theorem:
+column for each term in Bayes's theorem:
 
 \begin{tabular}{|c|c|c|c|c|}
 \hline
@@ -855,7 +850,7 @@ column for each term in Bayes's Theorem:
    & \p{H} & \p{D|H} & \p{H}~\p{D|H}  & \p{H|D}  \\
 \hline
 A  &  1/2  &  (20)(20)  &  200  &  20/27 \\
-B  &  1/2  &  (10)(14)  &   70  &  7/27 \\
+B  &  1/2  &  (14)(10)  &   70  &  7/27 \\
 \hline
 \end{tabular}
 
@@ -866,7 +861,10 @@ it is reasonable to choose $\p{A} = \p{B} = 1/2$.
 The second column has the likelihoods, which follow from the
 information in the problem.  For example, if $A$ is true, the yellow
 \MM~came from the 1994 bag with probability 20\%, and the green came
-from the 1996 bag with probability 20\%.  Because the selections are
+from the 1996 bag with probability 20\%.  If $B$ is true, the yellow
+\MM~came from the 1996 bag with probability 14\%, and the green came
+from the 1994 bag with probability 10\%.
+Because the selections are
 independent, we get the conjoint probability by multiplying.
 \index{independence}
 
@@ -893,7 +891,7 @@ convenient, as long as you apply the same factor to the entire column.
 
 The Monty Hall problem might be the most contentious question in
 the history of probability.  The scenario is simple, but the correct
-answer is so counter-intuitive that many people just can't accept
+answer is so counterintuitive that many people just can't accept
 it, and many smart people have embarrassed themselves not just by
 getting it wrong but by arguing the wrong side, aggressively,
 in public.
@@ -919,7 +917,7 @@ games on the show.  If you are on the show, here's what happens:
 \item Before opening the door you chose, Monty increases the
   suspense by opening either Door B or C, whichever does not
   have the car.  (If the car is actually behind Door A, Monty can
-  safely open B or C, so he chooses one at random).
+  safely open B or C, so he chooses one at random.)
 
 \item Then Monty offers you the option to stick with your original
   choice or switch to the one remaining unopened door.
@@ -939,7 +937,7 @@ is behind Door A is 50\%.
 But that is wrong.  In fact, the chance of winning if you stick
 with Door A is only 1/3; if you switch, your chances are 2/3.
 
-By applying Bayes's Theorem, we can break this problem into simple
+By applying Bayes's theorem, we can break this problem into simple
 pieces, and maybe convince ourselves that the correct answer is,
 in fact, correct.
 
@@ -1020,16 +1018,16 @@ switches.
 On the other hand, if he had opened $C$, we would know $\p{B|D} = 1$.
 
 I included the Monty Hall problem in this chapter because I think it
-is fun, and because Bayes's Theorem makes the complexity of the
+is fun, and because Bayes's theorem makes the complexity of the
 problem a little more manageable.  But it is not a typical use of
-Bayes's Theorem, so if you found it confusing, don't worry!
+Bayes's theorem, so if you found it confusing, don't worry!
 
 \section{Discussion}
 
-For many problems involving conditional probability, Bayes's Theorem
-provides a divide-and-conquer strategy.  If \p{A|B} it is hard to
+For many problems involving conditional probability, Bayes's theorem
+provides a divide-and-conquer strategy.  If \p{A|B} is hard to
 compute, or hard to measure experimentally, check whether it might be
-easier to compute the other terms in Bayes's Theorem, \p{B|A}, \p{A}
+easier to compute the other terms in Bayes's theorem, \p{B|A}, \p{A}
 and \p{B}.
 \index{divide-and-conquer}
 
@@ -1039,7 +1037,7 @@ belong to us,'' which you can read at
 \url{http://allendowney.blogspot.com/2011/10/all-your-bayes-are-belong-to-us.html}.
 
 
-\chapter{Computational statistics}
+\chapter{Computational Statistics}
 \label{compstat}
 
 \section{Distributions}
@@ -1048,7 +1046,7 @@ In statistics a {\bf distribution} is a set of values and their
 corresponding probabilities.
 \index{distribution}
 
-For example, if you roll a 6-sided die, the set of possible
+For example, if you roll a six-sided die, the set of possible
 values is the numbers 1 to 6, and the probability associated
 with each value is 1/6.
 \index{dice}
@@ -1080,7 +1078,7 @@ from thinkbayes import Pmf
 \end{verbatim}
 
 The following code builds a Pmf to represent the distribution
-of outcomes for a 6-sided die:
+of outcomes for a six-sided die:
 
 \begin{verbatim}
 pmf = Pmf()
@@ -1132,16 +1130,16 @@ of the words in the list.
 Pmf uses a Python dictionary to store the values and their
 probabilities, so the values in the Pmf can be any hashable type.
 The probabilities can be any numerical type, but they are usually
-floating point numbers (type \verb"float").
+floating-point numbers (type \verb"float").
 
 
-\section{The Cookie Problem}
+\section{The cookie problem}
 
-In the context of Bayes's Theorem, it is natural to use a Pmf
-to map from each hypothesis to its probability.  In the Cookie
-Problem, the hypotheses are $B_1$ and $B_2$.  In Python, I
+In the context of Bayes's theorem, it is natural to use a Pmf
+to map from each hypothesis to its probability.  In the cookie
+problem, the hypotheses are $B_1$ and $B_2$.  In Python, I
 represent them with strings:
-\index{Cookie problem}
+\index{cookie problem}
 
 \begin{verbatim}
 pmf = Pmf()
@@ -1181,7 +1179,7 @@ for each hypothesis, which is called (wait now) the
 {\bf posterior distribution}.
 \index{posterior distribution}
 
-Finally, we can get the posterior probability for Bowl 1.
+Finally, we can get the posterior probability for Bowl 1:
 
 \begin{verbatim}
 print pmf.Prob('Bowl 1')
@@ -1222,7 +1220,7 @@ two hypotheses:
 \end{verbatim}
 
 \verb"Cookie" provides an \verb"Update" method that takes
-data as a parameter and updates the probabilities.
+data as a parameter and updates the probabilities:
 \index{Update}
 
 \begin{verbatim}
@@ -1295,24 +1293,6 @@ The code in this section is available from
   For more information
 see Section~\ref{download}.
 
-\begin{exercise}
-
-In Section~\ref{framework} I said that the solution to the cookie
-problem generalizes to the case where we draw multiple cookies
-with replacement.
-
-But in the more likely scenario where we eat the cookies we draw,
-the likelihood of each draw depends on the previous draws.
-
-Modify the solution in this chapter to handle selection without
-replacement.  Hint: add instance variables to {\tt Cookie} to
-represent the hypothetical state of the bowls, and modify
-{\tt Likelihood} accordingly.  You might want to define a 
-{\tt Bowl} object.
-
-\end{exercise}
-
-
 \section{The Monty Hall problem}
 
 To solve the Monty Hall problem, I'll define a new class:
@@ -1330,7 +1310,7 @@ class Monty(Pmf):
 
 So far \verb"Monty" and \verb"Cookie" are exactly the same.
 And the code that creates the Pmf is the same, too, except for
-the names of the hypotheses.
+the names of the hypotheses:
 
 \begin{verbatim}
     hypos = 'ABC'
@@ -1354,7 +1334,7 @@ And the implementation of \verb"Update" is exactly the same:
         self.Normalize()
 \end{verbatim}
 
-The only part that requires some work is \verb"Likelihood".
+The only part that requires some work is \verb"Likelihood":
 
 \begin{verbatim}
     def Likelihood(self, data, hypo):
@@ -1391,8 +1371,8 @@ see Section~\ref{download}.
 
 \index{Suite class}
 Now that we see what elements of the framework are the same, we
-can encapsulate them in an object: a \verb"Suite" is a \verb"Pmf"
-that provides \verb"__init__", \verb"Update" and \verb"Print".
+can encapsulate them in an object---a \verb"Suite" is a \verb"Pmf"
+that provides \verb"__init__", \verb"Update", and \verb"Print":
 
 \begin{verbatim}
 class Suite(Pmf):
@@ -1449,7 +1429,7 @@ Writing the \verb"Likelihood" function is tricky, but everything
 else is straightforward.
 
 First I need to encode the color mixes from before and
-after 1995.
+after 1995:
 
 \begin{verbatim}
     mix94 = dict(brown=30,
@@ -1485,7 +1465,7 @@ Next I map from the name of the hypothesis to the representation:
 \end{verbatim}
 
 And finally I can write \verb"Likelihood".  In this case
-the hypothesis, \verb"hypo" is a string, either \verb"A" or \verb"B".
+the hypothesis, \verb"hypo", is a string, either \verb"A" or \verb"B".
 The data is a tuple that specifies a bag
 and a color.
 
@@ -1515,13 +1495,12 @@ A 0.740740740741
 B 0.259259259259
 \end{verbatim}
 
-The posterior probability of A is approximately $20/27$, which
-is what we got before.
+The posterior probability of A is approximately $20/27$, which is what
+we got before.
 
 The code in this section is available from
-\url{http://thinkbayes.com/m_and_m.py}.
-  For more information
-see Section~\ref{download}.
+\url{http://thinkbayes.com/m_and_m.py}.  For more information see
+Section~\ref{download}.
 
 \section{Discussion}
 
@@ -1543,15 +1522,35 @@ For example, {\tt Monty} extends {\tt Suite}, so it inherits
 
 If you are familiar with
 design patterns, you might recognize this as an example of the
-Template method pattern.
+template method pattern.
 You can read about this pattern at
 \url{http://en.wikipedia.org/wiki/Template_method_pattern}.
-\index{Template method pattern}
+\index{template method pattern}
 
 Most of the examples in the following chapters follow the same
 pattern; for each problem we define a new class that extends {\tt
   Suite}, inherits {\tt Update}, and provides {\tt Likelihood}.  In a
 few cases we override {\tt Update}, usually to improve performance.
+
+\section{Exercises}
+
+\begin{exercise}
+
+In Section~\ref{framework} I said that the solution to the cookie
+problem generalizes to the case where we draw multiple cookies
+with replacement.
+
+But in the more likely scenario where we eat the cookies we draw,
+the likelihood of each draw depends on the previous draws.
+
+Modify the solution in this chapter to handle selection without
+replacement.  Hint: add instance variables to {\tt Cookie} to
+represent the hypothetical state of the bowls, and modify
+{\tt Likelihood} accordingly.  You might want to define a 
+{\tt Bowl} object.
+
+\end{exercise}
+
 
 
 
@@ -1562,7 +1561,7 @@ few cases we override {\tt Update}, usually to improve performance.
 
 \index{Dice problem}
 Suppose I have a box of dice that contains a 4-sided die, a 6-sided
-die, an 8-sided die, a 12-sided die and a 20-sided die.  If you
+die, an 8-sided die, a 12-sided die, and a 20-sided die.  If you
 have ever played {\it Dungeons~\&~Dragons}, you know what I am talking about.
 \index{Dungeons and Dragons}
 
@@ -1603,7 +1602,7 @@ class Dice(Suite):
             return 1.0/hypo
 \end{verbatim}
 
-Here's how \verb"Likelihood" works.  If \verb"hypo < data", that
+Here's how \verb"Likelihood" works.  If \verb"hypo<data", that
 means the roll is greater than the number of sides on the die.
 That can't happen, so the likelihood is 0.
 
@@ -1658,14 +1657,14 @@ Bayesian inference.  You can download the code in this section from
   For more information
 see Section~\ref{download}.
 
-\section{The Locomotive problem}
+\section{The locomotive problem}
 
-\index{Locomotive problem}
+\index{locomotive problem}
 \index{Mosteller, Frederick}
 \index{German tank problem}
 I found the locomotive problem 
-in Mosteller, {\it Fifty Challenging Problems in
-  Probability}:
+in Frederick Mosteller's, {\it Fifty Challenging Problems in
+  Probability with Solutions} (Dover, 1987):
 
 \begin{quote}
 ``A railroad numbers its locomotives in order 1..N.  One day you see a
@@ -1677,14 +1676,14 @@ Based on this observation, we know the railroad has 60 or more
 locomotives.  But how many more?  To apply Bayesian reasoning, we
 can break this problem into two steps:
 
-\begin{itemize}
+\begin{enumerate}
 
 \item What did we know about $N$ before we saw the data?
 
 \item For any given value of $N$, what is the likelihood of
 seeing the data (a locomotive with number 60)?
 
-\end{itemize}
+\end{enumerate}
 
 The answer to the first question is the prior.  The answer to the
 second is the likelihood.
@@ -1692,7 +1691,7 @@ second is the likelihood.
 \begin{figure}
 % train.py
 \centerline{\includegraphics[height=2.5in]{figs/train1.pdf}}
-\caption{Posterior distribution for the Locomotive problem, based
+\caption{Posterior distribution for the locomotive problem, based
 on a uniform prior.}
 \label{fig.train1}
 \end{figure}
@@ -1724,9 +1723,9 @@ class Train(Suite):
             return 1.0/hypo
 \end{verbatim}
 
-This might look familiar; the likelihood functions for the Locomotive
-problem and the Dice problem are identical.
-\index{Dice problem}
+This might look familiar; the likelihood functions for the locomotive
+problem and the dice problem are identical.
+\index{dice problem}
 
 Here's the update:
 
@@ -1779,18 +1778,18 @@ see Section~\ref{download}.
 
 \section{What about that prior?}
 
-To make any progress on the Locomotive problem we had to make
+To make any progress on the locomotive problem we had to make
 assumptions, and some of them were pretty arbitrary.  In
 particular, we chose a uniform prior from 1 to 1000, without
 much justification for choosing 1000, or for choosing a uniform
 distribution.
 \index{prior distribution}
 
-It is not crazy to believe that a railroad company might operate
-1000 locomotives, but a reasonable person might guess more or fewer.
-So we might wonder whether the posterior distribution is sensitive
-to these assumptions.  With so little data (only one observation)
-it probably is.
+It is not crazy to believe that a railroad company might operate 1000
+locomotives, but a reasonable person might guess more or fewer.  So we
+might wonder whether the posterior distribution is sensitive to these
+assumptions.  With so little data---only one observation---it probably
+is.
 
 Recall that with a uniform prior from 1 to 1000, the mean of
 the posterior is 333.  With an upper bound of 500, we get a
@@ -1902,7 +1901,7 @@ uniform prior.  Using the background information
 represented in the power law prior, we can all but eliminate
 values of $N$ greater than 700.
 
-If we start with this prior and observe trains 30, 60 and 90,
+If we start with this prior and observe trains 30, 60, and 90,
 the means of the posteriors are
 
   \begin{tabular}{|l|l|}
@@ -2005,7 +2004,7 @@ And {\tt Cdf} provides a function named \verb"Percentile"
 Converting from a Pmf to a Cdf takes time proportional to the number
 of values, {\tt len(pmf)}.  The Cdf stores the values and
 probabilities in sorted lists, so looking up a probability to get the
-corresponding value takes ``log time,'' that is, time proportional to
+corresponding value takes ``log time'': that is, time proportional to
 the logarithm of the number of values.  Looking up a value to get the
 corresponding probability is also logarithmic, so Cdfs are efficient
 for many calculations.
@@ -2014,36 +2013,15 @@ The examples in this section are in \url{http://thinkbayes.com/train3.py}.
   For more information
 see Section~\ref{download}.
 
-\begin{exercise}
-To write a likelihood function for the Locomotive problem, we had
-to answer this question:  ``If the railroad has $N$ locomotives, what
-is the probability that we see number 60?''
 
-The answer depends on what sampling process we use when we observe the
-locomotive.  In this chapter, I resolved the ambiguity by specifying
-that there is only one train-operating company (or only one that we
-care about).
-
-But suppose instead that there are many companies with different
-numbers of trains.  And suppose that you are equally likely to see any
-train operated by any company.
-In that case, the likelihood function is different because you
-are more likely to see a train operated by a large company.
-
-As an exercise, implement the likelihood function for this variation
-of the Locomotive problem, and compare the results.
-
-\end{exercise}
-
-
-\section{The German Tank Problem}
+\section{The German tank problem}
 
 During World War II, the Economic Warfare Division of the American
 Embassy in London used statistical analysis to estimate German
-production of tanks and other equipment\footnote{Ruggles and Brodie,
+production of tanks and other equipment.\footnote{Ruggles and Brodie,
   ``An Empirical Approach to Economic Intelligence in World War II,''
   {\em Journal of the American Statistical Association}, Vol. 42,
-  No. 237 (March 1947).}.
+  No. 237 (March 1947).}
 
 The Western Allies had captured log books, inventories, and repair
 records that included chassis and engine serial numbers for individual
@@ -2054,7 +2032,7 @@ by manufacturer and tank type in blocks of 100 numbers, that numbers
 in each block were used sequentially, and that not all numbers in each
 block were used.  So the problem of estimating German tank production
 could be reduced, within each block of 100 numbers, to a form of the
-Locomotive problem.
+locomotive problem.
 
 Based on this insight, American and British analysts produced
 estimates substantially lower than estimates from other forms
@@ -2064,7 +2042,7 @@ substantially more accurate.
 They performed similar analyses for tires, trucks, rockets, and other
 equipment, yielding accurate and actionable economic intelligence.
 
-The German Tank problem is historically interesting; it is also a nice
+The German tank problem is historically interesting; it is also a nice
 example of real-world application of statistical estimation.  So far
 many of the examples in this book have been toy problems, but it will
 not be long before we start solving real problems.  I think it is an
@@ -2098,8 +2076,8 @@ it is not the only one, and it might not even be the most subjective.
 So even if an uninformative prior is more objective, the entire analysis
 is still subjective.
 \index{modeling}
-\index{subjective}
-\index{objective}
+\index{subjectivity}
+\index{objectivity}
 
 Also, for most practical problems, you are likely to be in one of two
 regimes: either you have a lot of data or not very much.  If you have
@@ -2107,10 +2085,10 @@ a lot of data, the choice of the prior doesn't matter very much;
 informative and uninformative priors yield almost the same results.
 We'll see an example like this in the next chapter.
 
-But if, as in the Locomotive problem, you don't have much data,
+But if, as in the locomotive problem, you don't have much data,
 using relevant background information (like the power law distribution)
 makes a big difference.
-\index{Locomotive problem}
+\index{locomotive problem}
 
 And if, as in the German tank problem, you have to make life-and-death
 decisions based on your results, you should probably use all of the
@@ -2119,10 +2097,36 @@ objectivity by pretending to know less than you do.
 \index{German tank problem}
 
 
-\chapter{More estimation}
+\section{Exercises}
+
+\begin{exercise}
+To write a likelihood function for the locomotive problem, we had
+to answer this question:  ``If the railroad has $N$ locomotives, what
+is the probability that we see number 60?''
+
+The answer depends on what sampling process we use when we observe the
+locomotive.  In this chapter, I resolved the ambiguity by specifying
+that there is only one train-operating company (or only one that we
+care about).
+
+But suppose instead that there are many companies with different
+numbers of trains.  And suppose that you are equally likely to see any
+train operated by any company.
+In that case, the likelihood function is different because you
+are more likely to see a train operated by a large company.
+
+As an exercise, implement the likelihood function for this variation
+of the locomotive problem, and compare the results.
+
+\end{exercise}
+
+
+
+
+\chapter{More Estimation}
 \label{more}
 
-\section{The Euro coin problem}
+\section{The Euro problem}
 \label{euro}
 
 \index{Euro problem}
@@ -2160,8 +2164,8 @@ on some physical characteristics of the coin, primarily the distribution
 of weight.
 
 If a coin is perfectly balanced, we expect $x$ to be close to 50\%, but
-for a lopsided coin $x$ might be substantially different.  We can use
-Bayes's Theorem and the observed data to estimate $x$.
+for a lopsided coin, $x$ might be substantially different.  We can use
+Bayes's theorem and the observed data to estimate $x$.
 
 Let's define 101 hypotheses, where $H_x$ is the hypothesis that the
 probability of heads is $x$\%, for values from 0 to 100.  I'll
@@ -2564,11 +2568,11 @@ and our posterior beliefs might not converge.
 
 Also, notice that in a Bayesian update, we multiply
 each prior probability by a likelihood, so if \p{H} is 0,
-\p{H|D} is also 0, regardless of $D$.  In the Euro coin problem,
+\p{H|D} is also 0, regardless of $D$.  In the Euro problem,
 if you are convinced that $x$ is less than 50\%, and you assign
 probability 0 to all other hypotheses, no amount of data will
 convince you otherwise.
-\index{Euro coin problem}
+\index{Euro problem}
 
 This observation is the basis of {\bf Cromwell's rule}, which is the
 recommendation that you should avoid giving a prior probability of
@@ -2636,7 +2640,7 @@ that updates both objects whenever a redditor casts a vote.
 
 
 
-\chapter{Odds and addends}
+\chapter{Odds and Addends}
 
 \section{Odds}
 
@@ -2700,10 +2704,10 @@ is $1/6$.
 \index{horse racing}
 
 
-\section{The odds form of Bayes's Theorem}
+\section{The odds form of Bayes's theorem}
 
 \index{Bayes's theorem!odds form}
-In Chapter~\ref{intro} I wrote Bayes's Theorem in the {\bf probability
+In Chapter~\ref{intro} I wrote Bayes's theorem in the {\bf probability
 form}:
 %
 \[ \p{H|D} = \frac{\p{H}~\p{D|H}}{\p{D}} \]
@@ -2727,7 +2731,7 @@ Writing \odds{A} for odds in favor of $A$, we get:
 \[ \odds{A|D} = \odds{A}~\frac{\p{D|A}}{\p{D|B}} \]
 %
 In words, this says that the posterior odds are the prior odds times
-the likelihood ratio.  This is the {\bf odds form} of Bayes's Theorem.
+the likelihood ratio.  This is the {\bf odds form} of Bayes's theorem.
 
 This form is most convenient for computing a Bayesian update on
 paper or in your head.  For example, let's go back to the
@@ -2761,9 +2765,9 @@ Here is another problem from MacKay's {\it Information Theory,
 \begin{quote}
 Two people have left traces of their own blood at the scene of
 a crime.  A suspect, Oliver, is tested and found to have type
-'O' blood.  The blood groups of the two traces are found to
-be of type 'O' (a common type in the local population, having frequency
-60\%) and of type 'AB' (a rare type, with frequency 1\%).
+`O' blood.  The blood groups of the two traces are found to
+be of type `O' (a common type in the local population, having frequency
+60\%) and of type `AB' (a rare type, with frequency 1\%).
 Do these data [the traces found at the scene] give evidence
 in favor of the proposition that Oliver was one of the people
 [who left blood at the scene]?
@@ -2779,7 +2783,7 @@ In the cookie problem, the prior odds are $1:1$, or probability 50\%.
 The posterior odds are $3:2$, or probability 60\%.  So we could say
 that the vanilla cookie is evidence in favor of Bowl 1.
 
-The odds form of Bayes's Theorem provides a way to make this
+The odds form of Bayes's theorem provides a way to make this
 intuition more precise.  Again
 %
 \[ \odds{A|D} = \odds{A}~\frac{\p{D|A}}{\p{D|B}} \]
@@ -2808,17 +2812,17 @@ likely under either hypothesis, so the odds do not change.
 
 Now we can get back to the Oliver's blood problem.  If Oliver is
 one of the people who left blood at the crime scene, then he
-accounts for the 'O' sample, so the probability of the data
+accounts for the `O' sample, so the probability of the data
 is just the probability that a random member of the population
-has type 'AB' blood, which is 1\%.
+has type `AB' blood, which is 1\%.
 
 If Oliver did not leave blood at the scene, then we have two
 samples to account for.  If we choose two random people from
-the population, what is the chance of finding one with type 'O'
-and one with type 'AB'?  Well, there are two ways it might happen:
-the first person we choose might have type 'O' and the second
-'AB', or the other way around.  So the total probability is
-$2 (0.6) (0.01)\ = 1.2\%$.
+the population, what is the chance of finding one with type `O'
+and one with type `AB'?  Well, there are two ways it might happen:
+the first person we choose might have type `O' and the second
+`AB', or the other way around.  So the total probability is
+$2 (0.6) (0.01) = 1.2\%$.
 
 The likelihood of the data is slightly higher if Oliver is
 {\it not} one of the people who left blood at the scene, so
@@ -2832,11 +2836,11 @@ the hypothesis.
 
 If this result is so counterintuitive that it bothers you,
 this way of thinking might help: the data consist of a common
-event, type 'O' blood, and a rare event, type 'AB' blood.
+event, type `O' blood, and a rare event, type `AB' blood.
 If Oliver accounts for the common event, that leaves the rare
 event still unexplained.  If Oliver doesn't account for the
-'O' blood, then we have two chances to find someone in the
-population with 'AB' blood.  And that factor of two makes
+`O' blood, then we have two chances to find someone in the
+population with `AB' blood.  And that factor of two makes
 the difference.
 
 
@@ -3047,7 +3051,7 @@ appropriate operator as a parameter.
 The only problem with this algorithm is that if each Pmf
 has $m$ values, the run time is proportional to $m^2$.
 And if we want the maximum of {\tt k} selections, it takes
-time proportional to $k m^2$
+time proportional to $k m^2$.
 
 If we convert the Pmfs to Cdfs, we can do the same calculation
 much faster!  The key is to remember the definition of the
@@ -3230,7 +3234,7 @@ We'll use {\tt MakeMixture} again in Chapters~\ref{prediction} and
 
 \section{Discussion}
 
-Other than the odds form of Bayes's Theorem, this chapter is not
+Other than the odds form of Bayes's theorem, this chapter is not
 specifically Bayesian.  But Bayesian analysis is all about
 distributions, so it is important to understand the concept of a
 distribution well.  From a computational point of view, a distribution
@@ -3246,7 +3250,7 @@ faster and easier with a Pmf; others are faster with a Cdf.
 \index{Pmf} \index{Cdf}
 
 The other goal of this chapter is to introduce operations that act on
-distributions, like \verb"Pmf.__add__", {\tt Cdf.Max} and {\tt
+distributions, like \verb"Pmf.__add__", {\tt Cdf.Max}, and {\tt
   thinkbayes.MakeMixture}.  We will use these operations later, but I
 introduce them now to encourage you to think of a distribution as a
 fundamental unit of computation, not just a container for values and
@@ -3254,10 +3258,10 @@ probabilities.
 
 
 
-\chapter{Decision analysis}
+\chapter{Decision Analysis}
 \label{decisionanalysis}
 
-\section{The Price is Right problem}
+\section{The {\it Price is Right} problem}
 
 On November 1, 2007, contestants named Letia and Nathaniel appeared
 on {\it The Price is Right}, an American game show.  They competed in
@@ -3363,7 +3367,7 @@ In mathematical notation, PDFs are usually written as functions; for
 example, here is the PDF of a Gaussian distribution with
 mean 0 and standard deviation 1:
 %
-\[ f(x) = \frac{1}{\sqrt{2 \pi}} \exp(-x^2) \]
+\[ f(x) = \frac{1}{\sqrt{2 \pi}} \exp(-x^2/2) \]
 %
 For a given value of $x$, this function computes a probability
 density.  
@@ -3385,7 +3389,7 @@ Instead we primarily use probability densities as part
 of a likelihood function.  We will see an example soon.
 
 
-\section{Representing Pdfs}
+\section{Representing PDFs}
 
 \index{Pdf}
 To represent PDFs in Python,
@@ -3472,7 +3476,7 @@ values in this range to be equally likely.  In other words,
 we expect the PDF to be fairly smooth.
 
 Kernel density estimation (KDE) is an algorithm that takes
-a sample and finds an appropriately-smooth PDF that fits 
+a sample and finds an appropriately smooth PDF that fits 
 the data.  You can read details at
 \url{http://en.wikipedia.org/wiki/Kernel_density_estimation}.
 \index{KDE}
@@ -3519,7 +3523,7 @@ Figure~\ref{fig.price1}:
 
 {\tt pdf} is a {\tt Pdf} object, estimated by KDE.  {\tt pmf}
 is a Pmf object that approximates the Pdf by evaluating the density
-at a sequence of equally-spaced values.
+at a sequence of equally spaced values.
 
 {\tt linspace} stands for
 ``linear space.''  It takes a range, {\tt low} and {\tt high}, and
@@ -4046,7 +4050,7 @@ deviations above and below the mean that the Pmf will span, and {\tt
   n} is the number of values in the Pmf.
 
 Again we use {\tt numpy.linspace} to make an array of {\tt n}
-equally-spaced values between {\tt low} and {\tt high}, including
+equally spaced values between {\tt low} and {\tt high}, including
 both.
 
 \verb"norm.pdf" evaluates the Gaussian probability density function (PDF).
@@ -4301,7 +4305,6 @@ implies that the time between goals
 is exponentially distributed.
 \index{Poisson process}
 \index{exponential distribution}
-\index{sudden death}
 
 Given {\tt lam}, we can compute the time between goals like this: 
 
@@ -4535,7 +4538,7 @@ light bulb survival curves.
 \end{exercise}
 
 
-\chapter{Observer bias}
+\chapter{Observer Bias}
 \label{observer}
 
 \section{The Red Line problem}
@@ -4669,7 +4672,7 @@ labeled {\tt zb} for ``z biased''.
 \begin{figure}
 % redline.py
 \centerline{\includegraphics[height=2.5in]{figs/redline2.pdf}}
-\caption{CDF of {\tt z}, {\tt zb} and the wait time seen
+\caption{CDF of {\tt z}, {\tt zb}, and the wait time seen
 by passengers, {\tt y}. }
 \label{fig.redline2}
 \end{figure}
@@ -4767,7 +4770,7 @@ x = zp - y
 %
 So the distribution of {\tt x} is also uniform from 0 to {\tt zp}.
 
-Figure~\ref{fig.redline2} shows the distribution of {\tt z}, {\tt zb}
+Figure~\ref{fig.redline2} shows the distribution of {\tt z}, {\tt zb},
 and {\tt y} based on the data I collected from the Red Line web site.
 
 To present these distributions, I am switching from Pmfs to Cdfs.
@@ -5199,7 +5202,7 @@ generate a sample of 220 gaps, and compute their Pmf:
 
 Next I bias \verb"pmf_z" to get the distribution of
 {\tt zb}, draw a sample, and then add in delays of
-30, 40 and 50 minutes (expressed in seconds):
+30, 40, and 50 minutes (expressed in seconds):
 
 \begin{verbatim}
     cdf_zp = BiasPmf(pmf_z).MakeCdf()
@@ -5308,7 +5311,7 @@ see Section~\ref{download}.
 
 \begin{exercise}
 This exercise is from
-MacKay, {\em Information Theory, Inference, and Learning Algorithms}.
+MacKay, {\em Information Theory, Inference, and Learning Algorithms}:
 \index{MacKay, David}
 
 \begin{quote}
@@ -5319,14 +5322,15 @@ observed if they occur in a window extending from $x=1$ cm to $x=20$
 cm.  $N$ decays are observed at locations $\{ 1.5, 2, 3, 4, 5, 12 \}$
 cm.  What is the posterior distribution of $\lambda$?
 
+\end{quote}
+
 You can download a solution to this exercise from
 \url{http://thinkbayes.com/decay.py}.
-\end{quote}
 
 \end{exercise}
 
 
-\chapter{Two dimensions}
+\chapter{Two Dimensions}
 \label{paintball}
 
 \section{Paintball}
@@ -5344,7 +5348,7 @@ walls, and you suspect that one of your opponents has taken cover
 nearby.  Along the wall, you see several paint spatters, all the same
 color, that you think your opponent fired recently.
 
-The spatters are at 15, 16, 18 and 21 feet, measured from the
+The spatters are at 15, 16, 18, and 21 feet, measured from the
 lower-left corner of the room.  Based on these data, where do you
 think your opponent is hiding?
 
@@ -5356,9 +5360,9 @@ location of the shooter with coordinates $\alpha$ and $\beta$, or {\tt
 
 The Paintball problem is a modified version
 of the Lighthouse problem, a common example of Bayesian analysis.  My
-notation follows the presentation of the problem in Sivia, {\it Data
-  Analysis: a Bayesian Tutorial, Second Edition}.
-\index{Sivia, D.~S.}
+notation follows the presentation of the problem in D.S.~Sivia's, {\it Data
+  Analysis: a Bayesian Tutorial, Second Edition} (Oxford, 2006).
+\index{Sivia, D.S.}
 
 You can download the code in this chapter from
 \url{http://thinkbayes.com/paintball.py}.
@@ -5427,7 +5431,7 @@ detailed prior, but we'll start simple.
 
 \section{Trigonometry}
 
-Now we need a likelihood function, we means we have to figure
+Now we need a likelihood function, which means we have to figure
 out the likelihood of hitting any spot along the wall, given
 the location of the opponent.
 \index{likelihood}
@@ -5730,7 +5734,7 @@ sorted in descending order by probability.  Next we traverse the
 list, adding each value to the interval, until the total
 probability exceeds {\tt percentage}.  The result is a list
 of values from the suite.  Notice that this set of values
-is not necessarily contiguous
+is not necessarily contiguous.
 
 To visualize the intervals, I wrote a function that ``colors''
 each value according to how many intervals it appears in:
@@ -5766,8 +5770,9 @@ The only difference is that each hypothesis is represented by
 a tuple of parameters.
 
 I also presented {\tt Joint}, which is a parent class that provides
-{\tt Marginal}, {\tt Conditional} and {\tt MakeLikeInterval}, methods
-that apply to joint distributions.  In object-oriented terms,
+methods that apply to joint distributions:
+{\tt Marginal}, {\tt Conditional}, and {\tt MakeLikeInterval}.
+In object-oriented terms,
 {\tt Joint} is a mixin (see \url{http://en.wikipedia.org/wiki/Mixin}).
 \index{Joint}
 
@@ -5889,7 +5894,7 @@ Here's what we found:
 \item The average height for men is 178 cm; the average height for
   women is 163 cm.  So men are taller, on average.  No surprise there.
 
-\item For men the standard deviation is 7.7 cm; for women is it 7.3
+\item For men the standard deviation is 7.7 cm; for women it is 7.3
   cm.  So in absolute terms, men's heights are more variable.
 
 \item But to compare variability between groups, it is more meaningful
@@ -6175,7 +6180,7 @@ negative.  If there are any values in the Pmf with probability 0, they
 are removed.
 
 While the Pmf is under a log transform, we can't use {\tt Update},
-{\tt UpdateSet} or {\tt Normalize}.  The result would be nonsensical;
+{\tt UpdateSet}, or {\tt Normalize}.  The result would be nonsensical;
 if you try, Pmf raises an exception.
 Instead, we have to use {\tt LogUpdate}
 and {\tt LogUpdateSet}.  
@@ -6221,7 +6226,7 @@ it.  We have to use {\tt Exp} to invert the transform:
 
 If the log-likelihoods are large negative numbers, the resulting
 likelihoods might underflow.  So {\tt Exp} finds the maximum
-log-likelihood, {\tt m}, and shifts the all likelihoods up by {\tt m}.
+log-likelihood, {\tt m}, and shifts all the likelihoods up by {\tt m}.
 The resulting distribution has a maximum likelihood of 1.  This
 process inverts the log transform with minimal loss of precision.
 \index{maximum likelihood}
@@ -6326,7 +6331,7 @@ have to compute it once for each value of {\tt mu}.
 \index{optimization}
 
 To avoid recomputing, I factor out a function that computes the
-summation, and {\bf memoize} it so it stores previously-computed
+summation, and {\bf memoize} it so it stores previously computed
 results in a dictionary (see
 \url{http://en.wikipedia.org/wiki/Memoization}): \index{memoization}
 
@@ -6341,7 +6346,7 @@ def Summation(xs, mu, cache={}):
         return total
 \end{verbatim}
 
-{\tt cache} stores previously-computed sums.  The {\tt try} statement
+{\tt cache} stores previously computed sums.  The {\tt try} statement
 returns a result from the cache if possible; otherwise it computes
 the summation, then caches and returns the result.
 \index{cache}
@@ -6381,9 +6386,9 @@ likelihood of seeing any dataset like the one we saw.
 
 For example, in the Euro problem, we don't care about the order of
 the coin flips, only the total number of heads and tails.  And in
-the Locomotive problem, we don't care about which particular trains were
+the locomotive problem, we don't care about which particular trains were
 seen, only the number of trains and the maximum of the serial numbers.
-\index{Locomotive problem}
+\index{locomotive problem}
 \index{Euro problem}
 
 Similarly, in the BRFSS sample, we don't really want to know the
@@ -6438,7 +6443,7 @@ that does it:
             self.Incr(hypo, loglike)
 \end{verbatim}
 
-On my computer this function processes the entire data set in about a
+On my computer this function processes the entire dataset in about a
 second, and the result agrees with the exact result with about 5
 digits of precision.
 
@@ -6476,7 +6481,7 @@ it right, because these extreme values have a disproportionate
 effect on the estimated variability.
 
 Because ABC is based on summary statistics, rather than the entire
-data set, we can make it more robust by choosing summary statistics
+dataset, we can make it more robust by choosing summary statistics
 that are robust in the presence of outliers.  For example, rather
 than use the sample mean and standard deviation, we could use the median
 and inter-quartile range
@@ -6636,7 +6641,7 @@ we really want to know is the likelihood of any outcome
 like the data, where the definition of ``like'' is yet another
 modeling decision.
 
-The underlying idea of ABC is that two datasets alike if they yield
+The underlying idea of ABC is that two datasets are alike if they yield
 the same summary statistics.  But in some cases, like the example in
 this chapter, it is not obvious which summary statistics to choose.
 \index{summary statistic}
@@ -6652,7 +6657,7 @@ see Section~\ref{download}.
 
 An ``effect size'' is a statistic intended to measure the difference
 between two groups (see
-\url{http://en.wikipedia.org/wiki/Effect_size}.
+\url{http://en.wikipedia.org/wiki/Effect_size}).
 
 For example, we could use data from the BRFSS to estimate the
 difference in height between men and women.  By sampling values
@@ -6682,7 +6687,7 @@ long, consider random sampling.
 
 
 
-\chapter{Hypothesis testing}
+\chapter{Hypothesis Testing}
 
 \section{Back to the Euro problem}
 
@@ -6962,12 +6967,14 @@ If your prior odds are 1:1, and you see evidence with Bayes
 factor 2, your posterior odds are 2:1.  In terms of probability,
 the data changed your degree of belief from 50\% to 66\%.  For
 most real world problems, that change would be small relative
-to modeling errors other sources of uncertainty.
+to modeling errors and other sources of uncertainty.
 
 On the other hand, if you had seen evidence with Bayes
 factor 100, your posterior odds would be 100:1 or more than 99\%.
 Whether or not you agree that such evidence is ``decisive,''
 it is certainly strong.
+
+\section{Exercises}
 
 \begin{exercise}
 Some people believe in the existence of extra-sensory
@@ -7194,13 +7201,13 @@ I define two hypotheses:
 
 \begin{itemize}
 
-\item A: \verb"p_correct" is higher for Alice than for Bob.
+\item $A$: \verb"p_correct" is higher for Alice than for Bob.
 
-\item B: \verb"p_correct" is higher for Bob than for Alice.
+\item $B$: \verb"p_correct" is higher for Bob than for Alice.
 
 \end{itemize}
 
-To compute the likelihood of A, we can enumerate all pairs of values
+To compute the likelihood of $A$, we can enumerate all pairs of values
 from the posterior distributions and add up the total probability of
 the cases where \verb"p_correct" is higher for Alice than for Bob.
 And we already have a function, \verb"thinkbayes.PmfProbGreater",
@@ -7617,7 +7624,7 @@ This function assumes that the two distributions are independent.
 Figure~\ref{fig.satjoint} shows the joint posterior distribution of
 \verb"p_correct" for Alice and Bob.  The diagonal line indicates the
 part of the space where \verb"p_correct" is the same for Alice and
-Bob.  To the right of this line, Alice is more prepared; to the left
+Bob.  To the right of this line, Alice is more prepared; to the left,
 Bob is more prepared.
 
 In {\tt TopLevel.Update}, when we compute the likelihoods of $A$ and
@@ -7640,7 +7647,7 @@ important and relevant to patients with these tumors
 and doctors treating them.
 
 And I think the solution is interesting because, although it
-is a Bayesian approach to the problem, the use of Bayes's Theorem
+is a Bayesian approach to the problem, the use of Bayes's theorem
 is implicit.  I present the solution and my code; at the end
 of the chapter I will explain the Bayesian part.
 
@@ -7676,7 +7683,7 @@ the rate of growth for untreated tumors by comparing scans from the
 same patient at different times.  Several papers have reported these
 growth rates.
 
-I collected data from a paper by Zhang et al.\footnote{Zhang et al,
+I collected data from a paper by Zhang et al\footnote{Zhang et al,
   Distribution of Renal Tumor Growth Rates Determined by Using Serial
   Volumetric CT Measurements, January 2009 {\it Radiology}, 250,
   137-144.}.  I contacted the authors to see if I could get raw data,
@@ -7724,7 +7731,7 @@ from the military and his diagnosis was 3291 days (about 9 years).
 So my first calculation was, ``If this tumor grew at the median
 rate, how big would it have been at the date of discharge?''
 
-The median volume doubling time reported by Zhang et al.~is 811 days.
+The median volume doubling time reported by Zhang et al is 811 days.
 Assuming 3-dimensional geometry, the doubling time for a linear
 measure is three times longer.
 
@@ -7813,7 +7820,7 @@ distribution of age conditioned on size.
 
 The simulation starts with a small tumor and runs these steps:
 
-\begin{itemize}
+\begin{enumerate}
 
 \item Choose a growth rate from the distribution of RDT.
 
@@ -7823,7 +7830,7 @@ The simulation starts with a small tumor and runs these steps:
 
 \item Repeat until the tumor exceeds the maximum relevant size.
 
-\end{itemize}
+\end{enumerate}
 
 For the initial size I chose 0.3 cm, because carcinomas smaller than
 that are less likely to be invasive and less likely to have the blood
@@ -8098,13 +8105,13 @@ likely sources of error:
   the tumor.  This assumption would not be realistic for very
   small and very large tumors, whose growth is limited by blood supply.
 
-  But tumors observed by Zhang et al.~ranged from 1 to 12 cm, and they
+  But tumors observed by Zhang et al ranged from 1 to 12 cm, and they
   found no statistically significant relationship between
   size and growth rate.  So if there is a relationship, it is
   likely to be weak, at least in this size range.
   
 \item In the simulations, growth rate during each interval is
-  independent of previous growth rates.  In reality is it plausible
+  independent of previous growth rates.  In reality it is plausible
   that tumors that have grown quickly in the past are more likely
   to grow quickly.  In other words, there is probably
   a serial correlation in growth rate.
@@ -8263,11 +8270,11 @@ diagnosis.
 
 \section{Discussion}
 
-Well, we got through a whole chapter without using Bayes's Theorem or
+Well, we got through a whole chapter without using Bayes's theorem or
 the {\tt Suite} class that encapsulates Bayesian updates.  What
 happened?
 
-One way to think about Bayes's Theorem is as an algorithm for
+One way to think about Bayes's theorem is as an algorithm for
 inverting conditional probabilities.  Given \p{B|A}, we can compute
 \p{A|B}, provided we know \p{A} and \p{B}.  Of course this algorithm
 is only useful if, for some reason, it is easier to compute \p{B|A}
@@ -8277,7 +8284,7 @@ In this example, it is.  By running simulations, we can estimate the
 distribution of size conditioned on age, or \p{size|age}.  But it is
 harder to get the distribution of age conditioned on size, or
 \p{age|size}.  So this seems like a perfect opportunity to use Bayes's
-Theorem.
+theorem.
 
 The reason I didn't is computational efficiency.  To estimate
 \p{size|age} for any given size, you have to run a lot of simulations.
@@ -8287,18 +8294,18 @@ and age, \p{size, age}.
 \index{joint distribution}
 
 And once you have the joint distribution, you don't really need
-Bayes's Theorem, you can extract \p{age|size} by taking slices from
+Bayes's theorem, you can extract \p{age|size} by taking slices from
 the joint distribution, as demonstrated in {\tt ConditionalCdf}.
 \index{conditional distribution}
 
 So we side-stepped Bayes, but he was with us in spirit.
 
 
-\chapter{A hierarchical model}
+\chapter{A Hierarchical Model}
 \label{hierarchical}
 
 
-\section{The Geiger Counter problem}
+\section{The Geiger counter problem}
 
 I got the idea for the following problem from Tom Campbell-Ricketts,
 author of the Maximum Entropy blog at
@@ -8307,7 +8314,7 @@ from E.~T.~Jaynes, author of the classic {\em Probability Theory: The
   Logic of Science}:
 \index{Jaynes, E.~T.}
 \index{Campbell-Ricketts, Tom}
-\index{Geiger Counter problem}
+\index{Geiger counter problem}
 
 \begin{quote}
 Suppose that a radioactive source emits particles toward
@@ -8325,7 +8332,7 @@ causation that starts with the parameters of the system and ends
 with the observed data:
 \index{causation}
 
-\begin{itemize}
+\begin{enumerate}
 
 \item The source emits particles at an average rate, $r$.
 
@@ -8334,7 +8341,7 @@ toward the counter.
 
 \item Out of those $n$ particles, some number, $k$, get counted.
 
-\end{itemize}
+\end{enumerate}
 
 The probability that an atom decays is the same at any point in time,
 so radioactive decay is well modeled by a Poisson process.  Given $r$,
@@ -8588,11 +8595,11 @@ Section~\ref{download}.
 
 \section{Discussion}
 
-The Geiger Counter problem demonstrates the connection between
+The Geiger counter problem demonstrates the connection between
 causation and hierarchical modeling.  In the example, the
 emission rate $r$ has a causal effect on the number of particles,
 $n$, which has a causal effect on the particle count, $k$.
-\index{Geiger Counter problem}
+\index{Geiger counter problem}
 \index{causation}
 
 The hierarchical model reflects the structure of the
@@ -8652,7 +8659,7 @@ model the percent change in $N$.
 \end{exercise}
 
 
-\chapter{Another hierarchical model}
+\chapter{Dealing with Dimensions}
 \label{species}
 
 \section{Belly button bacteria}
@@ -8739,7 +8746,7 @@ are 33\% and 17\%.
 
 But there are two problems:
 
-\begin{itemize}
+\begin{enumerate}
 
 \item We have implicitly used a prior for each species that is uniform
   from 0 to 1, but since we know that there are three species, that
@@ -8753,7 +8760,7 @@ But there are two problems:
 \index{independence}
 \index{joint distribution}
 
-\end{itemize}
+\end{enumerate}
 
 We can use a Dirichlet distribution to solve both of these problems
 (see \url{http://en.wikipedia.org/wiki/Dirichlet_distribution}).  In
@@ -8855,7 +8862,7 @@ computes the posterior marginal distributions.
 \end{figure}
 
 Figure~\ref{fig.species1} shows the results.  The posterior
-mean prevalences are 44\%, 33\% and 22\%.
+mean prevalences are 44\%, 33\%, and 22\%.
 
 
 \section{The hierarchical version}
@@ -9004,7 +9011,7 @@ Here's the code:
         return p / p.sum()
 \end{verbatim}
 
-Now we're ready to look at some results.  Here is the code extracts
+Now we're ready to look at some results.  Here is the code that extracts
 the posterior distribution of {\tt n}:
 
 \begin{verbatim}
@@ -9290,7 +9297,7 @@ the likelihoods and updates the sub-hypotheses.
 
 So in the running example, we do three updates.  The first
 is something like ``I have seen three lions.''  The second is
-``I have see two tigers and no additional lions.''  And the third
+``I have seen two tigers and no additional lions.''  And the third
 is ``I have seen one bear and no more lions and tigers.''
 
 Here's the new version of {\tt Likelihood}:
@@ -9890,7 +9897,7 @@ along the $x$-axis.  As an example, choose 90\%.
 
 Now you can read up the chart to find the probability of achieving
 90\% coverage after {\tt k} reads.  For example, with 200 reads,
-you have about a 40\% of getting 90\% coverage.  With 1000 reads, you
+you have about a 40\% chance of getting 90\% coverage.  With 1000 reads, you
 have a 90\% chance of getting 90\% coverage.
 
 With that, we have answered the four questions that make up the unseen
@@ -9962,11 +9969,15 @@ them useful; let me know how it goes!
 %Extension of the Euro problem: evaluating reddit items and redditors
 %\url{http://www.reddit.com/r/statistics/comments/15rurz/question_about_continuous_bayesian_inference/}
 
-%Charles Darwin Problem (capture-tag-recapture)
+%Charles Darwin problem (capture-tag-recapture)
 %\url{http://maximum-entropy-blog.blogspot.com/2012/04/capture-recapture-and-charles-darwin.html}
 
 % http://camdp.com/blogs/how-solve-price-rights-showdown
 
 % https://github.com/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers
+
+% http://blog.yhathq.com/posts/estimating-user-lifetimes-with-pymc.html
+
+\printindex
 
 \end{document}
