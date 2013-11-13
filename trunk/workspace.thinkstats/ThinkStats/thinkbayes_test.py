@@ -9,6 +9,7 @@ import unittest
 import random
 import thinkbayes
 
+
 class Test(unittest.TestCase):
 
     def testPmfProbLess(self):

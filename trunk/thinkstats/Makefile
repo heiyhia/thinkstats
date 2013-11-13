@@ -44,6 +44,7 @@ distrib:
 	cd dist; zip -r thinkstats.html.zip html
 	rsync -a dist/* $(DEST)
 	chmod -R o+r $(DEST)/*
+	cd $(DEST)/..; sh back
 
 plastex:
 	# Before running plastex, we need the current directory in PYTHONPATH
