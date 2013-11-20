@@ -30,7 +30,7 @@ def main():
     print 'After one 6'
     suite.Print()
 
-    for roll in [4, 8, 7, 7, 2]:
+    for roll in [6, 8, 7, 7, 5, 4]:
         suite.Update(roll)
 
     print 'After more rolls'

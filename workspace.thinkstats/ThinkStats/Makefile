@@ -7,19 +7,23 @@ erf.py estimate.py gini.py 08in11si.csv irs.py brfss_scatter.py \
 brfss_corr.py agemodel.py age_lm.py hypothesis_analytic.py \
 score_example.py relay.py relay_soln.py relay_cdf.py relay_normal.py \
 brfss_figs.py chi.py correlation.py social.py pareto_world.py \
-khan.py blinky.py continuous.py bayes_height.py
+khan.py blinky.py continuous.py bayes_height.py thinkstats2.py
 
 DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat \
 sat_ranks.csv sat_scale.csv populations.csv birthdays.csv \
 showcases.2011.csv showcases.2012.csv
 
+thinkstats2:
+	svn cp $(FILES) ../../thinkstats2/code 
+	svn cp $(DATA) ../../thinkstats2/code 
+
 DOCS = survey.html first.html risk.html Pmf.html thinkstats.html \
 descriptive.html myplot.html brfss.html hypothesis.html cumulative.html \
-Cdf.html
+Cdf.html thinkstats2.html
 
 DOCPY = survey.py first.py risk.py Pmf.py thinkstats.py \
 descriptive.py myplot.py brfss.py hypothesis.py cumulative.py \
-Cdf.py
+Cdf.py thinkstats2.py
 
 DEST = /home/downey/public_html/greent/thinkstats
 
@@ -92,6 +96,7 @@ code:
 	rsync -a thinkstats.code.zip $(FILES) $(DATA) $(DEST)
 	rsync -a $(DOCS) $(DEST)
 	chmod -R o+r $(DEST)/*
+	cd /home/downey/public_html/greent; sh back
 
 figs:
 	rsync -a $(FIGS) $(FIGDEST)
