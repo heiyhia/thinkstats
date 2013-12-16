@@ -1,17 +1,18 @@
-FILES = survey.py first.py risk.py Pmf.py Pmf_test.py \
-thinkstats.py thinkstats_test.py descriptive.py birthdays.py \
+FILES = thinkstats2.py thinkstats2_test.py \
+survey.py first.py risk.py  \
+descriptive.py birthdays.py \
 populations.py populations_cdf.py brfss.py cumulative.py hypothesis.py \
-coin.py coin2.py rankit.py conditional.py class_size.py \
-decay.py Cdf.py Cdf_test.py locomotive.py myplot.py  \
-erf.py estimate.py gini.py 08in11si.csv irs.py brfss_scatter.py \
+rankit.py conditional.py class_size.py \
+decay.py   \
+estimate.py gini.py irs.py brfss_scatter.py \
 brfss_corr.py agemodel.py age_lm.py hypothesis_analytic.py \
 score_example.py relay.py relay_soln.py relay_cdf.py relay_normal.py \
 brfss_figs.py chi.py correlation.py social.py pareto_world.py \
-khan.py blinky.py continuous.py bayes_height.py thinkstats2.py
+khan.py blinky.py continuous.py bayes_height.py 
 
 DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat \
 sat_ranks.csv sat_scale.csv populations.csv birthdays.csv \
-showcases.2011.csv showcases.2012.csv
+showcases.2011.csv showcases.2012.csv 08in11si.csv 
 
 thinkstats2:
 	svn cp $(FILES) ../../thinkstats2/code 
