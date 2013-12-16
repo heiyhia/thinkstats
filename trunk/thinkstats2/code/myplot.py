@@ -285,6 +285,10 @@ def Cdf(cdf, complement=False, transform=None, **options):
     xs, ps = cdf.Render()
     scale = dict(xscale='linear', yscale='linear')
 
+    for s in ['xscale', 'yscale']: 
+        if s in options:
+            scale[s] = options.pop(s)
+
     if transform == 'exponential':
         complement = True
         scale['yscale'] = 'log'
