@@ -1,4 +1,4 @@
-FILES = thinkstats2.py thinkstats2_test.py \
+FILES = thinkstats2.py thinkstats2_test.py thinkplot.py \
 survey.py first.py risk.py  \
 descriptive.py birthdays.py \
 populations.py populations_cdf.py brfss.py cumulative.py hypothesis.py \
