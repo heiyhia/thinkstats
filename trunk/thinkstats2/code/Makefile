@@ -10,23 +10,17 @@ score_example.py relay.py relay_soln.py relay_cdf.py relay_normal.py \
 brfss_figs.py chi.py correlation.py social.py pareto_world.py \
 khan.py blinky.py continuous.py bayes_height.py 
 
-DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat \
-sat_ranks.csv sat_scale.csv populations.csv birthdays.csv \
-showcases.2011.csv showcases.2012.csv 08in11si.csv 
+DATA = 08in11si.csv 
 
 thinkstats2:
 	svn cp $(FILES) ../../thinkstats2/code 
 	svn cp $(DATA) ../../thinkstats2/code 
 
-DOCS = survey.html first.html risk.html Pmf.html thinkstats.html \
-descriptive.html myplot.html brfss.html hypothesis.html cumulative.html \
-Cdf.html thinkstats2.html
+DOCS = thinkstats2.html thinkplot.html
 
-DOCPY = survey.py first.py risk.py Pmf.py thinkstats.py \
-descriptive.py myplot.py brfss.py hypothesis.py cumulative.py \
-Cdf.py thinkstats2.py
+DOCPY = thinkstats2.py thinkplot.py
 
-DEST = /home/downey/public_html/greent/thinkstats
+DEST = /home/downey/public_html/greent/thinkstats2
 
 FIGS = actual_speeds.pdf    length_deltas_cdf.pdf     observed_speeds.pdf \
 age_scatter.pdf             locomotive.pdf            pareto_cdf.pdf \
@@ -93,8 +87,8 @@ FIGDEST = ../../figs
 	pydoc -w $<
 
 code:
-	zip -r thinkstats.code.zip $(FILES)
-	rsync -a thinkstats.code.zip $(FILES) $(DATA) $(DEST)
+	zip -r thinkstats2.code.zip $(FILES)
+	rsync -a thinkstats2.code.zip $(FILES) $(DATA) $(DEST)
 	rsync -a $(DOCS) $(DEST)
 	chmod -R o+r $(DEST)/*
 	cd /home/downey/public_html/greent; sh back
@@ -134,68 +128,3 @@ gss-table:
 clean:
 	rm gss.regress.*.db
 
-BAYES_CODE = train2.py train.py dice.py m_and_m.py monty2.py thinkbayes.py \
-monty.py cookie2.py cookie.py train3.py dungeons.py hockey.py hockey_data.csv \
-sat.py euro*.py kidney.py species.py paintball.py myplot.py columns.py \
-thinkstats.py sat_ranks.csv sat_scale.csv correlation.py \
-journal.pone.0047712.s001.csv variability.py price.py redline.py \
-redline_data.py thinkplot.py showcases.2011.csv  showcases.2012.csv \
-decay.py jaynes.py
-
-BAYES_DEST = /home/downey/public_html/greent/thinkbayes
-
-BAYES_FIGS = train*.pdf train*.eps \
-euro*.pdf euro*.eps \
-dungeons*.pdf dungeons*.eps \
-hockey*.pdf hockey*.eps \
-sat*.eps sat*.pdf \
-kidney*.eps kidney*.pdf \
-species*.pdf species*.eps \
-paintball*.pdf paintball*.eps \
-variability*.pdf variability*.eps \
-price*.pdf price*.eps \
-redline*.pdf redline*.eps \
-jaynes*.pdf jaynes*.eps \
-
-
-BAYES_TABLES = kidney_table*.tex
-
-bayes_run:
-	python cookie.py
-	python cookie2.py
-	python monty.py
-	python monty2.py
-	python m_and_m.py
-	python dice.py
-	python train.py
-	python train3.py
-	python dungeons.py
-	python price.py
-	python hockey.py
-	python redline.py
-	python variability.py
-	python paintball.py
-	python euro.py
-	python euro3.py
-	python sat.py
-	python kidney.py
-	python jaynes.py
-	python species.py
-
-bayes_code:
-	rm -rf thinkbayes_code
-	mkdir thinkbayes_code
-	cp $(BAYES_CODE) thinkbayes_code
-	zip -r thinkbayes_code.zip thinkbayes_code
-	rsync -a thinkbayes_code.zip $(BAYES_DEST)
-	pydoc -w thinkbayes
-	rsync -a thinkbayes.html $(BAYES_DEST)
-	rsync -a $(BAYES_CODE) $(BAYES_DEST)
-	chmod -R o+r $(BAYES_DEST)/*
-	cd /home/downey/public_html/greent; sh back
-
-bayes_figs:
-	rsync -a $(BAYES_FIGS) ../../thinkbayes/figs
-
-bayes_tables:
-	rsync -a $(BAYES_TABLES) ../../thinkbayes

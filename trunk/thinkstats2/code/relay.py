@@ -1,14 +1,15 @@
 """This file contains code used in "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import numpy
 import urllib
 
-import myplot
-import Pmf
+import thinkplot
+import thinkstats2
 
 results = 'http://www.coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml'
 
@@ -17,7 +18,7 @@ Sample line.
 
 Place Div/Tot  Div   Guntime Nettime  Pace  Name                   Ag S Race# City/state              
 ===== ======== ===== ======= =======  ===== ====================== == = ===== ======================= 
-    1   1/362  M2039   30:43   30:42   4:57 Brian Harvey           22 M  1422 Allston MA              
+   97  26/256  M4049   42:48   42:44   6:53 Allen Downey           42 M   337 Needham MA 
 """
 
 def ConvertPaceToSpeed(pace):
@@ -67,12 +68,33 @@ def GetSpeeds(results, column=5):
     return speeds
 
 
+def BinData(data, low, high, n):
+    """Rounds data off into bins.
+
+    data: sequence of numbers
+    low: low value
+    high: high value
+    n: number of bins
+
+    returns: sequence of numbers
+    """
+    bins = numpy.linspace(low, high, n)
+    data = (numpy.array(data) - low) / (high - low) * n
+    data = numpy.round(data) * (high - low) / n + low
+    return data
+
+
 def main():
+
     results = ReadResults()
     speeds = GetSpeeds(results)
-    pmf = Pmf.MakePmfFromList(speeds, 'speeds')
-    myplot.Pmf(pmf)
-    myplot.Show(title='PMF of running speed',
+
+    # speeds = BinData(speeds, 3, 12, 100)
+
+    pmf = thinkstats2.MakePmfFromList(speeds, 'speeds')
+
+    thinkplot.Hist(pmf)
+    thinkplot.Show(title='PMF of running speed',
                xlabel='speed (mph)',
                ylabel='probability')
 

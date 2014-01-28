@@ -34,6 +34,8 @@ def SimulateRow(n, probs):
       n: sum of the elements in the row
       prob: sequence of float probabilities
     """
+    # TODO: it would be more correct to draw this from a multinomial
+    # distribution (see issue from Paul Ruvolo)
     row = [Binomial(n, prob) for prob in probs]
     row[-1] += n - sum(row)
     return row
