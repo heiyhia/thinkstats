@@ -9,7 +9,7 @@ class Gaussian:
         """Constructs a Gaussian distribution with given mu and sigma.
 
         mu: mean
-        sigma: standard deviation
+        sigma2: variance (square of stdev)
         """
         self.mu = mu
         self.sigma2 = sigma2
@@ -36,14 +36,16 @@ def Pooled(g1, n1, g2, n2):
 
 
 def main():
+    # fill in these values
     m1 = Gaussian(4.0, 0.5)
     f1 = Gaussian(3.0, 0.5)
     n1 = 30.0
 
     m2 = Gaussian(3.75, 0.5)
     f2 = Gaussian(3.25, 0.5)
-    n2 = 25.0
+    n2 = 90.0
 
+    # don't need to change anything else below here...
     d1 = SubtractGaussian(m1, f1)
     d2 = SubtractGaussian(m2, f2)
 
