@@ -1,12 +1,12 @@
 """This file contains code used in "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import myplot
-import Pmf
+import thinkplot
+import thinkstats2
 
 
 def BiasPmf(pmf, name, invert=False):
@@ -29,8 +29,7 @@ def BiasPmf(pmf, name, invert=False):
      Returns:
        Pmf object
     """
-    new_pmf = pmf.Copy()
-    new_pmf.name = name
+    new_pmf = pmf.Copy(name=name)
 
     for x, p in pmf.Items():
         if invert:
@@ -71,7 +70,7 @@ def ClassSizes():
     }
 
     # form the pmf
-    pmf = Pmf.MakePmfFromDict(d, 'actual')
+    pmf = thinkstats2.MakePmfFromDict(d, 'actual')
     print 'mean', pmf.Mean()
     print 'var', pmf.Var()
     
@@ -86,9 +85,9 @@ def ClassSizes():
     print 'var', unbiased_pmf.Var()
 
     # plot the Pmfs
-    myplot.Pmfs([pmf, biased_pmf])
-    myplot.Show(xlabel='Class size',
-                ylabel='PMF')
+    thinkplot.Pmfs([pmf, biased_pmf])
+    thinkplot.Show(xlabel='Class size',
+                   ylabel='PMF')
     
  
 def main():
