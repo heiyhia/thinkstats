@@ -526,10 +526,10 @@ class Pmf(_DictWrapper):
         Returns:
             float mean
         """
-        mu = 0.0
+        mean = 0.0
         for x, p in self.d.iteritems():
-            mu += p * x
-        return mu
+            mean += p * x
+        return mean
 
     def Var(self, mu=None):
         """Computes the variance of a PMF.
