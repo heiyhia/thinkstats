@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import random
 import numpy
+import scipy.stats
 
 def write_sample(sample, filename):
     fp = open(filename, 'w')
@@ -35,18 +36,21 @@ def pareto_sample(n):
 def weibull_sample(n):
     return [random.weibullvariate(60, 5) for i in range(n)]
         
+def gumbel_sample(n):
+    rv = scipy.stats.gumbel_r(45, 10)
+    return rv.rvs(n)
+        
 def main():
 
     funcs = [uniform_sample, triangular_sample, expo_sample,
              gauss_sample, lognorm_sample, pareto_sample,
-             weibull_sample]
+             weibull_sample, gumbel_sample]
 
     for i in range(len(funcs)):
         sample = funcs[i](1000)
         print numpy.mean(sample)
         filename = 'mystery%d.dat' % i
         write_sample(sample, filename)
-        break
 
 
 if __name__ == '__main__':
