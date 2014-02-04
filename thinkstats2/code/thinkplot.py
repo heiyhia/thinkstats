@@ -100,14 +100,14 @@ def PrePlot(num=None, rows=1, cols=1):
     # also, get rid of the gray background.
 
     if rows > 1 or cols > 1:
-        pyplot.subplots(rows, cols, sharey=True)
+        pyplot.subplot(rows, cols)
         global SUBPLOT_ROWS, SUBPLOT_COLS
         SUBPLOT_ROWS = rows
         SUBPLOT_COLS = cols
     
 
-def SubPlot(plot_number):
-    pyplot.subplot(SUBPLOT_ROWS, SUBPLOT_COLS, plot_number)
+def SubPlot(rows, cols, plot_number):
+    pyplot.subplot(rows, cols, plot_number)
 
 
 class InfiniteList(list):

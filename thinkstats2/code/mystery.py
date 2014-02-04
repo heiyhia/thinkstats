@@ -9,7 +9,7 @@ import random
 import numpy
 
 def write_sample(sample, filename):
-    fp = open(filename)
+    fp = open(filename, 'w')
     for x in sample:
         fp.write('%f\n' % x)
     fp.close()
@@ -42,10 +42,11 @@ def main():
              weibull_sample]
 
     for i in range(len(funcs)):
-        sample = func[i](1000)
+        sample = funcs[i](1000)
         print numpy.mean(sample)
         filename = 'mystery%d.dat' % i
         write_sample(sample, filename)
+        break
 
 
 if __name__ == '__main__':
