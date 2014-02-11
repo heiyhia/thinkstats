@@ -42,7 +42,7 @@ def BinData(data, low, high, n):
 
 
 def main():
-    filename = 'mystery5.dat'
+    filename = 'mystery0.dat'
     data = read_file(filename)
 
     pmf = thinkstats2.MakePmfFromList(data)
@@ -56,9 +56,8 @@ def main():
     bin_data = BinData(data, low, high, 51)
     bin_pmf = thinkstats2.MakePmfFromList(bin_data)
     
-    
     thinkplot.SubPlot(2, 2, 1)
-    thinkplot.Pmf(pmf)
+    thinkplot.Hist(pmf, width=0.1)
     thinkplot.Config(title='Naive Pmf')
 
     thinkplot.SubPlot(2, 2, 2)
