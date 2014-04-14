@@ -45,7 +45,7 @@ def Regress(model, ys, ts, print_flag=False):
 
 
 def GetEst(coeff):
-    """Extracts the estimated coefficient from a coeff."""
+    """Extracts the estimated coefficient from a coeff tuple."""
     name, est, stderr = coeff
     return est
 
@@ -56,7 +56,7 @@ def GetCoefficients(res):
     This is an awful function.  It actually generates a text representation
     of the results and then parses it.  Ack!
 
-    Maybe the rpy2 interface (or it's documentation) will improve at
+    Maybe the rpy2 interface (or its documentation) will improve at
     some point so this nonsense is no longer necessary.
     """
     flag = False
@@ -150,13 +150,13 @@ def MakeErrorModel(model, ys, ts, n=100):
     # find the 90% CI in each column
     columns = zip(*fits)
 
-    sample_error = MakeStddev(columns)
-    total_error = MakeStddev(columns, mu, var)
+    sample_error = MakeStderr(columns)
+    total_error = MakeStderr(columns, mu, var)
 
     return fts, sample_error, total_error
 
 
-def MakeStddev(columns, mu2=0, var2=0):
+def MakeStderr(columns, mu2=0, var2=0):
     """Finds a confidence interval for each column.
 
     Returns two rows: the low end of the intervals and the high ends.
@@ -211,6 +211,7 @@ def MakePlot(ts, ys, model):
 
     pyplot.plot(fts, fys, color='red', linewidth=2, alpha=0.5)
     print 'Prediction:', fts[-1], fys[-1]
+
 
 def PlotResiduals(ts, ys):
     residuals = Residuals(ts, ys)
@@ -385,7 +386,7 @@ def main(script):
     pyplot.plot(ts, ys, 'bs-', label='No religion', **options)
     
     # add the actual value from 2013
-    # myplot.Plot([2012], [xx.x], 'bs')
+    myplot.Plot([2013], [24.6], 'bs')
 
     myplot.Save(root='heri13.1',
                 formats=FORMATS,
@@ -406,7 +407,7 @@ def main(script):
     pyplot.plot(ts, ys, 'go-', label='No attendance', **options)
 
     # add the actual value from 2013
-    # myplot.Plot([2012], [100 - 73.2], 'gs')
+    myplot.Plot([2013], [100 - 72.7], 'gs')
 
     myplot.Save(root='heri13.2',
                 formats=FORMATS,

@@ -144,7 +144,7 @@ class _DictWrapper(object):
             except AttributeError:
                 continue
 
-        if len(self) > 0:
+        if len(self) > 0 and isinstance(self, Pmf):
             self.Normalize()
 
     def InitSequence(self, values):
@@ -526,10 +526,10 @@ class Pmf(_DictWrapper):
         Returns:
             float mean
         """
-        mu = 0.0
+        mean = 0.0
         for x, p in self.d.iteritems():
-            mu += p * x
-        return mu
+            mean += p * x
+        return mean
 
     def Var(self, mu=None):
         """Computes the variance of a PMF.
@@ -1834,7 +1834,7 @@ def LogBinomialCoef(n, k):
     return n * log(n) - k * log(k) - (n - k) * log(n - k)
 
 
-def NormalPlot(ys, jitter=0.0):
+def NormalProbability(ys, jitter=0.0):
     """Generates data for a normal probability plot.
 
     ys: sequence of values
@@ -1845,22 +1845,29 @@ def NormalPlot(ys, jitter=0.0):
     n = len(ys)
     xs = numpy.random.normal(0, 1, n)
     xs.sort()
-    ys = numpy.random.uniform(-jitter, +jitter, n) + ys
+    
+    if jitter:
+        ys = numpy.random.uniform(-jitter, +jitter, n) + ys
     ys.sort()
+
     return xs, ys
 
 
-def FitLine(xs, ys):
+def Jitter(values, jitter=0.5):
+    """Jitters the values by adding a uniform variate in (-jitter, jitter)."""
+    return numpy.random.uniform(-jitter, +jitter, n) + values
+
+
+def FitLine(xs, inter, slope):
     """Fits a line to the given data.
 
-    xs: numpy array of x
-    ys: sequence of y
+    xs: sequence of x
 
-    returns: xs, fit ys
+    returns: tuple of numpy arrays (sorted xs, fit ys)
     """
-    slope, inter, _, _, _ = scipy.stats.linregress(xs, ys)
-    fit_ys = inter + slope * xs
-    return xs, fit_ys
+    fit_xs = numpy.sort(xs)
+    fit_ys = inter + slope * fit_xs
+    return fit_xs, fit_ys
 
 
 def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
@@ -1869,9 +1876,9 @@ def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
     sample: sequence of numbers
     label: string
     data_color: color string for the data
-    data_color: color string for the fitted line
+    fit_color: color string for the fitted line
     """
-    data = NormalPlot(sample)
+    data = NormalProbability(sample)
     fit = FitLine(*data)
 
     thinkplot.plot(*fit, color=fit_color, alpha=0.5)
@@ -1883,3 +1890,305 @@ def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
                     alpha=0.5)
 
  
+def Cov(xs, ys, mux=None, muy=None):
+    """Computes Cov(X, Y).
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+        mux: optional float mean of xs
+        muy: optional float mean of ys
+
+    Returns:
+        Cov(X, Y)
+    """
+    if mux is None:
+        mux = numpy.mean(xs)
+    if muy is None:
+        muy = numpy.mean(ys)
+
+    total = 0.0
+    for x, y in zip(xs, ys):
+        total += (x-mux) * (y-muy)
+
+    return total / len(xs)
+
+
+def Mean(xs):
+    """Computes mean.
+
+    xs: sequence of values
+
+    returns: float mean
+    """
+    return numpy.mean(xs)
+
+
+def Var(xs, ddof=None):
+    """Computes variance.
+
+    xs: sequence of values
+
+    returns: float
+    """
+    return numpy.var(xs, ddof=ddof)
+
+
+def MeanVar(xs):
+    """Computes mean and variance.
+
+    xs: sequence of values
+
+    returns: pair of float, mean and var
+    """
+    return numpy.mean(xs), numpy.var(xs)
+
+
+def Trim(t, p=0.01):
+    """Trims the largest and smallest elements of t.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        sequence of values
+    """
+    n = int(p * len(t))
+    t = sorted(t)[n:-n]
+    return t
+
+
+def TrimmedMean(t, p=0.01):
+    """Computes the trimmed mean of a sequence of numbers.
+
+    Side effect: sorts the list.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        float
+    """
+    t = Trim(t, p)
+    return Mean(t)
+
+
+def TrimmedMeanVar(t, p=0.01):
+    """Computes the trimmed mean and variance of a sequence of numbers.
+
+    Side effect: sorts the list.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        float
+    """
+    t = Trim(t, p)
+    mu, var = MeanVar(t)
+    return mu, var
+
+
+def Corr(xs, ys):
+    """Computes Corr(X, Y).
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+
+    Returns:
+        Corr(X, Y)
+    """
+    xbar, varx = MeanVar(xs)
+    ybar, vary = MeanVar(ys)
+
+    corr = Cov(xs, ys, xbar, ybar) / math.sqrt(varx * vary)
+
+    return corr
+
+
+def SerialCorr(xs):
+    """Computes the serial correlation of a sequence.
+
+    xs: sequence of numbers
+
+    returns: float correlation coefficient
+    """
+    return Corr(xs[:-1], xs[1:])
+
+
+def SpearmanCorr(xs, ys):
+    """Computes Spearman's rank correlation.
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+
+    Returns:
+        float Spearman's correlation
+    """
+    xranks = MapToRanks(xs)
+    yranks = MapToRanks(ys)
+    return Corr(xranks, yranks)
+
+
+def LeastSquares(xs, ys):
+    """Computes a linear least squares fit for ys as a function of xs.
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+
+    Returns:
+        tuple of (intercept, slope)
+    """
+    xbar, varx = MeanVar(xs)
+    ybar, vary = MeanVar(ys)
+
+    slope = Cov(xs, ys, xbar, ybar) / varx
+    inter = ybar - slope * xbar
+
+    return inter, slope
+
+
+def Residuals(xs, ys, inter, slope):
+    """Computes residuals for a linear fit with parameters inter and slope.
+
+    Args:
+        xs: independent variable
+        ys: dependent variable
+        inter: float intercept
+        slope: float slope
+
+    Returns:
+        list of residuals
+    """
+    res = [y - inter - slope*x for x, y in zip(xs, ys)]
+    return res
+
+
+def CoefDetermination(ys, res):
+    """Computes the coefficient of determination (R^2) for given residuals.
+
+    Args:
+        ys: dependent variable
+        res: residuals
+        
+    Returns:
+        float coefficient of determination
+    """
+    ybar, vary = MeanVar(ys)
+    resbar, varres = MeanVar(res)
+    return 1 - varres / vary
+
+
+def MapToRanks(t):
+    """Returns a list of ranks corresponding to the elements in t.
+
+    Args:
+        t: sequence of numbers
+    
+    Returns:
+        list of integer ranks, starting at 1
+    """
+    # pair up each value with its index
+    pairs = enumerate(t)
+    
+    # sort by value
+    sorted_pairs = sorted(pairs, key=lambda pair: pair[1])
+
+    # pair up each pair with its rank
+    ranked = enumerate(sorted_pairs)
+
+    # sort by index
+    resorted = sorted(ranked, key=lambda trip: trip[1][0])
+
+    # extract the ranks
+    ranks = [trip[0]+1 for trip in resorted]
+    return ranks
+
+
+def CorrelatedGenerator(rho):
+    """Generates standard normal variates with serial correlation.
+
+    rho: target coefficient of correlation
+
+    Returns: iterable
+    """
+    x = random.gauss(0, 1)
+    yield x
+
+    sigma = math.sqrt(1 - rho**2);    
+    while True:
+        x = random.gauss(x * rho, sigma)
+        yield x
+
+
+def CorrelatedGaussianGenerator(mu, sigma, rho):
+    """Generates normal variates with serial correlation.
+
+    mu: mean of variate
+    sigma: standard deviation of variate
+    rho: target coefficient of correlation
+
+    Returns: iterable
+    """
+    for x in CorrelatedGenerator(rho):
+        yield x * sigma + mu
+
+
+
+def RawMoment(xs, k):
+    """Computes the kth raw moment of xs.
+    """
+    return sum(x**k for x in xs) / float(len(xs))
+
+
+def CentralMoment(xs, k):
+    """Computes the kth central moment of xs.
+    """
+    xbar = RawMoment(xs, 1)
+    return sum((x - xbar)**k for x in xs) / len(xs)
+
+
+def StandardizedMoment(xs, k):
+    """Computes the kth standardized moment of xs.
+    """
+    var = CentralMoment(xs, 2)
+    sigma = math.sqrt(var)
+    return CentralMoment(xs, k) / sigma**k
+
+
+def Skewness(xs):
+    """Computes skewness.
+    """
+    return StandardizedMoment(xs, 3)
+
+
+def Median(xs):
+    """Computes the median (50th percentile) of a sequence.
+    """
+    cdf = MakeCdfFromList(xs)
+    return cdf.Value(0.5)
+
+
+def PearsonMedianSkewness(xs):
+    """Computes the Pearson median skewness.
+    """
+    median = Median(xs)
+    mean = RawMoment(xs, 1)
+    var = CentralMoment(xs, 2)
+    std = math.sqrt(var)
+    gp = 3 * (mean - median) / std
+    return gp
+
+
+def main():
+    pass
+    
+
+if __name__ == '__main__':
+    main()
