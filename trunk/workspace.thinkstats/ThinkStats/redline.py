@@ -202,7 +202,7 @@ class WaitTimeCalculator(object):
         thinkplot.Pmfs(pmfs)
         thinkplot.Save(root=root,
                        xlabel='Time (min)',
-                       ylabel='CDF',
+                       ylabel='PDF',
                        formats=FORMATS)
 
 
@@ -227,6 +227,16 @@ class WaitTimeCalculator(object):
         thinkplot.Save(root=root,
                        xlabel='Time (min)',
                        ylabel='CDF',
+                       formats=FORMATS)
+
+        root += 'a'
+        pmfs = self.pmf_z, self.pmf_zb, self.pmf_y
+        pmfs = ScaleDists(pmfs, 1.0/60)
+        thinkplot.PrePlot(3)
+        thinkplot.Pmfs(pmfs)
+        thinkplot.Save(root=root,
+                       xlabel='Time (min)',
+                       ylabel='Probability',
                        formats=FORMATS)
 
 
@@ -305,6 +315,24 @@ class ElapsedTimeEstimator(object):
         thinkplot.Save(root=root,
                        xlabel='Time (min)',
                        ylabel='CDF',
+                       formats=FORMATS)
+
+        pmfs = self.prior_x, self.post_x
+        pmfs = ScaleDists(pmfs, 1.0/60)
+        thinkplot.PrePlot(3)
+        thinkplot.Pmfs(pmfs)
+        thinkplot.Save(root=root+'a',
+                       xlabel='Time (min)',
+                       ylabel='Probability',
+                       formats=FORMATS)
+
+        pmfs = self.prior_x, self.post_x, self.pmf_y
+        pmfs = ScaleDists(pmfs, 1.0/60)
+        thinkplot.PrePlot(3)
+        thinkplot.Pmfs(pmfs)
+        thinkplot.Save(root=root+'b',
+                       xlabel='Time (min)',
+                       ylabel='Probability',
                        formats=FORMATS)
 
 
