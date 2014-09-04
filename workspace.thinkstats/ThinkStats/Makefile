@@ -13,10 +13,6 @@ DATA = CDBRFS08.ASC.gz soc-Slashdot0902.txt.gz babyboom.dat \
 sat_ranks.csv sat_scale.csv populations.csv birthdays.csv \
 showcases.2011.csv showcases.2012.csv
 
-thinkstats2:
-	svn cp $(FILES) ../../thinkstats2/code 
-	svn cp $(DATA) ../../thinkstats2/code 
-
 DOCS = survey.html first.html risk.html Pmf.html thinkstats.html \
 descriptive.html myplot.html brfss.html hypothesis.html cumulative.html \
 Cdf.html thinkstats2.html

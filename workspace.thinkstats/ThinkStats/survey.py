@@ -73,8 +73,11 @@ class Table(object):
                 s = line[start-1:end]
                 val = cast(s)
             except ValueError:
-                #print line
-                #print field, start, end, s
+                # If you are using Visual Studio, you might see an
+                # "error" at this point, but it is not really an error;
+                # I am just using try...except to handle not-available (NA)
+                # data.  You should be able to tell Visual Studio to
+                # ignore this non-error.
                 val = 'NA'
             setattr(obj, field, val)
         return obj
