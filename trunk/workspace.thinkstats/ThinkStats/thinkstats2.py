@@ -5,6 +5,8 @@ Copyright 2012 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+from __future__ import print_function
+
 """This file contains class definitions for:
 
 Hist: represents a histogram (map from values to integer frequencies).
@@ -24,21 +26,25 @@ import copy
 import logging
 import math
 import random
+import re
+
 import thinkplot
 
-import numpy
+import numpy as np
+import pandas as pd
+
 import scipy.stats
 from scipy.special import erf, erfinv
 
 ROOT2 = math.sqrt(2)
 
 def RandomSeed(x):
-    """Initialize the random and numpy.random generators.
+    """Initialize the random and np.random generators.
 
     x: int seed
     """
     random.seed(x)
-    numpy.random.seed(x)
+    np.random.seed(x)
     
 
 def Odds(p):
@@ -160,7 +166,7 @@ class _DictWrapper(object):
 
         values: map from value to probability
         """
-        for value, prob in values.iteritems():
+        for value, prob in values.items():
             self.Set(value, prob)
 
     def InitPmf(self, values):
@@ -229,7 +235,7 @@ class _DictWrapper(object):
         if m is None:
             m = self.MaxLike()
 
-        for x, p in self.d.iteritems():
+        for x, p in self.d.items():
             if p:
                 self.Set(x, math.log(p / m))
             else:
@@ -249,7 +255,7 @@ class _DictWrapper(object):
         if m is None:
             m = self.MaxLike()
 
-        for x, p in self.d.iteritems():
+        for x, p in self.d.items():
             self.Set(x, math.exp(p - m))
 
     def GetDict(self):
@@ -283,8 +289,8 @@ class _DictWrapper(object):
 
     def Print(self):
         """Prints the values and freqs/probs in ascending order."""
-        for val, prob in sorted(self.d.iteritems()):
-            print val, prob
+        for val, prob in sorted(self.d.items()):
+            print(val, prob)
 
     def Set(self, x, y=0):
         """Sets the freq/prob associated with the value x.
@@ -402,7 +408,7 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        t = [prob for (val, prob) in self.d.iteritems() if val > x]
+        t = [prob for (val, prob) in self.d.items() if val > x]
         return sum(t)
 
     def ProbLess(self, x):
@@ -412,7 +418,7 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        t = [prob for (val, prob) in self.d.iteritems() if val < x]
+        t = [prob for (val, prob) in self.d.items() if val < x]
         return sum(t)
 
     def __lt__(self, obj):
@@ -512,7 +518,7 @@ class Pmf(_DictWrapper):
 
         target = random.random()
         total = 0.0
-        for x, p in self.d.iteritems():
+        for x, p in self.d.items():
             total += p
             if total >= target:
                 return x
@@ -527,7 +533,7 @@ class Pmf(_DictWrapper):
             float mean
         """
         mean = 0.0
-        for x, p in self.d.iteritems():
+        for x, p in self.d.items():
             mean += p * x
         return mean
 
@@ -545,7 +551,7 @@ class Pmf(_DictWrapper):
             mu = self.Mean()
 
         var = 0.0
-        for x, p in self.d.iteritems():
+        for x, p in self.d.items():
             var += p * (x - mu) ** 2
         return var
 
@@ -854,7 +860,7 @@ def MakeUniformPmf(low, high, n):
     n: number of values
     """
     pmf = Pmf()
-    for x in numpy.linspace(low, high, n):
+    for x in np.linspace(low, high, n):
         pmf.Set(x, 1)
     pmf.Normalize()
     return pmf
@@ -1094,7 +1100,7 @@ def MakeCdfFromDict(d, name=''):
     Returns:
         Cdf object
     """
-    return MakeCdfFromItems(d.iteritems(), name)
+    return MakeCdfFromItems(d.items(), name)
 
 
 def MakeCdfFromHist(hist, name=''):
@@ -1224,7 +1230,7 @@ class Suite(Pmf):
     def Print(self):
         """Prints the hypotheses and their probabilities."""
         for hypo, prob in sorted(self.Items()):
-            print hypo, prob
+            print(hypo, prob)
 
     def MakeOdds(self):
         """Transforms from probabilities to odds.
@@ -1516,7 +1522,7 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
     low = mu - num_sigmas * sigma
     high = mu + num_sigmas * sigma
 
-    for x in numpy.linspace(low, high, n):
+    for x in np.linspace(low, high, n):
         p = EvalGaussianPdf(x, mu, sigma)
         pmf.Set(x, p)
     pmf.Normalize()
@@ -1588,7 +1594,7 @@ def MakeExponentialPmf(lam, high, n=200):
     returns: normalized Pmf
     """
     pmf = Pmf()
-    for x in numpy.linspace(0, high, n):
+    for x in np.linspace(0, high, n):
         p = EvalExponentialPdf(x, lam)
         pmf.Set(x, p)
     pmf.Normalize()
@@ -1679,7 +1685,7 @@ class Beta(object):
         n: int sample size
         """
         size = n,
-        return numpy.random.beta(self.alpha, self.beta, size)
+        return np.random.beta(self.alpha, self.beta, size)
 
     def EvalPdf(self, x):
         """Evaluates the PDF at x."""
@@ -1733,7 +1739,7 @@ class Dirichlet(object):
                              'n<2 makes no sense')
 
         self.n = n
-        self.params = numpy.ones(n, dtype=numpy.float) * conc
+        self.params = np.ones(n, dtype=np.float) * conc
         self.name = name
 
     def Update(self, data):
@@ -1749,7 +1755,7 @@ class Dirichlet(object):
 
         Returns: normalized vector of fractions
         """
-        p = numpy.random.gamma(self.params)
+        p = np.random.gamma(self.params)
         return p / p.sum()
 
     def Likelihood(self, data):
@@ -1780,7 +1786,7 @@ class Dirichlet(object):
             return float('-inf')
 
         x = self.Random()
-        y = numpy.log(x[:m]) * data
+        y = np.log(x[:m]) * data
         return y.sum()
 
     def MarginalBeta(self, i):
@@ -1843,11 +1849,11 @@ def NormalProbability(ys, jitter=0.0):
     returns: xs, ys
     """
     n = len(ys)
-    xs = numpy.random.normal(0, 1, n)
+    xs = np.random.normal(0, 1, n)
     xs.sort()
     
     if jitter:
-        ys = numpy.random.uniform(-jitter, +jitter, n) + ys
+        ys = np.random.uniform(-jitter, +jitter, n) + ys
     ys.sort()
 
     return xs, ys
@@ -1855,7 +1861,7 @@ def NormalProbability(ys, jitter=0.0):
 
 def Jitter(values, jitter=0.5):
     """Jitters the values by adding a uniform variate in (-jitter, jitter)."""
-    return numpy.random.uniform(-jitter, +jitter, n) + values
+    return np.random.uniform(-jitter, +jitter, n) + values
 
 
 def FitLine(xs, inter, slope):
@@ -1865,7 +1871,7 @@ def FitLine(xs, inter, slope):
 
     returns: tuple of numpy arrays (sorted xs, fit ys)
     """
-    fit_xs = numpy.sort(xs)
+    fit_xs = np.sort(xs)
     fit_ys = inter + slope * fit_xs
     return fit_xs, fit_ys
 
@@ -1903,9 +1909,9 @@ def Cov(xs, ys, mux=None, muy=None):
         Cov(X, Y)
     """
     if mux is None:
-        mux = numpy.mean(xs)
+        mux = np.mean(xs)
     if muy is None:
-        muy = numpy.mean(ys)
+        muy = np.mean(ys)
 
     total = 0.0
     for x, y in zip(xs, ys):
@@ -1921,7 +1927,7 @@ def Mean(xs):
 
     returns: float mean
     """
-    return numpy.mean(xs)
+    return np.mean(xs)
 
 
 def Var(xs, ddof=None):
@@ -1931,7 +1937,7 @@ def Var(xs, ddof=None):
 
     returns: float
     """
-    return numpy.var(xs, ddof=ddof)
+    return np.var(xs, ddof=ddof)
 
 
 def MeanVar(xs):
@@ -1941,7 +1947,7 @@ def MeanVar(xs):
 
     returns: pair of float, mean and var
     """
-    return numpy.mean(xs), numpy.var(xs)
+    return np.mean(xs), np.var(xs)
 
 
 def Trim(t, p=0.01):
@@ -2184,6 +2190,78 @@ def PearsonMedianSkewness(xs):
     std = math.sqrt(var)
     gp = 3 * (mean - median) / std
     return gp
+
+
+class Dictionary(object):
+    """Represents a set of variables in a fixed width file."""
+
+    def __init__(self, variables, colspecs, names):
+        """Initializes.
+
+        variables: list of (start, vtype, name, fstring, long_desc) tuples
+        colspecs: list of (start, end) index tuples
+        names: list of string variable names
+        """
+        self.variables = variables
+        self.colspecs = colspecs
+        self.names = names
+
+    def ReadFixedWidth(self, dat_file, compression='gzip'):
+        """Reads a fixed width ASCII file.
+
+        dat_file: string filename
+        compression: string
+
+        returns: DataFrame
+        """
+        frame = pd.read_fwf(dat_file,
+                            compression=compression,
+                            colspecs=self.colspecs, 
+                            names=self.names,
+                            header=None)
+        return frame
+
+
+def ReadStataDct(dct_file):
+    """Reads a Stata dictionary file.
+
+    returns: Dictionary object
+    """
+    type_map = dict(byte=int, int=int, float=float, double=float)
+
+    variables = []
+    for line in open(dct_file):
+        match = re.search( r'_column\(([^)]*)\)', line)
+        if match:
+            start = int(match.group(1))
+            t = line.split()
+            vtype, name, fstring = t[1:4]
+            if vtype.startswith('str'):
+                vtype = str
+            else:
+                vtype = type_map[vtype]
+            long_desc = ' '.join(t[4:]).strip('"')
+            variables.append((start, vtype, name, fstring, long_desc))
+            
+    colspecs = []
+    names = []
+    for i in range(len(variables)):
+        start, vtype, name, fstring, long_desc = variables[i]
+        names.append(name)
+        try:
+            end = variables[i+1][0]
+            colspecs.append((start-1, end-1))
+        except IndexError:
+            # Note: this won't work properly until Pandas Issue 7079 is
+            # resolved so pd.read_fwf accepts None as a colspec
+
+            # In the meantime, it lops one character off the end of the
+            # last field.
+
+            # TODO: replace -1 with None (see DocString above)
+            colspecs.append((start-1, -1))
+
+    return Dictionary(variables, colspecs, names)
 
 
 def main():

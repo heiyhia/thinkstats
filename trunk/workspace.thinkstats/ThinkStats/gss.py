@@ -168,6 +168,7 @@ class Respondent(object):
                        self.clean_internet,
                        self.clean_children,
                        self.clean_switch,
+                       self.clean_xmovie,
                        ]:
             try:
                 method()
@@ -378,7 +379,15 @@ class Respondent(object):
         except ValueError:
             self.orig_income = 'NA'
         self.top50_income = meets_thresh(self.orig_income, 21)
-        
+
+    def clean_xmovie(self):
+        if self.xmovie in [0, 8, 9]:
+            self.porn = 'NA'
+        if self.xmovie == 1:   # yes
+            self.porn = 1
+        if self.xmovie == 2:   # no
+            self.porn = 0
+   
     def code_lib(self, relig_name, fund):
         """Code how liberal a relion is."""
         if relig_name == 'none':
@@ -2818,21 +2827,6 @@ def investigate_switches():
     for row in rows:
         print row
 
-    return
-    for name in ORDER:
-        survey = surveys[name]
-        survey.make_pmg
-        print name, survey.len()
-
-    return
-    pmf = survey88.make_pmf('switch1')
-    pmf.Set('NA', 0)
-    pmf.Normalize()
-    for val, prob in sorted(pmf.Items()):
-        print val, prob
-
-    survey88.investigate_switches('prot', 'none')
-
 
 def make_time_series(filename, cutoff=None):
     """Makes a map from decade born to Survey.
@@ -3527,6 +3521,28 @@ def estimate_upbringing_effect(survey, model, odds_ratio=0.41):
     return cf.run_counterfactuals(counter_func)
 
 
+def estimate_porn_effect(survey, model, odds_ratio=0.???):
+    """Estimate the effect of porn on the population of unaffiliated.
+
+    survey: Survey
+    model: LogRegression
+    odds_ratio: float, observed change in the explanatory variable
+
+    Returns: float, number of people explained by xmovie
+    """
+    def counter_func(r):
+        if r.had_relig == 0:
+            if random.random() < adjustment_ratio:
+                r.had_relig = 1
+        return r
+
+    attr = 'porn'
+    adjustment_ratio = compute_adjustment_ratio(survey, attr, odds_ratio, True)
+
+    cf = Counterfactual(survey, model, attr)
+    return cf.run_counterfactuals(counter_func)
+
+
 class Counterfactual(object):
     def __init__(self, survey, model, attr):
         # make a safety copy before we go modifying anything
@@ -3767,8 +3783,48 @@ def test_models(version=2, resample_flag=False):
     run_regression_and_print(subset2, version=4, means=means)
 
 
+def test_xmovie_model(version=7, resample_flag=False):
+    means = dict(educ_from_12=4,
+                 born_from_1960=10)
+
+    # read the survey
+    survey, complete = read_complete(version)
+    compare_survey_and_complete(survey, complete)
+
+    pmf = complete.make_pmf('xmovie')
+    pmf.Print()
+
+    print 'all respondents', survey.len()
+    print_fraction_none(survey)
+
+    print 'complete', complete.len()
+    print_fraction_none(complete)
+
+    # print the distribution of years
+    print '\nDistribution of survey years'
+    pmf = survey.make_pmf('year')
+    for val, prob in sorted(pmf.Items()):
+        print val, prob
+
+    # summarize the variables
+    print '\nVariables:'
+    dep, control = get_version(version)
+    attrs = [dep] + control
+    complete.summarize_binary_attrs(attrs)
+
+    # resample
+    if resample_flag:
+        random.seed(0)
+        resample = complete.resample()
+    else:
+        resample = complete
+
+    run_regression_and_print(complete, version=version, means=means)
+
+
 def read_complete(version):
-    survey = read_survey('gss.2000-2010.csv')
+    #survey = read_survey('gss.2000-2010.csv')
+    survey = read_survey('gss.1990-2010.2.csv')
 
     # select just the years we want
     years = [2000, 2002, 2004, 2006, 2010]
@@ -3878,6 +3934,15 @@ def get_version(version):
         dep = 'www2'
         control = ['had_relig', 'top75_income', 'born_from_1960',
                    'sei', 'urban', 'rural']
+
+    if version == 7:
+        dep = 'has_relig'
+        control = ['had_relig', 'top75_income',
+                   'born_from_1960',
+                   'educ_from_12',
+                   'www2',
+                   'www7',
+                   'porn']
 
     return dep, control
     
@@ -4240,6 +4305,9 @@ class IncomeData(object):
 
 
 def main(script):
+    test_xmovie_model()
+    return
+
     test_models()
     return
 
