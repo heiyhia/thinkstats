@@ -1,7 +1,7 @@
 """This file contains code used in "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2011 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -19,14 +19,14 @@ import myplot
 import Pmf
 import thinkstats
 
-def ReadData(filename='Marathon world record times.csv', speed=False):
+def ReadData(filename='Marathon_world_record_times.csv', speed=False):
     """Reads a CSV file 
 
     Args:
       filename: string filename
 
     Returns:
-      list of ...
+      map from (distance, gender) to data
     """
     fp = open(filename)
     reader = csv.reader(fp)
@@ -313,6 +313,10 @@ def PlotSimulation(m=100000):
 
 
 def PlotMarathon(data):
+    """Plots the marathon data.
+   
+    data: 
+    """
     print len(data)
     xs, ys = zip(*data)
     print xs, ys
