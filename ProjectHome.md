@@ -1,0 +1,1 @@
+A Free Textbook that presents introductory probability and statistics using computational methods.  The book uses simple Python programs to explore statistical concepts.
